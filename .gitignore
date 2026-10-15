@@ -1,0 +1,39 @@
+# Dependencies, builds, and local tooling
+node_modules/
+dist/
+.npm-cache/
+coverage/
+.vite/
+*.tsbuildinfo
+*.log
+.DS_Store
+Thumbs.db
+
+# Local game saves and databases (including SQLite journal files)
+data/
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+
+# Environment settings; only the blank, safe template is tracked
+.env
+.env.*
+!.env.example
+*.env
+
+# Credentials and private key material
+secrets/
+credentials/
+credentials.json
+*-credentials.json
+service-account*.json
+*.key
+*.pem
+*.p12
+*.pfx
+.npmrc
+.aws/
+.ssh/
