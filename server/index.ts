@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { CONTRACTS, HARDWARE, createInitialState, applyCommand } from '../src/game/index.js';
 import type { GameState } from '../shared/contracts.js';
 import { demoInterpret, liveConfig, liveInterpret, planSchema } from './interpreter.js';
+import { registerExpeditions, readExpedition } from './expedition-api.js';
 
 mkdirSync('data', { recursive: true });
 const db = new DatabaseSync(process.env.GAME_DB_PATH || 'data/game.sqlite');
@@ -40,11 +41,12 @@ function session(req: express.Request, res: express.Response): { id: string; sta
   res.cookie('airace_session', id, { httpOnly: true, sameSite: 'strict', secure: req.secure, maxAge: 365 * 86400000, path: '/' });
   return { id, state };
 }
+registerExpeditions(app, db, session);
 function onboarding(id: string) {
   const row = db.prepare('SELECT storySeen,tutorial FROM onboarding WHERE session=?').get(id);
   return row ? { isNewPlayer: true, storySeen: !!row.storySeen, tutorial: row.tutorial } : { isNewPlayer: false, storySeen: true, tutorial: 'dismissed' };
 }
-app.get('/api/game', (req, res) => { const player = session(req, res); res.json({ state: player.state, contracts: CONTRACTS, hardware: HARDWARE, mode: liveConfig() ? 'live' : 'demo', onboarding: onboarding(player.id) }); });
+app.get('/api/game', (req, res) => { const player = session(req, res); res.json({ state: player.state, contracts: CONTRACTS, hardware: HARDWARE, mode: liveConfig() ? 'live' : 'demo', onboarding: onboarding(player.id), expedition: readExpedition(db, player.id), serverTime: Date.now() }); });
 app.post('/api/onboarding', (req, res) => {
   const parsed = z.object({ storySeen: z.literal(true).optional(), tutorial: z.enum(['active','dismissed','complete']).optional() }).strict().safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: 'Invalid onboarding update.' }); return; }
@@ -73,6 +75,7 @@ app.post('/api/command', (req, res) => {
     const row = db.prepare('SELECT state FROM sessions WHERE id=?').get(id)!;
     const state: GameState = JSON.parse(row.state as string);
     if (input.revision !== state.revision) { db.exec('ROLLBACK'); res.status(409).json({ error: 'Your company changed. Refresh and try again.' }); return; }
+    if (input.command.type === 'start' && readExpedition(db, id).run) throw new Error('Pixel is exploring. Return to HQ before starting a contract.');
     const next = applyCommand(state, input.command, Date.now());
     const response = JSON.stringify({ state: next });
     db.prepare('UPDATE sessions SET state=? WHERE id=?').run(JSON.stringify(next), id);

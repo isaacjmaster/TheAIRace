@@ -1,0 +1,11 @@
+.garage.garage-v2{display:block;width:100%;height:100%;max-height:none;overflow:visible;filter:drop-shadow(0 12px 14px #07182844)}
+.garage-v2 .garage-pixel{animation:garage-pixel-idle 3.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.garage-v2 .garage-led{animation:garage-light-breathe 3s ease-in-out infinite}
+.garage-v2 .garage-screen-trace{animation:garage-screen-breathe 4s ease-in-out infinite}
+.garage-v2 .garage-work-spark{animation:garage-light-breathe 1.3s ease-in-out infinite}
+.garage-v2 .garage-install-fx{animation:garage-install-glow 1.8s ease-out both}
+@keyframes garage-pixel-idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes garage-light-breathe{0%,100%{opacity:1}50%{opacity:.6}}
+@keyframes garage-screen-breathe{0%,100%{opacity:.6}50%{opacity:1}}
+@keyframes garage-install-glow{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.garage-v2 .garage-pixel,.garage-v2 .garage-led,.garage-v2 .garage-screen-trace,.garage-v2 .garage-work-spark{animation:none}.garage-v2 .garage-install-fx{animation:none;opacity:.2}}

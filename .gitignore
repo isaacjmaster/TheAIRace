@@ -4,6 +4,7 @@ dist/
 .npm-cache/
 coverage/
 .vite/
+.worktrees/
 *.tsbuildinfo
 *.log
 .DS_Store

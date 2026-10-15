@@ -9,7 +9,7 @@ export interface GameState { version: 1; revision: number; companyName: string; 
 export interface Hardware { level: number; name: string; cost: number; capacity: number; description: string }
 export interface Projection { quality: number; credits: number; durationSeconds: number; explanation: string[] }
 export type PlayerCommand = { type: 'rename'; name: string } | { type: 'start'; contractId: string; plan: AgentPlan; allocation: Allocation } | { type: 'claim' } | { type: 'upgrade' };
-export interface Bootstrap { state: GameState; contracts: Contract[]; hardware: Hardware[]; mode: 'demo' | 'live'; onboarding?: Onboarding }
+export interface Bootstrap { state: GameState; contracts: Contract[]; hardware: Hardware[]; mode: 'demo' | 'live'; onboarding?: Onboarding; serverTime?: number; expedition?: import('./expedition').ExpeditionState }
 export interface InterpretRequest { instruction: string; contractId: string }
 export interface InterpretResponse { plan: AgentPlan; mode: 'demo' | 'live' }
 export interface CommandRequest { command: PlayerCommand; revision: number; requestId: string }

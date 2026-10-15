@@ -85,3 +85,23 @@ Returning companies go directly to HQ after PLAY. For existing test saves, use *
 
 Onboarding flags live in a separate SQLite `onboarding` table keyed by the existing session. Existing session rows are treated as returning players even if their game revision is zero; only newly created sessions get first-player flags. `/api/onboarding` updates those flags without touching game state, revision, rewards, or resources. No game-save migration is required. The database gains this additive table on server start. Restart the server after updating (`Ctrl+C`, then `npm.cmd start`). Reduced-motion preferences, touch targets, portrait layout, and safe-area spacing are preserved.
 
+
+## Resource Expeditions milestone
+
+The new **Explore** activity opens Neon Salvage, an interactive isometric recovery yard. Gather scrap and energy cells, return to HQ, and craft the Recovery Rig to increase battery/cargo capacity and unlock GPU recovery. Contracts remain under Missions, with their existing rewards and progression. The four main navigation buttons are HQ, Explore, Missions, and Upgrades; Rankings is linked from Missions.
+
+See [EXPEDITIONS.md](EXPEDITIONS.md) for exact controls, the first-outing walkthrough, safety/energy rules, save compatibility, and known limitations. In brief: collect Broken drones twice and Battery cache twice, walk Home, Return to HQ, then install the rig under Upgrades. No credit grind is required.
+
+The normal database path remains `data/game.sqlite`. Expedition state is saved in separate tables, including in-progress outings, and existing company saves remain compatible. There are no expedition AI calls or new paid services. Restart the server after building so the new API routes are loaded.
+
+## Garage 2.0
+
+HQ now centers on the garage: Level 1 has only a floor laptop and Pixel; Level 2 adds the first desk, chair, desktop, task lighting, and plant; Level 3 adds a GPU workbench, server rack, stronger lighting, and greenery. The earned Recovery Rig appears independently at every stage. Existing hardware levels select the artwork automatically, with no save migration or new upgrade costs.
+
+The permanent agent/status and resource panels are replaced by a compact **Inventory** button. It opens banked resources, compute, assignment, and progress details; carried expedition cargo stays in Explore. HQ, Explore, Missions, and Upgrades remain in the compact bottom navigation. Successful equipment purchases briefly illuminate the garage and show an installation message. Reduced-motion settings are respected. Title, credits, tutorial, expedition mechanics, and backend calculations are unchanged.
+
+## Operations 0.2
+
+**Operations** is the main garage exit. Choose **Safe (scrap)**, **Medium (energy cells)**, or **Dangerous (GPU parts)**, then Start. Pixel moves and gathers automatically. After each recovery, choose Continue, another destination, or Return to HQ. Return banks cargo, shows a clear rewards screen, and connects to the existing visible Recovery Rig upgrade. Command buttons, strategy menus, and instruction panels have been removed from the primary interface.
+
+See [OPERATIONS.md](OPERATIONS.md) for controls, launch commands, simulation rules, save compatibility, and limitations. Existing manual/autonomous outings retain their progress and open in the same simplified interface. HQ art, title/credits, missions, upgrade prices, and inventories are preserved. No paid planner or deployment is enabled.
