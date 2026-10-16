@@ -76,3 +76,33 @@ Verified the exact LAN HTML and module return HTTP 200 with X-AI-Race-Local-Buil
 Confirmed automatic opening and Capture/Copy via a 390x664 browser fixture on the LAN origin. This is browser emulation, not physical Safari testing. Relevant tests and production build pass; unchanged production asset hashes confirm diagnostics remain excluded. No gameplay, database, website-data clearing or production config changes.
 
 If the iPhone still cannot show the panel, report which of these appears: 'AI Race diagnostics v2 — loading', 'module could not start', the ordinary game with no v2 label, or a connection error. The new URL and visible boot marker distinguish wrong/stale responses from module startup failure. Do not clear cookies or website data. A prior installed diagnostic shortcut may retain its old start URL; first test the exact URL directly in Safari.
+
+## Isolated HTTPS standalone test (v3)
+
+Temporary URL: https://her-asking-file-companies.trycloudflare.com/display-diagnostics
+
+The URL is a Cloudflare Quick Tunnel to a loopback-only server on 127.0.0.1:5184. It exposes a compiled diagnostic build, not Vite or repository files. It is reachable while the computer, isolated server and tunnel remain running. Anyone with the URL can load the test game; do not enter private information. No report is uploaded automatically. Cloudflare relays the HTTPS requests. No Railway service, branch, volume, database or production installation was changed.
+
+Build: `node scripts/build-display-test.mjs`
+Server: `node --import tsx scripts/serve-display-test.ts`
+Tunnel: `data/display-test/tools/cloudflared.exe tunnel --url http://127.0.0.1:5184 --no-autoupdate --logfile data/display-test/tunnel.log`
+
+Build artifacts, verified downloaded tool and tunnel log live under ignored data/display-test/. The isolated test database is hardcoded to data/display-test/isolated-test.sqlite; the test server does not import production server/index.ts or honor GAME_DB_PATH. It reuses the existing foundation game API and rules against that separate database. Only compiled assets and test endpoints are exposed; source files, .env and database requests return 404. Stop the tunnel process to disable the URL. Restarting the tunnel generates a new hostname.
+
+Normal npm run build still excludes diagnostics and has unchanged production asset hashes. The isolated entry adds diagnostics and imports the same game. It does not modify gameplay CSS or viewport sizing. The test manifest uses a separate app id/name, requests standalone portrait, and starts at /display-diagnostics?test=standalone-v3. Its Apple title is AI Race Test; viewport-fit and status-bar configuration match the baseline. The report includes both Apple standalone and display-mode signals, secure context, service-worker control, route verification and fetched manifest settings. Fetched manifest data cannot reveal iOS's private cached installation metadata.
+
+### On the physical iPhone
+
+1. Open the HTTPS URL in Safari, then Share → Add to Home Screen. Name it AI Race Standalone Test. Keep the original live app installed and do not clear website data.
+2. Open the NEW icon from the Home Screen. The diagnostic panel must say standalone. A Safari tab saying browser is not sufficient evidence.
+3. On the title screen, Capture then Copy Report. Paste it in chat labeled HTTPS standalone title. Hide the inspector and take a whole-screen screenshot showing the boundary.
+4. Hide, tap PLAY, reopen Display diagnostics, Capture and Copy Report. Send this as HTTPS standalone HQ with another screenshot. Fresh test progress is expected; no live save was copied or reset.
+5. Fully close/reopen the new test app and repeat if the band changes. Report whether the old app shows a band while the fresh test does not. This comparison can narrow cached-installation vs current-layout behavior without altering the old installation.
+
+If the new installation says browser, send that report before drawing conclusions. If it is standalone but the band is absent, that does not by itself prove which cached setting caused the original issue. If all app layers end early relative to a larger fixed-inset probe, investigate root sizing; if only canvas ends early, investigate its ancestor chain; if canvas reaches the last web pixel, correlate the screenshot with native regions and rendered world content. No compensating height or overlay has been added.
+
+### Version and comparison limits
+
+The inspected Maze Sprint source still has a direct body canvas using vh/dvh and no manifest link/Apple standalone metadata. The observed installed Maze Sprint may use another version; local source alone cannot establish its installed configuration. AI Race's fetched production HTML currently matches baseline asset index-caigwXeD.js. This active baseline contains the minimal HQ and GPU Rig, not an active Scrap Bot screen. No systems were removed by this diagnostic work.
+
+Validation: full automated suite and normal production build passed. HTTPS HTML/manifest/health return 200, correct test identity and standalone start URL verified, private/source paths return 404. HTTPS browser reports secureContext=true and can open the HQ. Physical iOS standalone measurements remain pending; no claim that the band is fixed.
