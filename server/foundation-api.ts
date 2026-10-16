@@ -11,7 +11,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync){
   const row=candidate?db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(candidate):undefined;
   if(row)return {id:candidate!,state:JSON.parse(row.state as string) as FoundationState};
   const id=randomUUID(),state=initialFoundation();db.prepare('INSERT INTO foundation_saves VALUES (?,?)').run(id,JSON.stringify(state));
-  res.cookie('airace_foundation_session',id,{httpOnly:true,sameSite:'strict',secure:req.secure,maxAge:365*86400000,path:'/'});return {id,state};
+  res.cookie('airace_foundation_session',id,{httpOnly:true,sameSite:'strict',secure:req.secure || process.env.NODE_ENV==='production',maxAge:365*86400000,path:'/'});return {id,state};
  }
  // A foundation player cannot invoke retired gameplay through a stale tab or old URL.
  app.use('/api',(req,res,next)=>{if(/(?:^|;\s*)airace_foundation_session=/.test(req.headers.cookie||'')&&!req.path.startsWith('/foundation')){res.status(410).json({error:'This gameplay belongs to an archived version. Return to the foundation.'});return;}next();});

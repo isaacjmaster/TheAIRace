@@ -5,7 +5,7 @@ import { registerRaids } from './raid-api.js';
 import { DatabaseSync } from 'node:sqlite';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { resolve, dirname, isAbsolute } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { z } from 'zod';
 import { CONTRACTS, HARDWARE, createInitialState, applyCommand } from '../src/game/index.js';
@@ -13,14 +13,24 @@ import type { GameState } from '../shared/contracts.js';
 import { demoInterpret, liveConfig, liveInterpret, planSchema } from './interpreter.js';
 import { registerExpeditions, readExpedition } from './expedition-api.js';
 
-mkdirSync('data', { recursive: true });
+const production = process.env.NODE_ENV === 'production';
+const databasePath = process.env.GAME_DB_PATH || 'data/integrated-game.sqlite';
+if (production && (!process.env.GAME_DB_PATH || !isAbsolute(databasePath))) {
+  throw new Error('Production requires GAME_DB_PATH to be an absolute path on a persistent volume.');
+}
+if (databasePath !== ':memory:') mkdirSync(dirname(resolve(databasePath)), { recursive: true });
+if (production && !existsSync(resolve('dist/index.html'))) throw new Error('Build the frontend with npm run build before production startup.');
 process.env.AI_MODE = 'demo'; process.env.AI_LIVE_ENABLED = 'false';
-const db = new DatabaseSync(process.env.GAME_DB_PATH || 'data/integrated-game.sqlite');
+const db = new DatabaseSync(databasePath);
 export function closeDatabase() { db.close(); }
 db.exec('PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS commands (session TEXT NOT NULL, id TEXT NOT NULL, response TEXT NOT NULL, PRIMARY KEY(session,id)); CREATE TABLE IF NOT EXISTS usage (day TEXT PRIMARY KEY, requests INTEGER NOT NULL);');
 db.exec("CREATE TABLE IF NOT EXISTS onboarding (session TEXT PRIMARY KEY, storySeen INTEGER NOT NULL DEFAULT 0, tutorial TEXT NOT NULL DEFAULT 'available')");
 export const app = express();
 app.disable('x-powered-by');
+app.get('/healthz', (_req, res) => {
+  try { db.prepare('SELECT 1').get(); res.status(200).json({status:'ok'}); }
+  catch { res.status(503).json({status:'unavailable'}); }
+});
 app.use(express.json({ limit: '4kb' }));
 app.use('/api', (req, res, next) => {
   res.setHeader('Cache-Control', 'no-store');
@@ -43,7 +53,7 @@ function session(req: express.Request, res: express.Response): { id: string; sta
   const state = createInitialState();
   db.prepare('INSERT INTO sessions(id,state) VALUES (?,?)').run(id, JSON.stringify(state));
   db.prepare('INSERT INTO onboarding(session) VALUES (?)').run(id);
-  res.cookie('airace_integrated_session', id, { httpOnly: true, sameSite: 'strict', secure: req.secure, maxAge: 365 * 86400000, path: '/' });
+  res.cookie('airace_integrated_session', id, { httpOnly: true, sameSite: 'strict', secure: req.secure || production, maxAge: 365 * 86400000, path: '/' });
   return { id, state };
 }
 registerExpeditions(app, db, session);
