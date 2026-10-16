@@ -64,3 +64,15 @@ Restart the diagnostic server from this worktree in PowerShell with:
     npx vite --host 0.0.0.0 --port 5173 --strictPort
 
 The existing backend must remain on port 3012 with its original database. Do not start a second backend against a different database for comparison.
+
+## Diagnostic access update v2
+
+Use **http://192.168.1.40:5173/display-diagnostics?v=2**. This supersedes the old access instructions; /diagnostics remains an alias. Port 5173 is the Vite development server. Port 3012 serves production assets and intentionally cannot expose diagnostics.
+
+The dedicated route now injects its diagnostic module independently of the game entry and opens its panel automatically. Static HTML displays 'AI Race diagnostics v2' even before the module loads and gives a visible failure message if it cannot start. Capture/Copy Report buttons are at least 52px high with 16px text. Scoped Shadow DOM styles keep game mobile CSS from hiding its controls. Hide lets you inspect the underlying unmodified game. The standalone diagnostic manifest now starts at /display-diagnostics.
+
+Verified the exact LAN HTML and module return HTTP 200 with X-AI-Race-Local-Build: display-diagnostics-v2 and Cache-Control: no-cache (Vite revalidation). No service worker registration was found in this application's sources. The tested LAN HTTP browser reports secureContext=false, serviceWorkerSupported=false and serviceWorkerControlled=false. The diagnostic report now includes these flags. This does not inspect the physical iPhone's cache and is not proof of the original missing-button cause.
+
+Confirmed automatic opening and Capture/Copy via a 390x664 browser fixture on the LAN origin. This is browser emulation, not physical Safari testing. Relevant tests and production build pass; unchanged production asset hashes confirm diagnostics remain excluded. No gameplay, database, website-data clearing or production config changes.
+
+If the iPhone still cannot show the panel, report which of these appears: 'AI Race diagnostics v2 — loading', 'module could not start', the ordinary game with no v2 label, or a connection error. The new URL and visible boot marker distinguish wrong/stale responses from module startup failure. Do not clear cookies or website data. A prior installed diagnostic shortcut may retain its old start URL; first test the exact URL directly in Safari.
