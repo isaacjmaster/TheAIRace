@@ -106,3 +106,45 @@ If the new installation says browser, send that report before drawing conclusion
 The inspected Maze Sprint source still has a direct body canvas using vh/dvh and no manifest link/Apple standalone metadata. The observed installed Maze Sprint may use another version; local source alone cannot establish its installed configuration. AI Race's fetched production HTML currently matches baseline asset index-caigwXeD.js. This active baseline contains the minimal HQ and GPU Rig, not an active Scrap Bot screen. No systems were removed by this diagnostic work.
 
 Validation: full automated suite and normal production build passed. HTTPS HTML/manifest/health return 200, correct test identity and standalone start URL verified, private/source paths return 404. HTTPS browser reports secureContext=true and can open the HQ. Physical iOS standalone measurements remain pending; no claim that the band is fixed.
+
+## Physical fullscreen success and production comparison — 2026-10-16
+
+The user confirmed that the fresh HTTPS Standalone Test fills the physical iPhone screen without the bottom strip. Preserve this as a known-good observation, not proof of one particular cause.
+
+Preserved source: local Git tag codex/standalone-working-326a131 at commit 326a131. Exact compiled test files, source copies, fetched production/test HTML and manifests, SHA-256 inventory and comparison evidence are under ignored data/standalone-working-326a131/. The running test build was NOT rebuilt, its database was not copied or reset, and its tunnel was not restarted. The tunnel URL remains temporary. Retain the separate test icon.
+
+Read-only fetches of both HTTPS sites confirmed:
+
+| Item | Production | Working test |
+| --- | --- | --- |
+| viewport | width=device-width, initial-scale=1, viewport-fit=cover | identical |
+| Apple capable / status bar | yes / default | identical |
+| manifest display / orientation / scope | standalone / portrait / / | identical |
+| theme / background | #b5eafa | identical |
+| game stylesheet | 41,521 bytes | identical SHA-256 |
+| initial inline paint/root CSS | 100% html/body, relative root, vh/dvh | byte-for-byte identical |
+| manifest ID | / | /standalone-test |
+| start URL | / | /display-diagnostics?test=standalone-v3 |
+| title / Apple title | The AI Race | AI Race Standalone Test / AI Race Test |
+| HTTPS origin | Railway production origin | fresh trycloudflare origin |
+| HTML/manifest Cache-Control | public, max-age=0 | no-store |
+| startup | game entry and CSS loaded directly | diagnostics first, then dynamic game import/CSS |
+| data | existing production cookie and SQLite save | separate test cookie and SQLite save |
+
+The shared game CSS SHA-256 is 0781e26daecb405c8d2ce6bc11c018d837a4852ee1590dd1262dfc52e62d543d. Both use the same game layout/canvas resize source. The diagnostic inspector and invisible probes are additional test elements; the code does not apply a corrective viewport height. No service-worker registration is present in the application source. Current live configuration cannot reveal the old icon's internally cached installation settings.
+
+The earlier production commit 3272a0c had black-translucent Apple status style, #07090c backgrounds, dark color-scheme and a fixed root. Current production and the successful fresh test both use default status style, #b5eafa, light scheme and relative dvh root. This makes stale installed metadata or origin-specific state a credible hypothesis. It is not confirmed: fresh origin, new ID, cache policy and startup timing all changed together. max-age=0 requires revalidation; it does not prove production is serving stale content. The distinct start path is not itself a fullscreen instruction.
+
+### Next test: fresh SECOND production installation, without deleting the original
+
+1. Keep the existing production icon and successful test icon. Do not use Reset Progress, delete either installation, or clear Safari website data/cookies. Record your current level, Compute and GPU Rig state for comparison; a screenshot is not a recoverable save backup.
+2. In normal Safari, open https://the-ai-race-production.up.railway.app/ and refresh. Check its progress. If it differs from the original installed app, Safari has a different save session: do not assume an installation from it will inherit the old app's progress.
+3. Use Share → Add to Home Screen and give it a distinct name, AI Race Fresh Check. Add it only as a second icon. If iOS offers to replace/remove the old app instead, cancel and report that.
+4. Launch the new icon, compare title/HQ bottom edges and close/reopen once. If its progress differs, use it only for visual comparison, keep playing through the original app, and do not delete the original.
+5. Report whether the NEW production icon has the strip and whether progress matches. A clean fresh production installation would narrow the issue to the original installation/state without any code deployment. If it still has the strip, investigate remaining test-vs-production startup/origin differences with controlled measurements rather than copying unrelated changes.
+
+Save caveat: game state is stored in server SQLite foundation_saves and selected by the HttpOnly airace_foundation_session cookie. This build has no account login or user-facing recovery/export feature. Keeping the database alone does not ensure a fresh installation selects the same row. WebKit documents copying Safari cookies at installation from iOS 17.2 onward; that does not mean an existing standalone app's cookie jar is synchronized back to Safari. Thus a new icon may start a different save. Do not remove the old app until save continuity or a separate verified recovery path is established.
+
+References: https://webkit.org/blog/14787/webkit-features-in-safari-17-2/ (cookie copying at install); https://webkit.org/blog/13878/ (multiple Home Screen installations and identity).
+
+Validation: 131 tests passed, normal production build passed, production smoke passed. Normal asset hashes remain unchanged. No application code, gameplay, database, manifest, CSS or production configuration was changed during this comparison. Nothing was pushed or deployed.
