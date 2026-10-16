@@ -1,6 +1,6 @@
-# Current prototype: 0.8
+# Current prototype: 0.9
 
-See [V08_TESTING.md](V08_TESTING.md) for changes, validation and iPhone instructions. Earlier release notes below are historical.
+See [V09_TESTING.md](V09_TESTING.md) for changes, validation and iPhone instructions. Earlier release notes below are historical.
 
 # The AI Race — Integrated Prototype 0.5
 

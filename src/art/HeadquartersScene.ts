@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { FACILITIES, type CampusState, type BuildingId } from '../../shared/progression';
+import { FACILITIES, constructionJobs, builderCount, type CampusState, type BuildingId } from '../../shared/progression';
+import { positionFor, BUILDING_FOOTPRINTS, OBSTACLES } from '../../shared/campus-layout';
 import { lightWorld, palette as c, WorldKit } from './world';
 
 /** Reconstructs the original garage's objects in the raid's low-poly material language. */
@@ -8,27 +9,23 @@ export class HeadquartersScene {
  private scene=new THREE.Scene();private camera=new THREE.OrthographicCamera();private kit=new WorldKit();
  private center=new THREE.Vector3(-3,0,0);private target=new THREE.Vector3(-3,0,0);private zoomTarget=1;
  private home=new THREE.Vector3(-3,0,0);private worldSpan=30;private pickables:THREE.Object3D[]=[];private raycaster=new THREE.Raycaster();
+ private garage=new THREE.Group();private buildingGroups=new Map<BuildingId,THREE.Group>();
+ private obstacles=new Map<string,THREE.Group>();private obstacleHits:THREE.Object3D[]=[];
+ private builders:{group:THREE.Group;from:THREE.Vector3;to:THREE.Vector3;working:boolean;spark:THREE.Object3D}[]=[];
+ private accents:THREE.Object3D[]=[];private clearing:{group:THREE.Group;time:number}[]=[];
+ private reserved:THREE.Group|undefined;private reservedKit:WorldKit|undefined;private reservedEdges:THREE.LineSegments|undefined;private previewId:BuildingId|undefined;private previewValid=false;private preview:THREE.Group|undefined;private grid:THREE.GridHelper|undefined;private previewMaterials:THREE.Material[]=[];
  private agent=new THREE.Group();private observer:ResizeObserver;private clock=0;private paused=false;
  private reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  private lost=(e:Event)=>{e.preventDefault();this.paused=true;this.onError();};
- constructor(private host:HTMLDivElement,level:number,training:number,campus:CampusState,private onError:()=>void){
+ constructor(private host:HTMLDivElement,level:number,training:number,private campus:CampusState,private onError:()=>void){
   this.renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});lightWorld(this.renderer,this.scene);
   this.renderer.domElement.setAttribute('role','img');this.renderer.domElement.setAttribute('aria-label',`3D headquarters level ${campus.hq}. ${level===0?'One laptop and a mint AI agent in the original garage.':level===1?'A furnished workstation, chair, lamp and plants.':'GPU workbench, server racks and upgraded lighting.'} Drag to pan and pinch to zoom.`);
   this.renderer.domElement.dataset.stage=String(level);host.appendChild(this.renderer.domElement);this.renderer.domElement.addEventListener('webglcontextlost',this.lost);
-  this.build(Math.min(2,level),training);this.buildCampus(campus);this.center.copy(this.home);this.target.copy(this.home);this.camera.position.copy(this.home).add(new THREE.Vector3(7,23,30));this.camera.lookAt(this.center);
+  this.buildEnvironment();this.build(Math.min(2,level),training);this.buildCampus(campus);this.buildObstacles(campus);this.buildBots(campus);this.center.copy(this.home);this.target.copy(this.home);this.camera.position.copy(this.home).add(new THREE.Vector3(7,23,30));this.camera.lookAt(this.center);
   this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(host);this.resize();
  }
  private build(level:number,training:number){
-  const k=this.kit,s=this.scene;
-  k.terrain(s,38,35);
-  // A through-road, curb and driveway connect the garage to the surrounding campus.
-  k.box(s,[100,.09,3.6],[0,-.015,8.8],'#182c41',.04);
-  for(const z of [6.9,10.7])k.box(s,[100,.16,.22],[0,.02,z],'#496b7d',.04);
-  for(let x=-45;x<=45;x+=4)k.box(s,[1.5,.02,.07],[x,.045,8.8],'#8fa9b7',.01);
-  k.box(s,[7,.12,4.5],[-5,.02,5],'#3a586b',.06);
-  for(const x of [-8.6,-1.4])k.box(s,[.12,.035,4.4],[x,.1,5],c.cyan,.01,true);
-  // A level lawn to the east is intentionally unbuilt; no fake building pads.
-  k.box(s,[2,.08,13],[3,.0,-.5],'#36556a');
+  const k=this.kit,s=this.garage;this.scene.add(s);this.buildingGroups.set('hq',s);
   k.box(s,[12,.25,9],[-5,.09,-1],'#243e57',.15);
   for(let x=-10;x<=0;x+=2)for(let z=-4;z<=2;z+=2)k.box(s,[1.94,.035,1.94],[x,.24,z],'#35526a',.03);
   k.box(s,[12,4.3,.28],[-5,2.35,-5.4],c.dark);k.box(s,[.28,4.3,9],[-11,2.35,-1],c.slate);
@@ -68,35 +65,139 @@ export class HeadquartersScene {
   k.cylinder(this.agent,.04,.35,[0,.97,0],c.slate);k.box(this.agent,[.16,.16,.16],[0,1.18,0],c.cyan,.06,true);
   for(const x of [-.5,.5])k.box(this.agent,[.12,.4,.12],[x,.3,0],c.cyan);
   if(training>0){k.box(s,[1.7,.25,1.7],[1,.3,1.4],c.slate);k.box(s,[1.2,1.35,1.1],[1,1.05,1.4],c.cream);k.box(s,[.9,.55,.06],[1,1.2,2],c.purple,.03,true);for(let i=0;i<Math.min(3,training);i++)k.box(s,[.18,.1,.04],[.65+i*.3,.7,2],c.cyan,.01,true);}
-  // Layered tree lines and retaining edges define a larger world without crowding the startup.
-  for(const [x,z,size] of [[-15,-7,1.5],[-16,2,1.1],[27,-7,1.6],[28,8,1.3],[8,-12,1.3],[-7,-11,1.5],[-19,-12,2],[20,-12,2],[24,4,1.7],[-23,1,1.8]])k.tree(s,x,z,size);
-  for(const x of [-13,12]){k.box(s,[.28,2.6,.28],[x,1.2,5.8],c.dark);k.box(s,[1,.12,.4],[x,2.55,5.8],c.cyan,.03,true);}
-  for(let i=0;i<4;i++)k.box(s,[.65,.12,1.3],[1+i*.7,.03,4.1],c.slate);
-  for(const z of [-7.3,-7.8])k.box(s,[10,.35,.3],[8,.1,z],c.slate);
+  // Cutaway architecture keeps the original laptop visible while strengthening the silhouette.
+  k.box(s,[12.5,.3,2.3],[-5,4.65,-4.6],c.dark,.12);
+  k.box(s,[12.6,.08,.12],[-5,4.83,-3.44],c.cyan,.02,true);
+  for(const x of [-9,-5,-1]){k.box(s,[2.5,.08,1.25],[x,4.86,-4.7],'#244b68',.03);for(let j=0;j<3;j++)k.box(s,[.025,.02,1.15],[x-.7+j*.7,4.91,-4.7],c.cyan,.005);}
+  for(const x of [-10.5,.5]){k.box(s,[.4,.4,1.8],[x,.4,3],c.slate);k.box(s,[.45,.04,1.9],[x,.63,3],c.cyan,.01,true);}
+  k.box(s,[3.2,.1,1],[-5,.25,3.7],c.slate);
+  k.label(s,'AI / STARTUP',[-5,4.1,-3.36],3);
 
+ }
+ private buildEnvironment(){
+  const k=this.kit,s=this.scene;k.terrain(s,33,29);
+  // Low retaining walls, a continuous service road and planted border make this a miniature campus.
+  k.box(s,[55,.1,3.2],[1,-.02,9],c.dark,.03);
+  for(const z of [7.3,10.7])k.box(s,[55,.18,.24],[1,.01,z],c.slate);
+  for(let x=-24;x<28;x+=5)k.box(s,[1.7,.025,.07],[x,.045,9],'#749bb5',.01);
+  for(const z of [-20,25]){k.box(s,[55,.4,.65],[2,.08,z],c.dark);k.box(s,[55,.04,.12],[2,.31,z],c.slate);}
+  for(const x of [-25,29])k.box(s,[.65,.4,45],[x,.08,2.5],c.dark);
+  for(let i=0;i<14;i++){const x=-24+i*4;for(const z of [-23,28])k.tree(s,x,z,1.1+(i%3)*.3);}
+  for(const [x,z] of [[-27,-12],[-28,2],[-27,16],[32,-13],[32,2],[32,18]])k.tree(s,x,z,1.7);
+  for(const [x,z] of [[-16,7],[13,7],[-16,11],[25,11]]){
+   k.box(s,[.18,2.5,.18],[x,1.2,z],c.slate);k.box(s,[1.2,.15,.4],[x,2.5,z],c.dark);k.box(s,[1,.04,.3],[x,2.4,z],c.cyan,.02,true);
+  }
+  // Drainage strips, a gate and delivery station sit outside the editable building area.
+  for(let i=0;i<8;i++)k.box(s,[1,.06,.18],[-26,.06,-9+i*.5],c.slate);
+  for(const x of [-5,5]){k.box(s,[.7,2.5,.7],[x,1.1,25],c.slate);k.box(s,[.45,.1,.45],[x,2.4,25],c.cyan,.02,true);}
+  k.box(s,[4,.7,1.6],[-17,.3,26.3],c.dark);k.label(s,'CAMPUS / 01',[-17,1,27.15],3.8);
+  // A few dark ground panels add texture without drawing over the placement grid.
+  for(const [x,z] of [[-18,-15],[23,-15],[-18,19],[22,20]])k.box(s,[3,.03,2],[x,-.07,z],'#2b5360',.1);
+ }
+ private buildObstacles(campus:CampusState){
+  const k=this.kit;
+  for(const obstacle of OBSTACLES){
+   if(campus.clearedObstacles?.includes(obstacle.id))continue;
+   const g=new THREE.Group();g.position.set(obstacle.position[0],0,obstacle.position[1]);this.scene.add(g);this.obstacles.set(obstacle.id,g);
+   if(obstacle.kind==='tree'){k.tree(g,-.65,-.3,1.3);k.tree(g,.7,.6,.9);k.cylinder(g,1.3,.13,[0,0,0],'#244954');}
+   else if(obstacle.kind==='rock'){for(let i=0;i<3;i++){const rock=k.box(g,[1.3,1+i*.25,1.25],[-.8+i*.7,.45,-.4+i*.4],'#51697c',.3);rock.rotation.y=i*.65;rock.rotation.z=i*.08;}}
+   else if(obstacle.kind==='equipment'){k.box(g,[2,1.7,1.5],[0,.8,0],c.slate);k.box(g,[1.6,1.2,.1],[0,.8,.8],c.dark);for(let i=0;i<3;i++)k.box(g,[1.25,.08,.04],[0,.5+i*.3,.87],'#667d86');k.cylinder(g,.4,.5,[.7,1.9,-.4],c.terracotta);}
+   else{for(let i=0;i<4;i++){const piece=k.box(g,[1.7,.3,.8],[-.6+i*.35,.2+i*.15,0],i%2?c.slate:c.terracotta);piece.rotation.y=i*.7;}}
+   const hit=k.box(g,[obstacle.width,3,obstacle.depth],[0,1.5,0],c.dark);hit.visible=false;hit.userData.obstacleId=obstacle.id;this.obstacleHits.push(hit);
+  }
+ }
+ private buildBots(campus:CampusState){
+  const k=this.kit,jobs=constructionJobs(campus),[hx,hz]=positionFor(campus,'hq');
+  for(let i=0;i<builderCount(campus);i++){
+   const group=new THREE.Group();this.scene.add(group);const job=jobs[i];const from=new THREE.Vector3(hx+4-i*1.2,0,hz+5);
+   const destination=job?positionFor(campus,job.building):[hx+4-i*1.2,hz+5];const footprint=job?BUILDING_FOOTPRINTS[job.building]:{width:0,depth:0};
+   const to=new THREE.Vector3(destination[0]+(job?footprint.width/2-.4:0),0,destination[1]+(job?footprint.depth/2+.4:0));
+   group.position.copy(from);k.box(group,[.8,.6,.7],[0,.7,0],c.gold,.14);k.box(group,[.65,.3,.08],[0,.76,.38],c.dark);
+   for(const x of [-.17,.17])k.box(group,[.09,.1,.04],[x,.8,.44],c.cyan,.02,true);
+   for(const x of [-.4,.4]){const wheel=k.cylinder(group,.23,.18,[x,.3,0],c.dark);wheel.rotation.z=Math.PI/2;}
+   k.box(group,[.2,.6,.2],[.55,.7,0],c.slate);k.box(group,[.55,.15,.15],[.55,1.05,.1],c.cream);
+   k.cylinder(group,.04,.3,[0,1.15,0],c.slate);k.box(group,[.14,.14,.14],[0,1.35,0],c.cyan,.03,true);
+   const spark=k.box(group,[.17,.17,.17],[.72,1.15,.25],c.cyan,.01,true);spark.visible=false;
+   this.builders.push({group,from,to,working:!!job,spark});
+   if(job&&job.building==='hq'){for(const x of [-6.6,6.6]){k.box(this.garage,[.14,5,.14],[-5+x,2.5,3],c.gold);k.box(this.garage,[.14,.15,8],[-5+x,4.5,-1],c.gold);}}
+  }
+  this.renderer.domElement.dataset.builders=String(builderCount(campus));
+ }
+ private setRay(clientX:number,clientY:number){
+  const rect=this.renderer.domElement.getBoundingClientRect();if(!rect.width||!rect.height)return false;
+  this.camera.updateMatrixWorld();this.scene.updateMatrixWorld(true);this.raycaster.setFromCamera(new THREE.Vector2((clientX-rect.left)/rect.width*2-1,-(clientY-rect.top)/rect.height*2+1),this.camera);return true;
+ }
+ pickObstacle(clientX:number,clientY:number):string|undefined{
+  if(!this.setRay(clientX,clientY))return;
+  return this.raycaster.intersectObjects(this.obstacleHits,false)[0]?.object.userData.obstacleId as string|undefined;
+ }
+ groundPoint(clientX:number,clientY:number):[number,number]|undefined{
+  if(!this.setRay(clientX,clientY))return;const hit=this.raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),0),new THREE.Vector3());return hit?[Math.round(hit.x),Math.round(hit.z)]:undefined;
+ }
+ previewPlacement(id:BuildingId,position:[number,number],valid:boolean){
+  if(this.preview&&this.previewId===id&&this.previewValid===valid){this.preview.position.set(position[0],.15,position[1]);return;}
+  this.clearPlacement();this.previewId=id;this.previewValid=valid;const color=valid?c.cyan:c.coral,foot=BUILDING_FOOTPRINTS[id];
+  // Locked future lots are still reserved by the placement validator, so expose their boundaries here.
+  this.reserved=new THREE.Group();this.scene.add(this.reserved);this.reservedKit=new WorldKit();const lines:number[]=[];
+  for(const other of Object.keys(BUILDING_FOOTPRINTS) as BuildingId[]){
+   if(other===id)continue;const [x,z]=positionFor(this.campus,other),f=BUILDING_FOOTPRINTS[other];
+   const left=x-f.width/2,right=x+f.width/2,back=z-f.depth/2,front=z+f.depth/2;
+   lines.push(left,.19,back,right,.19,back,right,.19,back,right,.19,front,right,.19,front,left,.19,front,left,.19,front,left,.19,back);
+   const facility=FACILITIES.find(item=>item.id===other),locked=facility&&this.campus.hq<facility.unlock;
+   this.reservedKit.label(this.reserved,(facility?.name||'AI Headquarters').toUpperCase()+(locked?' / LOCKED':''),[x,.65,front],Math.min(f.width,6.8));
+  }
+  const edgeGeometry=new THREE.BufferGeometry();edgeGeometry.setAttribute('position',new THREE.Float32BufferAttribute(lines,3));
+  this.reservedEdges=new THREE.LineSegments(edgeGeometry,new THREE.LineBasicMaterial({color:c.gold,transparent:true,opacity:.9}));this.reserved.add(this.reservedEdges);
+  this.grid=new THREE.GridHelper(56,56,'#53e1ec','#355873');this.grid.position.set(2,.13,3);this.scene.add(this.grid);
+  this.preview=new THREE.Group();this.preview.position.set(position[0],.15,position[1]);this.scene.add(this.preview);
+  const material=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.28,depthWrite:false});this.previewMaterials.push(material);
+  const shape=new THREE.Mesh(new THREE.BoxGeometry(foot.width,.2,foot.depth),material);shape.userData.previewGeometry=true;this.preview.add(shape);
+  const original=this.buildingGroups.get(id);
+  if(original){const ghost=original.clone(true);ghost.position.set(id==='hq'?5:0,.2,id==='hq'?1:0);ghost.traverse(o=>{if(o instanceof THREE.Mesh){o.material=material;o.castShadow=false;}});this.preview.add(ghost);}
+ }
+ clearPlacement(){
+  this.previewId=undefined;
+  if(this.reserved){this.scene.remove(this.reserved);this.reserved=undefined;}
+  this.reservedKit?.dispose();this.reservedKit=undefined;
+  if(this.reservedEdges){this.reservedEdges.geometry.dispose();(this.reservedEdges.material as THREE.Material).dispose();this.reservedEdges=undefined;}
+  if(this.preview){this.preview.traverse(o=>{if(o instanceof THREE.Mesh&&o.userData.previewGeometry)o.geometry.dispose();});this.scene.remove(this.preview);this.preview=undefined;}
+  if(this.grid){this.scene.remove(this.grid);this.grid.geometry.dispose();const materials=Array.isArray(this.grid.material)?this.grid.material:[this.grid.material];materials.forEach(m=>m.dispose());this.grid=undefined;}
+  this.previewMaterials.forEach(m=>m.dispose());this.previewMaterials=[];
+ }
+ animateClear(obstacleId:string){const group=this.obstacles.get(obstacleId);if(!group)return;this.obstacleHits=this.obstacleHits.filter(o=>o.userData.obstacleId!==obstacleId);this.clearing.push({group,time:0});this.obstacles.delete(obstacleId);}
+ private animateWorld(dt:number){
+  for(const item of this.clearing){item.time+=dt;item.group.scale.setScalar(Math.max(0,1-item.time/.65));item.group.rotation.y=item.time*2;item.group.position.y=item.time*.5;if(item.time>=.65)this.scene.remove(item.group);}this.clearing=this.clearing.filter(item=>item.time<.65);
+  if(this.reduced){for(const bot of this.builders)bot.group.position.copy(bot.to);return;}
+  for(const accent of this.accents)accent.rotation.y+=dt*.28;
+  for(let i=0;i<this.builders.length;i++){const bot=this.builders[i],travel=Math.min(1,this.clock/2.4);bot.group.position.lerpVectors(bot.from,bot.to,travel);if(bot.working&&travel===1){bot.group.rotation.z=Math.sin(this.clock*8+i)*.06;bot.spark.visible=Math.sin(this.clock*18+i)>.5;bot.spark.scale.setScalar(.7+Math.sin(this.clock*12)*.3);}else if(!bot.working){bot.group.rotation.y=Math.sin(this.clock*.4+i)*.2;}}
  }
  private hitVolume(id:BuildingId,x:number,z:number,width:number,depth:number,height:number){
   const mesh=this.kit.box(this.scene,[width,height,depth],[x,height/2,z],c.dark);mesh.visible=false;mesh.userData.buildingId=id;this.pickables.push(mesh);
  }
  /** Fixed lots grow into a campus; unopened land stays empty and the original garage remains. */
  private buildCampus(campus:CampusState){
-  const k=this.kit,s=this.scene;this.hitVolume('hq',-5,-1,12,9,4.8);
-  let maxX=1,minZ=-5,maxZ=3;
+  const k=this.kit,s=this.scene;const [hx,hz]=positionFor(campus,'hq');this.garage.position.set(hx+5,0,hz+1);this.hitVolume('hq',hx,hz,12,9,6.8);
+  let maxX=hx+6,minX=hx-6,minZ=hz-5,maxZ=hz+5;
   for(const facility of FACILITIES){
    if(campus.hq<facility.unlock)continue;
-   const [x,z]=facility.position,level=campus.buildings[facility.id];maxX=Math.max(maxX,x+3.6);minZ=Math.min(minZ,z-3.6);maxZ=Math.max(maxZ,z+3.6);
+   const [x,z]=positionFor(campus,facility.id),level=campus.buildings[facility.id];minX=Math.min(minX,x-4);maxX=Math.max(maxX,x+3.6);minZ=Math.min(minZ,z-3.6);maxZ=Math.max(maxZ,z+3.6);
    // Walkways branch from the existing garage approach without enclosing the landscape.
-   k.box(s,[Math.max(1,Math.abs(x-3)),.08,1],[3+(x-3)/2,.01,z],c.slate,.04);
-   k.box(s,[1,.08,Math.max(1,Math.abs(z-5))],[3,.01,(z+5)/2],c.slate,.04);
+   k.box(s,[Math.max(1,Math.abs(x-(hx+8))),.08,1],[hx+8+(x-(hx+8))/2,.01,z],c.slate,.04);
+   k.box(s,[1,.08,Math.max(1,Math.abs(z-(hz+6)))],[hx+8,.01,(z+hz+6)/2],c.slate,.04);
    this.hitVolume(facility.id,x,z,6.8,6.4,level?6:1);
-   const g=new THREE.Group();g.position.set(x,0,z);s.add(g);
-   if(campus.construction?.building===facility.id){for(const px of [-3,3]){k.box(g,[.12,2.8,.12],[px,1.4,-2.7],c.gold);k.box(g,[.12,2.8,.12],[px,1.4,2.7],c.gold);k.box(g,[.12,.12,5.5],[px,2.7,0],c.gold);}}
+   const g=new THREE.Group();g.position.set(x,0,z);s.add(g);this.buildingGroups.set(facility.id,g);
+   if(constructionJobs(campus).some(job=>job.building===facility.id)){for(const px of [-3,3]){k.box(g,[.12,2.8,.12],[px,1.4,-2.7],c.gold);k.box(g,[.12,2.8,.12],[px,1.4,2.7],c.gold);k.box(g,[.12,.12,5.5],[px,2.7,0],c.gold);}}
    if(!level){
     for(const side of [-1,1]){k.box(g,[5.8,.1,.12],[0,.03,side*2.8],c.slate);k.box(g,[.12,.1,5.6],[side*2.9,.03,0],c.slate);}
     k.box(g,[.75,.1,.75],[0,.08,0],c.slate);k.box(g,[.4,.035,.08],[0,.15,0],c.cyan);k.box(g,[.08,.035,.4],[0,.15,0],c.cyan);
     k.label(g,facility.name.toUpperCase(),[0,.85,2.8],4.8);continue;
    }
    const tier=Math.min(4,level),height=1.2+level*.25;
+   // Shared perimeter service deck and illuminated entrance tie the facilities together.
+   for(const px of [-2.8,2.8]){k.box(g,[.22,.65,5],[px,.56,-.2],c.slate);k.box(g,[.06,.06,4.8],[px,.92,-.2],c.cyan,.01,true);}
+   k.box(g,[1.5,.18,.65],[0,.14,3],c.slate);k.box(g,[1,.04,.12],[0,.25,3.24],c.cyan,.01,true);
+   k.box(g,[.6,1.1,.65],[2.1,.85,1.7],c.dark);k.box(g,[.4,.4,.04],[2.1,1.05,2.05],c.cyan,.02,true);
+
    k.box(g,[6.2,.22,5.8],[0,.08,0],c.dark,.12);
    k.box(g,[5.6,.12,5.2],[0,.24,0],c.slate,.06);
    if(facility.id==='compute'){
@@ -121,7 +222,7 @@ export class HeadquartersScene {
    }else if(facility.id==='research'){
     // Octagonal lab, antenna and a luminous data crystal.
     k.cylinder(g,2.25,height,[0,height/2+.35,0],c.slate);k.cylinder(g,2.4,.2,[0,height+.45,0],c.dark);
-    const crystal=k.box(g,[.85,1.3+tier*.15,.85],[0,height+1.15,0],c.purple,.1,true);crystal.rotation.z=.4;crystal.rotation.y=Math.PI/4;
+    const crystal=k.box(g,[.85,1.3+tier*.15,.85],[0,height+1.15,0],c.purple,.1,true);crystal.rotation.z=.4;crystal.rotation.y=Math.PI/4;this.accents.push(crystal);
     for(const px of [-1.5,1.5]){k.cylinder(g,.08,1.6,[px,height+1,-.7],c.cream);k.box(g,[.2,.2,.2],[px,height+1.85,-.7],c.cyan,.04,true);}
    }else if(facility.id==='defense'){
     // Armor workshop: heavy corners, shield wall and a compact test emitter.
@@ -134,9 +235,9 @@ export class HeadquartersScene {
    k.label(g,facility.name.toUpperCase()+' / '+level,[0,.76,2.95],5);
   }
   // Higher HQ tiers visibly expand the garage without replacing its starting laptop.
-  if(campus.hq>=4){k.box(s,[12.4,.2,.5],[-5,4.85,-5.4],c.cyan,.03,true);for(let i=0;i<Math.min(6,campus.hq-3);i++)k.box(s,[.5,.55,.3],[-9.8+i*1.7,5.15,-5.4],c.slate);}
-  if(campus.hq>=7){for(const x of [-10.8,.7]){k.box(s,[.22,2,.22],[x,5.5,-5.2],c.slate);k.box(s,[.35,.18,.35],[x,6.6,-5.2],c.cyan,.04,true);}}
-  this.worldSpan=Math.max(30,(maxX+13)*1.15,(maxZ-minZ+10)*1.3);this.home.set(campus.hq>1?(maxX-11)/2:-3,0,campus.hq>1?(minZ+maxZ)/2:0);
+  if(campus.hq>=4){k.box(this.garage,[12.4,.2,.5],[-5,4.85,-5.4],c.cyan,.03,true);for(let i=0;i<Math.min(6,campus.hq-3);i++)k.box(this.garage,[.5,.55,.3],[-9.8+i*1.7,5.15,-5.4],c.slate);}
+  if(campus.hq>=7){for(const x of [-10.8,.7]){k.box(this.garage,[.22,2,.22],[x,5.5,-5.2],c.slate);k.box(this.garage,[.35,.18,.35],[x,6.6,-5.2],c.cyan,.04,true);}}
+  this.worldSpan=Math.max(30,(maxX-minX+4)*1.15,(maxZ-minZ+10)*1.3);this.home.set(campus.hq>1?(maxX+minX)/2:hx+2,0,campus.hq>1?(minZ+maxZ)/2:hz+1);
   this.renderer.domElement.dataset.hqLevel=String(campus.hq);
  }
  pick(clientX:number,clientY:number):BuildingId|undefined{
@@ -150,6 +251,6 @@ export class HeadquartersScene {
  zoom(factor:number){this.zoomTarget=THREE.MathUtils.clamp(this.zoomTarget*factor,.8,1.65);}
  pan(dx:number,dy:number){const scale=(this.camera.right-this.camera.left)/Math.max(1,this.host.clientWidth)/this.camera.zoom;const right=new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld,0);const up=new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld,1);up.y=0;up.normalize();this.target.addScaledVector(right,-dx*scale).addScaledVector(up,dy*scale);this.target.y=0;const flat=new THREE.Vector2(this.target.x-this.home.x,this.target.z-this.home.z);const limit=this.worldSpan*.28;if(flat.length()>limit)flat.setLength(limit);this.target.set(this.home.x+flat.x,0,this.home.z+flat.y);}
  reset(){this.target.copy(this.home);this.zoomTarget=1;}
- update(dt:number){if(this.paused)return;this.clock+=dt;const next=this.center.clone().lerp(this.target,this.reduced?1:Math.min(1,dt*10));this.camera.position.add(next.clone().sub(this.center));this.center.copy(next);this.camera.lookAt(this.center);this.camera.zoom=THREE.MathUtils.lerp(this.camera.zoom,this.zoomTarget,this.reduced?1:Math.min(1,dt*10));this.camera.updateProjectionMatrix();if(!this.reduced){this.agent.position.y=.55+Math.sin(this.clock*1.4)*.06;this.agent.rotation.y=Math.sin(this.clock*.35)*.15;}this.renderer.render(this.scene,this.camera);this.renderer.domElement.dataset.drawCalls=String(this.renderer.info.render.calls);this.renderer.domElement.dataset.triangles=String(this.renderer.info.render.triangles);}
- dispose(){this.observer.disconnect();this.renderer.domElement.removeEventListener('webglcontextlost',this.lost);this.scene.traverse(o=>{if(o instanceof THREE.DirectionalLight)o.shadow.dispose();});this.kit.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
+ update(dt:number){if(this.paused)return;this.clock+=dt;const next=this.center.clone().lerp(this.target,this.reduced?1:Math.min(1,dt*10));this.camera.position.add(next.clone().sub(this.center));this.center.copy(next);this.camera.lookAt(this.center);this.camera.zoom=THREE.MathUtils.lerp(this.camera.zoom,this.zoomTarget,this.reduced?1:Math.min(1,dt*10));this.camera.updateProjectionMatrix();this.animateWorld(dt);if(!this.reduced){this.agent.position.y=.55+Math.sin(this.clock*1.4)*.06;this.agent.rotation.y=Math.sin(this.clock*.35)*.15;}this.renderer.render(this.scene,this.camera);this.renderer.domElement.dataset.drawCalls=String(this.renderer.info.render.calls);this.renderer.domElement.dataset.triangles=String(this.renderer.info.render.triangles);}
+ dispose(){this.clearPlacement();this.observer.disconnect();this.renderer.domElement.removeEventListener('webglcontextlost',this.lost);this.scene.traverse(o=>{if(o instanceof THREE.DirectionalLight)o.shadow.dispose();});this.kit.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
 }

@@ -5,7 +5,7 @@ import { z } from 'zod';
 import type { GameState } from '../shared/contracts';
 import { raidLoadout, type RaidRun } from '../shared/raid';
 import { advanceCampus, campusEffects, unlockedAgents } from '../shared/progression';
-import { LEVELS } from '../raid/level';
+import { LEVELS, raidLevel } from '../raid/level';
 import type { Squad } from '../raid/engine';
 import { replayRaid } from './raid-replay';
 const transcript = z.object({ steps: z.number().int().min(0).max(1801), retreat: z.boolean(), deployments: z.array(z.object({ step: z.number().int().min(0).max(1801), kind: z.enum(['scout','tank','breaker','striker','medic','disruptor']), point: z.object({x:z.number().finite(),y:z.number().finite()}).strict() }).strict()).max(24) }).strict();
@@ -20,7 +20,7 @@ export function registerRaids(app: express.Express, db: DatabaseSync, session: (
   const player=session(req,res), state=player.state;
   if(state.campus){advanceCampus(state,Date.now());state.revision++;db.prepare('UPDATE sessions SET state=? WHERE id=?').run(JSON.stringify(state),player.id);}
   const active=db.prepare('SELECT run FROM raids WHERE session=? AND outcome IS NULL').get(player.id);
-  res.json({state,active:active?JSON.parse(active.run as string):null,networks:LEVELS.map((level,index)=>({layout:index,name:level.name,requiredHQ:level.level,unlocked:state.campus?level.level<=state.campus.hq:index<2,wins:state.campus?.raidWins[String(index)]||0,claims:state.campus?.raidClaims?.[String(index)]||0,multiplier:rewardMultiplier(state,index)}))});
+  res.json({state,active:active?JSON.parse(active.run as string):null,networks:LEVELS.map((level,index)=>({layout:index,name:level.name,tactic:raidLevel(index,2).tactic,requiredHQ:level.level,unlocked:state.campus?level.level<=state.campus.hq:index<2,wins:state.campus?.raidWins[String(index)]||0,claims:state.campus?.raidClaims?.[String(index)]||0,multiplier:rewardMultiplier(state,index)}))});
  });
  app.post('/api/raid/start' , (req,res)=>{
   const input=z.object({layout:z.number().int().min(0).max(7)}).strict().safeParse(req.body);
@@ -40,7 +40,7 @@ export function registerRaids(app: express.Express, db: DatabaseSync, session: (
    multiplier=rewardMultiplier(state,layout);
    state.revision++;db.prepare('UPDATE sessions SET state=? WHERE id=?').run(JSON.stringify(state),player.id);
   }
-  const run: RaidRun={id:randomUUID(),layout,...loadout,...(state.campus?{rewardMultiplier:multiplier,healthPower:campusEffects(state).healthMultiplier}: {})};
+  const run: RaidRun={id:randomUUID(),version:2,layout,...loadout,...(state.campus?{rewardMultiplier:multiplier,healthPower:campusEffects(state).healthMultiplier}: {})};
   db.prepare('INSERT INTO raids(id,session,run) VALUES (?,?,?)').run(run.id,player.id,JSON.stringify(run));res.json({run});
  });
  app.post('/api/raid/claim',(req,res)=>{

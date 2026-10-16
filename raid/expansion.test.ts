@@ -3,7 +3,7 @@ import { ensureCampus, campusEffects, unlockedAgents } from '../shared/progressi
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRaid, deploy, tick, rewards, KINDS, objectives, type Squad, type Raid } from './engine';
-import { LEVELS } from './level';
+import { LEVELS, LEVELS_V2 } from './level';
 const advance=(s:Raid,n:number)=>{for(let i=0;i<n;i++)tick(s);};
 test('eight distinct layouts scale loot and keep all structures in navigable bounds',()=>{
  assert.equal(LEVELS.length,8);const signatures=new Set<string>();let loot=0;
@@ -50,4 +50,42 @@ test('each network is winnable at its actual HQ unlock with server-allocated squ
   assert.equal(s.reason,'Network cleared',`${LEVELS[layout].name} must be achievable at HQ ${hq}`);
  }
  console.log('Actual unlock-level balance',reports);
+});
+
+test('0.9 compounds remain winnable at unlock with server squads and modest facilities',()=>{
+ const reports=[];
+ for(let layout=0;layout<LEVELS.length;layout++){
+  const player=createInitialState(),campus=ensureCampus(player),hq=LEVELS[layout].level;campus.hq=hq;
+  campus.buildings.training=Math.max(0,hq-2);campus.buildings.gpu=hq>=3?1:0;
+  campus.buildings.research=hq>=4?Math.max(1,hq-4):0;campus.buildings.defense=hq>=5?Math.max(1,hq-5):0;
+  const effects=campusEffects(player),agents=unlockedAgents(player),squad:Squad={scout:0,tank:0,breaker:0};
+  for(let i=0;i<effects.troopCapacity;i++){const k=agents[i%agents.length];squad[k]=(squad[k]||0)+1;}
+  const s=createRaid(layout,squad,effects.damageMultiplier,effects.healthMultiplier,2);const started=performance.now();
+  for(const kind of ['tank','breaker','disruptor','striker','medic','scout'] as const){const n=s.stock[kind];for(let i=0;i<n;i++)deploy(s,kind,{x:layout===1?(kind==='tank'?5:3):(kind==='tank'?21:23),y:7+i%5});}
+  advance(s,1801);reports.push({network:LEVELS[layout].name,hq,troops:effects.troopCapacity,seconds:Math.ceil(s.time),simulationMs:Math.round(performance.now()-started)});
+  assert.equal(s.reason,'Network cleared',`${LEVELS[layout].name} must be achievable at HQ ${hq}`);
+ }
+ console.log('0.9 unlock-level balance',reports);
+});
+
+
+test('0.9 map version preserves existing raid positions, IDs, hitpoints and original two layouts',()=>{
+ for(let layout=0;layout<8;layout++) {
+  assert.deepEqual(createRaid(layout),createRaid(layout,undefined,1,1,1));
+  const old=createRaid(layout),updated=createRaid(layout,undefined,1,1,2);
+  if(layout<2)assert.deepEqual(old.buildings,updated.buildings);
+  else assert.notDeepEqual(old.buildings,updated.buildings);
+  assert.equal(new Set(updated.buildings.map(b=>`${b.x},${b.y}`)).size,updated.buildings.length);
+  assert.ok(updated.buildings.length<100);
+  assert.ok(updated.buildings.every(b=>b.x>=6&&b.x<=20&&b.y>=4&&b.y<=14));
+  assert.equal(LEVELS[layout].rewardScale,LEVELS_V2[layout].rewardScale);
+  for(const b of old.buildings)b.hp=0;for(const b of updated.buildings)b.hp=0;
+  assert.deepEqual(rewards(old),rewards(updated));
+ }
+});
+test('0.9 service gates are traversable and wall partitions retain deterministic replay',()=>{
+ for(let layout=2;layout<8;layout++) {
+  const run=()=>{const s=createRaid(layout,{scout:4,tank:4,breaker:4,striker:4,medic:4,disruptor:4},2.5,2.5,2);for(const p of LEVELS_V2[layout].openings??[])assert.ok(!s.buildings.some(b=>b.x===p.x&&b.y===p.y));for(const kind of KINDS)for(let i=0;i<4;i++)deploy(s,kind,{x:23,y:6+i*2});advance(s,1801);return s;};
+  const a=run();assert.deepEqual(a,run());assert.equal(a.reason,'Network cleared');assert.ok(a.buildings.some(b=>b.kind==='wall'&&b.hp>0));
+ }
 });

@@ -1,8 +1,9 @@
 import type { GameState } from './contracts';
+import { DEFAULT_POSITIONS, OBSTACLES, validatePlacement } from './campus-layout';
 export type FacilityId = 'compute' | 'revenue' | 'training' | 'gpu' | 'research' | 'defense';
 export type BuildingId = 'hq' | FacilityId;
 export interface Construction { id: string; building: BuildingId; level: number; startedAt: number; completesAt: number }
-export interface CampusState { version: 1; hq: number; buildings: Record<FacilityId, number>; construction: Construction | null; lastAccruedAt: number; highestRaid: number; raidWins: Record<string, number>; raidClaims?: Record<string, number>; raidHistoryImported?: boolean; creditsCarry?: number; computeCarry?: number; lastCompletion?: { id: string; building: BuildingId; level: number; at: number } }
+export interface CampusState { version: 1; hq: number; buildings: Record<FacilityId, number>; construction: Construction | null; constructions?: Construction[]; positions?: Record<BuildingId,[number,number]>; clearedObstacles?: string[]; lastAccruedAt: number; highestRaid: number; raidWins: Record<string, number>; raidClaims?: Record<string, number>; raidHistoryImported?: boolean; creditsCarry?: number; computeCarry?: number; lastCompletion?: { id: string; building: BuildingId; level: number; at: number } }
 export const FACILITIES: { id: FacilityId; name: string; unlock: number; description: string; position: [number,number] }[] = [
  { id:'compute',name:'Compute Farm',unlock:2,description:'Produces Compute while you are away.',position:[8,-5] },
  { id:'revenue',name:'Revenue Server',unlock:2,description:'Produces Credits while you are away.',position:[8,4] },
@@ -12,13 +13,19 @@ export const FACILITIES: { id: FacilityId; name: string; unlock: number; descrip
  { id:'defense',name:'Defense Laboratory',unlock:5,description:'Develops armor that protects attacking agents.',position:[5,15] },
 ];
 export const HQ_LEVELS = ['Laptop startup','Connected garage','Compute workshop','Research studio','Armored network','Specialist division','Disruptor engineering','Quantum campus','Frontier laboratory','AI empire'].map((name,i)=>({level:i+1,name,benefit:[
- 'Scout, Tank and Breaker; first rival network.','Production servers and agent training.','GPU capacity, expanded storage and Striker training.','Research technology and enhanced agent damage.','Defense armor and Medic technology.','Advanced Medic training and larger raids.','Disruptor technology and stronger training.','Elite agents and fortified rival campuses.','Advanced production and increased deployment capacity.','Maximum training, armor and production capacity.'
+ 'Scout, Tank and Breaker; first rival network.','Production servers and agent training.','GPU capacity, expanded storage and Striker training.','Second Builder Bot, research technology and enhanced damage.','Defense armor and Medic technology.','Advanced Medic training and larger raids.','Third Builder Bot, Disruptor technology and stronger training.','Elite agents and fortified rival campuses.','Advanced production and increased deployment capacity.','Maximum training, armor and production capacity.'
 ][i]}));
 const bounded = (n: unknown,min:number,max:number,fallback=min) => typeof n==='number' && Number.isFinite(n) ? Math.min(max,Math.max(min,Math.floor(n))) : fallback;
+export function constructionJobs(c:CampusState):Construction[]{ return c.constructions ?? (c.construction?[c.construction]:[]); }
+export function builderCount(c:CampusState){return c.hq>=7?3:c.hq>=4?2:1;}
 export function ensureCampus(state: GameState,now=Date.now()): CampusState {
  if(!state.campus) state.campus={version:1,hq:bounded(state.hardwareLevel+1,1,10),buildings:{compute:0,revenue:0,training:bounded(state.agentLevel,0,10),gpu:0,research:0,defense:0},construction:null,lastAccruedAt:now,highestRaid:0,raidWins:{}};
  const c=state.campus;c.hq=bounded(c.hq,1,10);c.buildings ||= {} as Record<FacilityId,number>;
  for(const f of FACILITIES)c.buildings[f.id]=bounded(c.buildings[f.id],0,10);
+ c.constructions ??= c.construction?[c.construction]:[];c.construction=c.constructions[0]||null;
+ c.positions ||= structuredClone(DEFAULT_POSITIONS);
+ for(const id of Object.keys(DEFAULT_POSITIONS) as BuildingId[])c.positions[id] ||= [...DEFAULT_POSITIONS[id]];
+ c.clearedObstacles ||= [];
  c.highestRaid=bounded(c.highestRaid,0,9);c.raidWins ||= {};c.raidClaims ||= {...c.raidWins};
  if(!Number.isFinite(c.lastAccruedAt))c.lastAccruedAt=now;
  c.creditsCarry=Math.max(0,Math.min(.999999,c.creditsCarry||0));c.computeCarry=Math.max(0,Math.min(.999999,c.computeCarry||0));
@@ -41,14 +48,16 @@ function produce(state:GameState,from:number,to:number) {
 export function advanceCampus(state:GameState,now=Date.now()) {
  const c=ensureCampus(state,now);if(now<=c.lastAccruedAt)return c;
  const from=Math.max(c.lastAccruedAt,now-campusEffects(state).offlineHours*3600000);
- const job=c.construction;
- if(job && job.completesAt<=now){
-  produce(state,from,Math.max(from,job.completesAt));
+ let cursor=from;
+ const completed=constructionJobs(c).filter(job=>job.completesAt<=now).sort((a,b)=>a.completesAt-b.completesAt);
+ for(const job of completed){
+  const at=Math.max(cursor,job.completesAt);produce(state,cursor,at);cursor=at;
   if(job.building==='hq')c.hq=Math.max(c.hq,job.level);else c.buildings[job.building]=Math.max(c.buildings[job.building],job.level);
   state.hardwareLevel=Math.max(state.hardwareLevel,Math.min(2,c.hq-1));state.agentLevel=Math.max(state.agentLevel||0,c.buildings.training);
-  c.lastCompletion={id:job.id,building:job.building,level:job.level,at:job.completesAt};c.construction=null;
-  produce(state,Math.max(from,job.completesAt),now);
- }else produce(state,from,now);
+  c.lastCompletion={id:job.id,building:job.building,level:job.level,at:job.completesAt};
+ }
+ c.constructions=constructionJobs(c).filter(job=>job.completesAt>now);c.construction=c.constructions[0]||null;
+ produce(state,cursor,now);
  c.lastAccruedAt=now;return c;
 }
 export interface UpgradeQuote { building:BuildingId; name:string; level:number; nextLevel:number; cost:{credits:number;compute:number}; durationSeconds:number; benefit:string; prerequisite:string; reason:string|null }
@@ -60,7 +69,8 @@ export function quoteUpgrade(state:GameState,id:BuildingId): UpgradeQuote {
  const benefit=id==='hq'?HQ_LEVELS[Math.min(9,nextLevel-1)].benefit:({compute:`Produces ${nextLevel*(8+c.buildings.gpu)} Compute/min.`,revenue:`Produces ${nextLevel*(12+c.buildings.gpu*2)} Credits/min.`,training:`All agents gain +${nextLevel*15}% base health and damage.`,gpu:`+${nextLevel} deployment slots; larger storage and faster production.`,research:`Advanced agent technology; +${nextLevel*4}% agent damage.`,defense:`All agents gain +${nextLevel*7}% base health from armor.`})[id];
  let reason:string|null=null;
  if(level>=10)reason='Maximum level reached.';
- else if(c.construction)reason='Finish the current construction first.';
+ else if(constructionJobs(c).some(job=>job.building===id))reason='This building is already under construction.';
+ else if(constructionJobs(c).length>=builderCount(c))reason='All Builder Bots are busy. Finish current construction first.';
  else if(id==='hq'&&state.activeJob)reason='Collect previous work before upgrading HQ.';
  else if(id!=='hq'&&c.hq<Math.max(def!.unlock,nextLevel))reason=`Requires ${prerequisite}.`;
  else if(id==='hq'&&nextLevel>=4&&c.buildings.training<Math.max(1,nextLevel-3))reason=`Requires ${prerequisite}.`;
@@ -70,7 +80,7 @@ export function quoteUpgrade(state:GameState,id:BuildingId): UpgradeQuote {
 export function startUpgrade(state:GameState,id:BuildingId,now=Date.now(),requestId=`${id}-${now}`) {
  now=Math.max(now,ensureCampus(state,now).lastAccruedAt);advanceCampus(state,now);const q=quoteUpgrade(state,id);if(q.reason)throw new Error(q.reason);
  state.credits-=q.cost.credits;state.raidCompute=(state.raidCompute||0)-q.cost.compute;
- state.campus!.construction={id:requestId,building:id,level:q.nextLevel,startedAt:now,completesAt:now+q.durationSeconds*1000};return q;
+ const c=state.campus!;c.constructions=[...constructionJobs(c),{id:requestId,building:id,level:q.nextLevel,startedAt:now,completesAt:now+q.durationSeconds*1000}];c.construction=c.constructions[0];return q;
 }
 export type CampusAgent = 'scout'|'tank'|'breaker'|'striker'|'medic'|'disruptor';
 export function unlockedAgents(state:GameState):CampusAgent[] {
@@ -83,3 +93,18 @@ export function unlockedAgents(state:GameState):CampusAgent[] {
 
 
 
+
+export function moveBuilding(state:GameState,id:BuildingId,position:[number,number],now=Date.now()){
+ const c=advanceCampus(state,now);const def=FACILITIES.find(f=>f.id===id);
+ if(id!=='hq'&&(!def||(c.buildings[id]===0&&c.hq<def.unlock)))throw new Error('Unlock this building before placing it.');
+ if(constructionJobs(c).some(job=>job.building===id))throw new Error('Wait for this building to finish construction before moving it.');
+ const reason=validatePlacement(c,id,position);if(reason)throw new Error(reason);
+ c.positions![id]=[...position];
+}
+export function clearObstacle(state:GameState,obstacleId:string,now=Date.now()){
+ const c=advanceCampus(state,now);const obstacle=OBSTACLES.find(o=>o.id===obstacleId);if(!obstacle)throw new Error('Choose a valid obstacle.');
+ if(c.clearedObstacles!.includes(obstacleId))throw new Error('This obstacle has already been cleared.');
+ if(state.credits<obstacle.cost.credits||(state.raidCompute||0)<obstacle.cost.compute)throw new Error('Earn more resources.');
+ state.credits+=obstacle.reward.credits-obstacle.cost.credits;state.raidCompute=(state.raidCompute||0)+obstacle.reward.compute-obstacle.cost.compute;c.clearedObstacles!.push(obstacleId);
+ return obstacle;
+}

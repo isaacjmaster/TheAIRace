@@ -12,12 +12,12 @@ import { TroopIcon } from './TroopIcon';
 const layouts = LEVELS.map(level => level.name);
 const kinds: Kind[] = KINDS;
 const startingTroop = (stock: Record<Kind, number>): Kind => stock.tank ? 'tank' : kinds.find(k => stock[k] > 0)!;
-export type RaidScreenProps = { initialLayout?: number; squad?: Readonly<Squad>; power?: number; healthPower?:number; rewardMultiplier?: number; integrated?: boolean; onCue?: (cue:Cue)=>void; onComplete?: (outcome: RaidOutcome, log: Transcript) => void; onExit?: () => void };
-export function RaidScreen({ initialLayout = 0, squad, power = 1, healthPower = power, rewardMultiplier = 1, integrated = false, onComplete, onExit, onCue }: RaidScreenProps) {
+export type RaidScreenProps = { version?: number; initialLayout?: number; squad?: Readonly<Squad>; power?: number; healthPower?:number; rewardMultiplier?: number; integrated?: boolean; onCue?: (cue:Cue)=>void; onComplete?: (outcome: RaidOutcome, log: Transcript) => void; onExit?: () => void };
+export function RaidScreen({ initialLayout = 0, version = 1, squad, power = 1, healthPower = power, rewardMultiplier = 1, integrated = false, onComplete, onExit, onCue }: RaidScreenProps) {
   const audioCue=useRef(onCue);audioCue.current=onCue;
   const heard=useRef(new Set<number>());
   const log = useRef<Transcript>({steps:0,deployments:[],retreat:false});
-  const state = useRef<ReturnType<typeof createRaid> | null>(null); if (!state.current) state.current = createRaid(initialLayout, squad, power, healthPower);
+  const state = useRef<ReturnType<typeof createRaid> | null>(null); if (!state.current) state.current = createRaid(initialLayout, squad, power, healthPower, version);
   const [layout, setLayout] = useState(initialLayout), [selected, setSelected] = useState<Kind>(() => startingTroop(state.current!.stock)), [started, setStarted] = useState(false), [, refresh] = useState(0);
   const [notice, setNotice] = useState(''), [error, setError] = useState('');
   const mount = useRef<HTMLDivElement>(null), view = useRef<RaidScene | null>(null), running = useRef(false), selection = useRef(selected), noticeUntil = useRef(0);
@@ -43,7 +43,7 @@ export function RaidScreen({ initialLayout = 0, squad, power = 1, healthPower = 
     id = requestAnimationFrame(loop);
     return () => { cancelAnimationFrame(id); scene.dispose(); view.current = null; };
   }, []);
-  const reset = (next = layout) => { heard.current.clear(); state.current = createRaid(next, squad, power, healthPower); log.current = {steps:0,deployments:[],retreat:false}; running.current = false; setStarted(false); setSelected(startingTroop(state.current.stock)); setLayout(next); setNotice(''); gestures.current = new DeploymentGesture(); pinch.current.clear(); refresh(f => f + 1); };
+  const reset = (next = layout) => { heard.current.clear(); state.current = createRaid(next, squad, power, healthPower, version); log.current = {steps:0,deployments:[],retreat:false}; running.current = false; setStarted(false); setSelected(startingTroop(state.current.stock)); setLayout(next); setNotice(''); gestures.current = new DeploymentGesture(); pinch.current.clear(); refresh(f => f + 1); };
   const s = state.current!, visibleKinds=kinds.filter(k=>(squad?.[k]??(k==='scout'||k==='tank'||k==='breaker'?2:0))>0), rawResult = rewards(s), result={credits:Math.floor(rawResult.credits*rewardMultiplier),compute:Math.floor(rawResult.compute*rewardMultiplier)}, victory = s.reason === 'Network cleared', seconds = Math.ceil(90 - s.time);
   const delivered = useRef<typeof s | null>(null);
   useEffect(() => { if (s.ended && delivered.current !== s) { delivered.current = s; if(s.reason==='Network cleared')audioCue.current?.('win'); onComplete?.(summarizeRaid(s), structuredClone(log.current)); } }, [s, s.ended, onComplete]);

@@ -1,10 +1,10 @@
 import { palette as colors, lightWorld, material, WorldKit } from '../src/art/world';
-import { MAP } from './level';
+import { MAP, raidLevel } from './level';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { STATS, validDeployment, type Building, type Effect, type Kind, type Point, type Raid, type Unit } from './engine';
 
-type Visual = { group: THREE.Group; body: THREE.Group; hp: THREE.Sprite; hpTexture: THREE.CanvasTexture; hpCanvas: HTMLCanvasElement; lastHp: number; lastHit: number; born: number; turret?: THREE.Group; rotor?: THREE.Object3D; dead: boolean };
+type Visual = { group: THREE.Group; body: THREE.Group; hp: THREE.Sprite; hpTexture: THREE.CanvasTexture; hpCanvas: HTMLCanvasElement; lastHp: number; lastHit: number; born: number; turret?: THREE.Group; rotor?: THREE.Object3D; dead: boolean; destroyedAt?: number };
 type Burst = { group: THREE.Group; age: number; life: number; particles: { mesh: THREE.Mesh; velocity: THREE.Vector3 }[] };
 const world = (p: Point, height = 0) => new THREE.Vector3(p.x - MAP.center.x, height, p.y - MAP.center.y);
 
@@ -17,6 +17,8 @@ export class RaidScene {
   private root = new THREE.Group();
   private terrainKit = new WorldKit();
   private visuals = new Map<number, Visual>();
+  private compound = new THREE.Group();
+  private pulses: {mesh: THREE.Mesh; age:number; life:number; size:number}[] = [];
   private wallMeshes: THREE.InstancedMesh[] = [];
   private wallIndices = new Map<number, number>();
   private bursts: Burst[] = [];
@@ -84,11 +86,7 @@ export class RaidScene {
     const northDepth = d.innerTop - d.minY, westWidth = d.innerLeft - d.minX;
     for (const z of [-1, 1]) this.box(this.root, [outerWidth, .025, northDepth], [0, .015, z * (outerDepth - northDepth) / 2], '#286875', .04);
     for (const x of [-1, 1]) this.box(this.root, [westWidth, .025, outerDepth - northDepth * 2], [x * (outerWidth - westWidth) / 2, .016, 0], '#286875', .04);
-    this.box(this.root, [13.7, .06, 9.7], [0, .025, 0], '#29445c', .12);
-    // Broad walkways and separate structure pads keep the larger courtyard readable.
-    this.box(this.root, [11.8, .025, 1.35], [0, .065, 0], '#3c5d76', .04);
-    this.box(this.root, [1.35, .025, 7.8], [0, .066, 0], '#3c5d76', .04);
-    for (const [x, z] of [[0, 0], [-4, -2], [4, -2], [-4, 2], [4, 2]]) this.box(this.root, [2.3, .025, 2.3], [x, .067, z], '#3c5d76', .05);
+    this.box(this.root, [15.7, .06, 11.7], [0, .025, 0], '#29445c', .12);
     for (const sign of [-1, 1]) {
       this.box(this.root, [outerWidth, .035, .06], [0, .043, sign * outerDepth / 2], '#70ddec', .01, true);
       this.box(this.root, [.06, .035, outerDepth], [sign * outerWidth / 2, .043, 0], '#70ddec', .01, true);
@@ -101,10 +99,68 @@ export class RaidScene {
       this.cylinder(this.root, .15, .5, [x - .4, .22, z + .4], '#819eb7', 8);
       this.cylinder(this.root, .11, .08, [x - .4, .51, z + .4], colors.cyan, 8, true);
     }
-    // Cables lead the eye to the central network.
-    this.box(this.root, [11.5, .025, .08], [0, .083, 0], '#57a6b6', .02);
-    this.box(this.root, [.08, .025, 7.5], [0, .084, 0], '#57a6b6', .02);
+    // Distant infrastructure and landscaping never occupy a deployable cell.
+    for(let i=0;i<10;i++) {
+      const x=-24+i*5;
+      this.box(this.root,[1.8,.06,.08],[x,.02,-12.3],'#7895ad',.01);
+      for(const z of [-16,16]) {
+        this.terrainKit.tree(this.scene,x,z,1+(i%3)*.24);
+        this.box(this.root,[1.3,.25,.9],[x+1,.02,z+1],'#35586b',.16);
+      }
+    }
+    for(const x of [-16,16])for(const z of [-7,7]) {
+      this.box(this.root,[.7,.12,.7],[x,.03,z],colors.dark);
+      this.cylinder(this.root,.08,2.1,[x,1.05,z],colors.slate,6);
+      this.box(this.root,[.6,.12,.32],[x,2.15,z],colors.cream);
+      this.box(this.root,[.5,.05,.25],[x,2.08,z],colors.cyan,.02,true);
+    }
+    this.batchStatic(this.root);
     this.root.traverse(node => { if (node instanceof THREE.Mesh) { node.geometry.computeBoundingBox(); const bounds = node.geometry.boundingBox!; if (bounds.max.y - bounds.min.y < .3) node.castShadow = false; } });
+  }
+  /** Static scenery is instanced by geometry/material to keep mobile draw calls bounded. */
+  private batchStatic(parent: THREE.Group, animated: (THREE.Object3D|undefined)[] = []) {
+    parent.updateMatrixWorld(true);
+    const batches=new Map<string,THREE.Mesh[]>();
+    parent.traverse(node=>{let ancestor:THREE.Object3D|null=node;while(ancestor&&ancestor!==parent){if(animated.includes(ancestor))return;ancestor=ancestor.parent;}if(node instanceof THREE.Mesh && !(node instanceof THREE.InstancedMesh)){const key=node.geometry.uuid+ (node.material as THREE.Material).uuid;const list=batches.get(key)??[];list.push(node);batches.set(key,list);}});
+    const inverse=parent.matrixWorld.clone().invert();
+    for(const meshes of batches.values()) {
+      if(meshes.length<2)continue;
+      const first=meshes[0],instance=new THREE.InstancedMesh(first.geometry,first.material,meshes.length);
+      instance.castShadow=first.castShadow;instance.receiveShadow=true;
+      meshes.forEach((mesh,i)=>{instance.setMatrixAt(i,inverse.clone().multiply(mesh.matrixWorld));mesh.removeFromParent();});parent.add(instance);
+    }
+  }
+  private compoundEnvironment(s:Raid) {
+    const level=raidLevel(s.layout,s.version), bounds=level.walls??MAP.walls;
+    const g=this.compound;this.root.add(g);
+    const left=bounds.left-MAP.center.x,right=bounds.right-MAP.center.x,top=bounds.top-MAP.center.y,bottom=bounds.bottom-MAP.center.y;
+    // A network of inset service roads joins functional buildings, not decorative collision boxes.
+    for(const b of s.buildings.filter(b=>b.kind!=='wall')) {
+      const x=b.x-MAP.center.x,z=b.y-MAP.center.y;
+      this.box(g,[2.15,.025,2.15],[x,.072,z],'#36566f',.08);
+      this.box(g,[Math.abs(x)+.5,.022,.48],[x/2,.071,z],'#3d6079',.025);
+      this.box(g,[.48,.022,Math.abs(z)+.5],[0,.071,z/2],'#3d6079',.025);
+      this.box(g,[1.4,.025,.04],[x,.09,z+1.03],b.kind==='vault'?colors.gold:colors.cyan,.01,true);
+    }
+    // Gate posts are mounted on the neighboring wall cells; the actual breach stays clear.
+    const gates=[{x:level.gate,y:bounds.top},...(level.openings??[])];
+    for(const gate of gates){const x=gate.x-MAP.center.x,z=gate.y-MAP.center.y,side=gate.x===bounds.left||gate.x===bounds.right;
+      this.box(g,side?[1.4,.025,1]:[1,.025,1.4],[x,.08,z],'#50717e',.01);
+      for(const sign of [-1,1]) {
+        this.box(g,[.22,1.22,.22],[x+(side?0:sign*.7),.65,z+(side?sign*.7:0)],colors.dark);
+        this.box(g,[.24,.11,.24],[x+(side?0:sign*.7),1.3,z+(side?sign*.7:0)],colors.cyan,.02,true);
+      }
+      for(const offset of [-.3,0,.3])this.box(g,side?[.06,.025,.45]:[.45,.025,.06],[x+(side?offset:0),.1,z+(side?0:offset)],colors.cream,.01);
+    }
+    // Low inset utility channels, drainage, and planters add scale without masking troops.
+    for(let x=left+1;x<right;x+=2){this.box(g,[.7,.025,.28],[x,.075,bottom-.65],'#152c43',.02);for(const dz of [-.08,.08])this.box(g,[.6,.03,.025],[x,.09,bottom-.65+dz],'#54738a',.01);}
+    for(const x of [left+.65,right-.65])for(const z of [top+1.2,bottom-1.2])this.box(g,[.28,.08,.7],[x,.085,z],'#527579',.05);
+    this.batchStatic(g);
+  }
+  private pulse(position:THREE.Vector3,color:string,size:number) {
+    if(this.pulses.length>=20){const old=this.pulses.shift()!;old.mesh.removeFromParent();(old.mesh.material as THREE.Material).dispose();}
+    const mesh=new THREE.Mesh(this.geometry('impact-ring',()=>new THREE.RingGeometry(.83,1,24)),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.7,depthWrite:false,side:THREE.DoubleSide}));
+    mesh.rotation.x=-Math.PI/2;mesh.position.copy(position);mesh.position.y=.11;this.root.add(mesh);this.pulses.push({mesh,age:0,life:.45,size});
   }
   private health(height: number, color: string) {
     const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 20;
@@ -169,15 +225,45 @@ export class RaidScene {
       this.box(turret, [.35, .3, .16], [0, .18, 1.2], colors.coral, .04, true);
       this.box(turret, [.5, .07, .37], [0, .36, 0], colors.cream, .03);
     }
+    if(b.kind!=='wall') {
+      // Shared architectural grammar: raised foundations, front entry, lit status band.
+      this.box(body,[1.65,.12,.3],[0,.12,.9],colors.slate,.035);
+      this.box(body,[.44,.065,.28],[0,.21,.91],colors.cream,.02);
+      for(const side of [-1,1])this.box(body,[.07,.08,1.2],[side*.78,.29,0],b.kind==='vault'?colors.gold:colors.cyan,.02,true);
+    }
+    if(b.kind==='core') {
+      for(const side of [-1,1]) {
+        this.box(body,[.25,1.1,.72],[side*.86,.9,0],colors.dark,.055);
+        for(let n=0;n<4;n++)this.box(body,[.035,.055,.54],[side*1,.57+n*.22,0],colors.cyan,.01,true);
+      }
+      this.cylinder(body,.045,.72,[.65,2.3,-.65],colors.cream,6);
+      this.cylinder(body,.09,.1,[.65,2.7,-.65],colors.coral,6,true);
+    }
+    if(b.kind==='vault') {
+      // Secondary vaults read as compute storage; the primary keeps warm credit stacks.
+      const compute=b.id>3;
+      for(const side of [-1,1]) {
+        this.box(body,[.22,.8,.65],[side*.83,.75,0],colors.dark,.04);
+        for(let n=0;n<3;n++)this.box(body,[.025,.07,.5],[side*.95,.5+n*.24,0],compute?colors.cyan:colors.gold,.01,true);
+      }
+      if(compute){this.box(body,[1.1,.32,.7],[0,1.66,0],colors.slate,.06);for(const x of [-.3,.3])this.cylinder(body,.2,.08,[x,1.86,0],colors.cyan,8,true);}
+    }
+    if(b.kind==='shield'||b.kind==='repair')for(const x of [-.6,.6]) {
+      this.cylinder(body,.19,.7,[x,.65,0],colors.cream,8);
+      this.cylinder(body,.2,.1,[x,1,0],b.kind==='shield'?colors.purple:colors.cyan,8,true);
+    }
+    if(b.kind==='missile')for(const x of [-.58,.58])this.box(body,[.18,.5,.75],[x,.65,0],colors.cream,.05);
     if(b.kind==='shield') {const aura=new THREE.Mesh(this.geometry('shield-aura',()=>new THREE.RingGeometry(3.91/1.18,4/1.18,48)),this.mat('#524e80'));aura.rotation.x=-Math.PI/2;aura.position.y=.045;aura.name='shield-aura';body.add(aura);}
     if(['turret','missile','shield','repair'].includes(b.kind)){const status=new THREE.Mesh(this.geometry('disabled-ring',()=>new THREE.TorusGeometry(.6,.045,5,16)),this.mat('#bd9cff',true));status.rotation.x=Math.PI/2;status.position.y=2;status.name='disabled-ring';status.visible=false;body.add(status);}
+    this.batchStatic(body,[turret,rotor]);
     const health = this.health(height + .2, color); group.add(health.hp);
     return { group, body, ...health, lastHp: b.hp, lastHit: -10, born: this.clock, dead: false, turret, rotor };
   }
   private walls(buildings: Building[]) {
     const walls = buildings.filter(b => b.kind === 'wall'); walls.forEach((b, i) => this.wallIndices.set(b.id, i));
     const specs: { size: [number, number, number]; y: number; color: string; radius: number; glow?: boolean }[] = [
-      { size: [.94, .66, .94], y: .36, color: '#617c8a', radius: .075 },
+      { size: [.94, .66, .94], y: .36, color: '#365570', radius: .075 },
+      { size: [.75, .15, .99], y: .2, color: '#182e48', radius: .025 },
       { size: [.97, .17, .97], y: .75, color: '#8ba9c1', radius: .07 },
       { size: [.65, .035, .1], y: .85, color: colors.cyan, radius: .01, glow: true },
     ];
@@ -244,22 +330,26 @@ export class RaidScene {
     beam.position.copy(start.clone().add(end).multiplyScalar(.5)); beam.scale.y = delta.length(); beam.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), delta.normalize()); group.add(beam);
     this.beams.set(e.id, { group, life: .17, age: 0, effect: e });
     this.burst(end, e.color);
+    const attacker=this.lastState?.buildings.find(b=>b.id===e.source);
+    if(attacker?.kind==='missile'||e.destroyed||e.damage<0)this.pulse(end,e.color,attacker?.kind==='missile'?1.1:e.damage<0?.6:.85);
     const source = this.visuals.get(e.source); if (source) source.lastHit = this.clock;
     const target = this.visuals.get(e.target); if (target) target.lastHit = this.clock;
   }
   update(s: Raid, selected: Kind, dt: number) {
     if (this.paused) return;
     this.clock += dt;
-    if (s !== this.lastState) { this.clearBattle(); this.lastState = s; this.walls(s.buildings); for (const b of s.buildings) this.visuals.set(b.id, this.building(b)); this.center.set(0, .2, 0); this.camera.position.set(7, 25, 32); this.camera.zoom = 1; this.camera.lookAt(this.center); this.camera.updateProjectionMatrix(); }
+    if (s !== this.lastState) { this.clearBattle(); this.lastState = s; this.compoundEnvironment(s); this.walls(s.buildings); for (const b of s.buildings) this.visuals.set(b.id, this.building(b)); this.center.set(0, .2, 0); this.camera.position.set(7, 25, 32); this.camera.zoom = 1; this.camera.lookAt(this.center); this.camera.updateProjectionMatrix(); }
     for (const entity of [...s.buildings, ...s.units]) {
       let v = this.visuals.get(entity.id); if (!v) { v = this.unit(entity as Unit); this.visuals.set(entity.id, v); this.burst(world(entity, .1), STATS[(entity as Unit).kind].color); }
       const isUnit = entity.id >= 100;
       if(!isUnit){const disabled=((entity as Building).disabledUntil??0)>s.time;const status=v.body.getObjectByName('disabled-ring');if(status)status.visible=disabled;const aura=v.body.getObjectByName('shield-aura');if(aura)aura.visible=!disabled;}
       if (entity.hp <= 0) {
-        if (!v.dead) { v.dead = true; v.hp.visible = false; this.burst(world(entity, .4), isUnit ? STATS[(entity as Unit).kind].color : '#ffb568', !isUnit); v.body.visible = false;
+        if (!v.dead) { v.dead = true; v.destroyedAt=this.clock; v.hp.visible = false; this.burst(world(entity, .4), isUnit ? STATS[(entity as Unit).kind].color : '#ffb568', !isUnit); v.body.visible = !isUnit && entity.kind!=='wall' && !this.reduced;
           const wallIndex = this.wallIndices.get(entity.id); if (wallIndex !== undefined) for (const mesh of this.wallMeshes) { mesh.setMatrixAt(wallIndex, new THREE.Matrix4().makeScale(0, 0, 0)); mesh.instanceMatrix.needsUpdate = true; }
-          if (!isUnit) { const rubble = new THREE.Group(); v.group.add(rubble); for (let i = 0; i < 4; i++) { const mesh = this.box(rubble, [.3, .16 + i * .035, .3], [Math.cos(i * 2) * .3, .13, Math.sin(i * 2) * .3], '#6a8381', .03); mesh.rotation.y = i; } }
-        } continue;
+          if (!isUnit) { this.pulse(world(entity), '#ffb568', entity.kind==='wall'?.7:1.5); const rubble = new THREE.Group(); v.group.add(rubble); for (let i = 0; i < 4; i++) { const mesh = this.box(rubble, [.3, .16 + i * .035, .3], [Math.cos(i * 2) * .3, .13, Math.sin(i * 2) * .3], '#6a8381', .03); mesh.rotation.y = i; } }
+        }
+        if(v.body.visible){const collapse=Math.max(0,1-(this.clock-(v.destroyedAt??0))/.35);v.body.scale.y=1.18*collapse;v.body.position.y=-.15*(1-collapse);if(collapse===0)v.body.visible=false;}
+        continue;
       }
       if (entity.hp !== v.lastHp) { v.lastHit = this.clock; this.paintHealth(v.hpCanvas, v.hpTexture, entity.hp / entity.maxHp, isUnit ? STATS[(entity as Unit).kind].color : colors.cyan); v.lastHp = entity.hp; }
       v.hp.visible = isUnit ? entity.hp < entity.maxHp : entity.hp < entity.maxHp || this.clock - v.lastHit < 1.2;
@@ -289,6 +379,7 @@ export class RaidScene {
     for (const e of s.effects) if (!this.seenEffects.has(e.id)) { this.seenEffects.add(e.id); this.shot(e); }
     for (const [id, beam] of this.beams) { beam.age += dt; if (beam.age >= beam.life) { this.root.remove(beam.group); this.beams.delete(id); } }
     this.bursts = this.bursts.filter(b => { b.age += dt; for (const p of b.particles) { p.mesh.position.addScaledVector(p.velocity, dt); p.velocity.y -= dt * 4; p.mesh.scale.setScalar(Math.max(0, 1 - b.age / b.life)); p.mesh.rotation.x += dt * 4; } if (b.age >= b.life) { this.root.remove(b.group); return false; } return true; });
+    this.pulses=this.pulses.filter(p=>{p.age+=dt;const t=p.age/p.life;p.mesh.scale.setScalar((.2+t)*p.size);(p.mesh.material as THREE.MeshBasicMaterial).opacity=Math.max(0,(1-t)*.65);if(t>=1){p.mesh.removeFromParent();(p.mesh.material as THREE.Material).dispose();return false;}return true;});
     this.cursor.visible = !!this.pointer && !s.ended && s.stock[selected] > 0;
     if (this.pointer) { this.cursor.position.copy(world(this.pointer, .09)); (this.cursor.material as THREE.MeshBasicMaterial).color.set(validDeployment(this.pointer) ? STATS[selected].color : '#ff6f72'); }
     this.renderer.render(this.scene, this.camera);
@@ -318,15 +409,17 @@ export class RaidScene {
     this.camera.position.add(next.clone().sub(this.center)); this.center.copy(next); this.camera.lookAt(this.center);
   }
   private clearBattle() {
+    this.compound.traverse(node=>{if(node instanceof THREE.InstancedMesh)node.dispose();});this.compound.removeFromParent();this.compound=new THREE.Group();
+    for(const p of this.pulses){p.mesh.removeFromParent();(p.mesh.material as THREE.Material).dispose();}this.pulses=[];
     for (const mesh of this.wallMeshes) { this.root.remove(mesh); mesh.dispose(); } this.wallMeshes = []; this.wallIndices.clear();
-    for (const v of this.visuals.values()) { this.root.remove(v.group); v.hpTexture.dispose(); (v.hp.material as THREE.Material).dispose(); }
+    for (const v of this.visuals.values()) { v.group.traverse(node=>{if(node instanceof THREE.InstancedMesh)node.dispose();});this.root.remove(v.group); v.hpTexture.dispose(); (v.hp.material as THREE.Material).dispose(); }
     this.visuals.clear(); for (const b of this.bursts) this.root.remove(b.group); this.bursts = [];
     for (const b of this.beams.values()) this.root.remove(b.group); this.beams.clear(); this.seenEffects.clear();
   }
   dispose() {
     this.resizeObserver.disconnect(); this.clearBattle(); this.renderer.domElement.removeEventListener('webglcontextlost', this.contextLost);
     for (const g of this.geometries.values()) g.dispose(); for (const m of this.materials.values()) m.dispose();
-    this.scene.traverse(node => { if (node instanceof THREE.DirectionalLight) node.shadow.dispose(); });
+    this.scene.traverse(node => { if(node instanceof THREE.InstancedMesh)node.dispose(); if (node instanceof THREE.DirectionalLight) node.shadow.dispose(); });
     this.cursor.geometry.dispose(); (this.cursor.material as THREE.Material).dispose(); this.terrainKit.dispose(); this.renderer.dispose(); this.renderer.forceContextLoss(); this.renderer.domElement.remove();
   }
 }

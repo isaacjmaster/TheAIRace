@@ -1,11 +1,11 @@
-import { MAP, LEVELS } from './level';
+import { MAP, LEVELS, raidLevel } from './level';
 export type Kind = 'scout' | 'tank' | 'breaker' | 'striker' | 'medic' | 'disruptor';
 export type Squad = Record<'scout'|'tank'|'breaker',number> & Partial<Record<'striker'|'medic'|'disruptor',number>>;
 export type Point = { x: number; y: number };
 export type Building = Point & { id: number; kind: 'core' | 'vault' | 'turret' | 'wall' | 'missile' | 'shield' | 'repair'; disabledUntil?: number; hp: number; maxHp: number; cooldown: number; target?: number };
 export type Unit = Point & { id: number; kind: Kind; hp: number; maxHp: number; cooldown: number; target?: number; objective?: number; waypoint?: Point };
 export type Effect = { id: number; from: Point; to: Point; ttl: number; color: string; damage: number; source: number; target: number; destroyed: boolean };
-export type Raid = { layout: number; time: number; buildings: Building[]; units: Unit[]; stock: Record<Kind, number>; effects: Effect[]; ended: boolean; reason: string; damage: Record<Kind, number>; lost: number; nextId: number; power: number; healthPower: number };
+export type Raid = { layout: number; version?: number; time: number; buildings: Building[]; units: Unit[]; stock: Record<Kind, number>; effects: Effect[]; ended: boolean; reason: string; damage: Record<Kind, number>; lost: number; nextId: number; power: number; healthPower: number };
 export const STATS = {
   scout: { name: 'Scout', hp: 85, speed: 1.55, damage: 16, range: .85, interval: .7, color: '#52e6d2', role: 'Fast · targets compute' },
   tank: { name: 'Tank', hp: 390, speed: .68, damage: 24, range: .95, interval: 1.15, color: '#8da9ff', role: 'Armored · absorbs fire' },
@@ -19,13 +19,13 @@ export const STEP = .05;
 export const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 export const objectives = (s: Raid) => s.buildings.filter(b => b.kind !== 'wall');
 export const DEFAULT_SQUAD: Readonly<Squad> = Object.freeze({ scout: 2, tank: 2, breaker: 2 });
-export function createRaid(layout = 0, squad: Readonly<Squad> = DEFAULT_SQUAD, power = 1, healthPower = power): Raid {
+export function createRaid(layout = 0, squad: Readonly<Squad> = DEFAULT_SQUAD, power = 1, healthPower = power, version = 1): Raid {
   if (!LEVELS[layout]) throw new Error('Unknown raid layout');
   if (Object.values(squad).some(n => !Number.isInteger(n) || n < 0 || n > 24) || Object.values(squad).reduce((a, b) => a + b, 0) < 1 || Object.values(squad).reduce((a, b) => a + b, 0) > 24) throw new Error('Squad must contain 1 to 24 agents');
   if (Object.keys(squad).some(k => !KINDS.includes(k as Kind)) || !Number.isFinite(power) || power < 1 || power > 10 || !Number.isFinite(healthPower) || healthPower<1 || healthPower>10) throw new Error('Invalid squad power');
-  const level = LEVELS[layout], bounds = MAP.walls;
+  const level = raidLevel(layout, version), bounds = level.walls ?? MAP.walls;
   const buildings: Building[] = [];
-  const add = (kind: Building['kind'], x: number, y: number, hp: number) => buildings.push({ id: buildings.length, kind, x, y, hp, maxHp: hp, cooldown: 0 });
+  const add = (kind: Building['kind'], x: number, y: number, hp: number) => { if(kind==='wall' && level.openings?.some(p=>p.x===x&&p.y===y)) return; buildings.push({ id: buildings.length, kind, x, y, hp, maxHp: hp, cooldown: 0 }); };
   add('core', level.core.x, level.core.y, 2200); add('vault', level.vault.x, level.vault.y, 750); add('turret', level.turret.x, level.turret.y, 850);
   for (let x: number = bounds.left; x <= bounds.right; x++) { if (x !== level.gate) add('wall', x, bounds.top, 150); add('wall', x, bounds.bottom, 150); }
   for (let y: number = bounds.top + 1; y < bounds.bottom; y++) { add('wall', bounds.left, y, 150); add('wall', bounds.right, y, 150); }
@@ -34,7 +34,7 @@ export function createRaid(layout = 0, squad: Readonly<Squad> = DEFAULT_SQUAD, p
     for (const b of level.extras ?? []) add(b.kind,b.x,b.y,b.hp);
     for (const p of level.partitions ?? []) add('wall',p.x,p.y,Math.round(180*(level.strength??1)));
   }
-  return { power, healthPower, layout, time: 0, buildings, units: [], stock: Object.fromEntries(KINDS.map(k=>[k,squad[k]??0])) as Record<Kind,number>, effects: [], ended: false, reason: '', damage: { scout: 0, tank: 0, breaker: 0, striker:0,medic:0,disruptor:0 }, lost: 0, nextId: 100 };
+  return { power, healthPower, layout, version, time: 0, buildings, units: [], stock: Object.fromEntries(KINDS.map(k=>[k,squad[k]??0])) as Record<Kind,number>, effects: [], ended: false, reason: '', damage: { scout: 0, tank: 0, breaker: 0, striker:0,medic:0,disruptor:0 }, lost: 0, nextId: 100 };
 }
 export function validDeployment(p: Point) {
   const b = MAP.deployment;
