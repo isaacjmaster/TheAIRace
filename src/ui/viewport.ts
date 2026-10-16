@@ -1,7 +1,8 @@
 /** CSS owns the dynamic viewport, matching Maze Sprint's working mobile approach. */
-export const SCREEN_BACKGROUNDS={splash:'#b5eafa',menu:'#b5eafa',game:'#b5eafa'} as const;
+export const SCREEN_BACKGROUNDS={splash:'#07090c',menu:'#b5eafa',game:'#b5eafa'} as const;
 export function setPresentationBackground(phase:keyof typeof SCREEN_BACKGROUNDS){
  const color=SCREEN_BACKGROUNDS[phase];
+ document.documentElement.dataset.presentation=phase;
  document.documentElement.style.setProperty('--app-background',color);
  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',color);
 }
