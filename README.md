@@ -1,3 +1,7 @@
+# Current prototype: 0.6
+
+See [V06_TESTING.md](V06_TESTING.md) for changes, validation and iPhone instructions. Earlier release notes below are historical.
+
 # The AI Race — Integrated Prototype 0.5
 
 Landscape HQ, unified 3D raids, and original procedural audio. See [V05_TESTING.md](V05_TESTING.md) for the current launch instructions, checkpoint, save compatibility, audio details, and desktop/iPhone tests.

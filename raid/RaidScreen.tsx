@@ -66,7 +66,7 @@ export function RaidScreen({ initialLayout = 0, squad, power = 1, integrated = f
     if (!tap || error || s.ended) return;
     const p = view.current?.pick(e.clientX, e.clientY);
     if (p && deploy(s, selected, p)) { audioCue.current?.('deploy'); log.current.deployments.push({step:log.current.steps,kind:selected,point:p}); running.current = true; setStarted(true); setNotice(''); refresh(f => f + 1); }
-    else toast(!s.stock[selected] ? 'Choose another agent' : 'Tap the mint edge outside the walls');
+    else toast(!s.stock[selected] ? 'Choose another agent' : 'Tap the cyan edge outside the walls');
   };
   const down = s.buildings.filter(b => b.kind !== 'wall' && b.hp <= 0).length;
   const feedback = victory ? `All three objectives destroyed. ${s.units.filter(u => u.hp > 0).length} agents survived.` : s.buildings[2].hp > 0 ? `The Laser took out ${s.lost} agents. Put Tanks closest to it and send Breakers behind them.` : s.buildings[1].hp > 0 ? 'Laser down. Scouts through the open gate could reach the remaining Compute Vault faster.' : 'Vault secured. Keep your armored agents alive long enough to finish the Core.';
@@ -79,7 +79,7 @@ export function RaidScreen({ initialLayout = 0, squad, power = 1, integrated = f
     <div className="camera-controls"><button aria-label="Zoom in" onClick={() => view.current?.zoom(1.12)}>+</button><button aria-label="Zoom out" onClick={() => view.current?.zoom(1 / 1.12)}>−</button></div>
     {(started || integrated) && !s.ended && <button className="retreat" onClick={() => { log.current.retreat = true; finish(s, 'Retreated'); refresh(f => f + 1); }}>Retreat</button>}
     <section className="deployment" aria-label="Deploy troops">
-      <div className={`deploy-hint ${notice ? 'notice' : ''}`} role="status">{notice || (!started ? 'Choose an agent · Tap the mint edge' : s.stock[selected] ? `${STATS[selected].name} ready` : Object.values(s.stock).some(n => n) ? 'Choose another agent' : '')}</div>
+      <div className={`deploy-hint ${notice ? 'notice' : ''}`} role="status">{notice || (!started ? 'Choose an agent · Tap the cyan edge' : s.stock[selected] ? `${STATS[selected].name} ready` : Object.values(s.stock).some(n => n) ? 'Choose another agent' : '')}</div>
       <div className="troop-bar">{kinds.map(kind => <button key={kind} aria-label={`${STATS[kind].name}, ${s.stock[kind]} remaining. ${STATS[kind].role}`} aria-pressed={selected === kind} disabled={!s.stock[kind] || s.ended || !!error} title={STATS[kind].role} onClick={() => { setSelected(kind); toast(STATS[kind].role); }} className={`troop ${selected === kind ? 'selected' : ''} ${s.stock[kind] === 0 ? 'exhausted' : ''}`} style={{ '--unit': STATS[kind].color } as React.CSSProperties}><TroopIcon kind={kind}/><span className="troop-count">{s.stock[kind]}</span><span className="troop-name">{STATS[kind].name}</span><span className="selection-gem"/></button>)}</div>
     </section>
     {error && <div className="graphics-error" role="alert"><h2>Battlefield paused</h2><p>{error}</p><button onClick={() => window.location.reload()}>Reload</button></div>}

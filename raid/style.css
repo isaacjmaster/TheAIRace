@@ -653,3 +653,18 @@ to {
   grid-row: 7
 }
 }
+
+/* The defensive compound shares the garage's navy/cyan material language. */
+.raid-game{background:#0e2037;color:#d7e9f5}
+.raid-game .base-title,.raid-game .troop-bar,.raid-game .camera-controls button,.raid-game .result-sheet,.raid-game .graphics-error{background:#142b43ed;border-color:#55748e;color:#d7e9f5;box-shadow:0 4px 14px #050f2644}
+.raid-game .base-title p,.raid-game .result-subtitle,.raid-game .debrief,.raid-game .contribution,.raid-game .damage-caption,.raid-game .loot small{color:#a5bfd2}
+.raid-game .timer{background:#142b43;border-color:#55748e}.raid-game .battle-progress{color:#d7e9f5;text-shadow:0 1px 2px #091829}
+.raid-game .deploy-hint:not(:empty),.raid-game .orientation-hint{background:#142b43e8;color:#c6e4f2;border-color:#55748e;text-shadow:none}
+.raid-game .troop{background:linear-gradient(145deg,#355775,#203b55);color:#e1f0fa;border-color:#597c98;box-shadow:none}
+.raid-game .troop.selected{background:#3c647c;border-color:#69dce9;box-shadow:0 0 0 2px #53e1ec}
+.raid-game .troop-count{background:#123448;border-color:#83bed0}.raid-game .retreat{min-height:44px;background:#16334de8;border-color:#55748e}
+.raid-game .result-sheet h2,.raid-game .loot strong,.raid-game .contribution b{color:#d7e9f5}.raid-game .victory h2{color:#77e0e9}.raid-game .loot>div{background:#1e405b;border-color:#55748e}.raid-game .result-backdrop{background:#07132688}
+@media(orientation:portrait){.raid-game .camera-controls{bottom:calc(91px + env(safe-area-inset-bottom))}.raid-game .retreat{bottom:calc(142px + env(safe-area-inset-bottom))}.raid-game .orientation-hint{top:calc(96px + env(safe-area-inset-top))}.raid-game .base-title{max-width:150px}.raid-game .base-title p{font-size:8px}.raid-game .base-title h1{font-size:12px}}
+
+.raid-game .deploy-hint{height:auto;min-height:22px;white-space:nowrap}
+@media(orientation:portrait){.raid-game .camera-controls{bottom:calc(112px + env(safe-area-inset-bottom))}.raid-game .retreat{bottom:calc(163px + env(safe-area-inset-bottom))}}

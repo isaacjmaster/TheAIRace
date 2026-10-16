@@ -16,7 +16,6 @@ export function Headquarters({state}:{state:GameState}) {
    onPointerMove={e=>{const before=pointers.current.get(e.pointerId);if(!before)return;pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.current.size>1){const [a,b]=[...pointers.current.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);if(pinch.current)scene.current?.zoom(d/pinch.current);pinch.current=d;}else scene.current?.pan(e.clientX-before.x,e.clientY-before.y);}}
    onPointerUp={e=>release(e.pointerId)} onPointerCancel={e=>release(e.pointerId)} onWheel={e=>scene.current?.zoom(e.deltaY>0?.95:1.05)} onContextMenu={e=>e.preventDefault()}/>
   {error&&<div className="hq-fallback"><Garage level={state.hardwareLevel} working={false} rigLevel={state.agentLevel?1:0}/><p role="alert">3D view unavailable. Your company is safe. Reload to restore graphics.</p></div>}
-  <div className="world-caption"><span className="status-dot"/> YOUR CAMPUS <small>Drag to explore · Pinch to zoom</small></div>
   <div className="world-camera" aria-label="Headquarters camera"><button aria-label="Zoom in" onClick={()=>scene.current?.zoom(1.12)}>+</button><button aria-label="Zoom out" onClick={()=>scene.current?.zoom(1/1.12)}>−</button><button aria-label="Reset camera" onClick={()=>scene.current?.reset()}>⌖</button></div>
  </section>;
 }
