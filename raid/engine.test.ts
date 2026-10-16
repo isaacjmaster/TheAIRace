@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createRaid, deploy, destruction, rewards, tick, validDeployment, type Kind, type Raid } from './engine';
+import { createRaid, deploy, destruction, rewards, tick, validDeployment, type Kind, type Squad, type Raid } from './engine';
 import { MAP, LEVELS } from './level';
 import { DeploymentGesture } from './gestures';
 import { summarizeRaid } from './outcome';
@@ -105,7 +105,7 @@ test('coordinated strategies can win both spacious layouts with walls still stan
 test('host-supplied squad is copied, validated, and changes combat outcomes', () => {
   const squad={scout:6,tank:0,breaker:0}; const s=createRaid(0,squad); squad.scout=0; assert.equal(s.stock.scout,6);
   assert.throws(()=>createRaid(99)); assert.throws(()=>createRaid(0,{scout:-1,tank:2,breaker:2})); assert.throws(()=>createRaid(0,{scout:0,tank:0,breaker:0}));
-  const run=(kind:Kind)=>{const counts={scout:0,tank:0,breaker:0}; counts[kind]=6; const state=createRaid(0,counts); for(let i=0;i<6;i++)deploy(state,kind,{x:21,y:10+i%2}); advance(state); return [destruction(state),state.lost,state.damage];};
+  const run=(kind:Kind)=>{const counts:Squad={scout:0,tank:0,breaker:0}; counts[kind]=6; const state=createRaid(0,counts); for(let i=0;i<6;i++)deploy(state,kind,{x:21,y:10+i%2}); advance(state); return [destruction(state),state.lost,state.damage];};
   assert.notDeepEqual(run('scout'),run('tank')); assert.notDeepEqual(run('tank'),run('breaker'));
 });
 test('host outcome is a frozen snapshot and cannot be collected before completion', () => {

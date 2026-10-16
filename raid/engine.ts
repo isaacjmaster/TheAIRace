@@ -1,29 +1,40 @@
 import { MAP, LEVELS } from './level';
-export type Kind = 'scout' | 'tank' | 'breaker';
+export type Kind = 'scout' | 'tank' | 'breaker' | 'striker' | 'medic' | 'disruptor';
+export type Squad = Record<'scout'|'tank'|'breaker',number> & Partial<Record<'striker'|'medic'|'disruptor',number>>;
 export type Point = { x: number; y: number };
-export type Building = Point & { id: number; kind: 'core' | 'vault' | 'turret' | 'wall'; hp: number; maxHp: number; cooldown: number; target?: number };
+export type Building = Point & { id: number; kind: 'core' | 'vault' | 'turret' | 'wall' | 'missile' | 'shield' | 'repair'; disabledUntil?: number; hp: number; maxHp: number; cooldown: number; target?: number };
 export type Unit = Point & { id: number; kind: Kind; hp: number; maxHp: number; cooldown: number; target?: number; objective?: number; waypoint?: Point };
 export type Effect = { id: number; from: Point; to: Point; ttl: number; color: string; damage: number; source: number; target: number; destroyed: boolean };
-export type Raid = { layout: number; time: number; buildings: Building[]; units: Unit[]; stock: Record<Kind, number>; effects: Effect[]; ended: boolean; reason: string; damage: Record<Kind, number>; lost: number; nextId: number; power: number };
+export type Raid = { layout: number; time: number; buildings: Building[]; units: Unit[]; stock: Record<Kind, number>; effects: Effect[]; ended: boolean; reason: string; damage: Record<Kind, number>; lost: number; nextId: number; power: number; healthPower: number };
 export const STATS = {
   scout: { name: 'Scout', hp: 85, speed: 1.55, damage: 16, range: .85, interval: .7, color: '#52e6d2', role: 'Fast · targets compute' },
   tank: { name: 'Tank', hp: 390, speed: .68, damage: 24, range: .95, interval: 1.15, color: '#8da9ff', role: 'Armored · absorbs fire' },
   breaker: { name: 'Breaker', hp: 135, speed: 1.05, damage: 38, range: 1.05, interval: .9, color: '#ffb868', role: 'Targets defenses · breaches walls' },
+  striker: { name:'Striker',hp:110,speed:1.1,damage:58,range:2.7,interval:1.05,color:'#fa83b1',role:'Ranged precision - targets the core' },
+  medic: { name:'Medic',hp:125,speed:1.15,damage:8,range:2.4,interval:.9,color:'#90efab',role:'Repairs nearby wounded allies' },
+  disruptor: { name:'Disruptor',hp:145,speed:.95,damage:17,range:2.6,interval:1.4,color:'#bd9cff',role:'Disables defenses for 2 seconds' },
 } as const;
+export const KINDS = Object.keys(STATS) as Kind[];
 export const STEP = .05;
 export const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 export const objectives = (s: Raid) => s.buildings.filter(b => b.kind !== 'wall');
-export const DEFAULT_SQUAD: Readonly<Record<Kind, number>> = Object.freeze({ scout: 2, tank: 2, breaker: 2 });
-export function createRaid(layout = 0, squad: Readonly<Record<Kind, number>> = DEFAULT_SQUAD, power = 1): Raid {
+export const DEFAULT_SQUAD: Readonly<Squad> = Object.freeze({ scout: 2, tank: 2, breaker: 2 });
+export function createRaid(layout = 0, squad: Readonly<Squad> = DEFAULT_SQUAD, power = 1, healthPower = power): Raid {
   if (!LEVELS[layout]) throw new Error('Unknown raid layout');
-  if (Object.values(squad).some(n => !Number.isInteger(n) || n < 0 || n > 12) || Object.values(squad).reduce((a, b) => a + b, 0) < 1 || Object.values(squad).reduce((a, b) => a + b, 0) > 12) throw new Error('Squad must contain 1 to 12 agents');
+  if (Object.values(squad).some(n => !Number.isInteger(n) || n < 0 || n > 24) || Object.values(squad).reduce((a, b) => a + b, 0) < 1 || Object.values(squad).reduce((a, b) => a + b, 0) > 24) throw new Error('Squad must contain 1 to 24 agents');
+  if (Object.keys(squad).some(k => !KINDS.includes(k as Kind)) || !Number.isFinite(power) || power < 1 || power > 10 || !Number.isFinite(healthPower) || healthPower<1 || healthPower>10) throw new Error('Invalid squad power');
   const level = LEVELS[layout], bounds = MAP.walls;
   const buildings: Building[] = [];
   const add = (kind: Building['kind'], x: number, y: number, hp: number) => buildings.push({ id: buildings.length, kind, x, y, hp, maxHp: hp, cooldown: 0 });
   add('core', level.core.x, level.core.y, 2200); add('vault', level.vault.x, level.vault.y, 750); add('turret', level.turret.x, level.turret.y, 850);
   for (let x: number = bounds.left; x <= bounds.right; x++) { if (x !== level.gate) add('wall', x, bounds.top, 150); add('wall', x, bounds.bottom, 150); }
   for (let y: number = bounds.top + 1; y < bounds.bottom; y++) { add('wall', bounds.left, y, 150); add('wall', bounds.right, y, 150); }
-  return { power, layout, time: 0, buildings, units: [], stock: { ...squad }, effects: [], ended: false, reason: '', damage: { scout: 0, tank: 0, breaker: 0 }, lost: 0, nextId: 100 };
+  if (layout > 1) {
+    for (const b of buildings) { b.hp = Math.round(b.hp * (level.strength ?? 1)); b.maxHp=b.hp; }
+    for (const b of level.extras ?? []) add(b.kind,b.x,b.y,b.hp);
+    for (const p of level.partitions ?? []) add('wall',p.x,p.y,Math.round(180*(level.strength??1)));
+  }
+  return { power, healthPower, layout, time: 0, buildings, units: [], stock: Object.fromEntries(KINDS.map(k=>[k,squad[k]??0])) as Record<Kind,number>, effects: [], ended: false, reason: '', damage: { scout: 0, tank: 0, breaker: 0, striker:0,medic:0,disruptor:0 }, lost: 0, nextId: 100 };
 }
 export function validDeployment(p: Point) {
   const b = MAP.deployment;
@@ -32,7 +43,7 @@ export function validDeployment(p: Point) {
 export function deploy(s: Raid, kind: Kind, p: Point) {
   if (s.ended || !s.stock[kind] || !validDeployment(p)) return false;
   // Snap to a cell center so the first path step cannot clip a corner.
-  s.stock[kind]--; s.units.push({ x: Math.round(p.x), y: Math.round(p.y), id: s.nextId++, kind, hp: STATS[kind].hp * s.power, maxHp: STATS[kind].hp * s.power, cooldown: 0 }); return true;
+  s.stock[kind]--; s.units.push({ x: Math.round(p.x), y: Math.round(p.y), id: s.nextId++, kind, hp: STATS[kind].hp * s.healthPower, maxHp: STATS[kind].hp * s.healthPower, cooldown: 0 }); return true;
 }
 const cell = (p: Point) => Math.round(p.y) * MAP.width + Math.round(p.x);
 const point = (n: number): Point => ({ x: n % MAP.width, y: Math.floor(n / MAP.width) });
@@ -63,15 +74,17 @@ function route(s: Raid, u: Unit, target: Building): Route {
   }
   return { path: [], cost: Infinity };
 }
-const priority = (u: Unit, b: Building) => u.kind === 'scout' ? (b.kind === 'vault' ? 0 : b.kind === 'core' ? 1 : 2) : u.kind === 'breaker' ? (b.kind === 'turret' ? 0 : b.kind === 'core' ? 1 : 2) : 0;
+const defense = (b: Building) => ['turret','missile','shield','repair'].includes(b.kind);
+const priority = (u: Unit, b: Building) => u.kind==='disruptor' ? (defense(b)?0:1) : u.kind==='striker' ? (b.kind==='core'?0:1) : u.kind === 'scout' ? (b.kind === 'vault' ? 0 : b.kind === 'core' ? 1 : 2) : u.kind === 'breaker' ? (defense(b) ? 0 : b.kind === 'core' ? 1 : 2) : 0;
 function choose(s: Raid, u: Unit) {
   return objectives(s).filter(b => b.hp > 0).map(b => ({ b, route: route(s, u, b) })).filter(c => Number.isFinite(c.route.cost))
     .sort((a, b) => priority(u, a.b) - priority(u, b.b) || a.route.cost - b.route.cost || a.b.id - b.b.id)[0];
 }
 export function destruction(s: Raid) { const meaningful = objectives(s); return meaningful.length ? Math.round(100 * meaningful.filter(b => b.hp <= 0).length / meaningful.length) : 100; }
-export function rewards(s: Raid) { return { compute: (s.buildings.some(b => b.kind === 'vault' && b.hp <= 0) ? 120 : 0) + Math.floor(destruction(s) * .8), credits: destruction(s) * 3 + (s.buildings.some(b => b.kind === 'core' && b.hp <= 0) ? 200 : 0) }; }
+export function rewards(s: Raid) { const scale=LEVELS[s.layout].rewardScale??1; return { compute: Math.floor(((s.buildings.some(b => b.kind === 'vault' && b.hp <= 0) ? 120 : 0) + Math.floor(destruction(s) * .8))*scale), credits: Math.floor((destruction(s) * 3 + (s.buildings.some(b => b.kind === 'core' && b.hp <= 0) ? 200 : 0))*scale) }; }
 export function finish(s: Raid, reason: string) { s.ended = true; s.reason = reason; }
 function hit(s: Raid, from: Point, target: Building | Unit, damage: number, source: number, color: string) {
+  if (target.id < 100 && (target as Building).kind!=='wall' && (target as Building).kind!=='shield' && s.buildings.some(b=>b.kind==='shield'&&b.hp>0&&(b.disabledUntil??0)<=s.time&&distance(b,target)<=4)) damage*=.55;
   const dealt = Math.min(target.hp, damage); target.hp = Math.max(0, target.hp - damage);
   s.effects.push({ id: s.nextId++, from: { x: from.x, y: from.y }, to: { x: target.x, y: target.y }, ttl: .3, color, damage: dealt, source, target: target.id, destroyed: !target.hp });
   return dealt;
@@ -82,6 +95,10 @@ export function tick(s: Raid) {
   s.time = Math.min(90, s.time + STEP); s.effects = s.effects.filter(e => (e.ttl -= STEP) > 0);
   for (const u of s.units.filter(u => u.hp > 0)) {
     const stats = STATS[u.kind]; u.cooldown -= STEP;
+    if (u.kind==='medic' && u.cooldown<=0) {
+      const ally=s.units.filter(a=>a.id!==u.id&&a.hp>0&&a.hp<a.maxHp&&distance(a,u)<=3.5).sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp||a.id-b.id)[0];
+      if(ally){ const amount=Math.min(32*s.power,ally.maxHp-ally.hp);ally.hp+=amount;u.cooldown=stats.interval;s.effects.push({id:s.nextId++,from:{x:u.x,y:u.y},to:{x:ally.x,y:ally.y},ttl:.3,color:stats.color,damage:-amount,source:u.id,target:ally.id,destroyed:false});continue; }
+    }
     // Finish one grid edge before replanning; never cut an occupied corner.
     if (u.waypoint) { const d = distance(u, u.waypoint), move = Math.min(d, stats.speed * STEP); if (d) { u.x += (u.waypoint.x - u.x) / d * move; u.y += (u.waypoint.y - u.y) / d * move; } if (d <= move + 1e-8) { u.x = u.waypoint.x; u.y = u.waypoint.y; u.waypoint = undefined; } continue; }
     let objective = s.buildings.find(b => b.id === u.objective && b.kind !== 'wall' && b.hp > 0);
@@ -94,17 +111,19 @@ export function tick(s: Raid) {
     const wall = next && s.buildings.find(b => b.kind === 'wall' && b.hp > 0 && b.x === next.x && b.y === next.y);
     const target = wall ?? objective; u.target = target.id;
     if (distance(u, target) <= stats.range) {
-      if (u.cooldown <= 0) { const damage = stats.damage * s.power * (u.kind === 'breaker' && target.kind === 'wall' ? 2 : 1); s.damage[u.kind] += hit(s, u, target, damage, u.id, stats.color); u.cooldown = stats.interval; }
+      if (u.cooldown <= 0) { const damage = stats.damage * s.power * (u.kind === 'breaker' && target.kind === 'wall' ? 2 : 1); s.damage[u.kind] += hit(s, u, target, damage, u.id, stats.color); if(u.kind==='disruptor'&&defense(target))target.disabledUntil=s.time+2; u.cooldown = stats.interval; }
     } else if (next && !wall && distance(u, objective) > 1.01) { u.waypoint = next; }
     // Approach the target's attack radius without entering its occupied cell.
     else if (distance(u, target) > stats.range) { const d = distance(u, target), move = Math.min(Math.max(0, d - stats.range + .001), stats.speed * STEP); if (d) { u.x += (target.x - u.x) / d * move; u.y += (target.y - u.y) / d * move; } }
     if (objectives(s).every(b => b.hp <= 0)) { finish(s, 'Network cleared'); return; }
   }
-  for (const b of s.buildings.filter(b => b.kind === 'turret' && b.hp > 0)) {
+  for (const b of s.buildings.filter(b => (b.kind === 'turret'||b.kind==='missile'||b.kind==='repair') && b.hp > 0)) {
+    if((b.disabledUntil??0)>s.time) {b.target=undefined;continue;}
     b.cooldown -= STEP;
-    const target = s.units.filter(u => u.hp > 0 && distance(u, b) <= 5).sort((a, c) => distance(a, b) - distance(c, b) || a.id - c.id)[0];
+    if(b.kind==='repair') { const ally=s.buildings.filter(a=>a.id!==b.id&&a.kind!=='wall'&&a.hp>0&&a.hp<a.maxHp&&distance(a,b)<=5).sort((a,c)=>a.hp/a.maxHp-c.hp/c.maxHp||a.id-c.id)[0]; if(ally&&b.cooldown<=0){const amount=Math.min(28,ally.maxHp-ally.hp);ally.hp+=amount;b.cooldown=1;s.effects.push({id:s.nextId++,from:{x:b.x,y:b.y},to:{x:ally.x,y:ally.y},ttl:.3,color:'#90efab',damage:-amount,source:b.id,target:ally.id,destroyed:false});}continue; }
+    const target = s.units.filter(u => u.hp > 0 && distance(u, b) <= (b.kind==='missile'?8:5)).sort((a, c) => distance(a, b) - distance(c, b) || a.id - c.id)[0];
     b.target = target?.id;
-    if (target && b.cooldown <= 0) { hit(s, b, target, 26, b.id, '#ff6487'); if (!target.hp) s.lost++; b.cooldown = .65; }
+    if (target && b.cooldown <= 0) { const targets=b.kind==='missile'?s.units.filter(u=>u.hp>0&&distance(u,target)<=1.4):[target]; for(const victim of targets){hit(s,b,victim,b.kind==='missile'?42:26,b.id,b.kind==='missile'?'#ffb868':'#ff6487');if(!victim.hp)s.lost++;} b.cooldown=b.kind==='missile'?2.1:.65; }
   }
   if (s.time >= 90) finish(s, 'Time expired');
   else if (Object.values(s.stock).every(n => !n) && s.units.every(u => !u.hp)) finish(s, 'Squad eliminated');

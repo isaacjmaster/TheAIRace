@@ -1,4 +1,5 @@
 import express from 'express';
+import { registerProgression } from './progression-api.js';
 import { registerRaids } from './raid-api.js';
 import { DatabaseSync } from 'node:sqlite';
 import { randomUUID } from 'node:crypto';
@@ -45,6 +46,7 @@ function session(req: express.Request, res: express.Response): { id: string; sta
 }
 registerExpeditions(app, db, session);
 registerRaids(app, db, session);
+registerProgression(app, db, session);
 function onboarding(id: string) {
   const row = db.prepare('SELECT storySeen,tutorial FROM onboarding WHERE session=?').get(id);
   return row ? { isNewPlayer: true, storySeen: !!row.storySeen, tutorial: row.tutorial } : { isNewPlayer: false, storySeen: true, tutorial: 'dismissed' };
@@ -79,6 +81,7 @@ app.post('/api/command', (req, res) => {
     const state: GameState = JSON.parse(row.state as string);
     if (input.revision !== state.revision) { db.exec('ROLLBACK'); res.status(409).json({ error: 'Your company changed. Refresh and try again.' }); return; }
     if (input.command.type === 'start' && readExpedition(db, id).run) throw new Error('Pixel is exploring. Return to HQ before starting a contract.');
+    if(state.campus && (input.command.type==='upgrade'||input.command.type==='agent-upgrade')) throw new Error('Use the timed building upgrade in your campus.');
     const next = applyCommand(state, input.command, Date.now());
     const response = JSON.stringify({ state: next });
     db.prepare('UPDATE sessions SET state=? WHERE id=?').run(JSON.stringify(next), id);

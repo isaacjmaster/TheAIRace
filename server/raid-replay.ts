@@ -2,7 +2,7 @@ import { createRaid, deploy, tick, finish } from '../raid/engine';
 import { summarizeRaid } from '../raid/outcome';
 import type { RaidRun, Transcript } from '../shared/raid';
 export function replayRaid(run: RaidRun, log: Transcript) {
-  const s = createRaid(run.layout, run.squad, run.power);
+  const s = createRaid(run.layout, run.squad, run.power, run.healthPower);
   let index = 0;
   for (let step = 0; step <= log.steps; step++) {
     while (index < log.deployments.length && log.deployments[index].step === step) {

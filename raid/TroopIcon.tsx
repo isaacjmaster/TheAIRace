@@ -1,6 +1,7 @@
-import type { Kind } from './engine';
+import { STATS, type Kind } from './engine';
 
 export function TroopIcon({ kind }: { kind: Kind }) {
+  if(kind==='striker'||kind==='medic'||kind==='disruptor') return <svg viewBox="0 0 72 68" aria-hidden="true" className={`troop-art ${kind}`}><ellipse cx="36" cy="59" rx="22" ry="5" fill="#122d46"/><path d="M22 44h10v15H21Zm18 0h10v15H40Z" fill="#476487"/><path d="M17 29 37 21 56 30v20L36 57 17 47Z" fill={STATS[kind].color}/><path d="M24 12 39 8 51 15v16L37 36 24 28Z" fill="#d7e9f5"/><path d="m36 22 14-5v9l-14 5Z" fill="#173851"/>{kind==='medic'?<><path d="M32 35h8v16h-8zM28 39h16v8H28Z" fill="#ecfff4"/><circle cx="15" cy="35" r="7" fill="#90efab"/></>:kind==='striker'?<><path d="m48 38 20-7v7l-20 7Z" fill="#fa83b1"/><path d="M54 30h15v5H54Z" fill="#d7e9f5"/><path d="M16 31 24 32v17l-8-4Z" fill="#334d70"/></>:<><path d="M17 22V6m-5 5 5-5 5 5" fill="none" stroke="#bd9cff" strokeWidth="4"/><circle cx="57" cy="36" r="9" fill="#253c52" stroke="#bd9cff" strokeWidth="4"/><circle cx="57" cy="36" r="3" fill="#d7e9f5"/></>}</svg>;
   return <svg viewBox="0 0 72 68" aria-hidden="true" className={`troop-art ${kind}`}><ellipse cx="37" cy="59" rx="23" ry="5" fill="#122d46" opacity=".22"/>{kind === 'tank' ? <>
     <path d="M11 37 43 26 65 38 65 52 34 64 11 51Z" fill="#263b58"/><path d="M12 38 34 48 34 59 12 49Z" fill="#536f97"/><path d="M35 49 65 39 65 51 35 62Z" fill="#334d70"/>
     <path d="M17 33 42 24 60 34 35 44Z" fill="#b7ceff"/><path d="M17 33 35 44 35 53 17 43Z" fill="#7198d7"/><path d="M35 44 60 34 60 43 35 53Z" fill="#5778b3"/>

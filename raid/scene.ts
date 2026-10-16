@@ -120,7 +120,7 @@ export class RaidScene {
   private building(b: Building) {
     const group = new THREE.Group(), body = new THREE.Group(); group.position.copy(world(b)); group.add(body); this.root.add(group);
     let turret: THREE.Group | undefined, rotor: THREE.Object3D | undefined;
-    const height = (b.kind === 'core' ? 3 : b.kind === 'vault' ? 2.1 : b.kind === 'turret' ? 1.9 : 1.05) * (b.kind === 'wall' ? 1 : 1.18);
+    const height = (b.kind === 'core' ? 3 : b.kind === 'vault' ? 2.1 : b.kind !== 'wall' ? 1.9 : 1.05) * (b.kind === 'wall' ? 1 : 1.18);
     if (b.kind !== 'wall') body.scale.setScalar(1.18);
     const color = b.kind === 'core' ? colors.purple : b.kind === 'vault' ? colors.gold : colors.coral;
     if (b.kind === 'wall') {
@@ -147,6 +147,18 @@ export class RaidScene {
       this.cylinder(body, .24, .35, [.39, 1.7, 0], colors.gold, 8);
       this.box(body, [.14, .6, 1.27], [-.68, .85, 0], colors.cream, .02);
       this.box(body, [.14, .6, 1.27], [.68, .85, 0], colors.cream, .02);
+    } else if(b.kind==='shield'||b.kind==='repair') {
+      this.box(body,[1.5,.22,1.5],[0,.15,0],colors.dark,.12);
+      this.box(body,[1,.9,1],[0,.7,0],b.kind==='shield'?'#5969a6':'#427b85',.14);
+      this.cylinder(body,.56,.18,[0,1.25,0],b.kind==='shield'?'#bd9cff':'#90efab',8);
+      this.cylinder(body,.16,.7,[0,1.6,0],colors.cream,8);
+      if(b.kind==='shield'){const ring=new THREE.Mesh(this.geometry('shield-ring',()=>new THREE.TorusGeometry(.65,.055,6,16)),this.mat('#bd9cff',true));ring.position.y=1.7;body.add(ring);}
+      else {this.box(body,[.7,.16,.16],[0,1.75,0],'#90efab',.03,true);this.box(body,[.16,.7,.16],[0,1.75,0],'#90efab',.03,true);}
+    } else if(b.kind==='missile') {
+      this.box(body,[1.5,.3,1.5],[0,.2,0],colors.dark,.12);
+      this.box(body,[1.1,.8,1.1],[0,.75,0],'#456082',.1);
+      turret=new THREE.Group();turret.position.y=1.2;body.add(turret);
+      for(const x of [-.32,.32]){this.box(turret,[.45,.55,.9],[x,.15,0],'#c18c66',.06);this.cylinder(turret,.12,.55,[x,.65,0],colors.gold,6);}
     } else {
       this.box(body, [1.45, .22, 1.45], [0, .14, 0], colors.dark, .12);
       this.cylinder(body, .52, .6, [0, .54, 0], colors.cream, 8);
@@ -157,6 +169,8 @@ export class RaidScene {
       this.box(turret, [.35, .3, .16], [0, .18, 1.2], colors.coral, .04, true);
       this.box(turret, [.5, .07, .37], [0, .36, 0], colors.cream, .03);
     }
+    if(b.kind==='shield') {const aura=new THREE.Mesh(this.geometry('shield-aura',()=>new THREE.RingGeometry(3.91/1.18,4/1.18,48)),this.mat('#524e80'));aura.rotation.x=-Math.PI/2;aura.position.y=.045;aura.name='shield-aura';body.add(aura);}
+    if(['turret','missile','shield','repair'].includes(b.kind)){const status=new THREE.Mesh(this.geometry('disabled-ring',()=>new THREE.TorusGeometry(.6,.045,5,16)),this.mat('#bd9cff',true));status.rotation.x=Math.PI/2;status.position.y=2;status.name='disabled-ring';status.visible=false;body.add(status);}
     const health = this.health(height + .2, color); group.add(health.hp);
     return { group, body, ...health, lastHp: b.hp, lastHit: -10, born: this.clock, dead: false, turret, rotor };
   }
@@ -190,7 +204,16 @@ export class RaidScene {
       this.box(body, [.46, .35, .34], [0, .4, 0], color, .09);
       this.box(body, [.37, .25, .32], [0, .68, .015], colors.cream, .08);
       this.box(body, [.28, .09, .06], [0, .68, .19], u.kind === 'scout' ? '#187b85' : '#9e502b', .025);
-      if (u.kind === 'breaker') {
+      if(u.kind==='medic') {
+        this.box(body,[.32,.1,.08],[0,.42,.2],'#ecfff4',.015,true);this.box(body,[.1,.3,.08],[0,.42,.2],'#ecfff4',.015,true);
+        this.cylinder(body,.13,.4,[-.29,.42,0],'#90efab',6);
+      } else if(u.kind==='striker') {
+        this.box(body,[.18,.18,.85],[.28,.43,.27],colors.dark,.04);this.box(body,[.19,.12,.16],[.28,.44,.72],color,.025,true);
+        this.box(body,[.5,.08,.4],[0,.8,0],color,.035);
+      } else if(u.kind==='disruptor') {
+        this.cylinder(body,.04,.55,[-.2,.9,-.06],color,6);this.cylinder(body,.17,.13,[.29,.42,.15],color,8);
+        const ring=new THREE.Mesh(this.geometry('disruptor-ring',()=>new THREE.TorusGeometry(.2,.035,5,12)),this.mat(color,true));ring.position.set(.29,.5,.22);body.add(ring);
+      } else if (u.kind === 'breaker') {
         this.box(body, [.2, .4, .25], [-.27, .35, .04], '#db8d3d', .05);
         this.box(body, [.2, .22, .43], [.27, .35, .14], colors.dark, .06);
         const drill = new THREE.Mesh(this.geometry('drill', () => new THREE.ConeGeometry(.16, .38, 8)), this.mat('#ffdc8c')); drill.rotation.x = Math.PI / 2; drill.position.set(.27, .35, .53); body.add(drill); rotor = drill;
@@ -231,6 +254,7 @@ export class RaidScene {
     for (const entity of [...s.buildings, ...s.units]) {
       let v = this.visuals.get(entity.id); if (!v) { v = this.unit(entity as Unit); this.visuals.set(entity.id, v); this.burst(world(entity, .1), STATS[(entity as Unit).kind].color); }
       const isUnit = entity.id >= 100;
+      if(!isUnit){const disabled=((entity as Building).disabledUntil??0)>s.time;const status=v.body.getObjectByName('disabled-ring');if(status)status.visible=disabled;const aura=v.body.getObjectByName('shield-aura');if(aura)aura.visible=!disabled;}
       if (entity.hp <= 0) {
         if (!v.dead) { v.dead = true; v.hp.visible = false; this.burst(world(entity, .4), isUnit ? STATS[(entity as Unit).kind].color : '#ffb568', !isUnit); v.body.visible = false;
           const wallIndex = this.wallIndices.get(entity.id); if (wallIndex !== undefined) for (const mesh of this.wallMeshes) { mesh.setMatrixAt(wallIndex, new THREE.Matrix4().makeScale(0, 0, 0)); mesh.instanceMatrix.needsUpdate = true; }

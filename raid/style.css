@@ -668,3 +668,11 @@ to {
 
 .raid-game .deploy-hint{height:auto;min-height:22px;white-space:nowrap}
 @media(orientation:portrait){.raid-game .camera-controls{bottom:calc(112px + env(safe-area-inset-bottom))}.raid-game .retreat{bottom:calc(163px + env(safe-area-inset-bottom))}}
+
+/* Keep the expanded roster reachable on narrow landscape phones. */
+.raid-game .troop-bar{max-width:min(680px,calc(100vw - 160px));overflow-x:auto;overscroll-behavior-x:contain;justify-content:flex-start;scrollbar-width:thin}
+.raid-game .troop{flex:0 0 auto}
+.raid-game .contribution{flex-wrap:wrap;gap:6px 12px}
+@media(max-height:500px){.raid-game .troop{width:70px;min-width:70px}.raid-game .troop-bar{gap:7px;padding:5px 9px}.raid-game .troop-art{height:39px;left:14px}.raid-game .result-sheet{max-height:92dvh;overflow-y:auto}.raid-game .result-stars{font-size:21px;letter-spacing:2px}}
+
+.raid-game .contribution{flex-wrap:wrap;row-gap:6px}.raid-game .contribution>span{min-width:45px}
