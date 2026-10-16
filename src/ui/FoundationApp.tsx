@@ -1,8 +1,9 @@
-import {lazy,Suspense,useEffect,useRef,useState,useSyncExternalStore} from 'react';
+import {lazy,Suspense,useEffect,useLayoutEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {GPU_RIG,type RigPosition,type FoundationState} from '../../shared/foundation';
 import {sound} from '../audio/sound';
 import {PORTRAIT_GAME,requestLandscape} from './mobile';
 import './foundation.css';
+import {setPresentationBackground} from './viewport';
 import {CompanyStatus} from './CompanyStatus';
 const World=lazy(()=>import('./FoundationWorld').then(m=>({default:m.FoundationWorld})));
 async function api(body?:unknown){const response=await fetch(body?'/api/foundation/reset':'/api/foundation',body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:undefined);const result=await response.json();if(!response.ok)throw new Error(result.error||'Connection lost. Please retry.');return result.state as FoundationState;}
@@ -15,7 +16,7 @@ export function App(){
  async function load(){try{const next=await api();setState(old=>!old||next.revision>=old.revision?next:old);setError('');}catch(e){setError((e as Error).message);}}
  useEffect(()=>{void load();sound.setMode('hq');const timer=setTimeout(()=>setPhase('menu'),matchMedia('(prefers-reduced-motion: reduce)').matches?150:2000);const visibility=()=>sound.visibility(document.hidden);document.addEventListener('visibilitychange',visibility);return()=>{clearTimeout(timer);document.removeEventListener('visibilitychange',visibility);};},[]);
  useEffect(()=>{const media=matchMedia(PORTRAIT_GAME);const change=()=>setPortrait(media.matches);media.addEventListener('change',change);return()=>media.removeEventListener('change',change);},[]);
- useEffect(()=>{const color=phase==='splash'?'#07090c':phase==='menu'?'#091829':'#0e2037';document.documentElement.style.backgroundColor=color;document.body.style.backgroundColor=color;document.querySelector('meta[name="theme-color"]')?.setAttribute('content',color);},[phase]);
+ useLayoutEffect(()=>{setPresentationBackground(phase);},[phase]);
  useEffect(()=>{if(panel){dialog.current?.querySelector<HTMLButtonElement>('button')?.focus();}else lastFocus.current?.focus();},[panel]);
  useEffect(()=>{if(phase!=='game')return;const tick=setInterval(()=>setNow(Date.now()+offset.current),250);const sync=async()=>{if(document.hidden||gate.current||panel==='reset')return;try{const r=await fetch('/api/foundation');const data=await r.json();if(r.ok){offset.current=data.serverTime-Date.now();setState(old=>!old||data.state.revision>=old.revision?data.state:old);}}catch{}};const timer=setInterval(()=>void sync(),2000);const resume=()=>void sync();document.addEventListener('visibilitychange',resume);return()=>{clearInterval(timer);clearInterval(tick);document.removeEventListener('visibilitychange',resume);};},[phase,panel]);
  useEffect(()=>{if(!collected)return;const timer=setTimeout(()=>setCollected(null),1800);return()=>clearTimeout(timer);},[collected]);
