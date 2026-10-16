@@ -1,3 +1,9 @@
+# The AI Race — Integrated Prototype 0.5
+
+Landscape HQ, unified 3D raids, and original procedural audio. See [V05_TESTING.md](V05_TESTING.md) for the current launch instructions, checkpoint, save compatibility, audio details, and desktop/iPhone tests.
+
+The notes below describe previous milestones.
+
 # The AI Race — Garage + Raid Integration
 
 This checkout is the isolated `codex/ai-race-integrated` prototype. Start with [INTEGRATION.md](INTEGRATION.md) for launch commands, desktop/iPhone testing, save isolation, upgrade effects, and verification results.

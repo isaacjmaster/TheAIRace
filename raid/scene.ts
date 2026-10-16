@@ -1,3 +1,4 @@
+import { palette as colors, lightWorld, material } from '../src/art/world';
 import { MAP } from './level';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -6,7 +7,7 @@ import { STATS, validDeployment, type Building, type Effect, type Kind, type Poi
 type Visual = { group: THREE.Group; body: THREE.Group; hp: THREE.Sprite; hpTexture: THREE.CanvasTexture; hpCanvas: HTMLCanvasElement; lastHp: number; lastHit: number; born: number; turret?: THREE.Group; rotor?: THREE.Object3D; dead: boolean };
 type Burst = { group: THREE.Group; age: number; life: number; particles: { mesh: THREE.Mesh; velocity: THREE.Vector3 }[] };
 const world = (p: Point, height = 0) => new THREE.Vector3(p.x - MAP.center.x, height, p.y - MAP.center.y);
-const colors = { cream: '#edf1df', dark: '#253c52', slate: '#4e7181', cyan: '#6ff2dc', purple: '#a39aff', gold: '#ffcd75', coral: '#ff7393' };
+
 
 /** Read-only view of the engine. Every shot, death, position and HP comes from Raid. */
 export class RaidScene {
@@ -39,21 +40,12 @@ export class RaidScene {
 
   constructor(readonly host: HTMLDivElement, readonly onError: (message: string) => void) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
-    this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFShadowMap;
-    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.0;
+    lightWorld(this.renderer, this.scene);
     this.renderer.domElement.setAttribute('aria-label', '3D raid battlefield. Tap the mint perimeter to deploy. Drag to move the camera.');
     this.renderer.domElement.setAttribute('role', 'img');
     host.appendChild(this.renderer.domElement);
     this.renderer.domElement.addEventListener('webglcontextlost', this.contextLost);
-    this.scene.background = new THREE.Color('#abcac6');
-    this.scene.fog = new THREE.Fog('#abcac6', 40, 85);
-    this.scene.add(new THREE.HemisphereLight('#efffff', '#668587', 2.5));
-    const sun = new THREE.DirectionalLight('#fff1d2', 3.4); sun.position.set(-9, 22, 12); sun.castShadow = true;
-    sun.shadow.mapSize.set(1024, 1024); sun.shadow.camera.left = -19; sun.shadow.camera.right = 19; sun.shadow.camera.top = 19; sun.shadow.camera.bottom = -19;
-    sun.shadow.normalBias = .035; sun.shadow.bias = -.0002; sun.shadow.camera.near = 1; sun.shadow.camera.far = 65;
-    this.scene.add(sun); this.scene.add(this.root);
+    this.scene.add(this.root);
     this.environment();
     this.cursor = new THREE.Mesh(new THREE.RingGeometry(.36, .46, 40), new THREE.MeshBasicMaterial({ color: colors.cyan, transparent: true, opacity: .9, depthWrite: false, side: THREE.DoubleSide }));
     this.cursor.rotation.x = -Math.PI / 2; this.cursor.visible = false; this.scene.add(this.cursor);
@@ -62,7 +54,7 @@ export class RaidScene {
   }
   private mat(color: string, glow = false) {
     const key = color + glow; let m = this.materials.get(key);
-    if (!m) { m = new THREE.MeshStandardMaterial({ color, roughness: .64, metalness: .12, emissive: glow ? color : '#000000', emissiveIntensity: glow ? .65 : 0 }); this.materials.set(key, m); } return m;
+    if (!m) { m = material(color, glow); this.materials.set(key, m); } return m;
   }
   private geometry(key: string, create: () => THREE.BufferGeometry) { let g = this.geometries.get(key); if (!g) { g = create(); this.geometries.set(key, g); } return g; }
   private box(parent: THREE.Object3D, size: [number, number, number], pos: [number, number, number], color: string, radius = .06, glow = false) {
@@ -304,6 +296,7 @@ export class RaidScene {
   dispose() {
     this.resizeObserver.disconnect(); this.clearBattle(); this.renderer.domElement.removeEventListener('webglcontextlost', this.contextLost);
     for (const g of this.geometries.values()) g.dispose(); for (const m of this.materials.values()) m.dispose();
-    this.cursor.geometry.dispose(); (this.cursor.material as THREE.Material).dispose(); this.renderer.dispose(); this.renderer.domElement.remove();
+    this.scene.traverse(node => { if (node instanceof THREE.DirectionalLight) node.shadow.dispose(); });
+    this.cursor.geometry.dispose(); (this.cursor.material as THREE.Material).dispose(); this.renderer.dispose(); this.renderer.forceContextLoss(); this.renderer.domElement.remove();
   }
 }

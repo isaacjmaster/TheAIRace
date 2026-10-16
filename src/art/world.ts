@@ -1,0 +1,42 @@
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+/** One art direction for the company campus and enemy networks. */
+export const palette = { cream:'#edf1df', dark:'#253c52', slate:'#4e7181', cyan:'#6ff2dc', purple:'#a39aff', gold:'#ffcd75', coral:'#ff7393', sky:'#abcac6', grass:'#76b393', terracotta:'#dd987e' };
+export function material(color:string, glow=false) {
+ return new THREE.MeshStandardMaterial({color,roughness:.64,metalness:.12,emissive:glow?color:'#000000',emissiveIntensity:glow?.65:0});
+}
+export function lightWorld(renderer:THREE.WebGLRenderer, scene:THREE.Scene) {
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.6));
+ renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;
+ renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;
+ scene.background=new THREE.Color(palette.sky);scene.fog=new THREE.Fog(palette.sky,40,85);
+ scene.add(new THREE.HemisphereLight('#efffff','#668587',2.5));
+ const sun=new THREE.DirectionalLight('#fff1d2',3.4);sun.position.set(-9,22,12);sun.castShadow=true;
+ sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-21,right:21,top:21,bottom:-21,near:1,far:65});sun.shadow.normalBias=.035;sun.shadow.bias=-.0002;scene.add(sun);
+ return sun;
+}
+export class WorldKit {
+ private geometries=new Map<string,THREE.BufferGeometry>();
+ private materials=new Map<string,THREE.Material>();
+ private textures:THREE.Texture[]=[];
+ mat(color:string,glow=false){const key=color+glow;if(!this.materials.has(key))this.materials.set(key,material(color,glow));return this.materials.get(key)!;}
+ private geometry(key:string,make:()=>THREE.BufferGeometry){if(!this.geometries.has(key))this.geometries.set(key,make());return this.geometries.get(key)!;}
+ box(parent:THREE.Object3D,size:[number,number,number],position:[number,number,number],color:string,radius=.06,glow=false){
+  const mesh=new THREE.Mesh(this.geometry('box'+size.join()+radius,()=>new RoundedBoxGeometry(...size,1,radius)),this.mat(color,glow));
+  mesh.position.set(...position);mesh.castShadow=!glow&&size[1]>.15;mesh.receiveShadow=true;parent.add(mesh);return mesh;
+ }
+ cylinder(parent:THREE.Object3D,radius:number,height:number,position:[number,number,number],color:string){
+  const mesh=new THREE.Mesh(this.geometry('cyl'+radius+','+height,()=>new THREE.CylinderGeometry(radius,radius,height,10)),this.mat(color));mesh.position.set(...position);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
+ }
+ tree(parent:THREE.Object3D,x:number,z:number,scale=1){const g=new THREE.Group();g.position.set(x,0,z);g.scale.setScalar(scale);parent.add(g);this.cylinder(g,.15,1.1,[0,.55,0],'#637c64');
+  const top=new THREE.Mesh(this.geometry('foliage',()=>new THREE.IcosahedronGeometry(.85,0)),this.mat('#3f997e'));top.position.y=1.5;top.scale.y=1.3;top.castShadow=true;g.add(top);
+ }
+ label(parent:THREE.Object3D,text:string,position:[number,number,number],width:number){
+  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=96;const c=canvas.getContext('2d')!;c.fillStyle=palette.dark;c.fillRect(0,0,512,96);c.font='700 40px Segoe UI, sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle=palette.cream;c.fillText(text,256,48,480);
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;this.textures.push(texture);
+  const mat=new THREE.MeshBasicMaterial({map:texture});this.materials.set('label'+this.textures.length,mat);
+  const mesh=new THREE.Mesh(this.geometry('label'+width,()=>new THREE.PlaneGeometry(width,width*96/512)),mat);mesh.position.set(...position);parent.add(mesh);
+ }
+ dispose(){for(const g of this.geometries.values())g.dispose();for(const m of this.materials.values())m.dispose();for(const t of this.textures)t.dispose();}
+}

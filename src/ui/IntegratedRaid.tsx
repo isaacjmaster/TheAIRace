@@ -1,3 +1,4 @@
+import { sound } from '../audio/sound';
 import { useEffect, useState } from 'react';
 import { RaidScreen } from '../../raid/RaidScreen';
 import type { RaidRun, Transcript } from '../../shared/raid';
@@ -10,6 +11,6 @@ export function IntegratedRaid({onBank,onExit}:{onBank:(s:GameState)=>void;onExi
  async function claim(record:NonNullable<typeof pending>){setSaving(true);setError('');try{const r=await post('/api/raid/claim',record);onBank(r.state);try{localStorage.removeItem(key);}catch{}setPending(null);setBanked(true);}catch(e){setError((e as Error).message);}finally{setSaving(false);}}
  async function start(){setError('');try{const r=await post('/api/raid/start',{layout:0});setRun(r.run);}catch(e){setError((e as Error).message);}}
  useEffect(()=>{if(pending)void claim(pending);else void start();},[]);
- return <div className="integrated-raid">{run&&<RaidScreen initialLayout={run.layout} squad={run.squad} power={run.power} integrated onComplete={(_,log)=>{const record={id:run.id,log};try{localStorage.setItem(key,JSON.stringify(record));}catch{}setPending(record);void claim(record);}} onExit={banked?onExit:undefined}/>}
+ return <div className="integrated-raid">{run&&<RaidScreen initialLayout={run.layout} squad={run.squad} power={run.power} onCue={sound.cue} integrated onComplete={(_,log)=>{const record={id:run.id,log};try{localStorage.setItem(key,JSON.stringify(record));}catch{}setPending(record);void claim(record);}} onExit={banked?onExit:undefined}/>}
  {(!run||pending||error||saving)&&<div className="raid-bank-status" role="status"><p>{error|| (saving?'Banking raid rewards…':banked?'Rewards saved':'Preparing raid…')}</p>{error&&<button disabled={saving} onClick={()=>pending?void claim(pending):void start()}>Retry</button>}{banked&&!run&&<button onClick={onExit}>Return to garage</button>}{!pending&&!saving&&!run&&<button onClick={onExit}>Back to garage</button>}</div>}</div>;
 }

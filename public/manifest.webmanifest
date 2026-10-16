@@ -2,11 +2,11 @@
   "id": "/",
   "name": "The AI Race",
   "short_name": "The AI Race",
-  "description": "Build your AI company, one mission at a time.",
+  "description": "Build your AI headquarters. Deploy your agents.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "any",
+  "orientation": "landscape",
   "background_color": "#142b43",
   "theme_color": "#142b43",
   "icons": [
