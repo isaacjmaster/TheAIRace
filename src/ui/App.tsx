@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { Bootstrap, GameState, PlayerCommand } from '../../shared/contracts';
 import { sound } from '../audio/sound';
+import { PORTRAIT_GAME, requestLandscape } from './mobile';
 import { TroopIcon } from '../../raid/TroopIcon';
 const loadHQ=()=>import('./Headquarters').then(m=>({default:m.Headquarters}));
 const Headquarters=lazy(loadHQ);
@@ -12,6 +13,9 @@ export function App(){
  const [boot,setBoot]=useState<Bootstrap|null>(null),[phase,setPhase]=useState<'splash'|'menu'|'game'>('splash');
  const [screen,setScreen]=useState<'hq'|'upgrades'|'raid'>('hq'),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const [naming,setNaming]=useState(false),[name,setName]=useState(''),[now,setNow]=useState(Date.now());
+ const [portrait,setPortrait]=useState(()=>matchMedia(PORTRAIT_GAME).matches);
+ useEffect(()=>{const media=matchMedia(PORTRAIT_GAME);const update=()=>setPortrait(media.matches);media.addEventListener('change',update);return()=>media.removeEventListener('change',update);},[]);
+ useEffect(()=>{const color=phase==='splash'?'#07090c':phase==='menu'?'#091829':'#0e2037';document.documentElement.style.backgroundColor=color;document.body.style.backgroundColor=color;document.querySelector('meta[name="theme-color"]')?.setAttribute('content',color);},[phase]);
  const muted=useSyncExternalStore(sound.subscribe,sound.getSnapshot),play=useRef<HTMLButtonElement>(null),gate=useRef(false);
  async function refresh(){const b=await api<Bootstrap>('/api/game');setBoot(b);setError('');}
  useEffect(()=>{void loadHQ().catch(()=>{});void refresh().catch(e=>setError(e.message));const timer=setTimeout(()=>setPhase('menu'),matchMedia('(prefers-reduced-motion: reduce)').matches?150:2000);const visibility=()=>sound.visibility(document.hidden);document.addEventListener('visibilitychange',visibility);return()=>{clearTimeout(timer);document.removeEventListener('visibilitychange',visibility);};},[]);
@@ -26,8 +30,9 @@ export function App(){
  return <div className={`race-app ${phase!=='game'?'in-menu':screen==='raid'?'in-raid':''}`} onPointerDownCapture={()=>void sound.unlock()} onClickCapture={e=>{if((e.target as HTMLElement).closest('button')){void sound.unlock().then(()=>sound.cue('tap'));}}}>
   <button className="audio-toggle glass" aria-label={muted?'Unmute sound':'Mute sound'} aria-pressed={muted} onClick={()=>{sound.setMuted(!muted);if(muted)void sound.unlock();}}><span aria-hidden="true">{muted?'♪̸':'♫'}</span><span>{muted?'Sound off':'Sound on'}</span></button>
   {phase==='splash'&&<section className="studio-splash" aria-label="Master Studios" role="status"><div className="studio-mark"><h1>MASTER<span>STUDIOS</span></h1></div></section>}
-  {phase!=='game'&&<main className="race-menu" aria-label="The AI Race main menu" inert={phase==='splash'}><div className="menu-orbit orbit-a"/><div className="menu-orbit orbit-b"/><div className="menu-copy"><h1>THE AI<span>RACE<span className="title-dot">.</span></span></h1><button ref={play} className="primary play-button" disabled={!boot} onClick={()=>{void sound.unlock();void refresh().catch(e=>setError(e.message));setPhase('game');setScreen('hq');}}>PLAY <span>↗</span></button>{error&&<div className="connection-error" role="alert"><p>{error}</p><button onClick={()=>void refresh().catch(e=>setError(e.message))}>Retry connection</button></div>}{!boot&&!error&&<p role="status">Opening your company…</p>}</div><div className="menu-mascot" aria-hidden="true"><div className="mascot-aerial"/><div className="mascot-head"><i/><i/></div><div className="mascot-base"/></div></main>}
-  {phase==='game'&&boot&&state&&<>
+  {phase!=='game'&&<main className="race-menu" aria-label="The AI Race main menu" inert={phase==='splash'}><div className="menu-orbit orbit-a"/><div className="menu-orbit orbit-b"/><div className="menu-copy"><h1>THE AI<span>RACE</span></h1><button ref={play} className="primary play-button" disabled={!boot} onClick={()=>{void sound.unlock();void refresh().catch(e=>setError(e.message));void requestLandscape(window.screen.orientation);setPhase('game');setScreen('hq');}}>PLAY <span>↗</span></button>{error&&<div className="connection-error" role="alert"><p>{error}</p><button onClick={()=>void refresh().catch(e=>setError(e.message))}>Retry connection</button></div>}{!boot&&!error&&<p role="status">Opening your company…</p>}</div><div className="menu-mascot" aria-hidden="true"><div className="mascot-aerial"/><div className="mascot-head"><i/><i/></div><div className="mascot-base"/></div></main>}
+  {phase==='game'&&portrait&&<section className="rotation-screen" role="status" aria-label="Rotate your device"><div className="rotation-phone" aria-hidden="true">↻</div><h1>Turn to landscape</h1><p>Rotate your device to play The AI Race.</p><small>If needed, turn off Portrait Orientation Lock.</small></section>}
+  {phase==='game'&&boot&&state&&<div className={`game-session ${portrait?'rotation-blocked':''}`} inert={portrait} aria-hidden={portrait}>
    {screen==='raid'?<Suspense fallback={<div className="scene-loading" role="status">Opening battlefield…</div>}><IntegratedRaid onBank={s=>{setBoot(b=>b?{...b,state:s}:b);sound.cue('resources');}} onExit={()=>{navigate('hq');void refresh().catch(e=>setError(e.message));}}/></Suspense>:<main className="company-screen" aria-label="Company headquarters">
     <Suspense fallback={<div className="scene-loading" role="status">Preparing your campus…</div>}><Headquarters state={state}/></Suspense>
     <header className="company-hud"><button className="company-name glass" onClick={()=>{setName(state.companyName);setNaming(true);}}><span><small>HEADQUARTERS · LEVEL {level+1}</small><strong>{state.companyName}</strong></span></button><div className="balances glass" aria-label="Company resources"><span><i className="credit-token">⬡</i><strong>{state.credits.toLocaleString()}</strong><small>Credits</small></span><span><i className="compute-token">▣</i><strong>{(state.raidCompute||0).toLocaleString()}</strong><small>Compute</small></span></div></header>
@@ -40,6 +45,6 @@ export function App(){
    {notice&&<div className="company-toast" role="status">✦ {notice}</div>}
    {error&&<div className="company-error" role="alert">{error}<button aria-label="Dismiss error" onClick={()=>setError('')}>×</button></div>}
    {naming&&<div className="modal-backdrop"><form className="name-modal" onKeyDown={e=>{if(e.key==='Escape')setNaming(false);if(e.key==='Tab'){const nodes=e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), input');const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}}} role="dialog" aria-modal="true" aria-labelledby="name-title" onSubmit={e=>{e.preventDefault();void command({type:'rename',name});}}><h2 id="name-title">Your company</h2><label htmlFor="company">Company name</label><input id="company" autoFocus maxLength={28} value={name} onChange={e=>setName(e.target.value)}/><button className="primary" disabled={busy||!name.trim()}>Save</button><button type="button" onClick={()=>setNaming(false)}>Cancel</button></form></div>}
-  </>}
+  </div>}
  </div>;
 }

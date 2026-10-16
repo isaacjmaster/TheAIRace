@@ -34,3 +34,17 @@ html,body,#root{background:#07090c;min-height:100%;width:100%}
 @media(orientation:landscape){.upgrade-overlay{left:calc(50% + (env(safe-area-inset-left) - env(safe-area-inset-right))/2);width:min(720px,calc(100% - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)));top:calc(62px + env(safe-area-inset-top));bottom:calc(70px + env(safe-area-inset-bottom))}}
 @media(orientation:portrait){.race-menu{gap:12px}.menu-copy h1{font-size:64px}.menu-mascot{flex-shrink:0;height:190px}.play-button{min-height:54px}.company-hud{flex-direction:row;flex-wrap:wrap;top:calc(62px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));gap:8px}.company-name{max-width:100%}.company-name strong{max-width:150px}.balances>span{min-width:72px}.company-nav{width:calc(100% - 24px);bottom:calc(8px + env(safe-area-inset-bottom))}.world-camera{bottom:calc(74px + env(safe-area-inset-bottom))}.landscape-hint{top:calc(125px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);white-space:nowrap;background:#142b43e8;color:#b8d9e9;font-size:11px}.upgrade-overlay{top:calc(160px + env(safe-area-inset-top));bottom:calc(76px + env(safe-area-inset-bottom))}}
 @media(orientation:portrait) and (max-height:650px){.menu-mascot{scale:.6;height:145px}.race-menu{gap:0}.menu-copy h1{font-size:52px}.play-button{margin-top:20px}}
+
+/* 0.7: one viewport owner. Safe-area padding belongs to controls, not the world.
+   Avoid competing inset:0 and 100dvh heights in standalone WebKit. */
+html,body{height:100%;min-height:100%;background:#07090c}
+#root{position:fixed;inset:0;height:auto;min-height:0;background:inherit}
+.race-app{position:absolute;inset:0;height:100%;min-height:0}
+.studio-splash,.race-menu{position:absolute;inset:0;height:auto;min-height:0}
+.game-session,.company-screen,.integrated-raid,.scene-loading,.in-raid .raid-game{height:100%;min-height:0}
+.game-session{position:absolute;inset:0}
+.rotation-blocked{visibility:hidden;pointer-events:none}
+.rotation-screen{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;background:#0e2037;color:#d7e9f5;padding:calc(24px + env(safe-area-inset-top)) calc(24px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left))}
+.rotation-screen h1{font-size:25px;letter-spacing:-.5px}.rotation-screen p{font-size:14px}.rotation-screen small{max-width:260px;color:#a7c5d9;font-size:12px;line-height:1.6}
+.rotation-phone{width:82px;height:48px;border:3px solid #53e1ec;border-radius:12px;font-size:32px;line-height:40px;margin-bottom:12px}
+.race-app:has(.rotation-screen) .audio-toggle{right:calc(10px + env(safe-area-inset-right))}
