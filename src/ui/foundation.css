@@ -35,8 +35,8 @@
 .foundation-app .menu-copy h1{color:#203c55;text-shadow:0 4px 0 #ffffff99}
 .foundation-app .menu-orbit{border-color:#559ebc33}
 .foundation-app .primary{background:linear-gradient(150deg,#ffe88b,#ffd05c);border-color:#fff7cd;color:#244354;box-shadow:0 4px 0 #c89d42}
-.foundation-app .studio-splash{background:#b5eafa;color:#203c55}
-.foundation-app .studio-splash:before{background:radial-gradient(ellipse,#ffffff80,transparent 65%)}
+.foundation-app .studio-splash{background:#07090c;color:#f7fafc}
+.foundation-app .studio-splash:before{background:radial-gradient(ellipse,#a9b4c43d,transparent 65%)}
 .foundation-app .scene-loading{background:#b5eafa;color:#203c55}
 .foundation-app .audio-toggle{color:#244354;background:#fffdf0}
 .foundation-app .menu-copy>p,.foundation-app .connection-error{color:#355e6d}
