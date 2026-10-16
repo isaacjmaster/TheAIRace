@@ -18,8 +18,8 @@ test('modern Safari and standalone leave viewport sizing to CSS; legacy height t
 
 test('initial HTML paints the same startup background as the manifest before JavaScript',()=>{
  const html=readFileSync('index.html','utf8'),manifest=JSON.parse(readFileSync('public/manifest.webmanifest','utf8'));
- assert.ok(html.includes(`--app-background:${SCREEN_BACKGROUNDS.splash}`));assert.equal(manifest.background_color,SCREEN_BACKGROUNDS.splash);assert.equal(manifest.theme_color,SCREEN_BACKGROUNDS.splash);
- assert.match(html,/viewport-fit=cover/);assert.match(html,/color-scheme:light/);assert.equal(new Set(Object.values(SCREEN_BACKGROUNDS)).size,1);assert.equal(manifest.display,'standalone');assert.equal(manifest.orientation,'portrait');
+ assert.ok(html.includes(`--app-background:${SCREEN_BACKGROUNDS.splash}`));assert.equal(manifest.background_color,SCREEN_BACKGROUNDS.splash);assert.equal(manifest.theme_color,SCREEN_BACKGROUNDS.menu);
+ assert.match(html,/viewport-fit=cover/);assert.match(html,/color-scheme:light/);assert.equal(SCREEN_BACKGROUNDS.splash,'#07090c');assert.equal(SCREEN_BACKGROUNDS.menu,'#b5eafa');assert.match(html,/apple-mobile-web-app-status-bar-style" content="default"/);assert.match(html,/data-presentation="splash"/);assert.equal(manifest.display,'standalone');assert.equal(manifest.orientation,'portrait');
 });
 import {portraitCampusSpan} from '../src/art/portraitCamera';
 test('portrait campus has a readable horizontal frame and keeps the world explorable',()=>{

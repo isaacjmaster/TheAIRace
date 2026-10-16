@@ -58,3 +58,12 @@ html,body{height:100%;min-height:0;background:var(--app-background,#b5eafa)}
 @media(max-height:500px) and (orientation:landscape){.visual-campus{top:66px;bottom:70px;padding:8px 12px}.visual-campus header{margin-bottom:5px}.visual-campus header small{font-size:8px}.visual-campus h1{font-size:17px}.campus-content{height:calc(100% - 44px);gap:12px}.building-catalog,.building-card{max-height:100%}.building-catalog .building-icon{height:36px;width:48px}.building-catalog button{padding:3px;min-height:70px}.building-catalog strong{font-size:8px}.building-card-title>.building-icon{width:54px;height:42px}.building-card-title strong{font-size:15px}.building-card-title span{font-size:10px}.building-card{gap:6px}.next-benefit{padding:6px 8px}.next-benefit p{font-size:11px}.placement-bar{padding:7px;gap:7px}.placement-bar strong{font-size:11px}.placement-bar>div:first-child{max-width:190px}.placement-nudges{grid-template-columns:repeat(4,32px)}.placement-bar button{padding:6px}.obstacle-panel{top:66px;bottom:70px;gap:6px;padding:10px 14px}.obstacle-icon{font-size:28px}.construction-chip{font-size:9px;max-width:170px}}
 @media(prefers-reduced-motion:reduce){.building-icon{filter:none}}
 .upgrade-prerequisite{font-size:9px;color:#96b7ce}.building-card .upgrade-prerequisite{margin:0}.network-list small{line-height:1.35}
+
+/* Animate the real page paint, not a safe-area overlay. Timings match studio-screen.
+   Apple status-bar-style stays default: changing it is not a reliable runtime API. */
+html[data-presentation="splash"],html[data-presentation="splash"] body,
+html[data-presentation="splash"] #root,html[data-presentation="splash"] .race-app{
+ animation:studio-page-paint 2s both;
+}
+@keyframes studio-page-paint{0%,78%{background-color:#07090c}100%{background-color:#b5eafa}}
+@media(prefers-reduced-motion:reduce){html[data-presentation="splash"],html[data-presentation="splash"] body,html[data-presentation="splash"] #root,html[data-presentation="splash"] .race-app{animation:none}}
