@@ -1,6 +1,6 @@
-# Current prototype: 0.9
+# Current prototype: Minimalist Foundation
 
-See [V09_TESTING.md](V09_TESTING.md) for changes, validation and iPhone instructions. Earlier release notes below are historical.
+See [FOUNDATION_TESTING.md](FOUNDATION_TESTING.md) for changes, save isolation, validation and iPhone instructions. Earlier release notes below are historical.
 
 # The AI Race — Integrated Prototype 0.5
 

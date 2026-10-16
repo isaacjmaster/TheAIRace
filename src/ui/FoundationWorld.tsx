@@ -1,0 +1,11 @@
+import {useEffect,useRef,useState} from 'react';
+import {HeadquartersScene} from '../art/HeadquartersScene';
+import type {CampusState} from '../../shared/progression';
+const emptyCampus:CampusState={version:1,hq:1,buildings:{compute:0,revenue:0,training:0,gpu:0,research:0,defense:0},construction:null,constructions:[],lastAccruedAt:0,highestRaid:0,raidWins:{}};
+/** Presentation only. Legacy progression never reads or writes the foundation save. */
+export function FoundationWorld(){
+ const host=useRef<HTMLDivElement>(null),scene=useRef<HeadquartersScene|null>(null),pointers=useRef(new Map<number,{x:number;y:number}>()),pinch=useRef(0);const [failed,setFailed]=useState(false);
+ useEffect(()=>{let view:HeadquartersScene|undefined,frame=0,last=performance.now();try{view=new HeadquartersScene(host.current!,0,0,structuredClone(emptyCampus),()=>setFailed(true),true);scene.current=view;const draw=(time:number)=>{if(!document.hidden)view!.update(Math.min(.05,(time-last)/1000));last=time;frame=requestAnimationFrame(draw);};frame=requestAnimationFrame(draw);}catch{setFailed(true);}return()=>{cancelAnimationFrame(frame);view?.dispose();scene.current=null;};},[]);
+ const release=(id:number)=>{pointers.current.delete(id);pinch.current=0;};
+ return <div className="foundation-world" ref={host} onPointerDown={e=>{if(e.button!==0)return;e.currentTarget.setPointerCapture(e.pointerId);pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});pinch.current=0;}} onPointerMove={e=>{const previous=pointers.current.get(e.pointerId);if(!previous)return;pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.current.size===1)scene.current?.pan(e.clientX-previous.x,e.clientY-previous.y);else{const [a,b]=[...pointers.current.values()];const distance=Math.hypot(a.x-b.x,a.y-b.y);if(pinch.current)scene.current?.zoom(distance/pinch.current);pinch.current=distance;}}} onPointerUp={e=>release(e.pointerId)} onPointerCancel={e=>release(e.pointerId)} onLostPointerCapture={e=>release(e.pointerId)} onWheel={e=>scene.current?.zoom(e.deltaY>0?.95:1.05)} onContextMenu={e=>e.preventDefault()}>{failed&&<p className="foundation-fallback" role="alert">Graphics unavailable. Reload to return to your garage. Your progress is safe.</p>}</div>;
+}

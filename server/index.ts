@@ -1,4 +1,5 @@
 import express from 'express';
+import { registerFoundation } from './foundation-api.js';
 import { registerProgression } from './progression-api.js';
 import { registerRaids } from './raid-api.js';
 import { DatabaseSync } from 'node:sqlite';
@@ -33,6 +34,7 @@ app.use('/api', (req, res, next) => {
   }
   next();
 });
+registerFoundation(app,db);
 function session(req: express.Request, res: express.Response): { id: string; state: GameState } {
   const candidate = /(?:^|;\s*)airace_integrated_session=([a-f0-9-]{36})(?:;|$)/.exec(req.headers.cookie || '')?.[1];
   const row = candidate ? db.prepare('SELECT state FROM sessions WHERE id=?').get(candidate) : undefined;

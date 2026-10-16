@@ -17,11 +17,11 @@ export class HeadquartersScene {
  private agent=new THREE.Group();private observer:ResizeObserver;private clock=0;private paused=false;
  private reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  private lost=(e:Event)=>{e.preventDefault();this.paused=true;this.onError();};
- constructor(private host:HTMLDivElement,level:number,training:number,private campus:CampusState,private onError:()=>void){
+ constructor(private host:HTMLDivElement,level:number,training:number,private campus:CampusState,private onError:()=>void,private minimal=false){
   this.renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});lightWorld(this.renderer,this.scene);
   this.renderer.domElement.setAttribute('role','img');this.renderer.domElement.setAttribute('aria-label',`3D headquarters level ${campus.hq}. ${level===0?'One laptop and a mint AI agent in the original garage.':level===1?'A furnished workstation, chair, lamp and plants.':'GPU workbench, server racks and upgraded lighting.'} Drag to pan and pinch to zoom.`);
   this.renderer.domElement.dataset.stage=String(level);host.appendChild(this.renderer.domElement);this.renderer.domElement.addEventListener('webglcontextlost',this.lost);
-  this.buildEnvironment();this.build(Math.min(2,level),training);this.buildCampus(campus);this.buildObstacles(campus);this.buildBots(campus);this.center.copy(this.home);this.target.copy(this.home);this.camera.position.copy(this.home).add(new THREE.Vector3(7,23,30));this.camera.lookAt(this.center);
+  this.buildEnvironment();this.build(Math.min(2,level),training);this.buildCampus(campus);this.buildObstacles(campus);this.buildBots(campus);if(this.minimal){this.home.set(-5,0,0);this.worldSpan=36;}this.center.copy(this.home);this.target.copy(this.home);this.camera.position.copy(this.home).add(new THREE.Vector3(7,23,30));this.camera.lookAt(this.center);
   this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(host);this.resize();
  }
  private build(level:number,training:number){
@@ -90,14 +90,14 @@ export class HeadquartersScene {
   // Drainage strips, a gate and delivery station sit outside the editable building area.
   for(let i=0;i<8;i++)k.box(s,[1,.06,.18],[-26,.06,-9+i*.5],c.slate);
   for(const x of [-5,5]){k.box(s,[.7,2.5,.7],[x,1.1,25],c.slate);k.box(s,[.45,.1,.45],[x,2.4,25],c.cyan,.02,true);}
-  k.box(s,[4,.7,1.6],[-17,.3,26.3],c.dark);k.label(s,'CAMPUS / 01',[-17,1,27.15],3.8);
+  if(!this.minimal){k.box(s,[4,.7,1.6],[-17,.3,26.3],c.dark);k.label(s,'CAMPUS / 01',[-17,1,27.15],3.8);}
   // A few dark ground panels add texture without drawing over the placement grid.
   for(const [x,z] of [[-18,-15],[23,-15],[-18,19],[22,20]])k.box(s,[3,.03,2],[x,-.07,z],'#2b5360',.1);
  }
  private buildObstacles(campus:CampusState){
   const k=this.kit;
   for(const obstacle of OBSTACLES){
-   if(campus.clearedObstacles?.includes(obstacle.id))continue;
+   if(campus.clearedObstacles?.includes(obstacle.id)||this.minimal&&(obstacle.kind==='equipment'||obstacle.kind==='debris'))continue;
    const g=new THREE.Group();g.position.set(obstacle.position[0],0,obstacle.position[1]);this.scene.add(g);this.obstacles.set(obstacle.id,g);
    if(obstacle.kind==='tree'){k.tree(g,-.65,-.3,1.3);k.tree(g,.7,.6,.9);k.cylinder(g,1.3,.13,[0,0,0],'#244954');}
    else if(obstacle.kind==='rock'){for(let i=0;i<3;i++){const rock=k.box(g,[1.3,1+i*.25,1.25],[-.8+i*.7,.45,-.4+i*.4],'#51697c',.3);rock.rotation.y=i*.65;rock.rotation.z=i*.08;}}
