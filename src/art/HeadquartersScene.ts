@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {portraitCampusSpan} from './portraitCamera';
+import {founderHQ,pickFoundationBuilding,type FoundationBuilding} from './FounderHQ';
 import {gpuRigModel} from './GpuRig';
 import type {FoundationState,RigPosition} from '../../shared/foundation';
 import { FACILITIES, constructionJobs, builderCount, type CampusState, type BuildingId } from '../../shared/progression';
@@ -24,13 +25,14 @@ export class HeadquartersScene {
  private lost=(e:Event)=>{e.preventDefault();this.paused=true;this.onError();};
  constructor(private host:HTMLDivElement,level:number,training:number,private campus:CampusState,private onError:()=>void,private minimal=false){
   this.renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});lightWorld(this.renderer,this.scene);
-  this.renderer.domElement.setAttribute('role','img');this.renderer.domElement.setAttribute('aria-label',`3D headquarters level ${campus.hq}. ${level===0?'One laptop in the original garage, with a Builder Bot nearby.':level===1?'A furnished workstation, chair, lamp and plants.':'GPU workbench, server racks and upgraded lighting.'} Drag to pan and pinch to zoom.`);
+  this.renderer.domElement.setAttribute('role','img');this.renderer.domElement.setAttribute('aria-label',`3D headquarters level ${campus.hq}. ${level===0?'Founder HQ, with a founder working at a laptop through the window and a Builder Bot nearby.':level===1?'A furnished workstation, chair, lamp and plants.':'GPU workbench, server racks and upgraded lighting.'} Drag to pan and pinch to zoom.`);
   this.renderer.domElement.dataset.stage=String(level);host.appendChild(this.renderer.domElement);this.renderer.domElement.addEventListener('webglcontextlost',this.lost);
   this.buildEnvironment();this.build(Math.min(2,level),training);this.buildCampus(campus);this.buildObstacles(campus);this.buildBots(campus);if(this.minimal){this.home.set(-3,0,0);this.worldSpan=36;}this.center.copy(this.home);this.target.copy(this.home);this.camera.position.copy(this.home).add(new THREE.Vector3(this.minimal?13:7,this.minimal?28:23,30));this.camera.lookAt(this.center);
   this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(host);this.resize();
  }
  private build(level:number,training:number){
   const k=this.kit,s=this.garage;this.scene.add(s);this.buildingGroups.set('hq',s);
+  if(this.minimal){founderHQ(k,s);return;}
   k.box(s,[12,.25,9],[-5,.09,-1],'#d9e9df',.15);
   for(let x=-10;x<=0;x+=2)for(let z=-4;z<=2;z+=2)k.box(s,[1.94,.035,1.94],[x,.24,z],'#fff5dc',.03);
   k.box(s,[12,4.3,.28],[-5,2.35,-5.4],c.dark);k.box(s,[.28,4.3,9],[-11,2.35,-1],c.slate);
@@ -172,6 +174,11 @@ export class HeadquartersScene {
   if(state.buildersBusy){for(const x of [-2,2])for(const z of [-1.5,1.5])k.box(this.rigGroup,[.1,2.8,.1],[x,1.4,z],c.gold);for(const z of [-1.5,1.5])k.box(this.rigGroup,[4.1,.1,.1],[0,2.8,z],c.gold);}
  }
  rigScreenPoint(){if(!this.rigPosition)return;const p=new THREE.Vector3(this.rigPosition[0],3.5,this.rigPosition[1]).project(this.camera);return {x:(p.x+1)*this.host.clientWidth/2,y:(1-p.y)*this.host.clientHeight/2};}
+ pickFoundation(x:number,y:number){if(!this.setRay(x,y))return;return pickFoundationBuilding(this.raycaster,this.garage,this.rigGroup);}
+ buildingScreenPoint(id:FoundationBuilding){
+  const point=id==='rig'&&this.rigPosition?new THREE.Vector3(this.rigPosition[0],5.7,this.rigPosition[1]):new THREE.Vector3(-5,7,-1).add(this.garage.position);
+  const p=point.project(this.camera);return {x:(p.x+1)*this.host.clientWidth/2,y:(1-p.y)*this.host.clientHeight/2};
+ }
  pickRig(x:number,y:number){if(!this.rigGroup||!this.setRay(x,y))return false;return this.raycaster.intersectObject(this.rigGroup,true).length>0;}
  previewRig(position:RigPosition,valid:boolean){
   if(!this.rigPreview){this.rigPreviewKit=new WorldKit();this.rigPreview=gpuRigModel(this.rigPreviewKit);this.rigPreviewMaterial=new THREE.MeshBasicMaterial({color:c.cyan,transparent:true,opacity:.48,depthWrite:false});this.rigPreview.traverse(o=>{if(o instanceof THREE.Mesh){o.material=this.rigPreviewMaterial!;o.castShadow=false;}});this.scene.add(this.rigPreview);this.rigGrid=new THREE.GridHelper(56,56,c.cyan,c.slate);this.rigGrid.position.set(2,.13,3);this.scene.add(this.rigGrid);}

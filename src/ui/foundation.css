@@ -62,3 +62,6 @@
 .foundation-app .rig-collect{background:#edfff7f5;border-color:#55b3a5;color:#176d70;box-shadow:0 4px 14px #33a89344}
 .foundation-app .rig-progress{color:#466674}.foundation-app .rig-collection-pop{color:#155967;text-shadow:0 1px 3px #ffffff}
 .foundation-app .rig-error button{color:#244354}.foundation-app .foundation-fallback{color:#254b60}
+
+.foundation-building-label{position:absolute;z-index:8;pointer-events:none;transform:translate(-50%,-100%);padding:10px 16px;border:1px solid;border-radius:14px;text-align:center;min-width:130px}
+.foundation-building-label strong,.foundation-building-label span{display:block}.foundation-building-label strong{font-size:14px}.foundation-building-label span{font-size:12px;margin-top:3px;color:#416575}
