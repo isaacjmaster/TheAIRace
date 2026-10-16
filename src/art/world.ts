@@ -2,17 +2,17 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 /** One art direction for the company campus and enemy networks. */
-export const palette = { cream:'#a9c8df', dark:'#122941', slate:'#355873', cyan:'#53e1ec', purple:'#939dff', gold:'#efbc76', coral:'#ff7e8c', sky:'#0e2037', grass:'#254c58', terracotta:'#ad7f63' };
+export const palette = { cream:'#fff8e6', dark:'#397d98', slate:'#83bacd', cyan:'#48dfd3', purple:'#9aabed', gold:'#ffd364', coral:'#ff9a87', sky:'#b5eafa', grass:'#a5d9bd', terracotta:'#e7b789' };
 export function material(color:string, glow=false) {
- return new THREE.MeshStandardMaterial({color,roughness:.58,metalness:.22,emissive:glow?color:'#000000',emissiveIntensity:glow?.65:0});
+ return new THREE.MeshStandardMaterial({color,roughness:.58,metalness:.08,emissive:glow?color:'#000000',emissiveIntensity:glow?.65:0});
 }
 export function lightWorld(renderer:THREE.WebGLRenderer, scene:THREE.Scene) {
  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.6));
  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;
  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;
  scene.background=new THREE.Color(palette.sky);scene.fog=new THREE.Fog(palette.sky,40,85);
- scene.add(new THREE.HemisphereLight('#accfff','#182b43',2.1));
- const sun=new THREE.DirectionalLight('#d1e7ff',3.1);sun.position.set(-9,22,12);sun.castShadow=true;
+ scene.add(new THREE.HemisphereLight('#e5f7ff','#a1c9b3',2.7));
+ const sun=new THREE.DirectionalLight('#fff4d5',2.5);sun.position.set(-9,22,12);sun.castShadow=true;
  sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-21,right:21,top:21,bottom:-21,near:1,far:65});sun.shadow.normalBias=.035;sun.shadow.bias=-.0002;scene.add(sun);
  return sun;
 }
@@ -29,8 +29,8 @@ export class WorldKit {
  cylinder(parent:THREE.Object3D,radius:number,height:number,position:[number,number,number],color:string){
   const mesh=new THREE.Mesh(this.geometry('cyl'+radius+','+height,()=>new THREE.CylinderGeometry(radius,radius,height,10)),this.mat(color));mesh.position.set(...position);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
  }
- tree(parent:THREE.Object3D,x:number,z:number,scale=1){const g=new THREE.Group();g.position.set(x,0,z);g.scale.setScalar(scale);parent.add(g);this.cylinder(g,.15,1.1,[0,.55,0],'#334c59');
-  const top=new THREE.Mesh(this.geometry('foliage',()=>new THREE.IcosahedronGeometry(.85,0)),this.mat('#287b80'));top.position.y=1.5;top.scale.y=1.3;top.castShadow=true;g.add(top);
+ tree(parent:THREE.Object3D,x:number,z:number,scale=1){const g=new THREE.Group();g.position.set(x,0,z);g.scale.setScalar(scale);parent.add(g);this.cylinder(g,.15,1.1,[0,.55,0],'#ba9577');
+  const top=new THREE.Mesh(this.geometry('foliage',()=>new THREE.IcosahedronGeometry(.85,0)),this.mat('#70c7a1'));top.position.y=1.5;top.scale.y=1.3;top.castShadow=true;g.add(top);
  }
  /** Continuous, faceted terrain. The playable center stays flat; hills rise outside it. */
  terrain(parent:THREE.Object3D, halfX:number, halfZ:number){
@@ -40,7 +40,7 @@ export class WorldKit {
    const x=p.getX(i),z=p.getZ(i),edge=Math.max(Math.abs(x)-halfX,Math.abs(z)-halfZ,0);
    const hill=Math.min(4,edge*.2)*(1+Math.sin(x*.19)*Math.cos(z*.23))*.65;
    p.setY(i,-.15+hill);
-   const color=new THREE.Color(edge<2?'#294c59':edge<10?'#203e51':'#172f46');color.multiplyScalar(.9+.1*Math.sin(x*.5+z*.3));colors.push(color.r,color.g,color.b);
+   const color=new THREE.Color(edge<2?'#adddc5':edge<10?'#92ceb5':'#83bdb0');color.multiplyScalar(.9+.1*Math.sin(x*.5+z*.3));colors.push(color.r,color.g,color.b);
   }
   g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.computeVertexNormals();this.geometries.set('terrain',g);
   const mat=new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:1});this.materials.set('terrain',mat);

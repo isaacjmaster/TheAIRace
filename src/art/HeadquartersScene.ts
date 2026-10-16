@@ -31,13 +31,13 @@ export class HeadquartersScene {
  }
  private build(level:number,training:number){
   const k=this.kit,s=this.garage;this.scene.add(s);this.buildingGroups.set('hq',s);
-  k.box(s,[12,.25,9],[-5,.09,-1],'#243e57',.15);
-  for(let x=-10;x<=0;x+=2)for(let z=-4;z<=2;z+=2)k.box(s,[1.94,.035,1.94],[x,.24,z],'#35526a',.03);
+  k.box(s,[12,.25,9],[-5,.09,-1],'#d9e9df',.15);
+  for(let x=-10;x<=0;x+=2)for(let z=-4;z<=2;z+=2)k.box(s,[1.94,.035,1.94],[x,.24,z],'#fff5dc',.03);
   k.box(s,[12,4.3,.28],[-5,2.35,-5.4],c.dark);k.box(s,[.28,4.3,9],[-11,2.35,-1],c.slate);
   k.box(s,[12.4,.24,.5],[-5,4.55,-5.4],c.slate);k.box(s,[.5,.24,9.4],[-11,4.55,-1],c.slate);
   // The recognizable garage door, warm window and exposed floor are retained.
   k.box(s,[3.5,3.5,.12],[-1.8,2.05,-5.18],c.slate);
-  for(let i=0;i<9;i++)k.box(s,[3.35,.065,.08],[-1.8,.48+i*.37,-5.09],'#557994',.015);
+  for(let i=0;i<9;i++)k.box(s,[3.35,.065,.08],[-1.8,.48+i*.37,-5.09],'#a5d3dd',.015);
   k.box(s,[.1,1.6,2.5],[-10.8,2.7,-2.7],c.gold,.02,true);
   k.box(s,[.12,1.8,.09],[-10.72,2.7,-2.7],c.cream);k.box(s,[.12,.09,2.6],[-10.72,2.7,-2.7],c.cream);
   for(const x of [-10.7,.7]){k.box(s,[.3,4.25,.3],[x,2.35,-5.12],c.slate);k.box(s,[.06,2.8,.04],[x,2.6,-4.94],c.cyan,.01,true);}
@@ -68,7 +68,7 @@ export class HeadquartersScene {
   // Cutaway architecture keeps the original laptop visible while strengthening the silhouette.
   k.box(s,[12.5,.3,2.3],[-5,4.65,-4.6],c.dark,.12);
   k.box(s,[12.6,.08,.12],[-5,4.83,-3.44],c.cyan,.02,true);
-  for(const x of [-9,-5,-1]){k.box(s,[2.5,.08,1.25],[x,4.86,-4.7],'#244b68',.03);for(let j=0;j<3;j++)k.box(s,[.025,.02,1.15],[x-.7+j*.7,4.91,-4.7],c.cyan,.005);}
+  for(const x of [-9,-5,-1]){k.box(s,[2.5,.08,1.25],[x,4.86,-4.7],'#559ebc',.03);for(let j=0;j<3;j++)k.box(s,[.025,.02,1.15],[x-.7+j*.7,4.91,-4.7],c.cyan,.005);}
   for(const x of [-10.5,.5]){k.box(s,[.4,.4,1.8],[x,.4,3],c.slate);k.box(s,[.45,.04,1.9],[x,.63,3],c.cyan,.01,true);}
   k.box(s,[3.2,.1,1],[-5,.25,3.7],c.slate);
   k.label(s,'AI / STARTUP',[-5,4.1,-3.36],3);
@@ -79,7 +79,7 @@ export class HeadquartersScene {
   // Low retaining walls, a continuous service road and planted border make this a miniature campus.
   k.box(s,[55,.1,3.2],[1,-.02,9],c.dark,.03);
   for(const z of [7.3,10.7])k.box(s,[55,.18,.24],[1,.01,z],c.slate);
-  for(let x=-24;x<28;x+=5)k.box(s,[1.7,.025,.07],[x,.045,9],'#749bb5',.01);
+  for(let x=-24;x<28;x+=5)k.box(s,[1.7,.025,.07],[x,.045,9],'#fff5dc',.01);
   for(const z of [-20,25]){k.box(s,[55,.4,.65],[2,.08,z],c.dark);k.box(s,[55,.04,.12],[2,.31,z],c.slate);}
   for(const x of [-25,29])k.box(s,[.65,.4,45],[x,.08,2.5],c.dark);
   for(let i=0;i<14;i++){const x=-24+i*4;for(const z of [-23,28])k.tree(s,x,z,1.1+(i%3)*.3);}
@@ -92,16 +92,16 @@ export class HeadquartersScene {
   for(const x of [-5,5]){k.box(s,[.7,2.5,.7],[x,1.1,25],c.slate);k.box(s,[.45,.1,.45],[x,2.4,25],c.cyan,.02,true);}
   if(!this.minimal){k.box(s,[4,.7,1.6],[-17,.3,26.3],c.dark);k.label(s,'CAMPUS / 01',[-17,1,27.15],3.8);}
   // A few dark ground panels add texture without drawing over the placement grid.
-  for(const [x,z] of [[-18,-15],[23,-15],[-18,19],[22,20]])k.box(s,[3,.03,2],[x,-.07,z],'#2b5360',.1);
+  for(const [x,z] of [[-18,-15],[23,-15],[-18,19],[22,20]])k.box(s,[3,.03,2],[x,-.07,z],'#c7e8d3',.1);
  }
  private buildObstacles(campus:CampusState){
   const k=this.kit;
   for(const obstacle of OBSTACLES){
    if(campus.clearedObstacles?.includes(obstacle.id)||this.minimal&&(obstacle.kind==='equipment'||obstacle.kind==='debris'))continue;
    const g=new THREE.Group();g.position.set(obstacle.position[0],0,obstacle.position[1]);this.scene.add(g);this.obstacles.set(obstacle.id,g);
-   if(obstacle.kind==='tree'){k.tree(g,-.65,-.3,1.3);k.tree(g,.7,.6,.9);k.cylinder(g,1.3,.13,[0,0,0],'#244954');}
-   else if(obstacle.kind==='rock'){for(let i=0;i<3;i++){const rock=k.box(g,[1.3,1+i*.25,1.25],[-.8+i*.7,.45,-.4+i*.4],'#51697c',.3);rock.rotation.y=i*.65;rock.rotation.z=i*.08;}}
-   else if(obstacle.kind==='equipment'){k.box(g,[2,1.7,1.5],[0,.8,0],c.slate);k.box(g,[1.6,1.2,.1],[0,.8,.8],c.dark);for(let i=0;i<3;i++)k.box(g,[1.25,.08,.04],[0,.5+i*.3,.87],'#667d86');k.cylinder(g,.4,.5,[.7,1.9,-.4],c.terracotta);}
+   if(obstacle.kind==='tree'){k.tree(g,-.65,-.3,1.3);k.tree(g,.7,.6,.9);k.cylinder(g,1.3,.13,[0,0,0],'#95cfa9');}
+   else if(obstacle.kind==='rock'){for(let i=0;i<3;i++){const rock=k.box(g,[1.3,1+i*.25,1.25],[-.8+i*.7,.45,-.4+i*.4],'#b8cad0',.3);rock.rotation.y=i*.65;rock.rotation.z=i*.08;}}
+   else if(obstacle.kind==='equipment'){k.box(g,[2,1.7,1.5],[0,.8,0],c.slate);k.box(g,[1.6,1.2,.1],[0,.8,.8],c.dark);for(let i=0;i<3;i++)k.box(g,[1.25,.08,.04],[0,.5+i*.3,.87],'#d0e4e7');k.cylinder(g,.4,.5,[.7,1.9,-.4],c.terracotta);}
    else{for(let i=0;i<4;i++){const piece=k.box(g,[1.7,.3,.8],[-.6+i*.35,.2+i*.15,0],i%2?c.slate:c.terracotta);piece.rotation.y=i*.7;}}
    const hit=k.box(g,[obstacle.width,3,obstacle.depth],[0,1.5,0],c.dark);hit.visible=false;hit.userData.obstacleId=obstacle.id;this.obstacleHits.push(hit);
   }

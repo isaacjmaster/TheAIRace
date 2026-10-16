@@ -28,3 +28,37 @@
  .foundation-app .race-menu{gap:0;padding-top:calc(32px + env(safe-area-inset-top));padding-bottom:calc(20px + env(safe-area-inset-bottom))}
  .foundation-app .menu-mascot{height:145px;scale:.62}.foundation-app .menu-copy h1{font-size:52px}.foundation-app .play-button{margin-top:20px}
 }
+/* Bright V1 palette: opaque cream UI, sky-blue page, mint technology and warm gold. */
+.foundation-app{--ink:#203c55;--cream:#203c55;--mint:#168677;color:#203c55}
+.foundation-app .glass{background:#fffdf1f5;border-color:#75aabd88;box-shadow:0 4px 14px #3a748324;color:#203c55}
+.foundation-app .race-menu{background:radial-gradient(ellipse at 70% 45%,#e4fff5,#c4eff4 65%,#b5eafa);color:#203c55}
+.foundation-app .menu-copy h1{color:#203c55;text-shadow:0 4px 0 #ffffff99}
+.foundation-app .menu-orbit{border-color:#559ebc33}
+.foundation-app .primary{background:linear-gradient(150deg,#ffe88b,#ffd05c);border-color:#fff7cd;color:#244354;box-shadow:0 4px 0 #c89d42}
+.foundation-app .studio-splash{background:#b5eafa;color:#203c55}
+.foundation-app .studio-splash:before{background:radial-gradient(ellipse,#ffffff80,transparent 65%)}
+.foundation-app .scene-loading{background:#b5eafa;color:#203c55}
+.foundation-app .audio-toggle{color:#244354;background:#fffdf0}
+.foundation-app .menu-copy>p,.foundation-app .connection-error{color:#355e6d}
+.foundation-app .foundation-company-label small,.foundation-app .foundation-builders,.foundation-app .compute-caption small,.foundation-app .compute-capacity{color:#416575}
+.foundation-app .foundation-level{background:#65c6d5;border-color:#e2fffa;color:#163d52}
+.foundation-app .foundation-builders svg{fill:#ffd364;stroke:#416575}
+.foundation-app .foundation-compute>span{color:#178e9a}
+.foundation-app .foundation-compute progress,.foundation-app .foundation-compute progress::-webkit-progress-bar{background:#d7e9e7}
+.foundation-app .foundation-compute progress::-webkit-progress-value{background:linear-gradient(90deg,#4bb9d7,#4ed8b9)}
+.foundation-app .foundation-attack{background:linear-gradient(145deg,#c0f6e1,#73d9c2);border-color:#f3ffeb;color:#234d5c;box-shadow:0 3px 0 #4f9c8b}
+.foundation-app .foundation-attack svg,.foundation-app .foundation-network svg{fill:#398d9c;stroke:#eaffee}
+.foundation-app .foundation-build,.foundation-app .foundation-settings{color:#244e62}
+.foundation-app .foundation-backdrop{background:#44748c40}
+.foundation-app .foundation-dialog{background:#fffdf1}
+.foundation-app .foundation-dialog p,.foundation-app .foundation-dialog>small,.foundation-app .foundation-dialog .reset-scope{color:#466674}
+.foundation-app .settings-option{background:#e0f3ed;color:#254b60;border-color:#9fc8cb}
+.foundation-app .dialog-close{color:#476d7b}
+.foundation-app .reset-actions button{background:#d3eee9;color:#244354}.foundation-app .reset-actions .danger-reset{background:#ba4955;color:white}
+.foundation-app .rig-shop-art{background:linear-gradient(150deg,#b8dde7,#8fbfcf);border-color:#528da3;box-shadow:0 0 18px #44cbb333}
+.foundation-app .rig-shop-art>span{background:#fffdf1;color:#188c8b}.foundation-app .rig-shop-art i{color:#275a71}.foundation-app .rig-shop-stats{color:#26777e}
+.foundation-app .rig-placement small{color:#466674}.foundation-app .rig-placement button{background:#dcf0ed;color:#294f62}.foundation-app .rig-placement .primary{background:#ffd568;color:#294254}
+.foundation-app .rig-placement button[aria-pressed=true]{outline-color:#188c8b}
+.foundation-app .rig-collect{background:#edfff7f5;border-color:#55b3a5;color:#176d70;box-shadow:0 4px 14px #33a89344}
+.foundation-app .rig-progress{color:#466674}.foundation-app .rig-collection-pop{color:#155967;text-shadow:0 1px 3px #ffffff}
+.foundation-app .rig-error button{color:#244354}.foundation-app .foundation-fallback{color:#254b60}
