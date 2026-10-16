@@ -28,7 +28,7 @@ test('onboarding distinguishes untouched legacy saves, persists new-player choic
     return {status:response.status,data:await response.json() as any};
   }
   try{
-    const returning=await call(`airace_session=${legacy}`);
+    const returning=await call(`airace_integrated_session=${legacy}`);
     assert.deepEqual(returning.data.onboarding,{isNewPlayer:false,storySeen:true,tutorial:'dismissed'});
     assert.deepEqual(returning.data.state,initial);
     const fresh=await call('');assert.equal(fresh.data.onboarding.storySeen,false);assert.equal(fresh.data.onboarding.isNewPlayer,true);
@@ -38,8 +38,8 @@ test('onboarding distinguishes untouched legacy saves, persists new-player choic
     assert.equal((await call(freshCookie,{credits:100000})).status,400);
     await call(freshCookie,{tutorial:'dismissed'});
     assert.equal((await call(freshCookie)).data.onboarding.tutorial,'dismissed');
-    await call(`airace_session=${legacy}`,{storySeen:true,tutorial:'active'});
-    assert.equal((await call(`airace_session=${legacy}`)).data.onboarding.isNewPlayer,false);
+    await call(`airace_integrated_session=${legacy}`,{storySeen:true,tutorial:'active'});
+    assert.equal((await call(`airace_integrated_session=${legacy}`)).data.onboarding.isNewPlayer,false);
   }finally{await new Promise<void>((r,j)=>server.close(e=>e?j(e):r()));closeDatabase();}
   const reopened=new DatabaseSync(path);
   try{

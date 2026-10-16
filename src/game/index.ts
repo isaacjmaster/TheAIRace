@@ -83,6 +83,14 @@ export function applyCommand(state: GameState, command: PlayerCommand, now = Dat
       next.activeJob = null;
       break;
     }
+    case 'agent-upgrade': {
+      object(command, ['type'], 'agent upgrade');
+      const level = state.agentLevel || 0, cost = (level + 1) * 60;
+      if (level >= 3) throw new Error('Agents fully upgraded.');
+      if ((state.raidCompute || 0) < cost) throw new Error('Not enough banked compute.');
+      next.raidCompute = (state.raidCompute || 0) - cost; next.agentLevel = level + 1;
+      break;
+    }
     case 'upgrade': {
       object(command, ['type'], 'upgrade command');
       if (state.activeJob) throw new Error('Collect your contract before changing hardware.');

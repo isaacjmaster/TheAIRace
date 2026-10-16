@@ -1,4 +1,5 @@
 import express from 'express';
+import { registerRaids } from './raid-api.js';
 import { DatabaseSync } from 'node:sqlite';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, existsSync } from 'node:fs';
@@ -11,7 +12,8 @@ import { demoInterpret, liveConfig, liveInterpret, planSchema } from './interpre
 import { registerExpeditions, readExpedition } from './expedition-api.js';
 
 mkdirSync('data', { recursive: true });
-const db = new DatabaseSync(process.env.GAME_DB_PATH || 'data/game.sqlite');
+process.env.AI_MODE = 'demo'; process.env.AI_LIVE_ENABLED = 'false';
+const db = new DatabaseSync(process.env.GAME_DB_PATH || 'data/integrated-game.sqlite');
 export function closeDatabase() { db.close(); }
 db.exec('PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS commands (session TEXT NOT NULL, id TEXT NOT NULL, response TEXT NOT NULL, PRIMARY KEY(session,id)); CREATE TABLE IF NOT EXISTS usage (day TEXT PRIMARY KEY, requests INTEGER NOT NULL);');
 db.exec("CREATE TABLE IF NOT EXISTS onboarding (session TEXT PRIMARY KEY, storySeen INTEGER NOT NULL DEFAULT 0, tutorial TEXT NOT NULL DEFAULT 'available')");
@@ -31,17 +33,18 @@ app.use('/api', (req, res, next) => {
   next();
 });
 function session(req: express.Request, res: express.Response): { id: string; state: GameState } {
-  const candidate = /(?:^|;\s*)airace_session=([a-f0-9-]{36})(?:;|$)/.exec(req.headers.cookie || '')?.[1];
+  const candidate = /(?:^|;\s*)airace_integrated_session=([a-f0-9-]{36})(?:;|$)/.exec(req.headers.cookie || '')?.[1];
   const row = candidate ? db.prepare('SELECT state FROM sessions WHERE id=?').get(candidate) : undefined;
   if (row) return { id: candidate!, state: JSON.parse(row.state as string) };
   const id = randomUUID();
   const state = createInitialState();
   db.prepare('INSERT INTO sessions(id,state) VALUES (?,?)').run(id, JSON.stringify(state));
   db.prepare('INSERT INTO onboarding(session) VALUES (?)').run(id);
-  res.cookie('airace_session', id, { httpOnly: true, sameSite: 'strict', secure: req.secure, maxAge: 365 * 86400000, path: '/' });
+  res.cookie('airace_integrated_session', id, { httpOnly: true, sameSite: 'strict', secure: req.secure, maxAge: 365 * 86400000, path: '/' });
   return { id, state };
 }
 registerExpeditions(app, db, session);
+registerRaids(app, db, session);
 function onboarding(id: string) {
   const row = db.prepare('SELECT storySeen,tutorial FROM onboarding WHERE session=?').get(id);
   return row ? { isNewPlayer: true, storySeen: !!row.storySeen, tutorial: row.tutorial } : { isNewPlayer: false, storySeen: true, tutorial: 'dismissed' };
@@ -61,7 +64,7 @@ app.post('/api/onboarding', (req, res) => {
 const commandSchema = z.object({ requestId: z.string().uuid(), revision: z.number().int().min(0), command: z.discriminatedUnion('type', [
   z.object({ type: z.literal('rename'), name: z.string().min(1).max(32) }).strict(),
   z.object({ type: z.literal('start'), contractId: z.string().max(60), plan: planSchema, allocation: z.object({ execution: z.number().int().min(0).max(100), verification: z.number().int().min(0).max(100) }).strict() }).strict(),
-  z.object({ type: z.literal('claim') }).strict(), z.object({ type: z.literal('upgrade') }).strict(),
+  z.object({ type: z.literal('agent-upgrade') }).strict(), z.object({ type: z.literal('claim') }).strict(), z.object({ type: z.literal('upgrade') }).strict(),
 ]) }).strict();
 app.post('/api/command', (req, res) => {
   const parsed = commandSchema.safeParse(req.body);

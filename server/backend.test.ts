@@ -42,7 +42,7 @@ test('authoritative API completes and persists contract → reward → upgrade w
   }
   try {
     const first = await call('/api/game'); assert.equal(first.status, 200); assert.equal(first.body.mode, 'demo');
-    assert.ok(cookie.startsWith('airace_session='));
+    assert.ok(cookie.startsWith('airace_integrated_session='));
     let state = first.body.state;
     const rename = { requestId: randomUUID(), revision: state.revision, command: { type: 'rename', name: 'Tiny Future' } };
     const renamed = await call('/api/command', rename); assert.equal(renamed.status, 200); state = renamed.body.state;

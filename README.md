@@ -1,3 +1,9 @@
+# The AI Race — Garage + Raid Integration
+
+This checkout is the isolated `codex/ai-race-integrated` prototype. Start with [INTEGRATION.md](INTEGRATION.md) for launch commands, desktop/iPhone testing, save isolation, upgrade effects, and verification results.
+
+The following notes describe the original garage milestones and are retained as historical documentation. Operations and its recovery economy are replaced in the integrated interface by ATTACK and raid rewards.
+
 # The AI Race — first playable prototype
 
 A portrait-first browser game set in a tiny AI startup garage in 2028. One agent, three repeatable contracts, two hardware upgrades, deterministic game rules, and persistent local saves.

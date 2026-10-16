@@ -1,0 +1,111 @@
+import { MAP, LEVELS } from './level';
+export type Kind = 'scout' | 'tank' | 'breaker';
+export type Point = { x: number; y: number };
+export type Building = Point & { id: number; kind: 'core' | 'vault' | 'turret' | 'wall'; hp: number; maxHp: number; cooldown: number; target?: number };
+export type Unit = Point & { id: number; kind: Kind; hp: number; maxHp: number; cooldown: number; target?: number; objective?: number; waypoint?: Point };
+export type Effect = { id: number; from: Point; to: Point; ttl: number; color: string; damage: number; source: number; target: number; destroyed: boolean };
+export type Raid = { layout: number; time: number; buildings: Building[]; units: Unit[]; stock: Record<Kind, number>; effects: Effect[]; ended: boolean; reason: string; damage: Record<Kind, number>; lost: number; nextId: number; power: number };
+export const STATS = {
+  scout: { name: 'Scout', hp: 85, speed: 1.55, damage: 16, range: .85, interval: .7, color: '#52e6d2', role: 'Fast · targets compute' },
+  tank: { name: 'Tank', hp: 390, speed: .68, damage: 24, range: .95, interval: 1.15, color: '#8da9ff', role: 'Armored · absorbs fire' },
+  breaker: { name: 'Breaker', hp: 135, speed: 1.05, damage: 38, range: 1.05, interval: .9, color: '#ffb868', role: 'Targets defenses · breaches walls' },
+} as const;
+export const STEP = .05;
+export const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
+export const objectives = (s: Raid) => s.buildings.filter(b => b.kind !== 'wall');
+export const DEFAULT_SQUAD: Readonly<Record<Kind, number>> = Object.freeze({ scout: 2, tank: 2, breaker: 2 });
+export function createRaid(layout = 0, squad: Readonly<Record<Kind, number>> = DEFAULT_SQUAD, power = 1): Raid {
+  if (!LEVELS[layout]) throw new Error('Unknown raid layout');
+  if (Object.values(squad).some(n => !Number.isInteger(n) || n < 0 || n > 12) || Object.values(squad).reduce((a, b) => a + b, 0) < 1 || Object.values(squad).reduce((a, b) => a + b, 0) > 12) throw new Error('Squad must contain 1 to 12 agents');
+  const level = LEVELS[layout], bounds = MAP.walls;
+  const buildings: Building[] = [];
+  const add = (kind: Building['kind'], x: number, y: number, hp: number) => buildings.push({ id: buildings.length, kind, x, y, hp, maxHp: hp, cooldown: 0 });
+  add('core', level.core.x, level.core.y, 2200); add('vault', level.vault.x, level.vault.y, 750); add('turret', level.turret.x, level.turret.y, 850);
+  for (let x: number = bounds.left; x <= bounds.right; x++) { if (x !== level.gate) add('wall', x, bounds.top, 150); add('wall', x, bounds.bottom, 150); }
+  for (let y: number = bounds.top + 1; y < bounds.bottom; y++) { add('wall', bounds.left, y, 150); add('wall', bounds.right, y, 150); }
+  return { power, layout, time: 0, buildings, units: [], stock: { ...squad }, effects: [], ended: false, reason: '', damage: { scout: 0, tank: 0, breaker: 0 }, lost: 0, nextId: 100 };
+}
+export function validDeployment(p: Point) {
+  const b = MAP.deployment;
+  return Number.isFinite(p.x) && Number.isFinite(p.y) && p.x >= b.minX && p.y >= b.minY && p.x <= b.maxX && p.y <= b.maxY && (p.x < b.innerLeft || p.y < b.innerTop || p.x > b.innerRight || p.y > b.innerBottom);
+}
+export function deploy(s: Raid, kind: Kind, p: Point) {
+  if (s.ended || !s.stock[kind] || !validDeployment(p)) return false;
+  // Snap to a cell center so the first path step cannot clip a corner.
+  s.stock[kind]--; s.units.push({ x: Math.round(p.x), y: Math.round(p.y), id: s.nextId++, kind, hp: STATS[kind].hp * s.power, maxHp: STATS[kind].hp * s.power, cooldown: 0 }); return true;
+}
+const cell = (p: Point) => Math.round(p.y) * MAP.width + Math.round(p.x);
+const point = (n: number): Point => ({ x: n % MAP.width, y: Math.floor(n / MAP.width) });
+type Route = { path: Point[]; cost: number };
+// Minimize travel time + breach time, rather than distance to an arbitrary wall.
+function route(s: Raid, u: Unit, target: Building): Route {
+  const start = cell(u), goal = cell(target), count = MAP.width * MAP.height;
+  const costs = new Float64Array(count).fill(Infinity), previous = new Int16Array(count).fill(-1);
+  const occupied = new Map(s.buildings.filter(b => b.hp > 0 && b.id !== target.id).map(b => [cell(b), b]));
+  // A binary heap avoids scanning the whole enlarged map for each path step.
+  const heap: { n: number; cost: number }[] = [];
+  const before = (a: { n: number; cost: number }, b: { n: number; cost: number }) => a.cost < b.cost || (a.cost === b.cost && a.n < b.n);
+  const push = (entry: { n: number; cost: number }) => { heap.push(entry); let i = heap.length - 1; while (i > 0) { const p = (i - 1) >> 1; if (!before(heap[i], heap[p])) break; [heap[i], heap[p]] = [heap[p], heap[i]]; i = p; } };
+  const pop = () => { const first = heap[0], last = heap.pop()!; if (heap.length) { heap[0] = last; let i = 0; for (;;) { let best = i; for (const j of [i * 2 + 1, i * 2 + 2]) if (j < heap.length && before(heap[j], heap[best])) best = j; if (best === i) break; [heap[i], heap[best]] = [heap[best], heap[i]]; i = best; } } return first; };
+  costs[start] = 0; push({ n: start, cost: 0 });
+  while (heap.length) {
+    const { n: best, cost: current } = pop(); if (current !== costs[best]) continue;
+    if (best === goal) { const path: Point[] = []; for (let n = goal; n !== start; n = previous[n]) path.unshift(point(n)); return { path, cost: costs[goal] }; }
+    const p = point(best), stats = STATS[u.kind];
+    for (const [dx, dy] of [[0, -1], [-1, 0], [1, 0], [0, 1]]) {
+      const x = p.x + dx, y = p.y + dy; if (x < 0 || y < 0 || x >= MAP.width || y >= MAP.height) continue;
+      const n = y * MAP.width + x, obstacle = occupied.get(n);
+      if (obstacle && obstacle.kind !== 'wall') continue;
+      const breach = obstacle ? Math.ceil(obstacle.hp / (stats.damage * (u.kind === 'breaker' ? 2 : 1))) * stats.interval : 0;
+      const cost = current + 1 / stats.speed + breach;
+      if (cost < costs[n]) { costs[n] = cost; previous[n] = best; push({ n, cost }); }
+    }
+  }
+  return { path: [], cost: Infinity };
+}
+const priority = (u: Unit, b: Building) => u.kind === 'scout' ? (b.kind === 'vault' ? 0 : b.kind === 'core' ? 1 : 2) : u.kind === 'breaker' ? (b.kind === 'turret' ? 0 : b.kind === 'core' ? 1 : 2) : 0;
+function choose(s: Raid, u: Unit) {
+  return objectives(s).filter(b => b.hp > 0).map(b => ({ b, route: route(s, u, b) })).filter(c => Number.isFinite(c.route.cost))
+    .sort((a, b) => priority(u, a.b) - priority(u, b.b) || a.route.cost - b.route.cost || a.b.id - b.b.id)[0];
+}
+export function destruction(s: Raid) { const meaningful = objectives(s); return meaningful.length ? Math.round(100 * meaningful.filter(b => b.hp <= 0).length / meaningful.length) : 100; }
+export function rewards(s: Raid) { return { compute: (s.buildings.some(b => b.kind === 'vault' && b.hp <= 0) ? 120 : 0) + Math.floor(destruction(s) * .8), credits: destruction(s) * 3 + (s.buildings.some(b => b.kind === 'core' && b.hp <= 0) ? 200 : 0) }; }
+export function finish(s: Raid, reason: string) { s.ended = true; s.reason = reason; }
+function hit(s: Raid, from: Point, target: Building | Unit, damage: number, source: number, color: string) {
+  const dealt = Math.min(target.hp, damage); target.hp = Math.max(0, target.hp - damage);
+  s.effects.push({ id: s.nextId++, from: { x: from.x, y: from.y }, to: { x: target.x, y: target.y }, ttl: .3, color, damage: dealt, source, target: target.id, destroyed: !target.hp });
+  return dealt;
+}
+export function tick(s: Raid) {
+  if (s.ended) return;
+  if (objectives(s).every(b => b.hp <= 0)) { finish(s, 'Network cleared'); return; }
+  s.time = Math.min(90, s.time + STEP); s.effects = s.effects.filter(e => (e.ttl -= STEP) > 0);
+  for (const u of s.units.filter(u => u.hp > 0)) {
+    const stats = STATS[u.kind]; u.cooldown -= STEP;
+    // Finish one grid edge before replanning; never cut an occupied corner.
+    if (u.waypoint) { const d = distance(u, u.waypoint), move = Math.min(d, stats.speed * STEP); if (d) { u.x += (u.waypoint.x - u.x) / d * move; u.y += (u.waypoint.y - u.y) / d * move; } if (d <= move + 1e-8) { u.x = u.waypoint.x; u.y = u.waypoint.y; u.waypoint = undefined; } continue; }
+    let objective = s.buildings.find(b => b.id === u.objective && b.kind !== 'wall' && b.hp > 0);
+    let planned: Route;
+    if (!objective) { const choice = choose(s, u); objective = choice?.b; planned = choice?.route ?? { path: [], cost: Infinity }; u.objective = objective?.id; }
+    else planned = route(s, u, objective);
+    if (!objective) { u.target = undefined; continue; }
+    // Only a wall on the chosen objective's best path may become an attack target.
+    const next = planned.path[0];
+    const wall = next && s.buildings.find(b => b.kind === 'wall' && b.hp > 0 && b.x === next.x && b.y === next.y);
+    const target = wall ?? objective; u.target = target.id;
+    if (distance(u, target) <= stats.range) {
+      if (u.cooldown <= 0) { const damage = stats.damage * s.power * (u.kind === 'breaker' && target.kind === 'wall' ? 2 : 1); s.damage[u.kind] += hit(s, u, target, damage, u.id, stats.color); u.cooldown = stats.interval; }
+    } else if (next && !wall && distance(u, objective) > 1.01) { u.waypoint = next; }
+    // Approach the target's attack radius without entering its occupied cell.
+    else if (distance(u, target) > stats.range) { const d = distance(u, target), move = Math.min(Math.max(0, d - stats.range + .001), stats.speed * STEP); if (d) { u.x += (target.x - u.x) / d * move; u.y += (target.y - u.y) / d * move; } }
+    if (objectives(s).every(b => b.hp <= 0)) { finish(s, 'Network cleared'); return; }
+  }
+  for (const b of s.buildings.filter(b => b.kind === 'turret' && b.hp > 0)) {
+    b.cooldown -= STEP;
+    const target = s.units.filter(u => u.hp > 0 && distance(u, b) <= 5).sort((a, c) => distance(a, b) - distance(c, b) || a.id - c.id)[0];
+    b.target = target?.id;
+    if (target && b.cooldown <= 0) { hit(s, b, target, 26, b.id, '#ff6487'); if (!target.hp) s.lost++; b.cooldown = .65; }
+  }
+  if (s.time >= 90) finish(s, 'Time expired');
+  else if (Object.values(s.stock).every(n => !n) && s.units.every(u => !u.hp)) finish(s, 'Squad eliminated');
+}

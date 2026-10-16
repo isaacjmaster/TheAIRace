@@ -1,0 +1,655 @@
+.raid-game {
+  font-family: ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color: #203f50;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background: #abcac6;
+  min-height: 280px;
+  isolation: isolate;
+  contain: layout paint
+}
+.raid-game * {
+  box-sizing: border-box
+}
+.raid-game button {
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent
+}
+.raid-game button:focus-visible {
+  outline: 3px solid #174e70;
+  outline-offset: 3px
+}
+.raid-game button:disabled {
+  cursor: default
+}
+.raid-game .battlefield {
+  position: absolute;
+  inset: 0;
+  touch-action: none;
+  user-select: none
+}
+.raid-game .battlefield canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: none
+}
+.raid-game .top-hud {
+  position: absolute;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  pointer-events: none;
+  top: max(10px,env(safe-area-inset-top));
+  left: max(12px,env(safe-area-inset-left));
+  right: max(12px,env(safe-area-inset-right));
+  gap: 8px
+}
+.raid-game .base-title {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(150deg,#fbfcf3f2,#eaf4e7ed);
+  border: 1px solid #ffffffc4;
+  box-shadow: 0 4px 0 #74918e4d,0 8px 22px #264d5330;
+  pointer-events: auto;
+  padding: 5px 7px;
+  gap: 7px;
+  border-radius: 11px
+}
+.raid-game .base-title h1 {
+  margin: 0;
+  line-height: 1.1;
+  font-weight: 850;
+  font-size: 15px;
+  letter-spacing: -.4px
+}
+.raid-game .base-title p {
+  margin: 5px 0 0;
+  font-weight: 700;
+  color: #6a8b88;
+  letter-spacing: .2px;
+  font-size: 9px;
+  margin-top: 3px
+}
+.raid-game .base-emblem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg,#917ae7,#6659ab);
+  color: #f0ecff;
+  border: 2px solid #d6cbff;
+  box-shadow: 0 3px 0 #504c9133;
+  width: 23px;
+  height: 27px;
+  font-size: 19px;
+  border-radius: 6px
+}
+.raid-game .swap {
+  border: 0;
+  border-radius: 7px;
+  color: #70968b;
+  background: #d8e8de;
+  margin-left: 1px;
+  line-height: 1;
+  height: 36px;
+  width: 36px;
+  font-size: 22px
+}
+.raid-game .swap:disabled {
+  opacity: .3
+}
+.raid-game .timer {
+  display: flex;
+  align-items: center;
+  border: 1px solid #eff9ee95;
+  background: #294d56ed;
+  color: #f4fae8;
+  box-shadow: 0 4px 0 #3e66664d;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  font-size: 18px;
+  padding: 8px;
+  min-height: 40px;
+  gap: 5px;
+  border-radius: 10px
+}
+.raid-game .timer svg {
+  width: 16px;
+  height: 19px;
+  fill: none;
+  stroke: #b8e5cf;
+  stroke-width: 2;
+  stroke-linecap: round
+}
+.raid-game .timer.urgent {
+  color: #ffd3b5;
+  background: #734d4e
+}
+.raid-game .battle-progress {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #385962;
+  text-shadow: 0 1px 0 #eefff6;
+  top: calc(max(10px,env(safe-area-inset-top)) + 45px);
+  right: max(15px,env(safe-area-inset-right));
+  font-size: 13px
+}
+.raid-game .battle-progress>span {
+  color: #866b36;
+  font-size: 20px
+}
+.raid-game .battle-progress strong {
+  font-weight: 850;
+  font-size: 13px
+}
+.raid-game .battle-progress small {
+  font-size: 10px;
+  margin-left: 1px
+}
+.raid-game .objective-dots {
+  display: flex;
+  gap: 3px;
+  margin-left: 4px
+}
+.raid-game .objective-dots i {
+  width: 5px;
+  height: 5px;
+  background: #83a6a0;
+  border-radius: 50%
+}
+.raid-game .objective-dots i.done {
+  background: #ffe6a1;
+  box-shadow: 0 0 0 1px #a89359
+}
+.raid-game .camera-controls {
+  position: absolute;
+  display: flex;
+  right: max(12px,env(safe-area-inset-right));
+  bottom: max(10px,env(safe-area-inset-bottom));
+  flex-direction: row;
+  gap: 5px
+}
+.raid-game .camera-controls button {
+  background: #edf6e5c7;
+  border: 1px solid #fff7;
+  font-size: 22px;
+  font-weight: 700;
+  color: #42655e;
+  box-shadow: 0 3px 0 #486b672b;
+  backdrop-filter: blur(6px);
+  width: 44px;
+  height: 44px;
+  border-radius: 9px
+}
+.raid-game .retreat {
+  position: absolute;
+  border: 1px solid #ebf4e7a8;
+  border-radius: 8px;
+  background: #55766c96;
+  color: #f6f7e4;
+  font-size: 10px;
+  font-weight: 700;
+  backdrop-filter: blur(6px);
+  left: auto;
+  right: max(12px,env(safe-area-inset-right));
+  bottom: calc(max(10px,env(safe-area-inset-bottom)) + 51px);
+  min-height: 34px;
+  padding: 0 10px
+}
+.raid-game .deployment {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  left: max(15px,env(safe-area-inset-left));
+  right: auto;
+  bottom: max(10px,env(safe-area-inset-bottom));
+  align-items: flex-start
+}
+.raid-game .deploy-hint {
+  letter-spacing: .1px;
+  font-weight: 650;
+  color: #385f5d;
+  text-shadow: 0 1px 0 #e0f4e4;
+  font-size: 10px;
+  max-width: 260px;
+  height: 22px;
+  margin-bottom: 7px;
+  padding: 3px 9px
+}
+.raid-game .deploy-hint:not(:empty) {
+  background: #edf7e5ca;
+  border: 1px solid #ffffffe0;
+  border-radius: 20px;
+  padding: 4px 12px;
+  box-shadow: 0 3px 10px #35594d15
+}
+.raid-game .deploy-hint.notice {
+  color: #355c61
+}
+.raid-game .troop-bar {
+  display: flex;
+  background: linear-gradient(#e8f4e0e0,#cadfceeb);
+  border: 1px solid #f8fff3c9;
+  backdrop-filter: blur(10px);
+  pointer-events: auto;
+  padding: 6px 8px 7px;
+  gap: 7px;
+  border-radius: 13px;
+  box-shadow: 0 3px 0 #658e7f55,0 5px 12px #30594d25
+}
+.raid-game .troop {
+  position: relative;
+  padding: 0;
+  border: 1px solid #bfd4c7;
+  border-bottom: 4px solid #adc4b9;
+  background: linear-gradient(145deg,#f9fbe9,#d4e6db);
+  color: #375461;
+  box-shadow: inset 0 1px 0 #fff;
+  transition: transform .16s,border-color .16s;
+  width: 52px;
+  height: 56px;
+  border-radius: 8px;
+  border-bottom-width: 3px
+}
+.raid-game .troop.selected {
+  background: linear-gradient(145deg,#fcffe8,#d8f3df);
+  border-color: #76bba0;
+  border-bottom-color: #519d86;
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 1px #f2ffe4,0 0 0 3px #4c9f88
+}
+.raid-game .troop-art {
+  position: absolute;
+  filter: drop-shadow(0 2px 0 #fff4);
+  width: 42px;
+  height: 39px;
+  left: 4px;
+  top: 0
+}
+.raid-game .troop-name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  font-weight: 850;
+  font-size: 9px;
+  bottom: 3px
+}
+.raid-game .troop-count {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #315969;
+  color: #fff9dc;
+  border: 2px solid #f4fae9;
+  font-weight: 850;
+  box-shadow: 0 2px 0 #4b6b6544;
+  min-width: 18px;
+  height: 18px;
+  right: -3px;
+  top: -4px;
+  font-size: 10px;
+  border-radius: 6px
+}
+.raid-game .selection-gem {
+  display: none;
+  position: absolute;
+  background: #fff6ce;
+  border: 1px solid #73a58a;
+  transform: rotate(45deg);
+  border-radius: 2px;
+  width: 6px;
+  height: 6px;
+  bottom: -7px;
+  left: calc(50% - 3px)
+}
+.raid-game .selected .selection-gem {
+  display: block
+}
+.raid-game .troop.exhausted {
+  filter: grayscale(.8);
+  opacity: .5;
+  transform: none;
+  box-shadow: none
+}
+.raid-game .result-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: #25484570;
+  backdrop-filter: blur(7px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow: auto
+}
+.raid-game .result-sheet {
+  width: min(350px,100%);
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
+  text-align: center;
+  border-radius: 25px;
+  border: 2px solid #ffffe7;
+  background: linear-gradient(150deg,#f9fbe8,#deecdd);
+  padding: 27px 23px 18px;
+  box-shadow: 0 7px 0 #6a8c7777,0 25px 70px #143a4666;
+  animation: raid-appear .35s ease-out
+}
+.raid-game .result-stars {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 7px
+}
+.raid-game .result-stars span {
+  font-size: 40px;
+  color: #b3c8b9;
+  filter: drop-shadow(0 3px 0 #759a8522)
+}
+.raid-game .result-stars span:nth-child(2) {
+  font-size: 56px;
+  margin-top: -8px
+}
+.raid-game .result-stars .earned {
+  color: #edb654;
+  text-shadow: 0 -1px #fff9c2;
+  filter: drop-shadow(0 3px 0 #b7893b)
+}
+.raid-game .result-sheet h2 {
+  font-size: 35px;
+  margin: 6px 0 4px;
+  letter-spacing: -1.5px;
+  color: #35586b;
+  font-weight: 900
+}
+.raid-game .victory h2 {
+  color: #357d67
+}
+.raid-game .result-subtitle {
+  font-size: 11px;
+  color: #6d8981;
+  margin: 0 0 24px
+}
+.raid-game .loot {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 22px
+}
+.raid-game .loot>div {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  gap: 7px;
+  background: #fbfbeab0;
+  border: 1px solid #bcd3bf;
+  border-radius: 12px;
+  padding: 11px;
+  width: 50%;
+  box-shadow: 0 3px 0 #b9d0bd44
+}
+.raid-game .loot small {
+  font-size: 9px;
+  color: #6c8b7c;
+  font-weight: 700
+}
+.raid-game .loot strong {
+  display: block;
+  font-size: 24px;
+  line-height: 1.2;
+  color: #3f655d;
+  letter-spacing: -1px
+}
+.raid-game .compute-icon {
+  font-size: 30px;
+  color: #61b49b;
+  text-shadow: 0 2px #3d817b
+}
+.raid-game .credit-icon {
+  font-size: 32px;
+  color: #e5b855;
+  text-shadow: 0 2px #af843b
+}
+.raid-game .debrief {
+  font-size: 12px;
+  line-height: 1.65;
+  color: #5c7d72;
+  margin: 0 0 20px
+}
+.raid-game .contribution {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  font-size: 10px;
+  color: #5c7c71
+}
+.raid-game .contribution i {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 4px
+}
+.raid-game .contribution b {
+  display: block;
+  color: #45675c;
+  font-size: 14px;
+  margin: 6px 0 0
+}
+.raid-game .damage-caption {
+  display: block;
+  font-size: 8px;
+  letter-spacing: .4px;
+  color: #89a293;
+  margin: 5px 0 20px
+}
+.raid-game .retry {
+  width: 100%;
+  border: 1px solid #34886f;
+  border-bottom: 4px solid #38846e;
+  min-height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(#76ce9c,#58b68c);
+  color: #f7ffe4;
+  text-shadow: 0 1px #3e9075;
+  font-weight: 850;
+  font-size: 16px;
+  box-shadow: inset 0 1px 0 #a0e8ba
+}
+.raid-game .retry span {
+  margin-left: 14px
+}
+.raid-game .next-base {
+  border: 0;
+  background: transparent;
+  color: #6d8b7d;
+  font-size: 11px;
+  min-height: 44px;
+  margin-top: 7px;
+  font-weight: 700
+}
+.raid-game .graphics-error {
+  position: absolute;
+  inset: 20%;
+  z-index: 20;
+  padding: 25px;
+  background: #f6f8e6;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 5px 20px #264d53
+}
+.raid-game .graphics-error h2 {
+  font-size: 18px
+}
+.raid-game .graphics-error p {
+  font-size: 13px
+}
+.raid-game .graphics-error button {
+  border: 0;
+  border-radius: 8px;
+  background: #5aaf8b;
+  padding: 12px 20px;
+  color: white;
+  font-weight: 700
+}
+@keyframes raid-appear {
+from {
+  opacity: 0;
+  transform: translateY(18px) scale(.96)
+}
+to {
+  opacity: 1;
+  transform: none
+}
+}
+@media(prefers-reduced-motion:reduce) {
+.raid-game *,.raid-game *::before,.raid-game *::after {
+  animation: none!important;
+  transition: none!important
+}
+}
+
+
+/* Landscape-first shell: compact controls leave the field open. */
+.raid-game .orientation-hint {
+  display: none
+}
+.raid-game .return-home {
+  border: 0;
+  background: none;
+  color: #416c5d;
+  font-weight: 750;
+  min-height: 44px;
+  font-size: 12px
+}
+@media(orientation:portrait) {
+.raid-game .orientation-hint {
+  position: absolute;
+  display: block;
+  top: calc(max(10px,env(safe-area-inset-top)) + 72px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 650;
+  color: #466d65;
+  padding: 6px 10px;
+  background: #eff7e1c9;
+  border-radius: 20px;
+  pointer-events: none
+}
+.raid-game .deployment {
+  left: 50%;
+  transform: translateX(-50%);
+  align-items: center
+}
+.raid-game .base-emblem {
+  display: none
+}
+}
+@media(orientation:landscape) and (max-height:600px) {
+.raid-game .result-backdrop {
+  padding: 10px
+}
+.raid-game .result-sheet {
+  width: 520px;
+  max-height: calc(100dvh - 20px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px 20px;
+  padding: 17px 22px;
+  border-radius: 20px;
+  align-items: center
+}
+.raid-game .result-stars {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+  height: 38px
+}
+.raid-game .result-stars span {
+  font-size: 28px
+}
+.raid-game .result-stars span:nth-child(2) {
+  font-size: 40px
+}
+.raid-game .result-sheet h2 {
+  grid-column: 1;
+  grid-row: 2;
+  font-size: 28px;
+  margin: 1px 0
+}
+.raid-game .result-subtitle {
+  grid-column: 1;
+  grid-row: 3;
+  margin: 0 0 6px;
+  font-size: 10px
+}
+.raid-game .loot {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  margin: 0;
+  gap: 6px
+}
+.raid-game .loot>div {
+  padding: 9px 7px;
+  gap: 5px
+}
+.raid-game .loot strong {
+  font-size: 22px
+}
+.raid-game .compute-icon,.raid-game .credit-icon {
+  font-size: 23px
+}
+.raid-game .debrief {
+  grid-column: 1;
+  grid-row: 4 / span 2;
+  font-size: 11px;
+  margin: 8px 0;
+  line-height: 1.5
+}
+.raid-game .contribution {
+  grid-column: 2;
+  grid-row: 4;
+  gap: 10px;
+  font-size: 9px
+}
+.raid-game .contribution b {
+  font-size: 12px;
+  margin-top: 4px
+}
+.raid-game .damage-caption {
+  grid-column: 2;
+  grid-row: 5;
+  margin: 0 0 4px
+}
+.raid-game .retry {
+  grid-column: 2;
+  grid-row: 6;
+  margin: 0;
+  font-size: 14px;
+  min-height: 44px
+}
+.raid-game .next-base {
+  grid-column: 1;
+  grid-row: 6;
+  margin: 0;
+  min-height: 44px
+}
+.raid-game .return-home {
+  grid-column: 1 / -1;
+  grid-row: 7
+}
+}

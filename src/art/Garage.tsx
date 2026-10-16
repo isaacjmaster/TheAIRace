@@ -6,9 +6,9 @@ export function Garage({ level, working, rigLevel = 0, installing = false }: { l
   const id = useId().replace(/:/g, '');
   const paint = (name: string) => `url(#${id}-${name})`;
   const stage = level >= 2 ? 'company' : level >= 1 ? 'workstation' : 'starter';
-  return <svg className={`garage garage-v2 ${working ? 'working' : ''} ${installing ? 'installing' : ''}`} viewBox="0 0 600 650" preserveAspectRatio="xMidYMin slice" role="img" aria-labelledby={`${id}-title ${id}-desc`} data-stage={stage}>
+  return <svg className={`garage garage-v2 ${working ? 'working' : ''} ${installing ? 'installing' : ''}`} viewBox="0 0 600 650" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby={`${id}-title ${id}-desc`} data-stage={stage}>
     <title id={`${id}-title`}>{stage === 'starter' ? 'Your first garage' : stage === 'workstation' ? 'A growing AI workshop' : 'Your AI company headquarters'}</title>
-    <desc id={`${id}-desc`}>{stage === 'starter' ? 'A bare garage, a single laptop on the floor, and Pixel, your mint-colored AI agent.' : stage === 'workstation' ? 'A desk, chair, desktop computer, laptop, warm task lighting, and a small plant transform your garage into a workshop.' : 'A sophisticated garage with a GPU workbench, server rack, lighting, plants, and Pixel.'}{rigLevel > 0 ? ' Your earned recovery rig stands beside the entrance.' : ''}</desc>
+    <desc id={`${id}-desc`}>{stage === 'starter' ? 'A bare garage, a single laptop on the floor, and Pixel, your mint-colored AI agent.' : stage === 'workstation' ? 'A desk, chair, desktop computer, laptop, warm task lighting, and a small plant transform your garage into a workshop.' : 'A sophisticated garage with a GPU workbench, server rack, lighting, plants, and Pixel.'}{rigLevel > 0 ? ' Your agent training rig stands beside the entrance.' : ''}</desc>
     <defs>
       <linearGradient id={`${id}-left`} x1="0" y1="0" x2="1" y2="1"><stop stopColor="#fff0d2"/><stop offset="1" stopColor="#d9b693"/></linearGradient>
       <linearGradient id={`${id}-right`} x1="0" y1="0" x2="1" y2="1"><stop stopColor="#d7c6aa"/><stop offset="1" stopColor="#a3897c"/></linearGradient>
@@ -98,7 +98,7 @@ export function Garage({ level, working, rigLevel = 0, installing = false }: { l
       <path d="m44 385 256-148 256 148" fill="none" stroke="#a7f8de" strokeWidth="3" opacity=".65"/>
       <g transform="translate(488 458)"><path d="m-19-5 20-12 22 13-20 12Z" fill="#ffe3b5"/><path d="m-19-5 22 13 20-12-6 31-14 9-16-9Z" fill="#e58e73"/><path d="M3-7C-38-20-35-65-17-54 0-43-4-23 3-12-6-67 24-87 24-57 24-33 10-27 3-7 32-52 57-41 42-23 30-9 18-12 3-7" fill="#4ab29c"/><path d="M3-7v-45" stroke="#7cd4b6" strokeWidth="3"/></g>
     </g>}
-    {rigLevel > 0 && <g data-equipment="recovery-rig" aria-label="Installed recovery rig" transform="translate(73 340)">
+    {rigLevel > 0 && <g data-equipment="recovery-rig" aria-label="Installed agent training rig" transform="translate(73 340)">
       <path d="m0 7 28-16 39 23-28 16Z" fill="#f6d69a"/><path d="m0 7 39 23v41L0 48Z" fill="#bb805f"/><path d="m39 30 28-16v41L39 71Z" fill="#80635b"/>
       <path d="m8-2 22-12 24 14-22 13Z" fill="#a5f4d7"/><path d="m8-2 24 15v20L8 18Z" fill="#399c94"/><path d="m32 13 22-13v20L32 33Z" fill="#247b7e"/>
       <path d="M30-14v-34l26 15v25" fill="none" stroke="#ffd47e" strokeWidth="8" strokeLinecap="round"/>
