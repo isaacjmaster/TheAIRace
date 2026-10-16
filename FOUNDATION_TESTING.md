@@ -40,3 +40,9 @@ npm.cmd run build
 $env:PORT='3012'
 npm.cmd start
 ```
+
+## HQ Simplification Patch
+
+The active HUD now shows a fixed Company label with the saved level, plus a separate bordered Builder Bot box. Availability is total builders minus occupied builders (`buildersBusy`, defaulting to zero for older foundation saves). No saved company name is overwritten or editable in the active interface. The mint AI character is removed from the HQ scene; Builder Bot models, work animation and construction code remain unchanged. Compute, camera, terrain, audio, menus and orientation behavior remain unchanged.
+
+Validation: 10 focused tests passed (dynamic HUD rendering, save/reset isolation and construction/placement regressions); production build passed. Browser inspection at 844x390 confirmed the two compact boxes, unchanged Compute and corner buttons, no mint character and one visible Builder Bot. Physical iPhone touch/performance still requires device testing. The minimalist foundation still has no active construction purchase flow; this patch does not introduce one.

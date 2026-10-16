@@ -14,12 +14,12 @@ export class HeadquartersScene {
  private builders:{group:THREE.Group;from:THREE.Vector3;to:THREE.Vector3;working:boolean;spark:THREE.Object3D}[]=[];
  private accents:THREE.Object3D[]=[];private clearing:{group:THREE.Group;time:number}[]=[];
  private reserved:THREE.Group|undefined;private reservedKit:WorldKit|undefined;private reservedEdges:THREE.LineSegments|undefined;private previewId:BuildingId|undefined;private previewValid=false;private preview:THREE.Group|undefined;private grid:THREE.GridHelper|undefined;private previewMaterials:THREE.Material[]=[];
- private agent=new THREE.Group();private observer:ResizeObserver;private clock=0;private paused=false;
+ private observer:ResizeObserver;private clock=0;private paused=false;
  private reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  private lost=(e:Event)=>{e.preventDefault();this.paused=true;this.onError();};
  constructor(private host:HTMLDivElement,level:number,training:number,private campus:CampusState,private onError:()=>void,private minimal=false){
   this.renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});lightWorld(this.renderer,this.scene);
-  this.renderer.domElement.setAttribute('role','img');this.renderer.domElement.setAttribute('aria-label',`3D headquarters level ${campus.hq}. ${level===0?'One laptop and a mint AI agent in the original garage.':level===1?'A furnished workstation, chair, lamp and plants.':'GPU workbench, server racks and upgraded lighting.'} Drag to pan and pinch to zoom.`);
+  this.renderer.domElement.setAttribute('role','img');this.renderer.domElement.setAttribute('aria-label',`3D headquarters level ${campus.hq}. ${level===0?'One laptop in the original garage, with a Builder Bot nearby.':level===1?'A furnished workstation, chair, lamp and plants.':'GPU workbench, server racks and upgraded lighting.'} Drag to pan and pinch to zoom.`);
   this.renderer.domElement.dataset.stage=String(level);host.appendChild(this.renderer.domElement);this.renderer.domElement.addEventListener('webglcontextlost',this.lost);
   this.buildEnvironment();this.build(Math.min(2,level),training);this.buildCampus(campus);this.buildObstacles(campus);this.buildBots(campus);if(this.minimal){this.home.set(-5,0,0);this.worldSpan=36;}this.center.copy(this.home);this.target.copy(this.home);this.camera.position.copy(this.home).add(new THREE.Vector3(7,23,30));this.camera.lookAt(this.center);
   this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(host);this.resize();
@@ -59,11 +59,6 @@ export class HeadquartersScene {
    for(let i=0;i<3;i++)k.box(s,[.5,.25,.9],[-9.7+i*.7,1.67,.8],c.purple);
    for(const x of [-8,-4])k.box(s,[2.2,.1,.12],[x,4.12,-5.1],c.cyan,.03,true);
   }
-  this.agent.position.set(-2.8,.55,1.8);s.add(this.agent);
-  k.box(this.agent,[.8,.8,.7],[0,.4,0],c.cyan,.12);k.box(this.agent,[.58,.42,.06],[0,.44,.38],c.dark);
-  for(const x of [-.15,.15])k.box(this.agent,[.08,.15,.03],[x,.45,.42],c.cream,.02,true);
-  k.cylinder(this.agent,.04,.35,[0,.97,0],c.slate);k.box(this.agent,[.16,.16,.16],[0,1.18,0],c.cyan,.06,true);
-  for(const x of [-.5,.5])k.box(this.agent,[.12,.4,.12],[x,.3,0],c.cyan);
   if(training>0){k.box(s,[1.7,.25,1.7],[1,.3,1.4],c.slate);k.box(s,[1.2,1.35,1.1],[1,1.05,1.4],c.cream);k.box(s,[.9,.55,.06],[1,1.2,2],c.purple,.03,true);for(let i=0;i<Math.min(3,training);i++)k.box(s,[.18,.1,.04],[.65+i*.3,.7,2],c.cyan,.01,true);}
   // Cutaway architecture keeps the original laptop visible while strengthening the silhouette.
   k.box(s,[12.5,.3,2.3],[-5,4.65,-4.6],c.dark,.12);
@@ -251,6 +246,6 @@ export class HeadquartersScene {
  zoom(factor:number){this.zoomTarget=THREE.MathUtils.clamp(this.zoomTarget*factor,.8,1.65);}
  pan(dx:number,dy:number){const scale=(this.camera.right-this.camera.left)/Math.max(1,this.host.clientWidth)/this.camera.zoom;const right=new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld,0);const up=new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld,1);up.y=0;up.normalize();this.target.addScaledVector(right,-dx*scale).addScaledVector(up,dy*scale);this.target.y=0;const flat=new THREE.Vector2(this.target.x-this.home.x,this.target.z-this.home.z);const limit=this.worldSpan*.28;if(flat.length()>limit)flat.setLength(limit);this.target.set(this.home.x+flat.x,0,this.home.z+flat.y);}
  reset(){this.target.copy(this.home);this.zoomTarget=1;}
- update(dt:number){if(this.paused)return;this.clock+=dt;const next=this.center.clone().lerp(this.target,this.reduced?1:Math.min(1,dt*10));this.camera.position.add(next.clone().sub(this.center));this.center.copy(next);this.camera.lookAt(this.center);this.camera.zoom=THREE.MathUtils.lerp(this.camera.zoom,this.zoomTarget,this.reduced?1:Math.min(1,dt*10));this.camera.updateProjectionMatrix();this.animateWorld(dt);if(!this.reduced){this.agent.position.y=.55+Math.sin(this.clock*1.4)*.06;this.agent.rotation.y=Math.sin(this.clock*.35)*.15;}this.renderer.render(this.scene,this.camera);this.renderer.domElement.dataset.drawCalls=String(this.renderer.info.render.calls);this.renderer.domElement.dataset.triangles=String(this.renderer.info.render.triangles);}
+ update(dt:number){if(this.paused)return;this.clock+=dt;const next=this.center.clone().lerp(this.target,this.reduced?1:Math.min(1,dt*10));this.camera.position.add(next.clone().sub(this.center));this.center.copy(next);this.camera.lookAt(this.center);this.camera.zoom=THREE.MathUtils.lerp(this.camera.zoom,this.zoomTarget,this.reduced?1:Math.min(1,dt*10));this.camera.updateProjectionMatrix();this.animateWorld(dt);this.renderer.render(this.scene,this.camera);this.renderer.domElement.dataset.drawCalls=String(this.renderer.info.render.calls);this.renderer.domElement.dataset.triangles=String(this.renderer.info.render.triangles);}
  dispose(){this.clearPlacement();this.observer.disconnect();this.renderer.domElement.removeEventListener('webglcontextlost',this.lost);this.scene.traverse(o=>{if(o instanceof THREE.DirectionalLight)o.shadow.dispose();});this.kit.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
 }
