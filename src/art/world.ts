@@ -26,6 +26,9 @@ export class WorldKit {
   const mesh=new THREE.Mesh(this.geometry('box'+size.join()+radius,()=>new RoundedBoxGeometry(...size,1,radius)),this.mat(color,glow));
   mesh.position.set(...position);mesh.castShadow=!glow&&size[1]>.15;mesh.receiveShadow=true;parent.add(mesh);return mesh;
  }
+ gable(parent:THREE.Object3D,width:number,height:number,depth:number,position:[number,number,number],color:string){
+  const mesh=new THREE.Mesh(this.geometry(`gable${width},${height},${depth}`,()=>{const shape=new THREE.Shape();shape.moveTo(-width/2,0);shape.lineTo(width/2,0);shape.lineTo(0,height);shape.closePath();const geometry=new THREE.ExtrudeGeometry(shape,{depth,bevelEnabled:false});geometry.translate(0,0,-depth/2);return geometry;}),this.mat(color));mesh.position.set(...position);mesh.castShadow=true;parent.add(mesh);return mesh;
+ }
  cylinder(parent:THREE.Object3D,radius:number,height:number,position:[number,number,number],color:string){
   const mesh=new THREE.Mesh(this.geometry('cyl'+radius+','+height,()=>new THREE.CylinderGeometry(radius,radius,height,10)),this.mat(color));mesh.position.set(...position);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
  }
