@@ -43,3 +43,25 @@ test('blocked storage and unavailable audio do not break the game',async()=>{
  assert.equal(readMuted(storage),false);assert.doesNotThrow(()=>writeMuted(storage,true));
  const audio=new Soundscape({storage,createContext:()=>{throw new Error('unsupported');}});await assert.doesNotReject(()=>audio.unlock());assert.doesNotThrow(()=>audio.cue('deploy'));audio.dispose();assert.equal(frequency(69),440);
 });
+
+import {musicStep} from '../src/audio/score';
+test('adventure score loops with rests, pitched range and bounded eighth-note timing',()=>{
+ let rests=0;
+ for(let step=0;step<64;step++){
+  const hq=musicStep(step,'hq'),raid=musicStep(step,'raid');
+  assert.deepEqual(hq,musicStep(step+64,'hq'));
+  assert.ok(hq.seconds>.25&&hq.seconds<.28);assert.ok(raid.seconds<hq.seconds);
+  for(const n of [hq.pluck,hq.bass,hq.melody,...hq.chord])if(n!==null)assert.ok(Number.isFinite(n)&&n>=24&&n<=84);
+  if(hq.melody===null)rests++;
+ }
+ assert.ok(rests>=12,'phrasing leaves breathing room');
+});
+test('music scheduler bounds every percussion voice and avoids catch-up bursts after interruptions',async()=>{
+ const h=harness();try{
+  await h.sound.unlock();
+  for(let i=1;i<=80;i++){h.ctx.currentTime=i*.27;(h.sound as any).schedule();}
+  assert.ok(h.ctx.sources.length<1200,'mobile voice creation remains bounded');
+  for(const source of h.ctx.sources){assert.equal(typeof source.onended,'function');source.onended!();assert.equal(source.disconnected,true);}
+  const before=h.ctx.sources.length;h.ctx.currentTime+=60;(h.sound as any).schedule();assert.ok(h.ctx.sources.length-before<40,'no missed-minute playback burst');
+ }finally{h.sound.dispose();}
+});

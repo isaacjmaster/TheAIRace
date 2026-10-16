@@ -1,4 +1,4 @@
-import { CHORDS, MELODY, MUTE_KEY, frequency, readMuted, writeMuted, type Cue, type MusicMode } from './score';
+import { musicStep, MUTE_KEY, frequency, readMuted, writeMuted, type Cue, type MusicMode } from './score';
 export type SoundPlatform={storage?:Pick<Storage,'getItem'|'setItem'>;createContext:()=>AudioContext};
 function browserPlatform():SoundPlatform {
  let storage:Storage|undefined;try{storage=globalThis.localStorage;}catch{}
@@ -30,19 +30,36 @@ export class Soundscape {
   const ctx=this.ctx!,osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type;osc.frequency.setValueAtTime(frequency(midi),time);if(slide!==undefined)osc.frequency.exponentialRampToValueAtTime(frequency(slide),time+duration);
   gain.gain.setValueAtTime(0,time);gain.gain.linearRampToValueAtTime(volume,time+attack);gain.gain.exponentialRampToValueAtTime(.0001,time+duration);osc.connect(gain);gain.connect(bus);osc.start(time);osc.stop(time+duration+.02);osc.onended=()=>{osc.disconnect();gain.disconnect();};
  }
+ /** Short synthesized drum strokes; shared deterministic noise, never external samples. */
+ private drum(time:number,bus:AudioNode,hat:boolean,volume:number){
+  const ctx=this.ctx!;
+  if(!this.noise){this.noise=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*.3),ctx.sampleRate);const a=this.noise.getChannelData(0);let seed=37;for(let i=0;i<a.length;i++){seed=(seed*1664525+1013904223)>>>0;a[i]=seed/2147483648-1;}}
+  const source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain(),duration=hat?.045:.11;
+  source.buffer=this.noise;filter.type=hat?'highpass':'bandpass';filter.frequency.value=hat?6500:1800;
+  gain.gain.setValueAtTime(0,time);gain.gain.linearRampToValueAtTime(volume,time+.003);gain.gain.exponentialRampToValueAtTime(.0001,time+duration);
+  source.connect(filter);filter.connect(gain);gain.connect(bus);source.start(time);source.stop(time+duration+.01);source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};
+ }
  private schedule(){
   if(!this.ctx||this.ctx.state!=='running'||this.muted)return;
   if(this.next<this.ctx.currentTime)this.next=this.ctx.currentTime+.02;
   while(this.next<this.ctx.currentTime+.3){
-   const step=this.step++,t=this.next,chord=CHORDS[Math.floor(step/16)%4],melody=MELODY[step%16];
-   if(step%16===0)for(const n of chord.slice(1))this.note(n,t,4.5,.035,this.hq!,'sine',.35);
-   if(melody!==null)this.note(melody,t,1.3,.06,this.hq!,'sine',.012);
-   if(step%4===0)this.note(chord[0]-12,t,1.1,.075,this.hq!,'triangle',.08);
-   // Same harmonic identity with a tighter pulse and restrained low percussion in raids.
-   this.note(chord[1]+(step%4===2?12:0),t,.35,step%2?.035:.06,this.raid!,'triangle',.02);
-   if(step%4===0){this.note(chord[0]-12,t,.7,.12,this.raid!,'sine',.01);this.note(38,t,.16,.12,this.raid!,'sine',.005,22);}
-   if(step%8===6)this.note(chord[3]+12,t,.8,.045,this.raid!);
-   this.next+=this.mode==='raid'?.25:.32;
+   const score=musicStep(this.step++,this.mode),t=this.next;
+   // Both arrangements share a score so changing modes crossfades without restarting.
+   for(const [bus,combat] of [[this.hq!,false],[this.raid!,true]] as const){
+    this.note(score.pluck,t,.15,combat?.035:.05,bus,'triangle',.004);
+    if(score.bass!==null)this.note(score.bass,t,.28,combat?.13:.10,bus,'triangle',.008);
+    if(score.melody!==null){
+     const duration=score.seconds*(score.beat===0?1.65:.85);
+     this.note(score.melody,t,duration,.065,bus,'triangle',.025);
+     this.note(score.melody-12,t,duration,.025,bus,'sine',.035);
+    }
+    if(score.beat===0||score.beat===4)for(const n of score.chord.slice(1))this.note(n,t,.17,.018,bus,'triangle',.012);
+    if(score.kick)this.note(43,t,.16,combat?.12:.075,bus,'sine',.004,26);
+    if(score.snare)this.drum(t,bus,false,combat?.045:.025);
+    if(score.hat)this.drum(t,bus,true,combat?.018:.009);
+    if(combat&&score.beat===7)this.note(score.chord[0],t,.12,.06,bus,'triangle',.004);
+   }
+   this.next+=score.seconds;
   }
  }
  cue=(cue:Cue)=>{
