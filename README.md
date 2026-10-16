@@ -125,3 +125,7 @@ See [OPERATIONS.md](OPERATIONS.md) for controls, launch commands, simulation rul
 ## First Railway deployment
 
 See [RAILWAY_DEPLOYMENT.md](RAILWAY_DEPLOYMENT.md) for the private deployment branch, production commands, mandatory SQLite persistent volume, save/session behavior and approval boundary. Do not deploy until approved.
+
+## Current local portrait preview
+
+The active development build is now portrait-first. See [PORTRAIT_TESTING.md](PORTRAIT_TESTING.md) for camera/UI changes and iPhone testing. The landscape deployment branch has not been updated by this work.

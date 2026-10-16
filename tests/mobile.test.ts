@@ -24,5 +24,17 @@ test('standalone uses full dynamic CSS viewport; old browsers fall back; zoom is
 test('initial HTML paints the same startup background as the manifest before JavaScript',()=>{
  const html=readFileSync('index.html','utf8'),manifest=JSON.parse(readFileSync('public/manifest.webmanifest','utf8'));
  assert.ok(html.includes(`--app-background:${SCREEN_BACKGROUNDS.splash}`));assert.equal(manifest.background_color,SCREEN_BACKGROUNDS.splash);assert.equal(manifest.theme_color,SCREEN_BACKGROUNDS.splash);
- assert.match(html,/viewport-fit=cover/);assert.equal(manifest.display,'standalone');assert.equal(manifest.orientation,'landscape');
+ assert.match(html,/viewport-fit=cover/);assert.equal(manifest.display,'standalone');assert.equal(manifest.orientation,'portrait');
+});
+import {portraitCampusSpan} from '../src/art/portraitCamera';
+test('portrait campus has a readable horizontal frame and keeps the world explorable',()=>{
+ for(const [w,h] of [[320,568],[375,667],[390,664],[390,844],[430,932]]){
+  const span=portraitCampusSpan(w/h);assert.ok(span>=24&&span<=28);assert.ok(span/(w/h)>span);
+ }
+ assert.equal(portraitCampusSpan(844/390),36*17/30*(844/390));
+});
+test('active portrait game has no rotation gate, orientation lock or revived troop interface',()=>{
+ const app=readFileSync('src/ui/FoundationApp.tsx','utf8');
+ assert.doesNotMatch(app,/rotation-screen|rotation-blocked|requestLandscape|PORTRAIT_GAME|IntegratedRaid/);
+ assert.match(app,/Networks offline/);assert.match(app,/FoundationWorld/);
 });

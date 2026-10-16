@@ -9,7 +9,7 @@ export function FoundationWorld({state,placing,onConfirm,onCancel,onCollect,busy
  const [failed,setFailed]=useState(false),[position,setPosition]=useState<RigPosition>([6,0]),[panMode,setPanMode]=useState(false);const reason=validRigPosition(position),ready=Math.floor((state.rig?.stored||0)+1e-9),remaining=Math.max(0,Math.ceil(((state.rig?.completesAt||0)-now)/1000));
  useEffect(()=>{let view:HeadquartersScene|undefined,frame=0,last=performance.now();try{view=new HeadquartersScene(host.current!,0,0,structuredClone(emptyCampus),()=>setFailed(true),true);scene.current=view;const draw=(time:number)=>{if(!document.hidden){view!.update(Math.min(.05,(time-last)/1000));const p=view!.rigScreenPoint();if(p&&badge.current){badge.current.style.left=p.x+'px';badge.current.style.top=p.y+'px';}}last=time;frame=requestAnimationFrame(draw);};frame=requestAnimationFrame(draw);}catch{setFailed(true);}return()=>{cancelAnimationFrame(frame);view?.dispose();scene.current=null;};},[]);
  useEffect(()=>{scene.current?.syncRig(state);},[state.rig?.position[0],state.rig?.position[1],!!state.rig,state.buildersBusy]);
- useEffect(()=>{setPosition(state.rig?.position||[6,0]);setPanMode(false);},[placing]);
+ useEffect(()=>{const start=state.rig?.position||[6,0];setPosition(start);setPanMode(false);if(placing)scene.current?.focusRig(start);},[placing]);
  useEffect(()=>{if(placing)scene.current?.previewRig(position,!reason);else scene.current?.clearRigPreview();},[placing,position[0],position[1],reason]);
  const release=(id:number)=>{pointers.current.delete(id);pinch.current=0;};
  const point=(x:number,y:number)=>{const p=scene.current?.groundPoint(x,y);if(p)setPosition(p);};
