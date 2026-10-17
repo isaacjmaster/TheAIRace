@@ -65,5 +65,5 @@ html[data-presentation="splash"],html[data-presentation="splash"] body,
 html[data-presentation="splash"] #root,html[data-presentation="splash"] .race-app{
  animation:studio-page-paint 2s both;
 }
-@keyframes studio-page-paint{0%,78%{background-color:#07090c}100%{background-color:#b5eafa}}
+@keyframes studio-page-paint{0%,78%{background-color:#07090c}100%{background-color:var(--title-sky-color,#58bbfd)}}
 @media(prefers-reduced-motion:reduce){html[data-presentation="splash"],html[data-presentation="splash"] body,html[data-presentation="splash"] #root,html[data-presentation="splash"] .race-app{animation:none}}
