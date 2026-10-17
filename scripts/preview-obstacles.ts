@@ -1,0 +1,10 @@
+import {fileURLToPath} from 'node:url';
+import {dirname,resolve} from 'node:path';
+if(process.env.NODE_ENV==='production')throw new Error('This launcher is for local development only.');
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+process.env.NODE_ENV='development';
+process.env.PORT='3019';
+process.env.GAME_DB_PATH=resolve(root,'data/obstacles-preview.sqlite');
+process.env.GAME_SESSION_COOKIE='airace_obstacles_preview_session';
+process.env.GAME_LEGACY_DB_PATHS='[]';
+const {start}=await import('../server/index');start();

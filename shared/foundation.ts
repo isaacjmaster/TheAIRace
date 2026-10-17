@@ -1,3 +1,4 @@
+import {advanceLandscape,type Landscape,obstacleSize} from './landscape';
 import {createStarterRaid} from '../raid/starter';
 import {deploy,tick,finish,STEP,destruction,type Raid,type Point} from '../raid/engine';
 import {OBSTACLES} from './campus-layout';
@@ -16,7 +17,7 @@ export type BotRaid={id:string;simulation:Raid;lastTick:number;started:boolean;s
 export const FABRICATOR={cost:50,buildSeconds:15,maxCount:1} as const;
 export const HANGAR={cost:0,buildSeconds:15,maxCount:1} as const;
 export const SCRAP_BOT={cost:5,trainSeconds:5,housing:1,capacity:10} as const;
-export type FoundationState = {version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
+export type FoundationState = {landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
 export function initialFoundation(revision=0):FoundationState{return {version:1,revision,companyName:'Garage Intelligence',level:1,compute:STARTING_COMPUTE,capacity:COMPUTE_CAPACITY,builders:1,raidRecord:{wins:[],completeHistory:true}};}
 export const RIG_BOUNDS={minX:-24,maxX:28,minZ:-19,maxZ:24};
 export function validRigPosition(position:RigPosition,orientation:Orientation=0):string|null{
@@ -33,7 +34,8 @@ export function validRigPosition(position:RigPosition,orientation:Orientation=0)
 }
 export function advanceFoundation(s:FoundationState,now=Date.now()){
  const rigs=[s.rig,s.rig2].filter((r):r is GpuRig=>!!r),jobs=[...rigs,s.fabricator,getHangar(s)].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
- if(jobs.length)s.buildersBusy=jobs.some(b=>now<b.completesAt)?1:0;
+ const clearing=!!s.landscape?.clearing;advanceLandscape(s,now);
+ if(jobs.length||clearing)s.buildersBusy=jobs.some(b=>now<b.completesAt)||!!s.landscape?.clearing?1:0;
  if(s.training){const completed=s.training.filter(t=>t<=now).length;s.bots=(s.bots||0)+completed;s.training=s.training.filter(t=>t>now);}
  advanceBotRaid(s,now);
  for(const r of rigs){const cursor=Math.max(r.lastProducedAt,r.completesAt);if(now>cursor){r.stored=Math.min(GPU_RIG.storage,r.stored+(now-cursor)*GPU_RIG.perMinute/60000);r.lastProducedAt=now;}}
@@ -70,7 +72,7 @@ export function buildingLayout(s:FoundationState,kind:RotatableBuilding):Buildin
 export function buildingReady(s:FoundationState,kind:RotatableBuilding,now=Date.now()){
  return kind==='hq'||kind==='station'||(kind==='rig'||kind==='rig2'?!!s[kind]&&now>=s[kind]!.completesAt:kind==='fabricator'?!!s.fabricator&&now>=s.fabricator.completesAt:hangarReady(s,now));
 }
-function footprint(kind:RotatableBuilding,layout:BuildingLayout,reserved=false){
+export function footprint(kind:RotatableBuilding,layout:BuildingLayout,reserved=false){
  let [w,d]=kind==='hq'?(reserved?[14,10]:[9,8]):kind==='station'?(reserved?[4,3]:[2.7,1.8]):[4,3];
  if(layout.orientation%2)[w,d]=[d,w];
  const [x,z]=layout.position;
@@ -87,7 +89,8 @@ function validateLayout(s:FoundationState,p:RigPosition,kind:RotatableBuilding,o
  if(a.x-a.w/2<b.minX||a.x+a.w/2>b.maxX||a.z-a.d/2<b.minZ||a.z+a.d/2>b.maxZ)return 'Keep the building inside the campus.';
  const overlaps=(x:number,z:number,w:number,d:number,gap=0)=>Math.abs(a.x-x)<(a.w+w)/2+gap&&Math.abs(a.z-z)<(a.d+d)/2+gap;
  if(a.z+a.d/2>7.1&&a.z-a.d/2<10.9)return 'Keep the road clear.';
- for(const obstacle of OBSTACLES.filter(o=>o.kind==='tree'||o.kind==='rock'))if(overlaps(...obstacle.position,obstacle.width,obstacle.depth))return 'Choose open ground away from trees and rocks.';
+ for(const obstacle of OBSTACLES.filter(o=>o.kind==='rock'||!s.landscape&&o.kind==='tree'))if(overlaps(...obstacle.position,obstacle.width,obstacle.depth))return 'Choose open ground away from trees and rocks.';
+ for(const o of s.landscape?.items||[]){const [w,d]=obstacleSize(o);if(overlaps(...o.position,w,d))return 'Clear the '+(o.kind==='tree'?'Tree':'Scrap Pile')+' before building here.';}
  for(const [x,z] of [[-16,7],[13,7],[-16,11],[25,11]])if(overlaps(x,z,1.4,1.4))return 'Leave space around the lights.';
  for(const other of FOUNDATION_BUILDINGS){if(other===kind||(pair&&other==='hangar'))continue;const layout=buildingLayout(s,other);if(!layout)continue;
  const reserved=!editing&&(other==='hq'||other==='station');const o=footprint(other,layout,reserved);
@@ -102,7 +105,7 @@ function validateLayout(s:FoundationState,p:RigPosition,kind:RotatableBuilding,o
 export function validFoundationPosition(s:FoundationState,p:RigPosition,kind:RotatableBuilding,orientation:Orientation=0,placingPair=false){return validateLayout(s,p,kind,orientation,placingPair,false);}
 export function validLayoutPosition(s:FoundationState,p:RigPosition,kind:RotatableBuilding,orientation:Orientation=0){return validateLayout(s,p,kind,orientation,false,true);}
 export function moveBuilding(s:FoundationState,kind:RotatableBuilding,position:RigPosition,orientation:Orientation,now=Date.now()){
- advanceFoundation(s,now);if(!buildingLayout(s,kind))throw new Error('Build this structure first.');if(!buildingReady(s,kind,now))throw new Error('Wait for this building to finish construction.');
+ advanceFoundation(s,now);if(s.landscape?.clearing)throw new Error('Wait for your Builder Bot to return before rearranging buildings.');if(!buildingLayout(s,kind))throw new Error('Build this structure first.');if(!buildingReady(s,kind,now))throw new Error('Wait for this building to finish construction.');
  const reason=validLayoutPosition(s,position,kind,orientation);if(reason)throw new Error(reason);
  const layout:BuildingLayout={position:[...position],orientation};
  if(kind==='hq')s.hqLayout=layout;else if(kind==='station')s.stationLayout=layout;

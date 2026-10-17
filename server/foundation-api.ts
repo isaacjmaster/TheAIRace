@@ -1,3 +1,4 @@
+import {ensureLandscape,clearObstacle} from '../shared/landscape';
 import {influenceStore} from './influence';
 import {restoreLocalLegacy} from './legacy-session';
 import {identityStore,registerIdentity} from './identity';
@@ -44,7 +45,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   const player=session(req,res);if(!player)return;const {id,company}=player,now=clock();
   db.exec('BEGIN IMMEDIATE');
   try{const state=JSON.parse(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(id)!.state as string) as FoundationState,before=JSON.stringify(state);
-   advanceFoundation(state,now);influence.settle(company.playerId,state,now);
+   ensureLandscape(state,now,randomUUID());advanceFoundation(state,now);influence.settle(company.playerId,state,now);
    if(JSON.stringify(state)!==before){state.revision++;save(id,state);}
    const ava=observeAva(id,state,now),competition=influence.snapshot(company.playerId,state,now);db.exec('COMMIT');
    res.set('Cache-Control','private, no-store').json({state,company,serverTime:now,ava,competition});
@@ -72,12 +73,13 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
    if(input.generation!==(state.generation||0))throw new Error('Progress was reset. Reopen the building menu.');
    const payload=JSON.stringify(input),cached=db.prepare('SELECT payload,amount FROM foundation_actions WHERE session=? AND id=?').get(id,input.requestId);
    if(cached&&cached.payload!==payload)throw new Error('Request already used for another action.');
-   advanceFoundation(state,now);influence.settle(player.company.playerId,state,now);let amount=Number(cached?.amount||0);
+   ensureLandscape(state,now,randomUUID());advanceFoundation(state,now);influence.settle(player.company.playerId,state,now);let amount=Number(cached?.amount||0);
    if(!cached){if(input.action==='build')buildRig(state,input.position,now,input.orientation);else if(input.action==='move')moveRig(state,input.position,now,input.orientation,input.rig);else amount=collectRig(state,now,input.rig);db.prepare('INSERT INTO foundation_actions VALUES(?,?,?,?)').run(id,input.requestId,payload,amount);}
    influence.settle(player.company.playerId,state,now);state.revision++;save(id,state);let ava=observeAva(id,state,now);if(!cached&&input.action==='collect'&&amount>0&&ava.status==='active'&&ava.step>=7){ava=reconcileAva({...ava,collected:true,revision:ava.revision+1},state,now);saveAva(id,ava);}db.exec('COMMIT');res.json({state,serverTime:now,amount,ava,competition:influence.snapshot(player.company.playerId,state,now)});
   }catch(e){db.exec('ROLLBACK');res.status(400).json({error:(e as Error).message});}
  });
  const botAction=z.discriminatedUnion('action',[
+  z.object({action:z.literal('clear-obstacle'),obstacleId:z.string().min(1).max(100)}).strict(),
   z.object({action:z.literal('build-hangar'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('rotate'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar']),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
@@ -95,9 +97,10 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
    if(input.generation!==(state.generation||0))throw new Error('Progress was reset. Reload the game.');
    const payload='bots:'+JSON.stringify(input),cached=db.prepare('SELECT payload FROM foundation_actions WHERE session=? AND id=?').get(id,input.requestId);
    if(cached&&cached.payload!==payload)throw new Error('Request already used for another action.');
-   advanceFoundation(state,now);influence.settle(player.company.playerId,state,now);
+   ensureLandscape(state,now,randomUUID());advanceFoundation(state,now);influence.settle(player.company.playerId,state,now);
    if(!cached){const c=input.command;
-    if(c.action==='build')buildFabricator(state,c.position,now,c.orientation);
+    if(c.action==='clear-obstacle')clearObstacle(state,c.obstacleId,now);
+    else if(c.action==='build')buildFabricator(state,c.position,now,c.orientation);
     else if(c.action==='build-hangar')buildHangar(state,c.position,now,c.orientation);
     else if(c.action==='move')moveBuilding(state,c.building,c.position,c.orientation,now);
     else if(c.action==='rotate')rotateBuilding(state,c.building,c.orientation,now);
