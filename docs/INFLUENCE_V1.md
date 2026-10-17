@@ -52,9 +52,12 @@ The authenticated rankings endpoint uses no-store caching and a 10-second UI pol
 
 ## UI
 
-Original three-medal SVG button below Builders, 52px touch target. Ranking dialog
-uses 78% of available height, safe-area margins, five spacious rows, top-three medals,
-self highlight, and a separate own-rank footer when outside the Top 5.
+Original three-medal SVG button below Builders, 52px touch target. The foreground
+gold medal paints after the complete rear medals, including their numbers. The
+ranking dialog uses a wider, compact layout with safe-area margins and five flatter
+rows. Its banner reuses the existing AI Race app icon and title. An original gold
+broadcast-star/network emblem appears beside every Influence score, including the
+own-rank footer. Top-three medals and current-company highlights are retained.
 Attack cards show reward availability/countdowns; victory results show actual awards.
 
 ## Local testing
