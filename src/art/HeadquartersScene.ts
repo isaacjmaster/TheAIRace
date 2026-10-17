@@ -1,3 +1,5 @@
+import {landscapeModel} from './LandscapeObstacles';
+import type {ClearingJob,LandscapeObstacle} from '../../shared/landscape';
 import {BotArrivals,dockingRoute} from './botLife';
 import * as THREE from 'three';
 import {portraitCampusSpan} from './portraitCamera';
@@ -11,6 +13,8 @@ import { lightWorld, palette as c, WorldKit } from './world';
 
 /** Reconstructs the original garage's objects in the raid's low-poly material language. */
 export class HeadquartersScene {
+ private landscapeKit?:WorldKit;private landscapeGroup?:THREE.Group;private landscapeKey='';private landscapeHits:THREE.Object3D[]=[];private landscapeItems:LandscapeObstacle[]=[];private cleanupJob?:ClearingJob;private cleanupNow=0;private cleanupEnd?:number;private lastCleanup?:string;
+ private cleanupParticles:{group:THREE.Group;time:number}[]=[];private particleKit=new WorldKit();
  private landmarksSynced=false;private builderHomeYaw=0;
  private layoutPreviewKind?:RotatableBuilding;
  private stationGroup?:THREE.Group;
@@ -109,7 +113,7 @@ export class HeadquartersScene {
  private buildObstacles(campus:CampusState){
   const k=this.kit;
   for(const obstacle of OBSTACLES){
-   if(campus.clearedObstacles?.includes(obstacle.id)||this.minimal&&(obstacle.kind==='equipment'||obstacle.kind==='debris'))continue;
+   if(campus.clearedObstacles?.includes(obstacle.id)||this.minimal&&(obstacle.kind==='equipment'||obstacle.kind==='debris'||obstacle.kind==='tree'))continue;
    const g=new THREE.Group();g.position.set(obstacle.position[0],0,obstacle.position[1]);this.scene.add(g);this.obstacles.set(obstacle.id,g);
    if(obstacle.kind==='tree'){k.tree(g,-.65,-.3,1.3);k.tree(g,.7,.6,.9);k.cylinder(g,1.3,.13,[0,0,0],'#95cfa9');}
    else if(obstacle.kind==='rock'){for(let i=0;i<3;i++){const rock=k.box(g,[1.3,1+i*.25,1.25],[-.8+i*.7,.45,-.4+i*.4],'#b8cad0',.3);rock.rotation.y=i*.65;rock.rotation.z=i*.08;}}
@@ -193,11 +197,11 @@ export class HeadquartersScene {
   this.rigPreview!.position.set(position[0],.2,position[1]);this.rigPreview!.rotation.y=orientation*Math.PI/2;this.rigPreviewMaterial!.color.set(valid?c.cyan:c.coral);
  }
  syncRig(state:FoundationState){
-  const rig=state.rig,rig2=state.rig2,h=getHangar(state),key=JSON.stringify([state.stationLayout,rig?.position,rig?.orientation,rig2?.position,rig2?.orientation,state.fabricator,h,!!state.buildersBusy,rig?.completesAt,rig2?.completesAt]);if(key===this.rigKey)return;this.rigKey=key;
+  const rig=state.rig,rig2=state.rig2,h=getHangar(state),key=JSON.stringify([state.stationLayout,rig?.position,rig?.orientation,rig2?.position,rig2?.orientation,state.fabricator,h,!!state.buildersBusy,!!state.landscape?.clearing,rig?.completesAt,rig2?.completesAt]);if(key===this.rigKey)return;this.rigKey=key;
   this.rigGroup?.removeFromParent();this.rigKit?.dispose();this.rig2Group?.removeFromParent();this.rig2Kit?.dispose();this.rigGroup=undefined;this.rig2Group=undefined;this.rigPosition=rig?.position;this.rig2Position=rig2?.position;
   const bot=this.builders[0];if(bot){bot.from.copy(bot.group.position);bot.working=!!state.buildersBusy;bot.spark.visible=false;const work=[rig,rig2,state.fabricator,h].filter((w):w is NonNullable<typeof w>=>!!w).sort((a,b)=>b.completesAt-a.completesAt)[0];const [w,d]=buildingFootprint(work?.orientation??0),home=buildingLayout(state,'station')!.position;bot.to.set(work&&bot.working?work.position[0]+w/2+.5:home[0],bot.working?0:.12,work&&bot.working?work.position[1]+d/2:home[1]);this.clock=0;}
   for(const [slot,r] of [['rig',rig],['rig2',rig2]] as const){if(!r)continue;const k=new WorldKit(),group=gpuRigModel(k);group.position.set(r.position[0],0,r.position[1]);group.rotation.y=(r.orientation??0)*Math.PI/2;this.scene.add(group);if(slot==='rig'){this.rigKit=k;this.rigGroup=group;}else{this.rig2Kit=k;this.rig2Group=group;}
-   if(state.buildersBusy&&r.completesAt===Math.max(...[rig,rig2,state.fabricator,h].filter(v=>!!v).map(v=>v!.completesAt))){for(const x of [-2,2])for(const z of [-1.5,1.5])k.box(group,[.1,2.8,.1],[x,1.4,z],c.gold);for(const z of [-1.5,1.5])k.box(group,[4.1,.1,.1],[0,2.8,z],c.gold);}}
+   if(state.buildersBusy&&!state.landscape?.clearing&&r.completesAt===Math.max(...[rig,rig2,state.fabricator,h].filter(v=>!!v).map(v=>v!.completesAt))){for(const x of [-2,2])for(const z of [-1.5,1.5])k.box(group,[.1,2.8,.1],[x,1.4,z],c.gold);for(const z of [-1.5,1.5])k.box(group,[4.1,.1,.1],[0,2.8,z],c.gold);}}
  }
  syncBots(state:FoundationState,now:number){
   this.producing=!!state.training?.length;
@@ -246,10 +250,31 @@ export class HeadquartersScene {
  }
  clearRigPreview(){for(const kind of ['hq','station','rig','rig2','fabricator','hangar'] as const){const group=this.layoutGroup(kind);if(group)group.visible=true;}this.layoutPreviewKind=undefined;this.rigPreview?.removeFromParent();this.rigPreviewKit?.dispose();this.rigPreviewMaterial?.dispose();this.rigPreview=undefined;this.rigPreviewKit=undefined;this.rigPreviewMaterial=undefined;if(this.rigGrid){this.rigGrid.removeFromParent();this.rigGrid.geometry.dispose();const m=this.rigGrid.material;(Array.isArray(m)?m:[m]).forEach(item=>item.dispose());this.rigGrid=undefined;}}
  animateClear(obstacleId:string){const group=this.obstacles.get(obstacleId);if(!group)return;this.obstacleHits=this.obstacleHits.filter(o=>o.userData.obstacleId!==obstacleId);this.clearing.push({group,time:0});this.obstacles.delete(obstacleId);}
+ syncLandscape(state:FoundationState,now:number){
+  this.cleanupJob=state.landscape?.clearing;this.cleanupNow=now;const items=state.landscape?.items||[],key=JSON.stringify(items);
+  if(key!==this.landscapeKey){this.landscapeKey=key;this.landscapeGroup?.removeFromParent();this.landscapeKit?.dispose();this.landscapeKit=new WorldKit();this.landscapeGroup=new THREE.Group();this.scene.add(this.landscapeGroup);this.landscapeHits=[];this.landscapeItems=items;
+   for(const o of items){const model=landscapeModel(this.landscapeKit,o);this.landscapeGroup.add(model.group);this.landscapeHits.push(model.hit);}}
+  const last=state.landscape?.lastClear;if(last&&this.lastCleanup&&last.id!==this.lastCleanup&&now-last.at<6000&&!this.reduced){const g=new THREE.Group();g.position.set(last.position[0],.5,last.position[1]);for(let i=0;i<10;i++){const p=this.particleKit.box(g,[.12,.1,.15],[Math.sin(i*2.4)*.8,.3+i*.1,Math.cos(i*2.4)*.8],last.kind==='tree'?'#75bd83':i%3===0?c.gold:c.slate,.02);p.rotation.y=i;}this.scene.add(g);this.cleanupParticles.push({group:g,time:0});}this.lastCleanup=last?.id||'none';
+  this.renderer.domElement.dataset.obstacles=String(items.length);
+ }
+ pickLandscapeObstacle(x:number,y:number){if(!this.setRay(x,y))return;return this.raycaster.intersectObjects(this.landscapeHits,false)[0]?.object.userData.obstacleId as string|undefined;}
+ obstacleScreenPoint(id:string){const o=this.landscapeItems.find(o=>o.id===id)||this.cleanupJob?.obstacle;if(!o)return;const p=new THREE.Vector3(o.position[0],o.kind==='tree'?4.5:2,o.position[1]).project(this.camera);return {x:(p.x+1)*this.host.clientWidth/2,y:(1-p.y)*this.host.clientHeight/2};}
+ private animateCleanup(dt:number){
+  for(const item of this.cleanupParticles){item.time+=dt;item.group.position.y+=dt*1.8;item.group.scale.setScalar(Math.max(0,1-item.time/1.1));item.group.rotation.y+=dt;if(item.time>=1.1)item.group.removeFromParent();}this.cleanupParticles=this.cleanupParticles.filter(p=>p.time<1.1);
+  const j=this.cleanupJob,bot=this.builders[0];if(!j||!bot){this.renderer.domElement.dataset.builderPhase='idle';if(this.cleanupEnd){bot?.group.position.copy(bot.to);this.cleanupEnd=undefined;}return false;}
+  this.cleanupEnd=j.completesAt;this.cleanupNow+=dt*1000;const now=this.cleanupNow,returning=now>=j.clearedAt,working=now>=j.workAt&&!returning;
+  const phase=working?'clearing':returning?'returning':'traveling';this.renderer.domElement.dataset.builderPhase=phase;
+  let progress=working?1:returning?1-(now-j.clearedAt)/(j.completesAt-j.clearedAt):(now-j.startedAt)/(j.workAt-j.startedAt);progress=Math.max(0,Math.min(1,progress));
+  const distances=j.route.map((p,i)=>i?Math.hypot(p[0]-j.route[i-1][0],p[1]-j.route[i-1][1]):0),total=distances.reduce((a,b)=>a+b,0);let distance=progress*total,index=1;while(index<distances.length-1&&distance>distances[index])distance-=distances[index++];
+  const a=j.route[index-1],b=j.route[index];if(a&&b){const t=distances[index]?distance/distances[index]:0;bot.group.position.set(a[0]+(b[0]-a[0])*t,.12,a[1]+(b[1]-a[1])*t);if(!working)bot.group.rotation.y=Math.atan2((b[0]-a[0])*(returning?-1:1),(b[1]-a[1])*(returning?-1:1));}
+  if(working)bot.group.rotation.y=Math.atan2(j.obstacle.position[0]-bot.group.position.x,j.obstacle.position[1]-bot.group.position.z);bot.group.rotation.z=working&&!this.reduced?Math.sin(this.lifeClock*12)*.07:0;bot.spark.visible=working&&!this.reduced&&Math.sin(this.lifeClock*18)>0;
+  this.renderer.domElement.dataset.builderPosition=bot.group.position.x.toFixed(1)+','+bot.group.position.z.toFixed(1);return true;
+ }
  private animateWorld(dt:number){
   this.animateBotLife(dt);
   const lamp=this.fabricatorGroup?.getObjectByName('production-light');if(lamp)lamp.visible=!this.producing||this.reduced||Math.sin(this.clock*5)>-.4;
   for(const item of this.clearing){item.time+=dt;item.group.scale.setScalar(Math.max(0,1-item.time/.65));item.group.rotation.y=item.time*2;item.group.position.y=item.time*.5;if(item.time>=.65)this.scene.remove(item.group);}this.clearing=this.clearing.filter(item=>item.time<.65);
+  if(this.animateCleanup(dt))return;
   if(this.reduced){for(const bot of this.builders){bot.group.position.copy(bot.to);if(!bot.working)bot.group.rotation.y=this.builderHomeYaw;}return;}
   for(const accent of this.accents)accent.rotation.y+=dt*.28;
   for(let i=0;i<this.builders.length;i++){const bot=this.builders[i],travel=Math.min(1,this.clock/2.4);bot.group.position.lerpVectors(bot.from,bot.to,travel);if(bot.working&&travel===1){bot.group.rotation.z=Math.sin(this.clock*8+i)*.06;bot.spark.visible=Math.sin(this.clock*18+i)>.5;bot.spark.scale.setScalar(.7+Math.sin(this.clock*12)*.3);}else if(!bot.working){bot.group.rotation.z=0;bot.group.rotation.y=this.builderHomeYaw+Math.sin(this.clock*.4+i)*.2;}}
@@ -336,5 +361,5 @@ export class HeadquartersScene {
  pan(dx:number,dy:number){const scale=(this.camera.right-this.camera.left)/Math.max(1,this.host.clientWidth)/this.camera.zoom;const right=new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld,0);const up=new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld,1);up.y=0;up.normalize();this.target.addScaledVector(right,-dx*scale).addScaledVector(up,dy*scale);this.target.y=0;if(this.minimal){this.target.x=THREE.MathUtils.clamp(this.target.x,-24,28);this.target.z=THREE.MathUtils.clamp(this.target.z,-19,24);return;}const flat=new THREE.Vector2(this.target.x-this.home.x,this.target.z-this.home.z);const limit=this.worldSpan*.28;if(flat.length()>limit)flat.setLength(limit);this.target.set(this.home.x+flat.x,0,this.home.z+flat.y);}
  reset(){this.target.copy(this.home);this.zoomTarget=1;}
  update(dt:number){if(this.paused)return;this.clock+=dt;const next=this.center.clone().lerp(this.target,this.reduced?1:Math.min(1,dt*10));this.camera.position.add(next.clone().sub(this.center));this.center.copy(next);this.camera.lookAt(this.center);this.camera.zoom=THREE.MathUtils.lerp(this.camera.zoom,this.zoomTarget,this.reduced?1:Math.min(1,dt*10));this.camera.updateProjectionMatrix();this.animateWorld(dt);this.renderer.render(this.scene,this.camera);this.renderer.domElement.dataset.drawCalls=String(this.renderer.info.render.calls);this.renderer.domElement.dataset.triangles=String(this.renderer.info.render.triangles);}
- dispose(){document.removeEventListener('visibilitychange',this.visibility);for(const w of this.walkers)w.group.removeFromParent();this.walkers=[];this.botKit?.dispose();this.clearRigPreview();this.rigKit?.dispose();this.rig2Kit?.dispose();this.clearPlacement();this.observer.disconnect();this.renderer.domElement.removeEventListener('webglcontextlost',this.lost);this.scene.traverse(o=>{if(o instanceof THREE.DirectionalLight)o.shadow.dispose();});this.kit.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
+ dispose(){this.landscapeKit?.dispose();this.particleKit.dispose();document.removeEventListener('visibilitychange',this.visibility);for(const w of this.walkers)w.group.removeFromParent();this.walkers=[];this.botKit?.dispose();this.clearRigPreview();this.rigKit?.dispose();this.rig2Kit?.dispose();this.clearPlacement();this.observer.disconnect();this.renderer.domElement.removeEventListener('webglcontextlost',this.lost);this.scene.traverse(o=>{if(o instanceof THREE.DirectionalLight)o.shadow.dispose();});this.kit.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
 }

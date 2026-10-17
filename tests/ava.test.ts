@@ -1,3 +1,4 @@
+import {assertLandscapeMigration} from './helpers/landscape';
 import {identityHeaders,saveIdForCookie} from './helpers/identity';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -47,7 +48,7 @@ test('foundation Ava API preserves legacy saves, persists progress, ignores stal
  const base=`http://127.0.0.1:${(server.address() as {port:number}).port}/api/foundation`;
  try{
  const oldCookie=`airace_foundation_session=${legacyId}`;
- const old=await(await fetch(base,{headers:{cookie:oldCookie}})).json();assert.equal(old.ava.status,'legacy');assert.deepEqual(old.state,legacy);
+ const old=await(await fetch(base,{headers:{cookie:oldCookie}})).json();assert.equal(old.ava.status,'legacy');assertLandscapeMigration(old.state,legacy);
  const first=await fetch(base),cookie=first.headers.get('set-cookie')!.split(';')[0],id=saveIdForCookie(db,cookie);let snapshot=await first.json();assert.equal(snapshot.ava.step,0);
  const headers=identityHeaders(db,cookie);
  const read=async()=>{snapshot=await(await fetch(base,{headers})).json();return snapshot;};
@@ -73,7 +74,7 @@ test('foundation Ava API preserves legacy saves, persists progress, ignores stal
  await command('replay');assert.equal(snapshot.ava.step,0);await command('skip');await read();assert.equal(snapshot.ava.status,'skipped');assert.equal(snapshot.state.compute,balance);
  // Replaying a legacy save changes only its separate tutorial row.
  const replay=await fetch(base+'/ava',{method:'POST',headers:identityHeaders(db,oldCookie),body:JSON.stringify({command:'replay',revision:0,generation:0})});assert.equal((await replay.json()).ava.status,'active');
- assert.equal(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(legacyId)!.state,JSON.stringify(legacy));
+ assert.equal(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(legacyId)!.state,JSON.stringify(old.state));
  const invalid=await fetch(base+'/ava',{method:'POST',headers,body:JSON.stringify({command:'continue',revision:0,generation:99})});assert.equal(invalid.status,409);
  }finally{await new Promise<void>(r=>server.close(()=>r()));db.close();}
 });
