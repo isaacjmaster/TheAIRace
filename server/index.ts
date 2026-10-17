@@ -27,6 +27,8 @@ db.exec('PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS sessions (id TEXT P
 db.exec("CREATE TABLE IF NOT EXISTS onboarding (session TEXT PRIMARY KEY, storySeen INTEGER NOT NULL DEFAULT 0, tutorial TEXT NOT NULL DEFAULT 'available')");
 export const app = express();
 app.disable('x-powered-by');
+// Railway terminates HTTPS at its single edge proxy; use its client address for rate limits.
+if(production)app.set('trust proxy',1);
 app.get('/healthz', (_req, res) => {
   try { db.prepare('SELECT 1').get(); res.status(200).json({status:'ok'}); }
   catch { res.status(503).json({status:'unavailable'}); }

@@ -1,3 +1,4 @@
+import {identityHeaders,saveIdForCookie} from './helpers/identity';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
@@ -40,10 +41,10 @@ test('SQLite restart persists orientation and retry is absolute/idempotent; inva
  const dir=mkdtempSync(join(tmpdir(),'airace-rotation-')),path=join(dir,'test.sqlite');let db=new DatabaseSync(path),server:ReturnType<express.Express['listen']>;
  async function boot(){const app=express();app.use(express.json());registerFoundation(app,db);server=app.listen(0,'127.0.0.1');await new Promise<void>(r=>server.once('listening',r));return `http://127.0.0.1:${(server.address() as {port:number}).port}`;}
  const stop=()=>new Promise<void>(r=>server.close(()=>{db.close();r();}));let url=await boot();
- try{const first=await fetch(url+'/api/foundation'),cookie=first.headers.get('set-cookie')!.split(';')[0],id=cookie.split('=')[1];
+ try{const first=await fetch(url+'/api/foundation'),cookie=first.headers.get('set-cookie')!.split(';')[0],id=saveIdForCookie(db,cookie);
  const s=initialFoundation();s.compute=400;buildRig(s,[6,0],epoch,3);buildFabricator(s,[16,-6],epoch+15000,2);advanceFoundation(s,epoch+30000);db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(s),id);
  const body={requestId:randomUUID(),generation:0,command:{action:'rotate',building:'rig',orientation:1}};
- const post=(value:unknown)=>fetch(url+'/api/foundation/bots',{method:'POST',headers:{cookie,'content-type':'application/json'},body:JSON.stringify(value)});
+ const post=(value:unknown)=>fetch(url+'/api/foundation/bots',{method:'POST',headers:identityHeaders(db,cookie),body:JSON.stringify(value)});
  const responses=await Promise.all([post(body),post(body)]);assert.ok(responses.every(r=>r.status===200));assert.equal((await responses[1].json()).state.rig.orientation,1);
  assert.equal((await post({...body,command:{...body.command,orientation:2}})).status,400);assert.equal((await post({...body,requestId:randomUUID(),command:{...body.command,orientation:4}})).status,400);
  await stop();db=new DatabaseSync(path);url=await boot();const loaded=await(await fetch(url+'/api/foundation',{headers:{cookie}})).json();assert.equal(loaded.state.rig.orientation,1);assert.equal(loaded.state.fabricator.orientation,2);assert.equal(loaded.state.fabricator.hangarOrientation,2);assert.equal(loaded.state.compute,300);assert.equal(loaded.state.builders,1);

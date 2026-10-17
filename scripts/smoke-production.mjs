@@ -13,8 +13,8 @@ async function stop(){if(child&&child.exitCode===null){const ended=new Promise(r
 try{
  await start();const health=await fetch(url+'/healthz');assert.equal(health.headers.get('set-cookie'),null);assert.equal((await health.json()).status,'ok');
  const html=await (await fetch(url)).text();assert.match(html,/assets\/index-/);const asset=html.match(/src="([^"]+\.js)"/)[1];assert.equal((await fetch(url+asset)).status,200);
- const first=await fetch(url+'/api/foundation');const cookie=first.headers.get('set-cookie');assert.match(cookie,/HttpOnly/i);assert.match(cookie,/Secure/i);assert.equal((await first.json()).state.compute,100);
- const headers={'content-type':'application/json',cookie:cookie.split(';')[0]};
+ const first=await fetch(url+'/api/foundation');const cookie=first.headers.get('set-cookie');assert.match(cookie,/HttpOnly/i);assert.match(cookie,/Secure/i);const initial=await first.json();assert.equal(initial.state.compute,100);
+ const headers={'content-type':'application/json','X-Company-ID':initial.company.playerId,cookie:cookie.split(';')[0]};
  const purchase=await fetch(url+'/api/foundation/rig',{method:'POST',headers,body:JSON.stringify({action:'build',position:[6,0],requestId:crypto.randomUUID(),generation:0})});assert.equal(purchase.status,200);assert.equal((await purchase.json()).state.compute,50);
  await stop();await start();const saved=await(await fetch(url+'/api/foundation',{headers})).json();assert.equal(saved.state.compute,50);assert.deepEqual(saved.state.rig.position,[6,0]);
  const duplicate=await fetch(url+'/api/foundation/rig',{method:'POST',headers,body:JSON.stringify({action:'build',position:[12,0],requestId:crypto.randomUUID(),generation:0})});assert.equal(duplicate.status,400);

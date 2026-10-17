@@ -1,3 +1,4 @@
+import {identityStore,registerIdentity} from './identity';
 import {newAva,legacyAva,reconcileAva,commandAva,type AvaProgress} from '../shared/ava';
 import type express from 'express';
 import type { DatabaseSync } from 'node:sqlite';
@@ -11,22 +12,27 @@ export function registerFoundation(app:express.Express,db:DatabaseSync){
  const readAva=(id:string):AvaProgress=>{const row=db.prepare('SELECT progress FROM foundation_ava WHERE session=?').get(id);return row?JSON.parse(row.progress as string):legacyAva();};
  const saveAva=(id:string,p:AvaProgress)=>db.prepare('INSERT INTO foundation_ava VALUES(?,?) ON CONFLICT(session) DO UPDATE SET progress=excluded.progress').run(id,JSON.stringify(p));
  const observeAva=(id:string,state:FoundationState,now:number)=>{const old=readAva(id),next=reconcileAva(old,state,now);if(next.revision!==old.revision)saveAva(id,next);return next;};
+ const identities=identityStore(db);
+ registerIdentity(app,db,identities);
  function session(req:express.Request,res:express.Response){
-  const candidate=/(?:^|;\s*)airace_foundation_session=([a-f0-9-]{36})(?:;|$)/.exec(req.headers.cookie||'')?.[1];
-  const row=candidate?db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(candidate):undefined;
-  if(row)return {id:candidate!,state:JSON.parse(row.state as string) as FoundationState};
-  const id=randomUUID(),state=initialFoundation();db.prepare('INSERT INTO foundation_saves VALUES (?,?)').run(id,JSON.stringify(state));
-  saveAva(id,newAva());
-  res.cookie('airace_foundation_session',id,{httpOnly:true,sameSite:'strict',secure:req.secure || process.env.NODE_ENV==='production',maxAge:365*86400000,path:'/'});return {id,state};
+  let player=identities.authenticate(req,res);
+  if(!player){
+   if(req.method!=='GET'||/(?:^|;\s*)airace_foundation_session=/.test(req.headers.cookie||'')){res.status(401).json({error:'Your company session expired. Use Recover Company to restore access.'});return;}
+   const id=randomUUID(),state=initialFoundation();db.exec('BEGIN IMMEDIATE');
+   try{db.prepare('INSERT INTO foundation_saves VALUES (?,?)').run(id,JSON.stringify(state));saveAva(id,newAva());const enrolled=identities.enroll(id,res,req);player=enrolled.player;db.exec('COMMIT');identities.cookie(res,req,enrolled.credential);}catch(e){db.exec('ROLLBACK');throw e;}
+  }
+  if(req.method!=='GET'&&!identities.guard(req,res,player,true))return;
+  const row=db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(player.save_id)!;
+  return {id:player.save_id,state:JSON.parse(row.state as string) as FoundationState,company:identities.profile(player)};
  }
  // A foundation player cannot invoke retired gameplay through a stale tab or old URL.
  app.use('/api',(req,res,next)=>{if(/(?:^|;\s*)airace_foundation_session=/.test(req.headers.cookie||'')&&!req.path.startsWith('/foundation')){res.status(410).json({error:'This gameplay belongs to an archived version. Return to the foundation.'});return;}next();});
  const save=(id:string,state:FoundationState)=>db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(state),id);
- app.get('/api/foundation',(req,res)=>{const {id,state}=session(req,res),before=JSON.stringify(state),now=Date.now();advanceFoundation(state,now);if(JSON.stringify(state)!==before){state.revision++;save(id,state);}res.json({state,serverTime:now,ava:observeAva(id,state,now)});});
+ app.get('/api/foundation',(req,res)=>{const player=session(req,res);if(!player)return;const {id,state,company}=player,before=JSON.stringify(state),now=Date.now();advanceFoundation(state,now);if(JSON.stringify(state)!==before){state.revision++;save(id,state);}res.json({state,company,serverTime:now,ava:observeAva(id,state,now)});});
  app.post('/api/foundation/ava',(req,res)=>{
   const parsed=z.object({command:z.enum(['continue','build-menu','rig-selected','skip','replay']),revision:z.number().int().min(0),generation:z.number().int().min(0)}).strict().safeParse(req.body);
   if(!parsed.success){res.status(400).json({error:'Invalid Ava action.'});return;}
-  const {id,state}=session(req,res),old=readAva(id),input=parsed.data;
+  const player=session(req,res);if(!player)return;const {id,state}=player,old=readAva(id),input=parsed.data;
   if(input.generation!==(state.generation||0)){res.status(409).json({error:'Progress changed. Reload the game.'});return;}
   // Stale retries cannot advance two dialogue moments or restart a newer replay.
   const next=input.revision===old.revision?commandAva(old,input.command,state,Date.now()):old;
@@ -40,7 +46,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync){
  ]);
  app.post('/api/foundation/rig',(req,res)=>{
   const parsed=actionSchema.safeParse(req.body);if(!parsed.success){res.status(400).json({error:'Choose a valid rig action.'});return;}
-  const {id}=session(req,res),input=parsed.data,now=Date.now();db.exec('BEGIN IMMEDIATE');
+  const player=session(req,res);if(!player)return;const {id}=player,input=parsed.data,now=Date.now();db.exec('BEGIN IMMEDIATE');
   try{const state=JSON.parse(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(id)!.state as string) as FoundationState;
    if(input.generation!==(state.generation||0))throw new Error('Progress was reset. Reopen the building menu.');
    const payload=JSON.stringify(input),cached=db.prepare('SELECT payload,amount FROM foundation_actions WHERE session=? AND id=?').get(id,input.requestId);
@@ -62,7 +68,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync){
  const botSchema=z.object({requestId:z.string().uuid(),generation:z.number().int().min(0),command:botAction}).strict();
  app.post('/api/foundation/bots',(req,res)=>{
   const parsed=botSchema.safeParse(req.body);if(!parsed.success){res.status(400).json({error:'Choose a valid bot action.'});return;}
-  const {id}=session(req,res),input=parsed.data,now=Date.now();db.exec('BEGIN IMMEDIATE');
+  const player=session(req,res);if(!player)return;const {id}=player,input=parsed.data,now=Date.now();db.exec('BEGIN IMMEDIATE');
   try{const state=JSON.parse(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(id)!.state as string) as FoundationState;
    if(input.generation!==(state.generation||0))throw new Error('Progress was reset. Reload the game.');
    const payload='bots:'+JSON.stringify(input),cached=db.prepare('SELECT payload FROM foundation_actions WHERE session=? AND id=?').get(id,input.requestId);
@@ -84,7 +90,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync){
  app.post('/api/foundation/reset',(req,res)=>{
   const input=z.object({confirm:z.literal('RESET FOUNDATION'),revision:z.number().int().min(0)}).strict().safeParse(req.body);
   if(!input.success){res.status(400).json({error:'Confirm the reset before continuing.'});return;}
-  const {id,state}=session(req,res);if(state.revision!==input.data.revision){res.status(409).json({error:'Progress changed. Reopen Settings and try again.'});return;}
+  const player=session(req,res);if(!player)return;const {id,state}=player;if(state.revision!==input.data.revision){res.status(409).json({error:'Progress changed. Reopen Settings and try again.'});return;}
   const next=initialFoundation(state.revision+1);next.generation=(state.generation||0)+1;db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(next),id);saveAva(id,newAva(readAva(id).revision+1));res.json({state:next,ava:readAva(id)});
  });
 }

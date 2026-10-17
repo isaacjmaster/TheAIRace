@@ -1,3 +1,4 @@
+import {identityHeaders,saveIdForCookie} from './helpers/identity';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
@@ -44,9 +45,9 @@ test('SQLite restart, concurrent requests and action retries never duplicate bui
  const dir=mkdtempSync(join(tmpdir(),'airace-bots-')),path=join(dir,'test.sqlite');let db=new DatabaseSync(path);let server:ReturnType<express.Express['listen']>;
  async function boot(){const app=express();app.use(express.json());registerFoundation(app,db);server=app.listen(0,'127.0.0.1');await new Promise<void>(r=>server.once('listening',r));return `http://127.0.0.1:${(server.address() as {port:number}).port}`;}
  const stop=()=>new Promise<void>(r=>server.close(()=>{db.close();r();}));let url=await boot();
- try{const first=await fetch(url+'/api/foundation');const cookie=first.headers.get('set-cookie')!.split(';')[0],id=cookie.split('=')[1];
+ try{const first=await fetch(url+'/api/foundation');const cookie=first.headers.get('set-cookie')!.split(';')[0],id=saveIdForCookie(db,cookie);
  const read=()=>JSON.parse(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(id)!.state as string) as FoundationState;
- const post=async(body:unknown)=>{const r=await fetch(url+'/api/foundation/bots',{method:'POST',headers:{cookie,'content-type':'application/json'},body:JSON.stringify(body)});return {status:r.status,data:await r.json()};};
+ const post=async(body:unknown)=>{const r=await fetch(url+'/api/foundation/bots',{method:'POST',headers:identityHeaders(db,cookie),body:JSON.stringify(body)});return {status:r.status,data:await r.json()};};
  const action=(command:unknown)=>({requestId:randomUUID(),generation:0,command});
  const build=action({action:'build',position});assert.equal((await post(build)).status,200);assert.equal((await post(build)).status,200);assert.equal(read().compute,50);assert.equal((await post(action({action:'build',position}))).status,400);
  const s=read();s.fabricator!.completesAt=Date.now()-1000;db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(s),id);
@@ -57,7 +58,7 @@ test('SQLite restart, concurrent requests and action retries never duplicate bui
  const start=action({action:'start',layout:0});assert.equal((await post(start)).status,200);assert.equal((await post(start)).status,200);const raidId=read().botRaid!.id;
  const deployment=action({action:'deploy',raidId,position:{x:9,y:2}});assert.equal((await post(deployment)).status,200);assert.equal((await post(deployment)).status,200);assert.equal(read().botRaid!.simulation.stock.scrap,4);assert.equal(read().botRaid!.simulation.units.length,1);
  const retreat=action({action:'retreat',raidId});await post(retreat);await post(retreat);assert.equal(read().bots,4);
- const reset=await fetch(url+'/api/foundation/reset',{method:'POST',headers:{cookie,'content-type':'application/json'},body:JSON.stringify({confirm:'RESET FOUNDATION',revision:read().revision})});assert.equal(reset.status,200);assert.equal((await post(train)).status,400);assert.equal(read().fabricator,undefined);assert.equal(read().bots,undefined);
+ const reset=await fetch(url+'/api/foundation/reset',{method:'POST',headers:identityHeaders(db,cookie),body:JSON.stringify({confirm:'RESET FOUNDATION',revision:read().revision})});assert.equal(reset.status,200);assert.equal((await post(train)).status,400);assert.equal(read().fabricator,undefined);assert.equal(read().bots,undefined);
  }finally{await stop();rmSync(dir,{recursive:true,force:true});}
 });
 
