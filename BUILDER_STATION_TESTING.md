@@ -1,5 +1,7 @@
 # Builder Station, rotation and catalog
 
+Historical release notes. The layout controls and anchored-landmark restriction below are superseded by LAYOUT_EDIT_TESTING.md.
+
 Local development only. Checkpoint before this update: codex/checkpoint-before-builder-station. No GitHub push, Railway deployment, production DB operation or volume change.
 
 ## Builder Station
