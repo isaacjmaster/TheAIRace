@@ -2,7 +2,7 @@ import type express from 'express';
 import type { DatabaseSync } from 'node:sqlite';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { buildFabricator,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
+import { rotateBuilding,buildFabricator,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
 /** Separate table and cookie: foundation resets never touch any previous game save. */
 export function registerFoundation(app:express.Express,db:DatabaseSync){
  db.exec('CREATE TABLE IF NOT EXISTS foundation_saves(id TEXT PRIMARY KEY,state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS foundation_actions(session TEXT,id TEXT,payload TEXT,amount INTEGER,PRIMARY KEY(session,id))');
@@ -18,8 +18,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync){
  const save=(id:string,state:FoundationState)=>db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(state),id);
  app.get('/api/foundation',(req,res)=>{const {id,state}=session(req,res),before=JSON.stringify(state),now=Date.now();advanceFoundation(state,now);if(JSON.stringify(state)!==before){state.revision++;save(id,state);}res.json({state,serverTime:now});});
  const actionSchema=z.discriminatedUnion('action',[
-  z.object({action:z.literal('build'),position:z.tuple([z.number().int(),z.number().int()]),requestId:z.string().uuid(),generation:z.number().int().min(0)}).strict(),
-  z.object({action:z.literal('move'),position:z.tuple([z.number().int(),z.number().int()]),requestId:z.string().uuid(),generation:z.number().int().min(0)}).strict(),
+  z.object({action:z.literal('build'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional(),requestId:z.string().uuid(),generation:z.number().int().min(0)}).strict(),
+  z.object({action:z.literal('move'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional(),requestId:z.string().uuid(),generation:z.number().int().min(0)}).strict(),
   z.object({action:z.literal('collect'),requestId:z.string().uuid(),generation:z.number().int().min(0)}).strict()
  ]);
  app.post('/api/foundation/rig',(req,res)=>{
@@ -30,12 +30,13 @@ export function registerFoundation(app:express.Express,db:DatabaseSync){
    const payload=JSON.stringify(input),cached=db.prepare('SELECT payload,amount FROM foundation_actions WHERE session=? AND id=?').get(id,input.requestId);
    if(cached&&cached.payload!==payload)throw new Error('Request already used for another action.');
    advanceFoundation(state,now);let amount=Number(cached?.amount||0);
-   if(!cached){if(input.action==='build')buildRig(state,input.position,now);else if(input.action==='move')moveRig(state,input.position,now);else amount=collectRig(state,now);db.prepare('INSERT INTO foundation_actions VALUES(?,?,?,?)').run(id,input.requestId,payload,amount);}
+   if(!cached){if(input.action==='build')buildRig(state,input.position,now,input.orientation);else if(input.action==='move')moveRig(state,input.position,now,input.orientation);else amount=collectRig(state,now);db.prepare('INSERT INTO foundation_actions VALUES(?,?,?,?)').run(id,input.requestId,payload,amount);}
    state.revision++;save(id,state);db.exec('COMMIT');res.json({state,serverTime:now,amount});
   }catch(e){db.exec('ROLLBACK');res.status(400).json({error:(e as Error).message});}
  });
  const botAction=z.discriminatedUnion('action',[
-  z.object({action:z.literal('build'),position:z.tuple([z.number().int(),z.number().int()])}).strict(),
+  z.object({action:z.literal('build'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
+  z.object({action:z.literal('rotate'),building:z.enum(['rig','fabricator','hangar']),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('train'),count:z.number().int().min(1).max(10)}).strict(),
   z.object({action:z.literal('start'),layout:z.number().int().min(0).max(1)}).strict(),
   z.object({action:z.literal('deploy'),raidId:z.string().uuid(),position:z.object({x:z.number().finite(),y:z.number().finite()}).strict()}).strict(),
@@ -51,7 +52,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync){
    if(cached&&cached.payload!==payload)throw new Error('Request already used for another action.');
    advanceFoundation(state,now);
    if(!cached){const c=input.command;
-    if(c.action==='build')buildFabricator(state,c.position,now);
+    if(c.action==='build')buildFabricator(state,c.position,now,c.orientation);
+    else if(c.action==='rotate')rotateBuilding(state,c.building,c.orientation,now);
     else if(c.action==='train')trainScrap(state,c.count,now);
     else if(c.action==='start')startBotRaid(state,randomUUID(),c.layout,now);
     else if(c.action==='deploy')deployScrap(state,c.raidId,c.position,now);
