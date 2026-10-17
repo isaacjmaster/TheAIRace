@@ -1,3 +1,4 @@
+import {animateScrapBot,turnScrapBot} from '../src/art/ScrapBotMotion';
 import { palette as colors, lightWorld, material, WorldKit } from '../src/art/world';
 import {scrapBotModel} from '../src/art/BotBuildings';
 import { MAP, raidLevel } from './level';
@@ -5,7 +6,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { STATS, validDeployment, type Building, type Effect, type Kind, type Point, type Raid, type Unit } from './engine';
 
-type Visual = { group: THREE.Group; body: THREE.Group; hp: THREE.Sprite; hpTexture: THREE.CanvasTexture; hpCanvas: HTMLCanvasElement; lastHp: number; lastHit: number; born: number; lastAttack?:number; lastDamage?:number; turret?: THREE.Group; rotor?: THREE.Object3D; dead: boolean; destroyedAt?: number };
+type Visual = { scrapBot?:THREE.Group; group: THREE.Group; body: THREE.Group; hp: THREE.Sprite; hpTexture: THREE.CanvasTexture; hpCanvas: HTMLCanvasElement; lastHp: number; lastHit: number; born: number; lastAttack?:number; lastDamage?:number; turret?: THREE.Group; rotor?: THREE.Object3D; dead: boolean; destroyedAt?: number };
 type Burst = { group: THREE.Group; age: number; life: number; particles: { mesh: THREE.Mesh; velocity: THREE.Vector3 }[] };
 const world = (p: Point, height = 0) => new THREE.Vector3(p.x - MAP.center.x, height, p.y - MAP.center.y);
 
@@ -278,9 +279,9 @@ export class RaidScene {
   }
   private unit(u: Unit) {
     const group = new THREE.Group(), body = new THREE.Group(); group.position.copy(world(u)); group.add(body); this.root.add(group);
-    let rotor: THREE.Object3D | undefined;
+    let rotor: THREE.Object3D | undefined,scrapBot:THREE.Group|undefined;
     const color = STATS[u.kind].color;
-    if(u.kind==='scrap'){body.add(scrapBotModel(this.terrainKit));} else if (u.kind === 'tank') {
+    if(u.kind==='scrap'){scrapBot=scrapBotModel(this.terrainKit);body.add(scrapBot);} else if (u.kind === 'tank') {
       this.box(body, [.67, .24, .83], [0, .24, 0], '#485e93', .075);
       for (const x of [-.34, .34]) { this.box(body, [.2, .24, .83], [x, .16, 0], '#283c55', .07); for (const z of [-.26, 0, .26]) this.box(body, [.215, .12, .09], [x, .16, z], '#7990b8', .02); }
       this.box(body, [.59, .33, .6], [0, .48, 0], '#a2b9fb', .1);
@@ -310,8 +311,8 @@ export class RaidScene {
         this.box(body, [.15, .12, .13], [0, .7, -.2], color, .02);
       }
     }
-    const health = this.health(1.08, color); health.hp.scale.set(.75, .12, 1); group.add(health.hp);
-    return { group, body, ...health, lastHp: u.hp, lastHit: -10, born: this.clock, dead: false, rotor };
+    const health = this.health(u.kind==='scrap'?1.67:1.08, color); health.hp.scale.set(.75, .12, 1); group.add(health.hp);
+    return { group, body, ...health, lastHp: u.hp, lastHit: -10, born: this.clock, dead: false, rotor,scrapBot };
   }
   private burst(position: THREE.Vector3, color: string, big = false) {
     const group = new THREE.Group(); group.position.copy(position); this.root.add(group);
@@ -359,16 +360,16 @@ export class RaidScene {
         const u = entity as Unit, desired = world(entity), old = v.group.position.clone(); v.group.position.lerp(desired, 1 - Math.exp(-24 * dt));
         const target = s.buildings.find(b => b.id === u.target);
         const direction = u.waypoint ? world(u.waypoint).sub(v.group.position) : target ? world(target).sub(v.group.position) : desired.clone().sub(old);
-        if (direction.lengthSq() > .001) v.body.rotation.y = Math.atan2(direction.x, direction.z);
+        if (direction.lengthSq() > .001){const yaw=Math.atan2(direction.x,direction.z);if(u.kind==='scrap')turnScrapBot(v.body,yaw,dt,this.reduced);else v.body.rotation.y=yaw;}
         const moving = old.distanceTo(desired) > .025;
         const bounce = this.reduced ? 0 : moving ? Math.sin(this.clock * (u.kind === 'scout' ? 18 : 11) + u.id) * .035 : 0;
         const recoil = this.reduced ? 0 : Math.max(0, 1 - (this.clock - (v.lastDamage??-10)) / .18) * .12;
-        v.body.position.y = bounce; v.body.rotation.x = recoil;
+        v.body.position.y = u.kind==='scrap'?0:bounce; v.body.rotation.x = recoil;
         // Small cosmetic lane offsets keep agents sharing a grid path readable.
         // Their group/health/shot positions still follow the authoritative simulation.
         const crowded = s.units.some(other => other.id !== entity.id && other.hp > 0 && Math.hypot(other.x - entity.x, other.y - entity.y) < .4);
         v.body.position.x = crowded ? Math.cos(u.id * 2.4) * .16 : 0; v.body.position.z = crowded ? Math.sin(u.id * 2.4) * .16 : 0;
-        if(u.kind==='scrap'&&!this.reduced){for(const [name,sign] of [['leg-left',1],['leg-right',-1]] as const){const leg=v.body.getObjectByName(name);if(leg)leg.rotation.x=moving?Math.sin(this.clock*12+u.id)*.4*sign:0;}const arm=v.body.getObjectByName('arm-right');if(arm)arm.rotation.x=!moving&&!this.reduced?Math.max(0,1-(this.clock-(v.lastAttack??-10))/.28)*-1.15:0;}
+
         const spawn = this.reduced ? 1 : Math.min(1, (this.clock - v.born) * 5); v.body.scale.setScalar(Math.max(.05, spawn) * (u.kind === 'tank' ? 1.12 : 1.22));
         if (v.rotor) v.rotor.rotation.y += dt * 16;
       } else {
@@ -377,6 +378,7 @@ export class RaidScene {
           v.turret.position.z = this.reduced ? 0 : -Math.max(0, 1 - (this.clock - v.lastHit) / .2) * .09;
         }
         const hit = Math.max(0, 1 - (this.clock - v.lastHit) / .18); v.body.rotation.z = this.reduced ? 0 : Math.sin(hit * 15) * hit * .025;
+        if(v.scrapBot)animateScrapBot(v.scrapBot,dt,this.reduced,Math.max(0,1-(this.clock-(v.lastAttack??-10))/.28));
       }
     }
     for (const e of s.effects) if (!this.seenEffects.has(e.id)) { this.seenEffects.add(e.id); this.shot(e); }

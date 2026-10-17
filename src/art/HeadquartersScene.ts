@@ -1,7 +1,8 @@
+import {animateScrapBot,turnScrapBot,handoffScrapPose} from './ScrapBotMotion';
 import {MapBoundary,boundaryView} from './MapBoundary';
 import {landscapeModel} from './LandscapeObstacles';
 import type {ClearingJob,LandscapeObstacle} from '../../shared/landscape';
-import {BotArrivals,dockingRoute} from './botLife';
+import {BotArrivals,dockingRoute,DeliveryMotion} from './botLife';
 import * as THREE from 'three';
 import {portraitCampusSpan} from './portraitCamera';
 import {founderHQ,pickFoundationBuilding,type FoundationBuilding} from './FounderHQ';
@@ -22,7 +23,7 @@ export class HeadquartersScene {
  private stationGroup?:THREE.Group;
  private fabricatorGroup?:THREE.Group;private hangarGroup?:THREE.Group;private botKit?:WorldKit;private botKey='';private producing=false;
  private arrivals=new BotArrivals();private lastBotState?:FoundationState;private catchup=false;private stagedCount=0;private gpuActive=false;private lifeClock=0;
- private walkers:{slot:number;group:THREE.Group;route:THREE.Vector3[];segment:number;delay:number}[]=[];
+ private walkers:{slot:number;group:THREE.Group;motion:DeliveryMotion;delay:number;settled:number;finished:boolean}[]=[];
  private visibility=()=>{this.catchup=true;};
  private rig2Group?:THREE.Group;private rig2Kit?:WorldKit;private rig2Position?:RigPosition;private gpu2Active=false;
  private rigGroup?:THREE.Group;private rigKit?:WorldKit;private rigKey='';private rigPosition?:RigPosition;
@@ -219,7 +220,7 @@ export class HeadquartersScene {
     if(h){this.hangarGroup=hangarModel(k,10);this.hangarGroup.position.set(h.position[0],0,h.position[1]);this.hangarGroup.rotation.y=(h.orientation??0)*Math.PI/2;this.scene.add(this.hangarGroup);}}
 
   }
-  if(ready&&this.botKit&&!reset)for(const slot of incoming){const points=dockingRoute(state,slot);if(!points.length)continue;const group=scrapBotModel(this.botKit);group.name='walking-scrapbot';group.scale.setScalar(.7);group.position.set(...points[0]);this.scene.add(group);this.walkers.push({slot,group,route:points.map(p=>new THREE.Vector3(...p)),segment:1,delay:this.walkers.length*.35});}
+  if(ready&&this.botKit&&!reset)for(const slot of incoming){const points=dockingRoute(state,slot);if(!points.length)continue;const group=scrapBotModel(this.botKit);group.name='walking-scrapbot';group.scale.setScalar(.7);group.position.set(...points[0]);group.visible=false;this.scene.add(group);this.walkers.push({slot,group,motion:new DeliveryMotion(points),delay:this.walkers.length*.35,settled:0,finished:false});}
   const assembly=this.fabricatorGroup?.getObjectByName('assembly-bot');if(assembly)assembly.visible=this.producing;
   this.syncDockVisibility();
  }
@@ -229,13 +230,19 @@ export class HeadquartersScene {
  }
  private animateBotLife(dt:number){
   this.lifeClock+=dt;animateGpu(this.rigGroup,this.lifeClock,dt,this.gpuActive,this.reduced);animateGpu(this.rig2Group,this.lifeClock,dt,this.gpu2Active,this.reduced);
-  for(let i=0;i<10;i++){const bot=this.hangarGroup?.getObjectByName('docked-bot-'+i);if(bot?.visible)animateDockedBot(bot,i,this.lifeClock,this.reduced);}
-  for(const w of this.walkers){w.delay-=dt;if(w.delay>0){w.group.visible=false;continue;}w.group.visible=true;let travel=dt*3.2;
-   while(travel>0&&w.segment<w.route.length){const next=w.route[w.segment],d=w.group.position.distanceTo(next);if(d<=travel){w.group.position.copy(next);travel-=d;w.segment++;}else{w.group.rotation.y=Math.atan2(next.x-w.group.position.x,next.z-w.group.position.z);w.group.position.lerp(next,travel/d);travel=0;}}
-   for(const [name,sign] of [['leg-left',1],['leg-right',-1]] as const){const leg=w.group.getObjectByName(name);if(leg)leg.rotation.x=Math.sin(this.lifeClock*14-w.slot)*.38*sign;}
-   if(w.segment>=w.route.length)w.group.removeFromParent();
+  for(let i=0;i<10;i++){const bot=this.hangarGroup?.getObjectByName('docked-bot-'+i);if(bot?.visible)animateDockedBot(bot,i,this.lifeClock,this.reduced,dt);}
+  for(let i=0;i<this.walkers.length;i++){
+   const w=this.walkers[i],m=w.motion;w.delay-=dt;if(w.delay>0){w.group.visible=false;continue;}
+   if(!w.group.visible&&this.walkers.some((leader,j)=>j<i&&leader.group.visible&&!leader.finished&&Math.hypot(leader.group.position.x-m.x,leader.group.position.z-m.z)<.85))continue;
+   w.group.visible=true;let allowance=Infinity;const next=m.route[m.segment];
+   if(next){const dx=next[0]-m.x,dz=next[2]-m.z;for(let j=0;j<i;j++){const lead=this.walkers[j];if(!lead.group.visible||lead.finished)continue;const x=lead.group.position.x-m.x,z=lead.group.position.z-m.z;if(x*dx+z*dz>0)allowance=Math.min(allowance,Math.max(0,Math.hypot(x,z)-.85));}}
+   m.advance(dt,allowance);w.group.position.set(m.x,m.y,m.z);
+   const facing=m.route[m.segment];if(facing&&!m.arrived)turnScrapBot(w.group,Math.atan2(facing[0]-m.x,facing[2]-m.z),dt,this.reduced);
+   if(m.arrived){w.settled+=dt;turnScrapBot(w.group,this.hangarGroup?.rotation.y??0,dt,this.reduced);}
+   animateScrapBot(w.group,dt,this.reduced);
+   if(m.arrived&&w.settled>=.28){const dock=this.hangarGroup?.getObjectByName('docked-bot-'+w.slot);if(dock){dock.rotation.y=w.group.rotation.y-(this.hangarGroup?.rotation.y??0);handoffScrapPose(w.group,dock);}w.group.removeFromParent();w.finished=true;}
   }
-  const count=this.walkers.length;this.walkers=this.walkers.filter(w=>w.segment<w.route.length);if(count!==this.walkers.length)this.syncDockVisibility();
+  const count=this.walkers.length;this.walkers=this.walkers.filter(w=>!w.finished);if(count!==this.walkers.length)this.syncDockVisibility();
   for(let i=0;i<3;i++){const lamp=this.hangarGroup?.getObjectByName('hangar-lamp-'+i);if(lamp)lamp.visible=this.reduced||this.walkers.length===0||Math.sin(this.lifeClock*3-i)>.1;}
  }
 

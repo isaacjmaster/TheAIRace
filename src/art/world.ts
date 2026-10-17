@@ -1,3 +1,4 @@
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
@@ -25,6 +26,10 @@ export class WorldKit {
  box(parent:THREE.Object3D,size:[number,number,number],position:[number,number,number],color:string,radius=.06,glow=false){
   const mesh=new THREE.Mesh(this.geometry('box'+size.join()+radius,()=>new RoundedBoxGeometry(...size,1,radius)),this.mat(color,glow));
   mesh.position.set(...position);mesh.castShadow=!glow&&size[1]>.15;mesh.receiveShadow=true;parent.add(mesh);return mesh;
+ }
+ /** Batch repeated static character pieces by material; animated joints remain separate. */
+ batchStatic(parent:THREE.Object3D,key:string){const groups=new Map<THREE.Material,THREE.Mesh[]>();for(const child of [...parent.children])if(child instanceof THREE.Mesh&&!Array.isArray(child.material)){const list=groups.get(child.material)||[];list.push(child);groups.set(child.material,list);}
+  for(const [material,meshes] of groups){const geometry=this.geometry(key+material.uuid,()=>{const pieces=meshes.map(mesh=>{mesh.updateMatrix();const copy=mesh.geometry.index?mesh.geometry.toNonIndexed():mesh.geometry.clone();return copy.applyMatrix4(mesh.matrix);});const merged=mergeGeometries(pieces,false)!;pieces.forEach(g=>g.dispose());return merged;});const batch=new THREE.Mesh(geometry,material);batch.castShadow=meshes.some(m=>m.castShadow);batch.receiveShadow=true;for(const mesh of meshes)mesh.removeFromParent();parent.add(batch);}
  }
  gable(parent:THREE.Object3D,width:number,height:number,depth:number,position:[number,number,number],color:string){
   const mesh=new THREE.Mesh(this.geometry(`gable${width},${height},${depth}`,()=>{const shape=new THREE.Shape();shape.moveTo(-width/2,0);shape.lineTo(width/2,0);shape.lineTo(0,height);shape.closePath();const geometry=new THREE.ExtrudeGeometry(shape,{depth,bevelEnabled:false});geometry.translate(0,0,-depth/2);return geometry;}),this.mat(color));mesh.position.set(...position);mesh.castShadow=true;parent.add(mesh);return mesh;
