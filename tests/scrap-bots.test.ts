@@ -33,7 +33,7 @@ test('raid stock is reserved, deployments consume trained bots, and undeployed b
 });
 test('both starter layouts are winnable with ten trained melee Scrap Bots and settle once after offline continuation',()=>{
  for(const layout of [0,1]){const s=ready();trainScrap(s,10,epoch+15000);advanceFoundation(s,epoch+65000);startBotRaid(s,randomUUID(),layout,epoch+65000);const id=s.botRaid!.id;
- for(let i=0;i<10;i++)deployScrap(s,id,{x:layout===0?9:17,y:2},epoch+65000);assert.throws(()=>deployScrap(s,id,{x:9,y:2},epoch+65000));
+ for(let i=0;i<10;i++)deployScrap(s,id,{x:9,y:2},epoch+65000);assert.throws(()=>deployScrap(s,id,{x:9,y:2},epoch+65000));
  const r=s.botRaid!.simulation;let meleeHits=0;for(let step=0;step<1801&&!r.ended;step++){tick(r);for(const e of r.effects.filter(e=>e.source>=100&&e.ttl>.29)){const u=r.units.find(u=>u.id===e.source)!;assert.equal(u.kind,'scrap');assert.ok(distance(e.from,e.to)<=STATS.scrap.range+.01);meleeHits++;}}
  assert.equal(r.reason,'Network cleared');assert.ok(meleeHits>0);const compute=s.compute;advanceFoundation(s,epoch+200000);assert.equal(s.compute,compute+45);assert.equal(s.bots,0);advanceFoundation(s,epoch+300000);assert.equal(s.compute,compute+45);
  }

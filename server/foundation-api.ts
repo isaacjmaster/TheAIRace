@@ -88,7 +88,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
     else if(c.action==='move')moveBuilding(state,c.building,c.position,c.orientation,now);
     else if(c.action==='rotate')rotateBuilding(state,c.building,c.orientation,now);
     else if(c.action==='train')trainScrap(state,c.count,now);
-    else if(c.action==='start')startBotRaid(state,randomUUID(),c.layout,now);
+    else if(c.action==='start'){startBotRaid(state,randomUUID(),c.layout,now);state.botRaid!.companyId=player.company.playerId;}
     else if(c.action==='deploy')deployScrap(state,c.raidId,c.position,now);
     else retreatBots(state,c.raidId,now);
     db.prepare('INSERT INTO foundation_actions VALUES(?,?,?,?)').run(id,input.requestId,payload,0);
@@ -100,6 +100,6 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   const input=z.object({confirm:z.literal('RESET FOUNDATION'),revision:z.number().int().min(0)}).strict().safeParse(req.body);
   if(!input.success){res.status(400).json({error:'Confirm the reset before continuing.'});return;}
   const player=session(req,res);if(!player)return;const {id,state}=player;if(state.revision!==input.data.revision){res.status(409).json({error:'Progress changed. Reopen Settings and try again.'});return;}
-  const next=initialFoundation(state.revision+1);next.generation=(state.generation||0)+1;db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(next),id);saveAva(id,newAva(readAva(id).revision+1));res.json({state:next,ava:readAva(id)});
+  const next=initialFoundation(state.revision+1);next.raidRecord=state.raidRecord||{wins:[],completeHistory:false};next.generation=(state.generation||0)+1;db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(next),id);saveAva(id,newAva(readAva(id).revision+1));res.json({state:next,ava:readAva(id)});
  });
 }

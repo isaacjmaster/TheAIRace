@@ -1,4 +1,5 @@
-import {createRaid,deploy,tick,finish,STEP,type Raid,type Point} from '../raid/engine';
+import {createStarterRaid} from '../raid/starter';
+import {deploy,tick,finish,STEP,destruction,type Raid,type Point} from '../raid/engine';
 import {OBSTACLES} from './campus-layout';
 export const STARTING_COMPUTE = 100;
 export const COMPUTE_CAPACITY = 1000;
@@ -10,11 +11,11 @@ export const BUILDER_STATION_POSITION:RigPosition=[-1,4.8];
 export type RigPosition=[number,number];
 export type GpuRig={orientation?:Orientation;position:RigPosition;startedAt:number;completesAt:number;lastProducedAt:number;stored:number};
 export type Fabricator={orientation?:Orientation;hangarOrientation?:Orientation;position:RigPosition;hangarPosition:RigPosition;startedAt:number;completesAt:number};
-export type BotRaid={id:string;simulation:Raid;lastTick:number;started:boolean;settled:boolean;reward:number};
+export type BotRaid={id:string;simulation:Raid;lastTick:number;started:boolean;settled:boolean;reward:number;companyId?:string;result?:{mapId:string;companyId?:string;combatVersion:number;victory:boolean;previouslyCompleted:boolean|null;destruction:number;survivors:number;reason:string;reward:number}};
 export const FABRICATOR={cost:50,buildSeconds:15,maxCount:1} as const;
 export const SCRAP_BOT={cost:5,trainSeconds:5,housing:1,capacity:10} as const;
-export type FoundationState = {version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;training?:number[];botRaid?:BotRaid};
-export function initialFoundation(revision=0):FoundationState{return {version:1,revision,companyName:'Garage Intelligence',level:1,compute:STARTING_COMPUTE,capacity:COMPUTE_CAPACITY,builders:1};}
+export type FoundationState = {version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
+export function initialFoundation(revision=0):FoundationState{return {version:1,revision,companyName:'Garage Intelligence',level:1,compute:STARTING_COMPUTE,capacity:COMPUTE_CAPACITY,builders:1,raidRecord:{wins:[],completeHistory:true}};}
 export const RIG_BOUNDS={minX:-24,maxX:28,minZ:-19,maxZ:24};
 export function validRigPosition(position:RigPosition,orientation:Orientation=0):string|null{
  if(position.length!==2||!position.every(n=>Number.isFinite(n)&&Number.isInteger(n)))return 'Snap the rig to the grid.';
@@ -128,8 +129,7 @@ export function startBotRaid(s:FoundationState,id:string,layout:number,now=Date.
  advanceFoundation(s,now);if(s.botRaid&&!s.botRaid.settled)throw new Error('Resume your current raid.');
  if(!s.bots)throw new Error('Train a Scrap Bot first.');
  if(layout!==0&&layout!==1)throw new Error('Choose a starter network.');
- const simulation=createRaid(layout,{scout:0,tank:0,breaker:0,scrap:s.bots});simulation.starter=true;
- for(const b of simulation.buildings){b.hp=b.maxHp=b.kind==='wall'?40:b.kind==='core'?300:b.kind==='vault'?120:160;}
+ const simulation=createStarterRaid(layout,{scout:0,tank:0,breaker:0,scrap:s.bots});
  s.botRaid={id,simulation,lastTick:now,started:false,settled:false,reward:0};s.bots=0;
 }
 export function advanceBotRaid(s:FoundationState,now:number){
@@ -137,7 +137,11 @@ export function advanceBotRaid(s:FoundationState,now:number){
  if(r.started&&!r.simulation.ended){const steps=Math.min(1801,Math.max(0,Math.floor((now-r.lastTick)/(STEP*1000))));
  for(let i=0;i<steps&&!r.simulation.ended;i++){tick(r.simulation);r.lastTick+=STEP*1000;}}
  if(r.simulation.ended){s.bots=(s.bots||0)+r.simulation.stock.scrap;r.simulation.stock.scrap=0;r.settled=true;
- const loot=r.simulation.buildings.filter(b=>b.kind!=='wall'&&b.hp<=0).length*15;r.reward=Math.min(loot,Math.max(0,s.capacity-s.compute));s.compute+=r.reward;}
+ const loot=r.simulation.buildings.filter(b=>b.kind!=='wall'&&b.hp<=0).length*15;r.reward=Math.min(45,loot,Math.max(0,s.capacity-s.compute));s.compute+=r.reward;
+ if(r.simulation.combatVersion===2){const victory=r.simulation.reason==='Network cleared',layout=r.simulation.layout,record=s.raidRecord;
+ r.result={mapId:layout===0?'first-contact':'stronger-network',companyId:r.companyId,combatVersion:2,victory,previouslyCompleted:record?.wins.includes(layout)?true:record?.completeHistory?false:null,destruction:destruction(r.simulation),survivors:r.simulation.units.filter(u=>u.hp>0).length,reason:r.simulation.reason,reward:r.reward};
+ s.raidRecord??={wins:[],completeHistory:false};if(victory&&!s.raidRecord.wins.includes(layout))s.raidRecord.wins.push(layout);
+ }}
 }
 export function deployScrap(s:FoundationState,id:string,p:Point,now=Date.now()){
  advanceFoundation(s,now);const r=s.botRaid;if(!r||r.id!==id||r.settled)throw new Error('This raid has ended.');
