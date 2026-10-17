@@ -1,4 +1,5 @@
 import express from 'express';
+import {backupBeforeIdentityMigration} from './identity-backup.js';
 import { registerFoundation } from './foundation-api.js';
 import { registerProgression } from './progression-api.js';
 import { registerRaids } from './raid-api.js';
@@ -22,6 +23,7 @@ if (databasePath !== ':memory:') mkdirSync(dirname(resolve(databasePath)), { rec
 if (production && !existsSync(resolve('dist/index.html'))) throw new Error('Build the frontend with npm run build before production startup.');
 process.env.AI_MODE = 'demo'; process.env.AI_LIVE_ENABLED = 'false';
 const db = new DatabaseSync(databasePath);
+if(production)backupBeforeIdentityMigration(db);
 export function closeDatabase() { db.close(); }
 db.exec('PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS commands (session TEXT NOT NULL, id TEXT NOT NULL, response TEXT NOT NULL, PRIMARY KEY(session,id)); CREATE TABLE IF NOT EXISTS usage (day TEXT PRIMARY KEY, requests INTEGER NOT NULL);');
 db.exec("CREATE TABLE IF NOT EXISTS onboarding (session TEXT PRIMARY KEY, storySeen INTEGER NOT NULL DEFAULT 0, tutorial TEXT NOT NULL DEFAULT 'available')");
