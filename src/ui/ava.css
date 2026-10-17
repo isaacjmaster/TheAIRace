@@ -20,8 +20,15 @@
 
 /* Anchor the cutout to the viewport so her lower body continues past its edge. */
 .ava-stage .ava-character{position:fixed;left:-8px;top:auto;bottom:-16px;width:220px;height:330px;mask-image:none;object-position:bottom}
-/* Keep the existing HQ actions visible and tappable in front of the character. */
-.foundation-app:has(.ava-stage) .foundation-home:not([inert]) .foundation-build,.foundation-app:has(.ava-stage) .foundation-home:not([inert]) .foundation-attack{z-index:39}
 @media(min-width:600px){.ava-stage .ava-character{width:300px;height:450px;left:0;bottom:-20px}.ava-stage:not(.ava-guidance) .ava-copy{margin-left:220px}.ava-stage:not(.ava-guidance){width:580px}}
 @media(max-width:350px){.ava-stage .ava-character{width:184px;height:276px;bottom:-14px}}
 @media(orientation:landscape) and (max-height:500px){.ava-stage .ava-character{width:220px;height:330px;bottom:-16px}}
+
+/* Ava stays above HQ actions, stepping aside only while inviting a Build tap. */
+.ava-stage.ava-beside-build .ava-character{left:max(148px,env(safe-area-inset-left))}
+.ava-dialogue p{font-size:16px;line-height:1.5}
+.ava-guidance p{font-size:15px}
+.ava-continue{font-size:14px}
+.ava-wait{font-size:12px}
+.ava-skip{font-size:11px}
+@media(max-width:350px){.ava-copy{margin-left:86px}.ava-dialogue p{font-size:15px}.ava-guidance .ava-copy{margin-left:86px}}
