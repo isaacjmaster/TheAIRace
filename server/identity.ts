@@ -6,7 +6,8 @@ const YEAR=365*86400000,COOKIE='airace_foundation_session';
 const hash=(value:string)=>createHash('sha256').update(value).digest('hex');
 const token=()=>randomUUID();
 type Player={id:string;save_id:string;name:string|null;name_key:string|null;name_deferred:number;recovery_hash:string|null;recovery_updated_at:number|null};
-export function identityStore(db:DatabaseSync){
+export function identityStore(db:DatabaseSync,cookieName=COOKIE){
+ if(!/^[a-zA-Z0-9_-]+$/.test(cookieName))throw new Error('Invalid session cookie configuration.');
  db.exec('PRAGMA foreign_keys=ON');
  db.exec('BEGIN IMMEDIATE');
  try{db.exec(`CREATE TABLE IF NOT EXISTS identity_migrations(version INTEGER PRIMARY KEY,applied_at INTEGER NOT NULL);
@@ -21,18 +22,40 @@ export function identityStore(db:DatabaseSync){
    db.prepare('INSERT INTO company_sessions VALUES(?,?,?)').run(hash(row.id as string),id,Date.now()+YEAR);
   }
   db.prepare('INSERT INTO identity_migrations VALUES(1,?)').run(Date.now());
- }db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;}
+ }
+ // An older app can add a save after migration version 1. Map only genuinely unmapped rows.
+ for(const row of db.prepare('SELECT s.id FROM foundation_saves s LEFT JOIN company_players p ON p.save_id=s.id WHERE p.id IS NULL').all()){
+  const id=randomUUID();db.prepare('INSERT INTO company_players(id,save_id,created_at) VALUES(?,?,?)').run(id,row.id as string,Date.now());
+  db.prepare('INSERT INTO company_sessions VALUES(?,?,?)').run(hash(row.id as string),id,Date.now()+YEAR);
+ }
+ db.prepare('INSERT OR IGNORE INTO identity_migrations VALUES(2,?)').run(Date.now());
+ db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;}
  const publicProfile=(p:Player):CompanyIdentity=>{const state=JSON.parse(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(p.save_id)!.state as string);return {playerId:p.id,name:p.name,level:state.level,nameDeferred:!!p.name_deferred,secured:!!p.recovery_hash,recoveryUpdatedAt:p.recovery_updated_at};};
  const getPlayer=(id:string)=>db.prepare('SELECT * FROM company_players WHERE id=?').get(id) as Player|undefined;
- function cookie(res:express.Response,req:express.Request,credential:string){res.cookie(COOKIE,credential,{httpOnly:true,sameSite:'strict',secure:req.secure||process.env.NODE_ENV==='production',maxAge:YEAR,path:'/'});}
+ function cookie(res:express.Response,req:express.Request,credential:string){res.cookie(cookieName,credential,{httpOnly:true,sameSite:'strict',secure:req.secure||process.env.NODE_ENV==='production',maxAge:YEAR,path:'/'});}
  function issue(res:express.Response,p:Player,req:express.Request,credential:string=token(),sendCookie=true){
   db.prepare('INSERT INTO company_sessions VALUES(?,?,?) ON CONFLICT(token_hash) DO UPDATE SET expires_at=excluded.expires_at').run(hash(credential),p.id,Date.now()+YEAR);
   if(sendCookie)cookie(res,req,credential);return credential;
  }
+ function cookieValue(req:express.Request){
+  for(const name of cookieName===COOKIE?[COOKIE]:[cookieName,COOKIE]){
+   const value=new RegExp('(?:^|;\\s*)'+name+'=([^;]*)(?:;|$)').exec(req.headers.cookie||'')?.[1];
+   if(value!==undefined)return {name,value};
+  }return undefined;
+ }
+ function credential(req:express.Request){const value=cookieValue(req)?.value;return value&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(value)?value:undefined;}
+ function status(req:express.Request):'missing'|'invalid'|'expired'|'unrecognized'{
+  if(!cookieValue(req))return 'missing';const value=credential(req);if(!value)return 'invalid';
+  const session=db.prepare('SELECT expires_at FROM company_sessions WHERE token_hash=?').get(hash(value));
+  return session&&Number(session.expires_at)<=Date.now()?'expired':'unrecognized';
+ }
  function authenticate(req:express.Request,res:express.Response):Player|undefined{
-  const credential=/(?:^|;\s*)airace_foundation_session=([a-f0-9-]{36})(?:;|$)/.exec(req.headers.cookie||'')?.[1];if(!credential)return;
-  const session=db.prepare('SELECT player_id,expires_at FROM company_sessions WHERE token_hash=? AND expires_at>?').get(hash(credential),Date.now());if(!session)return;
-  const p=getPlayer(session.player_id as string);if(p&&Number(session.expires_at)-Date.now()<YEAR-86400000)issue(res,p,req,credential);return p;
+  const value=credential(req);if(!value)return;
+  const session=db.prepare('SELECT player_id,expires_at FROM company_sessions WHERE token_hash=? AND expires_at>?').get(hash(value),Date.now());if(!session)return;
+  const p=getPlayer(session.player_id as string);
+  if(p&&cookieValue(req)!.name!==cookieName)issue(res,p,req);
+  else if(p&&Number(session.expires_at)-Date.now()<YEAR-86400000)issue(res,p,req,value);
+  return p;
  }
  function enroll(saveId:string,res:express.Response,req:express.Request){const id=randomUUID();db.prepare('INSERT INTO company_players(id,save_id,created_at) VALUES(?,?,?)').run(id,saveId,Date.now());const p=getPlayer(id)!,credential=issue(res,p,req,token(),false);return {player:p,credential};}
  function guard(req:express.Request,res:express.Response,p:Player,required=false){const expected=req.get('X-Company-ID');if((expected&&expected!==p.id)||(!expected&&(required||!!p.recovery_hash))){res.status(409).json({error:'Your active company changed. Reload before continuing.',identityChanged:true});return false;}return true;}
@@ -42,7 +65,7 @@ export function identityStore(db:DatabaseSync){
    db.prepare('INSERT INTO company_rate_limits VALUES(?,?,1) ON CONFLICT(bucket) DO UPDATE SET attempts=attempts+1').run(key,now);if(Number(db.prepare('SELECT attempts FROM company_rate_limits WHERE bucket=?').get(key)!.attempts)>max)return false;
   }return true;
  }
- return {authenticate,enroll,guard,profile:publicProfile,getPlayer,issue,cookie,rate};
+ return {authenticate,credential,status,hasCookie:(req:express.Request)=>!!cookieValue(req),enroll,guard,profile:publicProfile,getPlayer,issue,cookie,rate};
 }
 export type IdentityStore=ReturnType<typeof identityStore>;
 function cleanName(value:unknown){if(typeof value!=='string')throw Error('Enter a company name.');const name=value.trim().replace(/ +/g,' ');if(name.length<3||name.length>24)throw Error('Use 3–24 characters for your company name.');if(!/^[A-Za-z0-9 -]+$/.test(name)||!/[A-Za-z]/.test(name))throw Error('Use letters, numbers, spaces and hyphens, with at least one letter.');const words=name.toLowerCase().split(/[ -]+/),compact=words.join('');if(['admin','administrator','moderator','support','official','fuck','shit','cunt','nazi','hitler'].some(w=>words.includes(w))||['masterstudios','theairace','ava'].includes(compact))throw Error('Please choose another name. Avoid offensive names or names that impersonate the game team.');return name;}

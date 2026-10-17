@@ -1,3 +1,4 @@
+import {restoreLocalLegacy} from './legacy-session';
 import {identityStore,registerIdentity} from './identity';
 import {newAva,legacyAva,reconcileAva,commandAva,type AvaProgress} from '../shared/ava';
 import type express from 'express';
@@ -6,18 +7,19 @@ import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { moveBuilding,rotateBuilding,buildFabricator,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
 /** Separate table and cookie: foundation resets never touch any previous game save. */
-export function registerFoundation(app:express.Express,db:DatabaseSync){
+export function registerFoundation(app:express.Express,db:DatabaseSync,options:{cookieName?:string;legacyPaths?:string[]}={}){
  db.exec('CREATE TABLE IF NOT EXISTS foundation_saves(id TEXT PRIMARY KEY,state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS foundation_actions(session TEXT,id TEXT,payload TEXT,amount INTEGER,PRIMARY KEY(session,id))');
  db.exec('CREATE TABLE IF NOT EXISTS foundation_ava(session TEXT PRIMARY KEY,progress TEXT NOT NULL)');
  const readAva=(id:string):AvaProgress=>{const row=db.prepare('SELECT progress FROM foundation_ava WHERE session=?').get(id);return row?JSON.parse(row.progress as string):legacyAva();};
  const saveAva=(id:string,p:AvaProgress)=>db.prepare('INSERT INTO foundation_ava VALUES(?,?) ON CONFLICT(session) DO UPDATE SET progress=excluded.progress').run(id,JSON.stringify(p));
  const observeAva=(id:string,state:FoundationState,now:number)=>{const old=readAva(id),next=reconcileAva(old,state,now);if(next.revision!==old.revision)saveAva(id,next);return next;};
- const identities=identityStore(db);
+ const identities=identityStore(db,options.cookieName);
  registerIdentity(app,db,identities);
  function session(req:express.Request,res:express.Response){
   let player=identities.authenticate(req,res);
+  if(!player&&req.method==='GET'&&identities.hasCookie(req)){try{player=restoreLocalLegacy(req,res,db,identities,options.legacyPaths||[]);}catch{res.status(503).json({code:'SESSION_RESTORE_UNAVAILABLE',error:'We could not safely restore this local session. Your saved companies have not been replaced. Please retry or open the original preview.'});return;}}
   if(!player){
-   if(req.method!=='GET'||/(?:^|;\s*)airace_foundation_session=/.test(req.headers.cookie||'')){res.status(401).json({error:'Your company session expired. Use Recover Company to restore access.'});return;}
+   if(req.method!=='GET'||identities.hasCookie(req)){const reason=identities.status(req);res.status(401).json({code:reason==='expired'?'SESSION_EXPIRED':reason==='invalid'?'SESSION_INVALID':'SESSION_UNRECOGNIZED',error:reason==='expired'?'This company session has expired. Recover Company restores access without changing your base.':reason==='invalid'?'This browser has an invalid company session. Your saved companies have not been changed.':'This preview does not recognize the company session in this browser. Your saved companies have not been changed.'});return;}
    const id=randomUUID(),state=initialFoundation();db.exec('BEGIN IMMEDIATE');
    try{db.prepare('INSERT INTO foundation_saves VALUES (?,?)').run(id,JSON.stringify(state));saveAva(id,newAva());const enrolled=identities.enroll(id,res,req);player=enrolled.player;db.exec('COMMIT');identities.cookie(res,req,enrolled.credential);}catch(e){db.exec('ROLLBACK');throw e;}
   }
@@ -26,9 +28,16 @@ export function registerFoundation(app:express.Express,db:DatabaseSync){
   return {id:player.save_id,state:JSON.parse(row.state as string) as FoundationState,company:identities.profile(player)};
  }
  // A foundation player cannot invoke retired gameplay through a stale tab or old URL.
- app.use('/api',(req,res,next)=>{if(/(?:^|;\s*)airace_foundation_session=/.test(req.headers.cookie||'')&&!req.path.startsWith('/foundation')){res.status(410).json({error:'This gameplay belongs to an archived version. Return to the foundation.'});return;}next();});
+ app.use('/api',(req,res,next)=>{if(identities.hasCookie(req)&&!req.path.startsWith('/foundation')){res.status(410).json({error:'This gameplay belongs to an archived version. Return to the foundation.'});return;}next();});
  const save=(id:string,state:FoundationState)=>db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(state),id);
- app.get('/api/foundation',(req,res)=>{const player=session(req,res);if(!player)return;const {id,state,company}=player,before=JSON.stringify(state),now=Date.now();advanceFoundation(state,now);if(JSON.stringify(state)!==before){state.revision++;save(id,state);}res.json({state,company,serverTime:now,ava:observeAva(id,state,now)});});
+ app.post('/api/foundation/start-new',(req,res)=>{
+  const origin=req.get('Origin');if(!req.is('application/json')||(origin&&new URL(origin).host!==req.get('host'))){res.status(403).json({error:'Open The AI Race directly to start a company.'});return;}
+  if(req.body?.confirm!=='START SEPARATE COMPANY'){res.status(400).json({error:'Confirm starting a separate company first.'});return;}
+  if(identities.authenticate(req,res)){res.status(409).json({error:'A company is already available. Retry loading it instead.',code:'SESSION_ACTIVE'});return;}
+  if(!identities.rate(req,undefined,'guest-start',8)){res.status(429).json({error:'Please wait 15 minutes before starting another company.'});return;}
+  db.exec('BEGIN IMMEDIATE');try{const id=randomUUID(),state=initialFoundation();db.prepare('INSERT INTO foundation_saves VALUES(?,?)').run(id,JSON.stringify(state));saveAva(id,newAva());const enrolled=identities.enroll(id,res,req);db.exec('COMMIT');identities.cookie(res,req,enrolled.credential);res.json({started:true});}catch{db.exec('ROLLBACK');res.status(503).json({error:'Your new company could not be saved. Please retry.'});}
+ });
+ app.get('/api/foundation',(req,res)=>{try{const player=session(req,res);if(!player)return;const {id,state,company}=player,before=JSON.stringify(state),now=Date.now();advanceFoundation(state,now);if(JSON.stringify(state)!==before){state.revision++;save(id,state);}res.json({state,company,serverTime:now,ava:observeAva(id,state,now)});}catch{res.status(503).json({code:'BACKEND_UNAVAILABLE',error:'The save service is temporarily unavailable. Your saved companies have not been replaced. Please retry.'});}});
  app.post('/api/foundation/ava',(req,res)=>{
   const parsed=z.object({command:z.enum(['continue','build-menu','rig-selected','skip','replay']),revision:z.number().int().min(0),generation:z.number().int().min(0)}).strict().safeParse(req.body);
   if(!parsed.success){res.status(400).json({error:'Invalid Ava action.'});return;}
