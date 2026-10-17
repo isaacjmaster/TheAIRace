@@ -1,4 +1,4 @@
-import { BUILDING_SOUNDS,musicStep, MUTE_KEY, frequency, readMuted, writeMuted, type Cue, type MusicMode } from './score';
+import { BUILDING_SOUNDS, MUTE_KEY, readMuted, writeMuted, type Cue, type MusicMode } from './score';
 export type SoundPlatform={storage?:Pick<Storage,'getItem'|'setItem'>;createContext:()=>AudioContext;silent?:boolean};
 /** Explicit opt-in for agent previews; standard automation is silent automatically. */
 export function testAudioDisabled(search:string,webdriver=false){return webdriver||new URLSearchParams(search).get('testAudio')==='off';}
@@ -6,73 +6,46 @@ function browserPlatform():SoundPlatform {
  let storage:Storage|undefined;try{storage=globalThis.localStorage;}catch{}
  return {storage,silent:testAudioDisabled(typeof location==='undefined'?'':location.search,typeof navigator!=='undefined'&&navigator.webdriver===true),createContext:()=>{const C=window.AudioContext||(window as unknown as {webkitAudioContext:typeof AudioContext}).webkitAudioContext;return new C();}};
 }
-/** Start and stop at exact silence; a short linear tail avoids a residual DC step. */
-export function voiceEnvelope(param:AudioParam,time:number,duration:number,volume:number,attack:number){
- // GainNodes default to unity. Source/event rounding can expose one full-gain
- // sample before a future zero event, so silence the node from creation.
- param.value=0;
- const rise=Math.min(duration/3,Math.max(.006,attack)),release=Math.min(.018,duration/4);
- param.setValueAtTime(0,time);
- param.linearRampToValueAtTime(volume,time+rise);
- param.exponentialRampToValueAtTime(.0001,time+duration-release);
- param.linearRampToValueAtTime(0,time+duration);
-}
+export {voiceEnvelope} from './envelope';
+import {voiceEnvelope} from './envelope';
+import {MusicSynth,playMusicStep} from './musicSynth';
 /** Context creation/resume is exclusively initiated by a user gesture. */
 export class Soundscape {
  private ctx?:AudioContext;private master?:GainNode;private hq?:GainNode;private raid?:GainNode;
- private timer?:ReturnType<typeof setInterval>;private next=0;private step=0;private mode:MusicMode='hq';
+ private timer?:ReturnType<typeof setInterval>;private synth?:MusicSynth;private clocks={hq:{next:0,step:0},raid:{next:0,step:0}};private fadeUntil={hq:0,raid:0};private mode:MusicMode='hq';
+ private gainRamps=new Map<GainNode,{from:number;to:number;start:number;end:number}>();
  private listeners=new Set<()=>void>();private last=new Map<Cue,number>();private noise?:AudioBuffer;
  muted:boolean;private platform:SoundPlatform;
  constructor(platform=browserPlatform()){this.platform=platform;this.muted=!!platform.silent||readMuted(platform.storage);}
  subscribe=(listener:()=>void)=>{this.listeners.add(listener);return()=>{this.listeners.delete(listener);};};
  getSnapshot=()=>this.muted;
- private ramp(node:GainNode,value:number,seconds=.7){const t=this.ctx!.currentTime;if(typeof node.gain.cancelAndHoldAtTime==='function')node.gain.cancelAndHoldAtTime(t);else{node.gain.cancelScheduledValues(t);node.gain.setValueAtTime(node.gain.value,t);}node.gain.linearRampToValueAtTime(value,t+seconds);}
+ private ramp(node:GainNode,value:number,seconds=.7){
+  const t=this.ctx!.currentTime,previous=this.gainRamps.get(node),fraction=previous?Math.max(0,Math.min(1,(t-previous.start)/(previous.end-previous.start))):1;
+  const current=previous?previous.from+(previous.to-previous.from)*fraction:node.gain.value;
+  // Explicitly anchor the ramp; a bare future linear endpoint can fade from context startup.
+  node.gain.cancelScheduledValues(t);node.gain.setValueAtTime(current,t);node.gain.linearRampToValueAtTime(value,t+seconds);
+  this.gainRamps.set(node,{from:current,to:value,start:t,end:t+seconds});
+ }
  async unlock(){
   if(this.platform.silent||this.muted)return;
   try{
-   if(!this.ctx){this.ctx=this.platform.createContext();this.master=this.ctx.createGain();this.master.gain.value=.22;this.master.connect(this.ctx.destination);this.hq=this.ctx.createGain();this.raid=this.ctx.createGain();this.hq.connect(this.master);this.raid.connect(this.master);this.hq.gain.value=this.mode==='hq'?.55:0;this.raid.gain.value=this.mode==='raid'?.5:0;}
+   if(!this.ctx){this.ctx=this.platform.createContext();this.synth=new MusicSynth(this.ctx);this.master=this.ctx.createGain();this.master.gain.value=.22;this.master.connect(this.ctx.destination);this.hq=this.ctx.createGain();this.raid=this.ctx.createGain();this.hq.connect(this.master);this.raid.connect(this.master);this.hq.gain.value=this.mode==='hq'?.55:0;this.raid.gain.value=this.mode==='raid'?.5:0;}
    const ctx=this.ctx;await ctx.resume();
    if(this.ctx!==ctx||this.platform.silent||this.muted)return;
-   if(!this.timer){this.next=this.ctx.currentTime+.04;this.timer=setInterval(()=>this.schedule(),100);this.schedule();}
+   if(!this.timer){this.clocks[this.mode].next=this.ctx.currentTime+.04;this.timer=setInterval(()=>this.schedule(),100);this.schedule();}
   }catch{/* Audio unsupported/interrupted: the game remains playable. */}
  }
  setMuted(value:boolean){if(this.platform.silent)return;this.muted=value;writeMuted(this.platform.storage,value);if(this.master)this.ramp(this.master,value?0:.22,.1);if(value){if(this.timer)clearInterval(this.timer);this.timer=undefined;}for(const listener of this.listeners)listener();}
- setMode(mode:MusicMode){this.mode=mode;if(this.hq&&this.raid){this.ramp(this.hq,mode==='hq'?.55:0,1.1);this.ramp(this.raid,mode==='raid'?.5:0,1.1);}}
+ setMode(mode:MusicMode){if(mode===this.mode)return;const previous=this.mode;this.mode=mode;if(this.ctx&&this.hq&&this.raid){this.fadeUntil[previous]=this.ctx.currentTime+1.1;this.clocks[mode].next=Math.max(this.clocks[mode].next,this.ctx.currentTime+.02);this.ramp(this.hq,mode==='hq'?.55:0,1.1);this.ramp(this.raid,mode==='raid'?.5:0,1.1);if(this.timer)this.schedule();}}
  visibility(hidden:boolean){if(hidden){if(this.timer)clearInterval(this.timer);this.timer=undefined;void this.ctx?.suspend().catch(()=>{});}/* Safari resumes on the next explicit interaction. */}
- private note(midi:number,time:number,duration:number,volume:number,bus:AudioNode,type:OscillatorType='sine',attack=.015,slide?:number){
-  const ctx=this.ctx!,osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type;osc.frequency.setValueAtTime(frequency(midi),time);if(slide!==undefined)osc.frequency.exponentialRampToValueAtTime(frequency(slide),time+duration);
-  voiceEnvelope(gain.gain,time,duration,volume,attack);osc.connect(gain);gain.connect(bus);osc.start(time);osc.stop(time+duration+.02);osc.onended=()=>{osc.disconnect();gain.disconnect();};
- }
- /** Short synthesized drum strokes; shared deterministic noise, never external samples. */
- private drum(time:number,bus:AudioNode,hat:boolean,volume:number){
-  const ctx=this.ctx!;
-  if(!this.noise){this.noise=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*.3),ctx.sampleRate);const a=this.noise.getChannelData(0);let seed=37;for(let i=0;i<a.length;i++){seed=(seed*1664525+1013904223)>>>0;a[i]=seed/2147483648-1;}}
-  const source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain(),duration=hat?.045:.11;
-  source.buffer=this.noise;filter.type=hat?'highpass':'bandpass';filter.frequency.value=hat?6500:1800;
-  voiceEnvelope(gain.gain,time,duration,volume,.008);
-  source.connect(filter);filter.connect(gain);gain.connect(bus);source.start(time);source.stop(time+duration+.01);source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};
- }
+ private note(...args:Parameters<MusicSynth['note']>){this.synth?.note(...args);}
  private schedule(){
-  if(!this.ctx||this.ctx.state!=='running'||this.platform.silent||this.muted)return;
-  if(this.next<this.ctx.currentTime)this.next=this.ctx.currentTime+.02;
-  while(this.next<this.ctx.currentTime+.3){
-   const score=musicStep(this.step++,this.mode),t=this.next;
-   // Both arrangements share a score so changing modes crossfades without restarting.
-   for(const [bus,combat] of [[this.hq!,false],[this.raid!,true]] as const){
-    this.note(score.pluck,t,.15,combat?.035:.05,bus,'triangle',.004);
-    if(score.bass!==null)this.note(score.bass,t,.28,combat?.13:.10,bus,'triangle',.008);
-    if(score.melody!==null){
-     const duration=score.seconds*(score.beat===0?1.65:.85);
-     this.note(score.melody,t,duration,.065,bus,'triangle',.025);
-     this.note(score.melody-12,t,duration,.025,bus,'sine',.035);
-    }
-    if(score.beat===0||score.beat===4)for(const n of score.chord.slice(1))this.note(n,t,.17,.018,bus,'triangle',.012);
-    if(score.kick)this.note(43,t,.18,combat?.12:.075,bus,'sine',.012,26);
-    if(score.snare)this.drum(t,bus,false,combat?.045:.025);
-    if(score.hat)this.drum(t,bus,true,combat?.018:.009);
-    if(combat&&score.beat===7)this.note(score.chord[0],t,.12,.06,bus,'triangle',.004);
-   }
-   this.next+=score.seconds;
+  if(!this.ctx||!this.synth||this.ctx.state!=='running'||this.platform.silent||this.muted)return;
+  for(const mode of ['hq','raid'] as const){
+   if(mode!==this.mode&&this.ctx.currentTime>=this.fadeUntil[mode])continue;
+   const clock=this.clocks[mode],bus=mode==='hq'?this.hq!:this.raid!;
+   if(clock.next<this.ctx.currentTime)clock.next=this.ctx.currentTime+.02;
+   while(clock.next<this.ctx.currentTime+.3){clock.next+=playMusicStep(this.synth,clock.step++,mode,clock.next,bus);}
   }
  }
  cue=(cue:Cue)=>{
@@ -92,7 +65,7 @@ export class Soundscape {
   const notes=cue==='win'?[62,66,69,74,78]:cue==='resources'?[81,86,90]:cue==='upgrade'?[57,62,66,74]:[];
   notes.forEach((n,i)=>this.note(n,t+i*.1,.65,.12,out,'sine',.008));
  };
- dispose(){if(this.timer)clearInterval(this.timer);this.timer=undefined;void this.ctx?.close().catch(()=>{});this.ctx=undefined;this.master=undefined;this.hq=undefined;this.raid=undefined;this.noise=undefined;this.last.clear();}
+ dispose(){if(this.timer)clearInterval(this.timer);this.timer=undefined;void this.ctx?.close().catch(()=>{});this.ctx=undefined;this.synth=undefined;this.clocks={hq:{next:0,step:0},raid:{next:0,step:0}};this.fadeUntil={hq:0,raid:0};this.gainRamps.clear();this.master=undefined;this.hq=undefined;this.raid=undefined;this.noise=undefined;this.last.clear();}
 }
 export const sound=new Soundscape();
 // Closing/navigating a preview stops all scheduled sound, including a pending unlock.
