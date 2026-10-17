@@ -9,8 +9,6 @@
 .ava-guidance{top:calc(max(12px,env(safe-area-inset-top)) + 112px);bottom:auto;min-height:186px;align-items:flex-start}.ava-guidance .ava-character{width:124px;height:186px;top:0;bottom:auto}.ava-guidance .ava-copy{margin-left:124px;padding:10px 12px}.ava-guidance p{font-size:12px;margin-bottom:6px}.ava-in-catalog{top:max(8px,env(safe-area-inset-top))}
 .ava-collection{top:auto;bottom:calc(max(14px,env(safe-area-inset-bottom)) + 140px);align-items:flex-end}.ava-collection .ava-character{top:auto;bottom:-4px}
 .foundation-backdrop:has(.ava-build-target){padding-top:calc(max(8px,env(safe-area-inset-top)) + 236px)}
-.ava-focus-build .foundation-build,.ava-focus-compute .compute-hud,.ava-build-target,.ava-collect-target{outline:3px solid #ffce74!important;outline-offset:4px;box-shadow:0 0 0 7px #ffdf8640!important}
-.ava-world-beacon{position:absolute;pointer-events:none;z-index:8;transform:translate(-50%,-100%);border:2px solid #f5c76d;border-radius:12px;background:#fff9e8ee;color:#31576a;padding:8px 12px;box-shadow:0 0 0 5px #ffdf8638;font-size:12px;font-weight:750;white-space:nowrap}
 @keyframes ava-enter{from{opacity:0}to{opacity:1}}
 @keyframes ava-pose-enter{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
 @media(min-width:600px){.ava-dialogue{left:max(18px,env(safe-area-inset-left));right:auto;width:520px}.ava-character{width:180px;height:270px}.ava-dialogue{min-height:270px}.ava-copy{margin-left:160px}.ava-guidance{min-height:210px}.ava-guidance .ava-character{width:140px;height:210px}.ava-guidance .ava-copy{margin-left:124px}}
@@ -32,3 +30,20 @@
 .ava-wait{font-size:12px}
 .ava-skip{font-size:11px}
 @media(max-width:350px){.ava-copy{margin-left:86px}.ava-dialogue p{font-size:15px}.ava-guidance .ava-copy{margin-left:86px}}
+
+/* One shared gold cue; it never intercepts taps or changes target layout. */
+.ava-arrow{display:block;width:48px;height:64px;overflow:visible;filter:drop-shadow(0 3px 2px #65482155);animation:ava-arrow-hover 1.35s ease-in-out infinite}
+.ava-target-arrow{position:fixed;z-index:41;pointer-events:none;width:48px;height:64px;transform:translate(-50%,-100%)}
+.ava-target-arrow[data-direction="up"]{transform:translateX(-50%) rotate(180deg)}
+.ava-world-beacon{position:absolute;z-index:8;pointer-events:none;transform:translate(-50%,-100%)}
+@keyframes ava-arrow-hover{0%,100%{translate:0 -5px}50%{translate:0 0}}
+/* Build dialogue follows Ava's head instead of the top-of-screen guidance slot. */
+.ava-stage.ava-beside-build{top:auto;bottom:235px;min-height:0;width:230px;max-width:calc(100% - 32px);left:max(12px,env(safe-area-inset-left));right:auto;margin:0;align-items:flex-end}
+.ava-stage.ava-beside-build .ava-copy{margin-left:0}
+.ava-beside-build .ava-copy::before{left:auto;right:18px;top:auto;bottom:-10px;transform:rotate(-45deg)}
+@media(min-width:600px){.ava-stage.ava-beside-build{bottom:335px;width:270px}}
+@media(max-width:350px){.ava-stage.ava-beside-build{bottom:195px;width:205px}}
+@media(orientation:landscape) and (max-height:500px){.ava-stage.ava-beside-build{bottom:210px;width:280px}}
+@media(prefers-reduced-motion:reduce){.ava-arrow{animation:none}}
+/* Keep the Build gesture aimed at the same bottom-left HUD position on desktop. */
+@media(min-width:600px){.ava-stage.ava-beside-build .ava-character{width:220px;height:330px;bottom:-16px}.ava-stage.ava-beside-build{bottom:235px}}
