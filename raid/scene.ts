@@ -1,4 +1,5 @@
 import { palette as colors, lightWorld, material, WorldKit } from '../src/art/world';
+import {scrapBotModel} from '../src/art/BotBuildings';
 import { MAP, raidLevel } from './level';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -41,7 +42,7 @@ export class RaidScene {
   private reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   private contextLost = (e: Event) => { e.preventDefault(); this.paused = true; this.onError('Graphics paused. Reload to restore the battlefield.'); };
 
-  constructor(readonly host: HTMLDivElement, readonly onError: (message: string) => void) {
+  constructor(readonly host: HTMLDivElement, readonly onError: (message: string) => void, private starterPortrait=false) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
     lightWorld(this.renderer, this.scene);
     this.renderer.domElement.setAttribute('aria-label', '3D raid battlefield. Tap the cyan perimeter to deploy. Drag to move the camera.');
@@ -279,7 +280,7 @@ export class RaidScene {
     const group = new THREE.Group(), body = new THREE.Group(); group.position.copy(world(u)); group.add(body); this.root.add(group);
     let rotor: THREE.Object3D | undefined;
     const color = STATS[u.kind].color;
-    if (u.kind === 'tank') {
+    if(u.kind==='scrap'){body.add(scrapBotModel(this.terrainKit));} else if (u.kind === 'tank') {
       this.box(body, [.67, .24, .83], [0, .24, 0], '#485e93', .075);
       for (const x of [-.34, .34]) { this.box(body, [.2, .24, .83], [x, .16, 0], '#283c55', .07); for (const z of [-.26, 0, .26]) this.box(body, [.215, .12, .09], [x, .16, z], '#7990b8', .02); }
       this.box(body, [.59, .33, .6], [0, .48, 0], '#a2b9fb', .1);
@@ -326,8 +327,9 @@ export class RaidScene {
   private shot(e: Effect) {
     const group = new THREE.Group(); this.root.add(group);
     const start = world(e.from, e.source < 100 ? 1.3 : .48), end = world(e.to, e.target < 100 ? .7 : .38), delta = end.clone().sub(start);
+    const melee=this.lastState?.units.some(u=>u.id===e.source&&u.kind==='scrap');
     const beam = new THREE.Mesh(this.geometry('beam', () => new THREE.CylinderGeometry(.032, .032, 1, 6)), this.mat(e.color, true));
-    beam.position.copy(start.clone().add(end).multiplyScalar(.5)); beam.scale.y = delta.length(); beam.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), delta.normalize()); group.add(beam);
+    beam.position.copy(start.clone().add(end).multiplyScalar(.5)); beam.scale.y = delta.length(); beam.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), delta.normalize()); if(!melee)group.add(beam);
     this.beams.set(e.id, { group, life: .17, age: 0, effect: e });
     this.burst(end, e.color);
     const attacker=this.lastState?.buildings.find(b=>b.id===e.source);
@@ -366,6 +368,7 @@ export class RaidScene {
         // Their group/health/shot positions still follow the authoritative simulation.
         const crowded = s.units.some(other => other.id !== entity.id && other.hp > 0 && Math.hypot(other.x - entity.x, other.y - entity.y) < .4);
         v.body.position.x = crowded ? Math.cos(u.id * 2.4) * .16 : 0; v.body.position.z = crowded ? Math.sin(u.id * 2.4) * .16 : 0;
+        if(u.kind==='scrap'&&!this.reduced){for(const [name,sign] of [['leg-left',1],['leg-right',-1]] as const){const leg=v.body.getObjectByName(name);if(leg)leg.rotation.x=moving?Math.sin(this.clock*12+u.id)*.4*sign:0;}const arm=v.body.getObjectByName('arm-right');if(arm)arm.rotation.x=u.target!==undefined&&!moving?Math.sin(this.clock*12)*.65:0;}
         const spawn = this.reduced ? 1 : Math.min(1, (this.clock - v.born) * 5); v.body.scale.setScalar(Math.max(.05, spawn) * (u.kind === 'tank' ? 1.12 : 1.22));
         if (v.rotor) v.rotor.rotation.y += dt * 16;
       } else {
@@ -392,7 +395,7 @@ export class RaidScene {
   private resize() {
     this.width = this.host.clientWidth; this.height = this.host.clientHeight; if (!this.width || !this.height) return;
     this.renderer.setSize(this.width, this.height, false);
-    const aspect = this.width / this.height, span = Math.max(34, 22 * aspect);
+    const aspect = this.width / this.height, span = this.starterPortrait&&aspect<1?28:Math.max(34, 22 * aspect);
     const offset = aspect < 1 ? -1 : 0;
     this.camera.left = -span / 2; this.camera.right = span / 2; this.camera.top = span / aspect / 2 + offset; this.camera.bottom = -span / aspect / 2 + offset; this.camera.updateProjectionMatrix();
   }
