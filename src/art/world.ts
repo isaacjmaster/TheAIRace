@@ -36,7 +36,7 @@ export class WorldKit {
   const top=new THREE.Mesh(this.geometry('foliage',()=>new THREE.DodecahedronGeometry(.85,0)),this.mat(x%3<1?'#5d9c7c':'#78af86'));top.position.y=1.5;top.scale.y=1.3;top.castShadow=true;g.add(top);const crown=top.clone();crown.scale.set(.72,.85,.72);crown.position.set(.25,2.22,-.12);g.add(crown);
  }
  /** Continuous, faceted terrain. The playable center stays flat; hills rise outside it. */
- terrain(parent:THREE.Object3D, halfX:number, halfZ:number){
+ terrain(parent:THREE.Object3D, halfX:number, halfZ:number,clip?:{minX:number;maxX:number;minZ:number;maxZ:number}){
   const g=new THREE.PlaneGeometry(160,160,64,64);g.rotateX(-Math.PI/2);
   const p=g.attributes.position;const colors:number[]=[];
   for(let i=0;i<p.count;i++){
@@ -45,9 +45,10 @@ export class WorldKit {
    p.setY(i,-.15+hill);
    const color=new THREE.Color(edge<2?'#98bb91':edge<10?'#83a881':'#729987');color.multiplyScalar(.9+.1*Math.sin(x*.5+z*.3));colors.push(color.r,color.g,color.b);
   }
+  if(clip){const source=g.getIndex()!,indices:number[]=[];for(let i=0;i<source.count;i+=3){const a=source.getX(i),b=source.getX(i+1),c=source.getX(i+2),x=(p.getX(a)+p.getX(b)+p.getX(c))/3,z=(p.getZ(a)+p.getZ(b)+p.getZ(c))/3;if(x>=clip.minX&&x<=clip.maxX&&z>=clip.minZ&&z<=clip.maxZ)indices.push(a,b,c);}g.setIndex(indices);}
   g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.computeVertexNormals();this.geometries.set('terrain',g);
   const mat=new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:1});this.materials.set('terrain',mat);
-  const mesh=new THREE.Mesh(g,mat);mesh.receiveShadow=true;parent.add(mesh);
+  const mesh=new THREE.Mesh(g,mat);mesh.receiveShadow=true;parent.add(mesh);return mesh;
  }
  label(parent:THREE.Object3D,text:string,position:[number,number,number],width:number){
   const canvas=document.createElement('canvas');canvas.width=512;canvas.height=96;const c=canvas.getContext('2d')!;c.fillStyle=palette.dark;c.fillRect(0,0,512,96);c.font='700 40px Segoe UI, sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle=palette.cream;c.fillText(text,256,48,480);
