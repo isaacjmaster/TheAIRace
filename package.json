@@ -12,7 +12,8 @@
     "build": "tsc --noEmit && vite build",
     "start": "node --env-file-if-exists=.env --import tsx server/index.ts",
     "test": "tsx --test tests/*.test.ts server/*.test.ts raid/*.test.ts",
-    "test:production": "node scripts/smoke-production.mjs"
+    "test:production": "node scripts/smoke-production.mjs",
+    "preview:identity": "node --import tsx scripts/preview-identity.ts"
   },
   "dependencies": {
     "express": "^5.1.0",

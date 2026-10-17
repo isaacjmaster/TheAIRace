@@ -10,3 +10,4 @@
 @media(min-width:600px){.ava-dialogue.ava-naming .ava-copy{margin-left:220px}}
 @media(max-width:350px){.ava-dialogue.ava-naming .ava-copy{margin-left:100px}.ava-dialogue.ava-naming .ava-character{left:-20px;width:170px;height:255px}}
 @media(max-height:650px){.ava-dialogue.ava-naming{top:112px;bottom:130px;min-height:0;align-items:stretch}.ava-dialogue.ava-naming .ava-copy{overflow-y:auto;max-height:100%;box-sizing:border-box}}
+.connection-error button{background:#eefaf4;color:#244e62;border:1px solid #8bbbc2;border-radius:12px;padding:10px 12px;min-height:44px;margin:4px;font:inherit;font-size:13px;touch-action:manipulation}
