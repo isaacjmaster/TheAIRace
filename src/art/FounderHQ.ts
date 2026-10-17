@@ -24,6 +24,10 @@ export function founderHQ(k:WorldKit,parent:THREE.Group){
   k.gable(house,7.8,1.44,.22,[0,4.55,z],c.cream);
  }
  box([.3,.25,6.9],[0,6.15,0],c.gold);
+ // Restrained standing-seam roof and warm workspace lighting; footprint is unchanged.
+ for(const side of [-1,1])for(const z of [-2.4,-1.2,0,1.2,2.4]){const seam=box([4.56,.045,.045],[side*2.05,5.51,z],'#4b6b7d',.01);seam.rotation.z=-side*.36;}
+ const deskLight=new THREE.PointLight('#ffd29a',5,7,2);deskLight.position.set(-.9,3.6,2);house.add(deskLight);
+ k.box(house,[2.6,.045,.18],[-.9,4.1,2.75],'#ffe0a7',.02,true);
  // Window trim sits against the front wall, with the entire workspace inside.
  box([4.8,.18,.3],[-.9,1.2,3.08],c.gold);
  for(const x of [-3.3,1.5])box([.13,3.1,.13],[x,2.75,3.12],c.dark);

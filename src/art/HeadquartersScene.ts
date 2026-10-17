@@ -89,7 +89,7 @@ export class HeadquartersScene {
   for(let i=0;i<14;i++){const x=-24+i*4;for(const z of [-23,28])k.tree(s,x,z,1.1+(i%3)*.3);}
   for(const [x,z] of [[-27,-12],[-28,2],[-27,16],[32,-13],[32,2],[32,18]])k.tree(s,x,z,1.7);
   for(const [x,z] of [[-16,7],[13,7],[-16,11],[25,11]]){
-   k.box(s,[.18,2.5,.18],[x,1.2,z],c.slate);k.box(s,[1.2,.15,.4],[x,2.5,z],c.dark);k.box(s,[1,.04,.3],[x,2.4,z],c.cyan,.02,true);
+   k.box(s,[.18,2.5,.18],[x,1.2,z],c.slate);k.box(s,[1.2,.15,.4],[x,2.5,z],c.dark);k.box(s,[1,.04,.3],[x,2.4,z],c.gold,.02,true);
   }
   // Drainage strips, a gate and delivery station sit outside the editable building area.
   for(let i=0;i<8;i++)k.box(s,[1,.06,.18],[-26,.06,-9+i*.5],c.slate);
