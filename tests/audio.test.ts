@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Soundscape } from '../src/audio/sound';
+import { Soundscape,testAudioDisabled } from '../src/audio/sound';
 import { frequency, MUTE_KEY, readMuted, writeMuted, type Cue } from '../src/audio/score';
 class Param {
  value=0;ramps:number[]=[];
@@ -64,4 +64,20 @@ test('music scheduler bounds every percussion voice and avoids catch-up bursts a
   for(const source of h.ctx.sources){assert.equal(typeof source.onended,'function');source.onended!();assert.equal(source.disconnected,true);}
   const before=h.ctx.sources.length;h.ctx.currentTime+=60;(h.sound as any).schedule();assert.ok(h.ctx.sources.length-before<40,'no missed-minute playback burst');
  }finally{h.sound.dispose();}
+});
+
+test('test audio policy is explicit and normal player URLs keep audio enabled',()=>{
+ assert.equal(testAudioDisabled(''),false);assert.equal(testAudioDisabled('?testAudio=off'),true);assert.equal(testAudioDisabled('?testAudio=off&other=1'),true);assert.equal(testAudioDisabled('?testAudio=on'),false);assert.equal(testAudioDisabled('',true),true);assert.equal(testAudioDisabled('?testAudio=on',true),true);
+});
+test('silent previews block every cue and unmute without altering either saved preference',async()=>{
+ for(const saved of ['false','true']){const h=harness(saved),audio=new Soundscape({...h.platform,silent:true});
+ try{assert.equal(audio.getSnapshot(),true);audio.setMuted(false);audio.setMuted(true);audio.setMode('raid');await audio.unlock();for(const cue of ['tap','deploy','laser','impact','destroy','win','resources','upgrade'] as Cue[])audio.cue(cue);assert.equal(h.created(),0);assert.equal(h.data.get(MUTE_KEY),saved);assert.equal(new Soundscape(h.platform).muted,saved==='true');}finally{audio.dispose();h.sound.dispose();}}
+});
+test('disposing a preview during pending resume cannot start its music scheduler',async()=>{
+ const h=harness();let resume!:()=>void;h.ctx.resume=()=>new Promise<void>(resolve=>{resume=()=>{h.ctx.state='running';resolve();};});
+ const pending=h.sound.unlock();h.sound.dispose();resume();await pending;assert.equal(h.ctx.sources.length,0);assert.equal((h.sound as any).timer,undefined);h.sound.dispose();
+});
+
+test('page teardown closes playback and a normal player can resume with effects after returning',async()=>{
+ const h=harness();try{await h.sound.unlock();h.ctx.currentTime=50;h.sound.cue('tap');h.sound.dispose();assert.equal(h.ctx.state,'closed');assert.equal((h.sound as any).timer,undefined);h.ctx.currentTime=0;await h.sound.unlock();const before=h.ctx.sources.length;h.sound.cue('tap');assert.ok(h.ctx.sources.length>before);assert.equal(h.data.get(MUTE_KEY),undefined);}finally{h.sound.dispose();}
 });
