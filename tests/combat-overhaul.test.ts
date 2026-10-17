@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {simulate,approaches} from '../scripts/simulate-scrap';
+import {simulate,approaches} from '../raid/scrap-simulation';
 import {createStarterRaid} from '../raid/starter';
 import {createRaid,deploy,tick,STEP,destruction,unitStats} from '../raid/engine';
 import {initialFoundation,startBotRaid,deployScrap,advanceFoundation} from '../shared/foundation';
