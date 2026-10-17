@@ -1,0 +1,20 @@
+/* This is an application surface, not a document-wide gesture/selection lock. */
+.foundation-app,
+.foundation-app :where(*){
+ -webkit-user-select:none;
+ user-select:none;
+ -webkit-touch-callout:none;
+}
+/* Suppress accidental double-tap zoom, retaining native scrolling and pinch zoom.
+   The world and raid canvas keep their existing touch-action:none for game gestures. */
+.foundation-app{touch-action:manipulation}
+.foundation-app :where(img,svg){-webkit-user-drag:none}
+/* Explicit exceptions include read-only recovery codes and future editable widgets.
+   Native selection handles, callouts, copy/paste and focus remain available here. */
+.foundation-app :where(input,textarea,select,[contenteditable]:not([contenteditable="false"]),[data-native-text]),
+.foundation-app :where([contenteditable]:not([contenteditable="false"]),[data-native-text]) *{
+ -webkit-user-select:text;
+ user-select:text;
+ -webkit-touch-callout:default;
+ touch-action:auto;
+}
