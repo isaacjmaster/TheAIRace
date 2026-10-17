@@ -74,3 +74,18 @@ export function hangarModel(k:WorldKit,bots:number){
  }
  k.box(g,[2.8,.08,.12],[0,.4,1.44],c.cyan,.02,true);return g;
 }
+
+/** Free permanent worker dock; fits entirely inside the already reserved work area. */
+export function builderStationModel(k:WorldKit){
+ const g=new THREE.Group();g.name='Builder Station';
+ k.box(g,[2.7,.18,1.8],[0,.12,0],c.dark,.13);k.box(g,[2.55,.1,1.7],[0,.26,0],c.cream,.1);
+ k.box(g,[1.35,.03,1.1],[0,.33,.13],c.slate,.08);k.box(g,[1,.025,.08],[0,.36,.61],c.cyan,.02,true);
+ k.box(g,[2.2,1.55,.2],[0,1.1,-.73],c.dark,.1);
+ for(const side of [-1,1]){k.box(g,[.22,1.5,1.6],[side*1.14,1.1,0],c.slate,.06);k.box(g,[.24,.65,.3],[side*1.14,.66,.61],c.cream,.05);}
+ const roof=k.box(g,[2.65,.24,1.3],[0,1.97,-.28],c.cream,.14);roof.rotation.x=-.12;
+ k.box(g,[.6,.06,.3],[0,2.14,-.28],c.gold,.04);
+ k.box(g,[1.15,.06,.04],[0,1.7,-.57],c.gold,.02,true);
+ k.box(g,[.45,.64,.4],[-.83,.63,-.35],c.dark,.04);k.box(g,[.22,.12,.03],[-.83,.82,-.12],c.cyan,.02,true);
+ for(const x of [.62,.82]){k.box(g,[.07,.4,.07],[x,1.15,-.59],c.slate,.02);k.box(g,[.16,.08,.08],[x,1.35,-.59],c.gold,.02);}
+ return g;
+}
