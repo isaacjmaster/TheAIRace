@@ -5,9 +5,9 @@ export type Point = { x: number; y: number };
 export type Building = Point & { id: number; kind: 'core' | 'vault' | 'turret' | 'wall' | 'missile' | 'shield' | 'repair'; disabledUntil?: number; hp: number; maxHp: number; cooldown: number; target?: number };
 export type Unit = Point & { id: number; kind: Kind; hp: number; maxHp: number; cooldown: number; target?: number; objective?: number; waypoint?: Point };
 export type Effect = { id: number; from: Point; to: Point; ttl: number; color: string; damage: number; source: number; target: number; destroyed: boolean };
-export type Raid = { starter?:boolean; layout: number; version?: number; time: number; buildings: Building[]; units: Unit[]; stock: Record<Kind, number>; effects: Effect[]; ended: boolean; reason: string; damage: Record<Kind, number>; lost: number; nextId: number; power: number; healthPower: number };
+export type Raid = { starter?:boolean; combatVersion?:number; defenseDamage?:Record<number,number>; layout: number; version?: number; time: number; buildings: Building[]; units: Unit[]; stock: Record<Kind, number>; effects: Effect[]; ended: boolean; reason: string; damage: Record<Kind, number>; lost: number; nextId: number; power: number; healthPower: number };
 export const STATS = {
-  scrap: {name:'Scrap Bot',hp:110,speed:1.25,damage:18,range:.85,interval:.8,color:'#ffc05e',role:'Melee � 1 housing'},
+  scrap: {name:'Scrap Bot',hp:62,speed:1.15,damage:9,range:.85,interval:1,color:'#ffc05e',role:'Melee - 1 housing'},
   scout: { name: 'Scout', hp: 85, speed: 1.55, damage: 16, range: .85, interval: .7, color: '#52e6d2', role: 'Fast · targets compute' },
   tank: { name: 'Tank', hp: 390, speed: .68, damage: 24, range: .95, interval: 1.15, color: '#8da9ff', role: 'Armored · absorbs fire' },
   breaker: { name: 'Breaker', hp: 135, speed: 1.05, damage: 38, range: 1.05, interval: .9, color: '#ffb868', role: 'Targets defenses · breaches walls' },
@@ -15,6 +15,8 @@ export const STATS = {
   medic: { name:'Medic',hp:125,speed:1.15,damage:8,range:2.4,interval:.9,color:'#90efab',role:'Repairs nearby wounded allies' },
   disruptor: { name:'Disruptor',hp:145,speed:.95,damage:17,range:2.6,interval:1.4,color:'#bd9cff',role:'Disables defenses for 2 seconds' },
 } as const;
+const LEGACY_SCRAP={...STATS.scrap,hp:110,speed:1.25,damage:18,interval:.8};
+export const unitStats=(s:Raid,kind:Kind)=>kind==='scrap'&&s.starter&&s.combatVersion!==2?LEGACY_SCRAP:STATS[kind];
 export const KINDS = Object.keys(STATS) as Kind[];
 export const STEP = .05;
 export const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -42,9 +44,9 @@ export function validDeployment(p: Point) {
   return Number.isFinite(p.x) && Number.isFinite(p.y) && p.x >= b.minX && p.y >= b.minY && p.x <= b.maxX && p.y <= b.maxY && (p.x < b.innerLeft || p.y < b.innerTop || p.x > b.innerRight || p.y > b.innerBottom);
 }
 export function deploy(s: Raid, kind: Kind, p: Point) {
-  if (s.ended || !s.stock[kind] || !validDeployment(p)) return false;
+  if (s.ended || !s.stock[kind] || !validDeployment(p)||(s.combatVersion===2&&!validDeployment({x:Math.round(p.x),y:Math.round(p.y)}))) return false;
   // Snap to a cell center so the first path step cannot clip a corner.
-  s.stock[kind]--; s.units.push({ x: Math.round(p.x), y: Math.round(p.y), id: s.nextId++, kind, hp: STATS[kind].hp * s.healthPower, maxHp: STATS[kind].hp * s.healthPower, cooldown: 0 }); return true;
+  s.stock[kind]--; s.units.push({ x: Math.round(p.x), y: Math.round(p.y), id: s.nextId++, kind, hp: unitStats(s,kind).hp * s.healthPower, maxHp: unitStats(s,kind).hp * s.healthPower, cooldown: 0 }); return true;
 }
 const cell = (p: Point) => Math.round(p.y) * MAP.width + Math.round(p.x);
 const point = (n: number): Point => ({ x: n % MAP.width, y: Math.floor(n / MAP.width) });
@@ -63,7 +65,7 @@ function route(s: Raid, u: Unit, target: Building): Route {
   while (heap.length) {
     const { n: best, cost: current } = pop(); if (current !== costs[best]) continue;
     if (best === goal) { const path: Point[] = []; for (let n = goal; n !== start; n = previous[n]) path.unshift(point(n)); return { path, cost: costs[goal] }; }
-    const p = point(best), stats = STATS[u.kind];
+    const p = point(best), stats = unitStats(s,u.kind);
     for (const [dx, dy] of [[0, -1], [-1, 0], [1, 0], [0, 1]]) {
       const x = p.x + dx, y = p.y + dy; if (x < 0 || y < 0 || x >= MAP.width || y >= MAP.height) continue;
       const n = y * MAP.width + x, obstacle = occupied.get(n);
@@ -86,7 +88,8 @@ export function rewards(s: Raid) { const scale=LEVELS[s.layout].rewardScale??1; 
 export function finish(s: Raid, reason: string) { s.ended = true; s.reason = reason; }
 function hit(s: Raid, from: Point, target: Building | Unit, damage: number, source: number, color: string) {
   if (target.id < 100 && (target as Building).kind!=='wall' && (target as Building).kind!=='shield' && s.buildings.some(b=>b.kind==='shield'&&b.hp>0&&(b.disabledUntil??0)<=s.time&&distance(b,target)<=4)) damage*=.55;
-  const dealt = Math.min(target.hp, damage); target.hp = Math.max(0, target.hp - damage);
+  const dealt = Math.min(target.hp, damage);
+  if(s.combatVersion===2&&source<100&&target.id>=100){s.defenseDamage??={};s.defenseDamage[source]=(s.defenseDamage[source]||0)+dealt;} target.hp = Math.max(0, target.hp - damage);
   s.effects.push({ id: s.nextId++, from: { x: from.x, y: from.y }, to: { x: target.x, y: target.y }, ttl: .3, color, damage: dealt, source, target: target.id, destroyed: !target.hp });
   return dealt;
 }
@@ -95,7 +98,7 @@ export function tick(s: Raid) {
   if (objectives(s).every(b => b.hp <= 0)) { finish(s, 'Network cleared'); return; }
   s.time = Math.min(90, s.time + STEP); s.effects = s.effects.filter(e => (e.ttl -= STEP) > 0);
   for (const u of s.units.filter(u => u.hp > 0)) {
-    const stats = STATS[u.kind]; u.cooldown -= STEP;
+    const stats = unitStats(s,u.kind); u.cooldown -= STEP;
     if (u.kind==='medic' && u.cooldown<=0) {
       const ally=s.units.filter(a=>a.id!==u.id&&a.hp>0&&a.hp<a.maxHp&&distance(a,u)<=3.5).sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp||a.id-b.id)[0];
       if(ally){ const amount=Math.min(32*s.power,ally.maxHp-ally.hp);ally.hp+=amount;u.cooldown=stats.interval;s.effects.push({id:s.nextId++,from:{x:u.x,y:u.y},to:{x:ally.x,y:ally.y},ttl:.3,color:stats.color,damage:-amount,source:u.id,target:ally.id,destroyed:false});continue; }
@@ -122,9 +125,9 @@ export function tick(s: Raid) {
     if((b.disabledUntil??0)>s.time) {b.target=undefined;continue;}
     b.cooldown -= STEP;
     if(b.kind==='repair') { const ally=s.buildings.filter(a=>a.id!==b.id&&a.kind!=='wall'&&a.hp>0&&a.hp<a.maxHp&&distance(a,b)<=5).sort((a,c)=>a.hp/a.maxHp-c.hp/c.maxHp||a.id-c.id)[0]; if(ally&&b.cooldown<=0){const amount=Math.min(28,ally.maxHp-ally.hp);ally.hp+=amount;b.cooldown=1;s.effects.push({id:s.nextId++,from:{x:b.x,y:b.y},to:{x:ally.x,y:ally.y},ttl:.3,color:'#90efab',damage:-amount,source:b.id,target:ally.id,destroyed:false});}continue; }
-    const target = s.units.filter(u => u.hp > 0 && distance(u, b) <= (b.kind==='missile'?8:5)).sort((a, c) => distance(a, b) - distance(c, b) || a.id - c.id)[0];
+    const target = s.units.filter(u => u.hp > 0 && distance(u, b) <= (s.starter&&s.combatVersion===2?(s.layout===0?6:6.5):b.kind==='missile'?8:5)).sort((a, c) => distance(a, b) - distance(c, b) || a.id - c.id)[0];
     b.target = target?.id;
-    if (target && b.cooldown <= 0) { const targets=b.kind==='missile'?s.units.filter(u=>u.hp>0&&distance(u,target)<=1.4):[target]; for(const victim of targets){hit(s,b,victim,s.starter?8:b.kind==='missile'?42:26,b.id,b.kind==='missile'?'#ffb868':'#ff6487');if(!victim.hp)s.lost++;} b.cooldown=s.starter?1.2:b.kind==='missile'?2.1:.65; }
+    if (target && b.cooldown <= 0) { const targets=b.kind==='missile'?s.units.filter(u=>u.hp>0&&distance(u,target)<=1.4):[target]; for(const victim of targets){hit(s,b,victim,s.starter?(s.combatVersion===2?(s.layout===0?16:20):8):b.kind==='missile'?42:26,b.id,b.kind==='missile'?'#ffb868':'#ff6487');if(!victim.hp)s.lost++;} b.cooldown=s.starter?(s.combatVersion===2?.85:1.2):b.kind==='missile'?2.1:.65; }
   }
   if (s.time >= 90) finish(s, 'Time expired');
   else if (Object.values(s.stock).every(n => !n) && s.units.every(u => !u.hp)) finish(s, 'Squad eliminated');

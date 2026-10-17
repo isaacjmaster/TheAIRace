@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { STATS, validDeployment, type Building, type Effect, type Kind, type Point, type Raid, type Unit } from './engine';
 
-type Visual = { group: THREE.Group; body: THREE.Group; hp: THREE.Sprite; hpTexture: THREE.CanvasTexture; hpCanvas: HTMLCanvasElement; lastHp: number; lastHit: number; born: number; turret?: THREE.Group; rotor?: THREE.Object3D; dead: boolean; destroyedAt?: number };
+type Visual = { group: THREE.Group; body: THREE.Group; hp: THREE.Sprite; hpTexture: THREE.CanvasTexture; hpCanvas: HTMLCanvasElement; lastHp: number; lastHit: number; born: number; lastAttack?:number; lastDamage?:number; turret?: THREE.Group; rotor?: THREE.Object3D; dead: boolean; destroyedAt?: number };
 type Burst = { group: THREE.Group; age: number; life: number; particles: { mesh: THREE.Mesh; velocity: THREE.Vector3 }[] };
 const world = (p: Point, height = 0) => new THREE.Vector3(p.x - MAP.center.x, height, p.y - MAP.center.y);
 
@@ -334,8 +334,8 @@ export class RaidScene {
     this.burst(end, e.color);
     const attacker=this.lastState?.buildings.find(b=>b.id===e.source);
     if(attacker?.kind==='missile'||e.destroyed||e.damage<0)this.pulse(end,e.color,attacker?.kind==='missile'?1.1:e.damage<0?.6:.85);
-    const source = this.visuals.get(e.source); if (source) source.lastHit = this.clock;
-    const target = this.visuals.get(e.target); if (target) target.lastHit = this.clock;
+    const source = this.visuals.get(e.source); if (source) {source.lastHit = this.clock;source.lastAttack=this.clock;}
+    const target = this.visuals.get(e.target); if (target) {target.lastHit = this.clock;target.lastDamage=this.clock;}
   }
   update(s: Raid, selected: Kind, dt: number) {
     if (this.paused) return;
@@ -362,13 +362,13 @@ export class RaidScene {
         if (direction.lengthSq() > .001) v.body.rotation.y = Math.atan2(direction.x, direction.z);
         const moving = old.distanceTo(desired) > .025;
         const bounce = this.reduced ? 0 : moving ? Math.sin(this.clock * (u.kind === 'scout' ? 18 : 11) + u.id) * .035 : 0;
-        const recoil = this.reduced ? 0 : Math.max(0, 1 - (this.clock - v.lastHit) / .18) * .08;
+        const recoil = this.reduced ? 0 : Math.max(0, 1 - (this.clock - (v.lastDamage??-10)) / .18) * .12;
         v.body.position.y = bounce; v.body.rotation.x = recoil;
         // Small cosmetic lane offsets keep agents sharing a grid path readable.
         // Their group/health/shot positions still follow the authoritative simulation.
         const crowded = s.units.some(other => other.id !== entity.id && other.hp > 0 && Math.hypot(other.x - entity.x, other.y - entity.y) < .4);
         v.body.position.x = crowded ? Math.cos(u.id * 2.4) * .16 : 0; v.body.position.z = crowded ? Math.sin(u.id * 2.4) * .16 : 0;
-        if(u.kind==='scrap'&&!this.reduced){for(const [name,sign] of [['leg-left',1],['leg-right',-1]] as const){const leg=v.body.getObjectByName(name);if(leg)leg.rotation.x=moving?Math.sin(this.clock*12+u.id)*.4*sign:0;}const arm=v.body.getObjectByName('arm-right');if(arm)arm.rotation.x=u.target!==undefined&&!moving?Math.sin(this.clock*12)*.65:0;}
+        if(u.kind==='scrap'&&!this.reduced){for(const [name,sign] of [['leg-left',1],['leg-right',-1]] as const){const leg=v.body.getObjectByName(name);if(leg)leg.rotation.x=moving?Math.sin(this.clock*12+u.id)*.4*sign:0;}const arm=v.body.getObjectByName('arm-right');if(arm)arm.rotation.x=!moving&&!this.reduced?Math.max(0,1-(this.clock-(v.lastAttack??-10))/.28)*-1.15:0;}
         const spawn = this.reduced ? 1 : Math.min(1, (this.clock - v.born) * 5); v.body.scale.setScalar(Math.max(.05, spawn) * (u.kind === 'tank' ? 1.12 : 1.22));
         if (v.rotor) v.rotor.rotation.y += dt * 16;
       } else {
