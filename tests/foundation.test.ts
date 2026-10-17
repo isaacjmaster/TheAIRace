@@ -1,3 +1,4 @@
+import {identityHeaders,saveIdForCookie} from './helpers/identity';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
@@ -13,8 +14,8 @@ test('foundation saves are isolated; reset needs explicit confirmation, checks r
  try{const first=await fetch(url+'/api/foundation',{headers:{cookie:'airace_integrated_session=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'}});const cookie=first.headers.get('set-cookie')!.split(';')[0];assert.match(cookie,/^airace_foundation_session=/);assert.deepEqual((await first.json()).state,initialFoundation());
  const edited={...initialFoundation(),compute:350,revision:4};db.prepare('UPDATE foundation_saves SET state=?').run(JSON.stringify(edited));
  const get=async()=> (await(await fetch(url+'/api/foundation',{headers:{cookie}})).json()).state;
- const reset=(body:unknown)=>fetch(url+'/api/foundation/reset',{method:'POST',headers:{cookie,'content-type':'application/json'},body:JSON.stringify(body)});
- assert.equal((await fetch(url+'/api/raid/start',{method:'POST',headers:{cookie,'content-type':'application/json'},body:JSON.stringify({layout:0})})).status,410);assert.deepEqual(await get(),edited);assert.equal((await reset({revision:4})).status,400);assert.equal((await reset({confirm:'RESET FOUNDATION',revision:3})).status,409);assert.deepEqual(await get(),edited);
+ const reset=(body:unknown)=>fetch(url+'/api/foundation/reset',{method:'POST',headers:identityHeaders(db,cookie),body:JSON.stringify(body)});
+ assert.equal((await fetch(url+'/api/raid/start',{method:'POST',headers:identityHeaders(db,cookie),body:JSON.stringify({layout:0})})).status,410);assert.deepEqual(await get(),edited);assert.equal((await reset({revision:4})).status,400);assert.equal((await reset({confirm:'RESET FOUNDATION',revision:3})).status,409);assert.deepEqual(await get(),edited);
  const success=await reset({confirm:'RESET FOUNDATION',revision:4});assert.equal(success.status,200);assert.deepEqual((await success.json()).state,{...initialFoundation(5),generation:1});assert.deepEqual(await get(),{...initialFoundation(5),generation:1});assert.equal((await reset({confirm:'RESET FOUNDATION',revision:4})).status,409);
  assert.equal(db.prepare('SELECT state FROM sessions').get()!.state,'preserve all legacy progress');assert.equal(db.prepare('SELECT value FROM unrelated').get()!.value,'untouched');
  const other=await fetch(url+'/api/foundation');assert.deepEqual((await other.json()).state,initialFoundation());assert.equal(db.prepare('SELECT COUNT(*) n FROM foundation_saves').get()!.n,2);

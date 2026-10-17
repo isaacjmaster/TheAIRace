@@ -1,3 +1,4 @@
+import {identityHeaders,saveIdForCookie} from './helpers/identity';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
@@ -47,8 +48,8 @@ test('foundation Ava API preserves legacy saves, persists progress, ignores stal
  try{
  const oldCookie=`airace_foundation_session=${legacyId}`;
  const old=await(await fetch(base,{headers:{cookie:oldCookie}})).json();assert.equal(old.ava.status,'legacy');assert.deepEqual(old.state,legacy);
- const first=await fetch(base),cookie=first.headers.get('set-cookie')!.split(';')[0],id=cookie.split('=')[1];let snapshot=await first.json();assert.equal(snapshot.ava.step,0);
- const headers={cookie,'content-type':'application/json'};
+ const first=await fetch(base),cookie=first.headers.get('set-cookie')!.split(';')[0],id=saveIdForCookie(db,cookie);let snapshot=await first.json();assert.equal(snapshot.ava.step,0);
+ const headers=identityHeaders(db,cookie);
  const read=async()=>{snapshot=await(await fetch(base,{headers})).json();return snapshot;};
  const command=async(command:string,revision=snapshot.ava.revision)=>{const r=await fetch(base+'/ava',{method:'POST',headers,body:JSON.stringify({command,revision,generation:0})});assert.equal(r.status,200);snapshot.ava=(await r.json()).ava;};
  const initialRevision=snapshot.ava.revision;await command('continue');await command('continue',initialRevision);assert.equal(snapshot.ava.step,1);
@@ -71,7 +72,7 @@ test('foundation Ava API preserves legacy saves, persists progress, ignores stal
  for(let i=0;i<3;i++)await command('continue');assert.equal(snapshot.ava.status,'complete');
  await command('replay');assert.equal(snapshot.ava.step,0);await command('skip');await read();assert.equal(snapshot.ava.status,'skipped');assert.equal(snapshot.state.compute,balance);
  // Replaying a legacy save changes only its separate tutorial row.
- const replay=await fetch(base+'/ava',{method:'POST',headers:{...headers,cookie:oldCookie},body:JSON.stringify({command:'replay',revision:0,generation:0})});assert.equal((await replay.json()).ava.status,'active');
+ const replay=await fetch(base+'/ava',{method:'POST',headers:identityHeaders(db,oldCookie),body:JSON.stringify({command:'replay',revision:0,generation:0})});assert.equal((await replay.json()).ava.status,'active');
  assert.equal(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(legacyId)!.state,JSON.stringify(legacy));
  const invalid=await fetch(base+'/ava',{method:'POST',headers,body:JSON.stringify({command:'continue',revision:0,generation:99})});assert.equal(invalid.status,409);
  }finally{await new Promise<void>(r=>server.close(()=>r()));db.close();}
