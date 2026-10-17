@@ -1,6 +1,6 @@
 /* Ava stands freely over the world; only her speech bubble intercepts input. */
 .ava-dialogue{position:absolute;z-index:38;left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));bottom:calc(max(14px,env(safe-area-inset-bottom)) + 140px);max-width:520px;margin:0 auto;min-height:228px;display:flex;align-items:flex-end;pointer-events:none;box-sizing:border-box;color:#244456;animation:ava-enter .25s ease-out}
-.ava-character{position:absolute;left:-8px;bottom:-4px;width:152px;height:228px;object-fit:contain;object-position:bottom;pointer-events:none;mask-image:linear-gradient(#000 0 90%,transparent);filter:drop-shadow(0 5px 3px #24475a32);animation:ava-pose-enter .22s ease-out}
+.ava-character{position:absolute;left:-8px;bottom:-4px;width:152px;height:228px;object-fit:contain;object-position:bottom;pointer-events:none;filter:drop-shadow(0 5px 3px #24475a32);animation:ava-pose-enter .22s ease-out}
 .ava-copy{position:relative;pointer-events:auto;flex:1;min-width:0;margin-left:146px;padding:12px 13px;border:2px solid #83b9c2;border-radius:18px;background:linear-gradient(145deg,#fffefa,#f0faf7);box-shadow:0 5px 0 #345e7522,0 8px 22px #24475a20}
 .ava-copy::before{content:"";position:absolute;left:-10px;top:52px;width:16px;height:16px;background:#fbfdf7;border-left:2px solid #83b9c2;border-bottom:2px solid #83b9c2;transform:rotate(45deg)}
 .ava-heading{display:flex;align-items:center;justify-content:space-between;gap:5px}.ava-heading strong{font-size:12px;letter-spacing:1.3px;color:#37677a}.ava-heading small{display:block;font-size:6px;letter-spacing:.5px;margin-top:3px;color:#6a858c}
@@ -11,9 +11,17 @@
 .foundation-backdrop:has(.ava-build-target){padding-top:calc(max(8px,env(safe-area-inset-top)) + 236px)}
 .ava-focus-build .foundation-build,.ava-focus-compute .compute-hud,.ava-build-target,.ava-collect-target{outline:3px solid #ffce74!important;outline-offset:4px;box-shadow:0 0 0 7px #ffdf8640!important}
 .ava-world-beacon{position:absolute;pointer-events:none;z-index:8;transform:translate(-50%,-100%);border:2px solid #f5c76d;border-radius:12px;background:#fff9e8ee;color:#31576a;padding:8px 12px;box-shadow:0 0 0 5px #ffdf8638;font-size:12px;font-weight:750;white-space:nowrap}
-@keyframes ava-enter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes ava-enter{from{opacity:0}to{opacity:1}}
 @keyframes ava-pose-enter{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
 @media(min-width:600px){.ava-dialogue{left:max(18px,env(safe-area-inset-left));right:auto;width:520px}.ava-character{width:180px;height:270px}.ava-dialogue{min-height:270px}.ava-copy{margin-left:160px}.ava-guidance{min-height:210px}.ava-guidance .ava-character{width:140px;height:210px}.ava-guidance .ava-copy{margin-left:124px}}
 @media(max-width:350px){.ava-character{width:118px;height:177px}.ava-dialogue{min-height:177px}.ava-copy{margin-left:114px;padding:10px}.ava-dialogue p{font-size:12px}.ava-guidance .ava-character{width:96px;height:144px}.ava-guidance .ava-copy{margin-left:94px;padding:8px 10px}.ava-guidance p{font-size:11px}.ava-heading small{display:none}.ava-skip{font-size:8px}}
 @media(orientation:landscape) and (max-height:500px){.ava-dialogue{left:12px;right:auto;bottom:80px;width:390px;min-height:190px}.ava-character{width:126px;height:189px}.ava-copy{margin-left:110px}.ava-guidance{top:80px;bottom:auto;min-height:150px}.ava-guidance .ava-character{width:100px;height:150px}.ava-guidance .ava-copy{margin-left:86px}.ava-in-catalog{left:12px;top:12px;width:270px}.foundation-backdrop:has(.ava-build-target){padding-top:16px;padding-left:300px}}
 @media(prefers-reduced-motion:reduce){.ava-dialogue,.ava-character{animation:none}}
+
+/* Anchor the cutout to the viewport so her lower body continues past its edge. */
+.ava-stage .ava-character{position:fixed;left:-8px;top:auto;bottom:-16px;width:220px;height:330px;mask-image:none;object-position:bottom}
+/* Keep the existing HQ actions visible and tappable in front of the character. */
+.foundation-app:has(.ava-stage) .foundation-home:not([inert]) .foundation-build,.foundation-app:has(.ava-stage) .foundation-home:not([inert]) .foundation-attack{z-index:39}
+@media(min-width:600px){.ava-stage .ava-character{width:300px;height:450px;left:0;bottom:-20px}.ava-stage:not(.ava-guidance) .ava-copy{margin-left:220px}.ava-stage:not(.ava-guidance){width:580px}}
+@media(max-width:350px){.ava-stage .ava-character{width:184px;height:276px;bottom:-14px}}
+@media(orientation:landscape) and (max-height:500px){.ava-stage .ava-character{width:220px;height:330px;bottom:-16px}}
