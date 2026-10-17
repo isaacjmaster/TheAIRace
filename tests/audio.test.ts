@@ -100,3 +100,13 @@ test('voice envelope clamps short attacks and schedules a zero tail before the s
  assert.deepEqual(events.map(e=>e.value),[0,.13,.0001,0]);assert.equal(events[1].time,4.006);assert.equal(events.at(-1)!.time,4.075);
  assert.ok(events.every((e,i)=>i===0||e.time>events[i-1].time));
 });
+
+
+import {BUILDING_SOUNDS} from '../src/audio/score';
+test('building interactions have five distinct quiet original cues and obey mute/test policies',async()=>{
+ assert.equal(new Set(Object.values(BUILDING_SOUNDS).map(p=>JSON.stringify(p))).size,5);
+ const h=harness();try{await h.sound.unlock();for(const cue of Object.keys(BUILDING_SOUNDS) as (keyof typeof BUILDING_SOUNDS)[]){h.ctx.currentTime++;const before=h.ctx.sources.length;h.sound.cue(cue);assert.equal(h.ctx.sources.length-before,BUILDING_SOUNDS[cue].notes.length);h.sound.cue(cue);assert.equal(h.ctx.sources.length-before,BUILDING_SOUNDS[cue].notes.length);}
+ h.sound.setMuted(true);const count=h.ctx.sources.length;for(const cue of Object.keys(BUILDING_SOUNDS) as Cue[])h.sound.cue(cue);assert.equal(h.ctx.sources.length,count);
+ }finally{h.sound.dispose();}
+ const silent=new Soundscape({...h.platform,silent:true});try{await silent.unlock();const count=h.ctx.sources.length;for(const cue of Object.keys(BUILDING_SOUNDS) as Cue[])silent.cue(cue);assert.equal(h.ctx.sources.length,count);}finally{silent.dispose();}
+});

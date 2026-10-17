@@ -30,7 +30,7 @@ export function fabricatorModel(k:WorldKit){
  k.box(g,[2.02,.07,1.95],[0,.67,.08],c.cyan,.08,true);
  k.box(g,[1.74,.09,1.65],[0,.75,.08],c.slate,.08);
  k.cylinder(g,.58,.12,[0,.86,.08],c.dark);k.cylinder(g,.47,.05,[0,.95,.08],c.gold);
- const bot=scrapBotModel(k);bot.position.set(0,.99,.08);g.add(bot);
+ const bot=scrapBotModel(k);bot.position.set(0,.99,.08);bot.name='assembly-bot';g.add(bot);
  for(const side of [-1,1]){
   k.box(g,[.65,2.35,1.25],[side*1.54,1.6,-.45],c.dark,.12);
   k.box(g,[.68,1.45,.32],[side*1.54,2.1,-1],c.cream,.12);
@@ -70,9 +70,14 @@ export function hangarModel(k:WorldKit,bots:number){
  k.box(g,[2.7,.08,.06],[0,1.8,-1.24],c.gold,.02,true);
  for(let i=0;i<10;i++){const x=-1.46+(i%5)*.73,z=i<5?-.65:.65;
   k.box(g,[.62,.025,.91],[x,.405,z],c.slate,.04);k.box(g,[.46,.03,.06],[x,.43,z+.4],c.cyan,.01,true);
-  if(i<bots){const bot=scrapBotModel(k);bot.scale.setScalar(.7);bot.position.set(x,.44,z);g.add(bot);}
+  if(i<bots){const bot=scrapBotModel(k);bot.scale.setScalar(.7);bot.position.set(x,.44,z);bot.name='docked-bot-'+i;g.add(bot);}
  }
- k.box(g,[2.8,.08,.12],[0,.4,1.44],c.cyan,.02,true);return g;
+ k.box(g,[2.8,.08,.12],[0,.4,1.44],c.cyan,.02,true);
+ // Docking equipment stays inside the original lot: charge rails, latch and status panel.
+ for(const x of [-1.45,0,1.45]){k.box(g,[.1,.85,.12],[x,.95,-1.2],c.slate,.025);k.box(g,[.12,.08,.04],[x,1.4,-1.1],c.cyan,.01,true);}
+ const sign=k.box(g,[.9,.22,.04],[0,2.28,.26],c.dark,.03);sign.name='hangar-status';
+ for(let i=0;i<3;i++){const lamp=k.box(g,[.1,.06,.025],[-.22+i*.22,2.29,.3],c.cyan,.01,true);lamp.name='hangar-lamp-'+i;}
+ k.box(g,[.38,.65,.25],[1.5,.75,1.12],c.dark,.04);k.box(g,[.26,.16,.03],[1.5,.94,1.26],c.gold,.02,true);return g;
 }
 
 /** Free permanent worker dock; fits entirely inside the already reserved work area. */
@@ -88,4 +93,12 @@ export function builderStationModel(k:WorldKit){
  k.box(g,[.45,.64,.4],[-.83,.63,-.35],c.dark,.04);k.box(g,[.22,.12,.03],[-.83,.82,-.12],c.cyan,.02,true);
  for(const x of [.62,.82]){k.box(g,[.07,.4,.07],[x,1.15,-.59],c.slate,.02);k.box(g,[.16,.08,.08],[x,1.35,-.59],c.gold,.02);}
  return g;
+}
+
+/** Subtle bay-local motion: never crosses a neighbour's docking space. */
+export function animateDockedBot(bot:THREE.Object3D,slot:number,time:number,reduced=false){
+ const x=-1.46+(slot%5)*.73,z=slot<5?-.65:.65,phase=time*.8+slot*1.7;
+ bot.position.set(x+(reduced?0:Math.sin(phase)*.035),.44+(reduced?0:Math.sin(phase*1.3)*.014),z);
+ bot.rotation.y=reduced?0:Math.sin(phase*.65)*.16;
+ const arm=bot.getObjectByName('arm-right');if(arm)arm.rotation.x=reduced?0:Math.max(0,Math.sin(phase*.38)-.85)*.8;
 }

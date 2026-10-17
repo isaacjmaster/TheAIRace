@@ -3,7 +3,14 @@
  * All notes and synthesis are original; no recordings, samples or borrowed melodies.
  */
 export type MusicMode='hq'|'raid';
-export type Cue='tap'|'deploy'|'laser'|'impact'|'destroy'|'win'|'resources'|'upgrade';
+export const BUILDING_SOUNDS={
+ 'building-hq':{notes:[60,67],type:'sine',duration:.22,gap:.07},
+ 'building-rig':{notes:[84,91,88],type:'sine',duration:.09,gap:.045},
+ 'building-fabricator':{notes:[45,52,57],type:'triangle',duration:.11,gap:.06},
+ 'building-hangar':{notes:[62,69,64],type:'triangle',duration:.14,gap:.055},
+ 'building-station':{notes:[55,79],type:'triangle',duration:.1,gap:.075},
+} as const;
+export type Cue=keyof typeof BUILDING_SOUNDS|'tap'|'deploy'|'laser'|'impact'|'destroy'|'win'|'resources'|'upgrade';
 export const MUTE_KEY='airace-audio-muted-v1';
 export const frequency=(midi:number)=>440*2**((midi-69)/12);
 export const MUSIC_BPM={hq:112,raid:124} as const;
