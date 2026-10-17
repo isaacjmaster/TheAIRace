@@ -8,7 +8,7 @@ test('orientation lock is optional and permission failures never prevent play',a
  assert.equal(requested,'landscape');
 });
 
-import {fallbackViewportHeight,SCREEN_BACKGROUNDS} from '../src/ui/viewport';
+import {fallbackViewportHeight,SCREEN_BACKGROUNDS,setPresentationBackground} from '../src/ui/viewport';
 import {readFileSync} from 'node:fs';
 test('modern Safari and standalone leave viewport sizing to CSS; legacy height tracks resize',()=>{
  assert.equal(fallbackViewportHeight(true,664),null);
@@ -18,8 +18,8 @@ test('modern Safari and standalone leave viewport sizing to CSS; legacy height t
 
 test('initial HTML paints the same startup background as the manifest before JavaScript',()=>{
  const html=readFileSync('index.html','utf8'),manifest=JSON.parse(readFileSync('public/manifest.webmanifest','utf8'));
- assert.ok(html.includes(`--app-background:${SCREEN_BACKGROUNDS.splash}`));assert.equal(manifest.background_color,SCREEN_BACKGROUNDS.splash);assert.equal(manifest.theme_color,SCREEN_BACKGROUNDS.menu);
- assert.match(html,/viewport-fit=cover/);assert.match(html,/color-scheme:light/);assert.equal(SCREEN_BACKGROUNDS.splash,'#07090c');assert.equal(SCREEN_BACKGROUNDS.menu,'#b5eafa');assert.match(html,/apple-mobile-web-app-status-bar-style" content="default"/);assert.match(html,/data-presentation="splash"/);assert.equal(manifest.display,'standalone');assert.equal(manifest.orientation,'portrait');
+ assert.ok(html.includes(`--app-background:${SCREEN_BACKGROUNDS.splash}`));assert.equal(manifest.background_color,SCREEN_BACKGROUNDS.splash);assert.equal(manifest.theme_color,SCREEN_BACKGROUNDS.game);
+ assert.match(html,/viewport-fit=cover/);assert.match(html,/color-scheme:light/);assert.equal(SCREEN_BACKGROUNDS.splash,'#07090c');assert.equal(SCREEN_BACKGROUNDS.menu,'#58bbfd');assert.equal(SCREEN_BACKGROUNDS.game,'#b5eafa');assert.match(html,/apple-mobile-web-app-status-bar-style" content="default"/);assert.match(html,/data-presentation="splash"/);assert.equal(manifest.display,'standalone');assert.equal(manifest.orientation,'portrait');
 });
 import {portraitCampusSpan} from '../src/art/portraitCamera';
 test('portrait campus has a readable horizontal frame and keeps the world explorable',()=>{
@@ -32,4 +32,13 @@ test('active portrait game keeps rotation unrestricted and uses only the new Scr
  const app=readFileSync('src/ui/FoundationApp.tsx','utf8');
  assert.doesNotMatch(app,/rotation-screen|rotation-blocked|requestLandscape|PORTRAIT_GAME|IntegratedRaid/);
  assert.match(app,/ScrapRaid/);assert.match(app,/FoundationWorld/);
+});
+
+test('presentation paint distinguishes studio, illustrated title and HQ without changing status-bar metadata',()=>{
+ const previous=Object.getOwnPropertyDescriptor(globalThis,'document');
+ const properties=new Map<string,string>(),meta:string[]=[],queries:string[]=[],dataset:Record<string,string>={};
+ const doc={documentElement:{dataset,style:{setProperty:(key:string,value:string)=>properties.set(key,value)}},querySelector:(selector:string)=>{queries.push(selector);return {setAttribute:(_key:string,value:string)=>meta.push(value)};}};
+ Object.defineProperty(globalThis,'document',{configurable:true,value:doc});
+ try{for(const phase of ['splash','menu','game','menu','splash'] as const){setPresentationBackground(phase);assert.equal(dataset.presentation,phase);assert.equal(properties.get('--app-background'),SCREEN_BACKGROUNDS[phase]);assert.equal(properties.get('--title-sky-color'),'#58bbfd');assert.equal(meta.at(-1),SCREEN_BACKGROUNDS[phase]);}assert.ok(queries.every(q=>q==='meta[name="theme-color"]'));}
+ finally{if(previous)Object.defineProperty(globalThis,'document',previous);else Reflect.deleteProperty(globalThis,'document');}
 });

@@ -1,4 +1,4 @@
-.foundation-app .race-menu.ava-title-screen{display:block;padding:0;background:#b5eafa;color:#153c58}
+.foundation-app .race-menu.ava-title-screen{display:block;padding:0;background:var(--title-sky-color,#58bbfd);color:#153c58}
 .title-artwork,.title-artwork picture,.title-artwork img,.title-road-lights{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .title-artwork{overflow:hidden}.title-artwork img{object-fit:cover;object-position:center center}
 .title-road-lights{opacity:.6}.road-glow{fill:none;stroke-width:5;stroke-linecap:round;stroke-dasharray:100 1350;stroke-dashoffset:1450;animation:road-current 9s linear infinite}
@@ -19,3 +19,10 @@
 @media(prefers-reduced-motion:reduce){.road-glow,.title-sun-glow{animation:none}.road-glow{stroke-dasharray:none;opacity:.15}}
 @keyframes road-current{to{stroke-dashoffset:-1450}}
 @keyframes title-atmosphere{50%{opacity:.3}}
+
+/* Default iOS status-bar layout may reserve native pixels above the artwork.
+   Blend the actual artwork edge into the sampled page sky, without changing
+   viewport dimensions, adding a status-bar overlay, or touching the bottom edge. */
+@media(display-mode:standalone) and (orientation:portrait){
+ .title-artwork::after{content:"";position:absolute;left:0;right:0;top:0;height:max(24px,env(safe-area-inset-top));background:linear-gradient(to bottom,var(--title-sky-color,#58bbfd),transparent);pointer-events:none}
+}
