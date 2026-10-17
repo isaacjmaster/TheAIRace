@@ -28,7 +28,7 @@ export function commandAva(progress:AvaProgress,command:AvaCommand,state:Foundat
 export function avaLine(p:AvaProgress,s:FoundationState,now:number,panel:string|null,placing:string|null):string{
  const lines=[
  "Hey, Founder! I'm Ava, your AI cofounder.",
- "Welcome to 2028! We're building an AI company from scratch. Right now, all we have is this little headquarters, and some big dreams.",
+ "Welcome to 2028. We're starting an AI company, and I have a feeling we're going to build something incredible.",
  "Ready to build something extraordinary?",
  "See that little house? That's our Founder HQ. It's where everything begins.",
  "As our company grows, we'll upgrade it and unlock better technology.",
