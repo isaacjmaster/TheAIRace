@@ -10,7 +10,6 @@ export function Leaderboard({onClose}:{onClose:()=>void}){
  },[]);
  return <div className="foundation-backdrop leaderboard-backdrop"><section className="leaderboard glass" role="dialog" aria-modal="true" aria-labelledby="leaderboard-title" onKeyDown={e=>{if(e.key==='Escape')onClose();if(e.key==='Tab'){e.preventDefault();close.current?.focus();}}}>
  <header><h2 id="leaderboard-title">Global Leaderboard</h2><button ref={close} onClick={onClose} aria-label="Close leaderboard">×</button></header>
- <div className="leaderboard-brand"><img src="/icons/icon-192.png" alt="" width="64" height="64"/><strong>THE AI RACE</strong></div>
  <div className="leaderboard-columns"><span>Company</span><span>Influence</span></div>
  {error&&<p role="status">{error}</p>}
  {!data&&!error&&<p role="status">Loading rankings…</p>}
