@@ -1,8 +1,10 @@
 import { musicStep, MUTE_KEY, frequency, readMuted, writeMuted, type Cue, type MusicMode } from './score';
-export type SoundPlatform={storage?:Pick<Storage,'getItem'|'setItem'>;createContext:()=>AudioContext};
+export type SoundPlatform={storage?:Pick<Storage,'getItem'|'setItem'>;createContext:()=>AudioContext;silent?:boolean};
+/** Explicit opt-in for agent previews; standard automation is silent automatically. */
+export function testAudioDisabled(search:string,webdriver=false){return webdriver||new URLSearchParams(search).get('testAudio')==='off';}
 function browserPlatform():SoundPlatform {
  let storage:Storage|undefined;try{storage=globalThis.localStorage;}catch{}
- return {storage,createContext:()=>{const C=window.AudioContext||(window as unknown as {webkitAudioContext:typeof AudioContext}).webkitAudioContext;return new C();}};
+ return {storage,silent:testAudioDisabled(typeof location==='undefined'?'':location.search,typeof navigator!=='undefined'&&navigator.webdriver===true),createContext:()=>{const C=window.AudioContext||(window as unknown as {webkitAudioContext:typeof AudioContext}).webkitAudioContext;return new C();}};
 }
 /** Context creation/resume is exclusively initiated by a user gesture. */
 export class Soundscape {
@@ -10,20 +12,20 @@ export class Soundscape {
  private timer?:ReturnType<typeof setInterval>;private next=0;private step=0;private mode:MusicMode='hq';
  private listeners=new Set<()=>void>();private last=new Map<Cue,number>();private noise?:AudioBuffer;
  muted:boolean;private platform:SoundPlatform;
- constructor(platform=browserPlatform()){this.platform=platform;this.muted=readMuted(platform.storage);}
+ constructor(platform=browserPlatform()){this.platform=platform;this.muted=!!platform.silent||readMuted(platform.storage);}
  subscribe=(listener:()=>void)=>{this.listeners.add(listener);return()=>{this.listeners.delete(listener);};};
  getSnapshot=()=>this.muted;
  private ramp(node:GainNode,value:number,seconds=.7){const t=this.ctx!.currentTime;node.gain.cancelScheduledValues(t);node.gain.setValueAtTime(node.gain.value,t);node.gain.linearRampToValueAtTime(value,t+seconds);}
  async unlock(){
-  if(this.muted)return;
+  if(this.platform.silent||this.muted)return;
   try{
    if(!this.ctx){this.ctx=this.platform.createContext();this.master=this.ctx.createGain();this.master.gain.value=.22;this.master.connect(this.ctx.destination);this.hq=this.ctx.createGain();this.raid=this.ctx.createGain();this.hq.connect(this.master);this.raid.connect(this.master);this.hq.gain.value=this.mode==='hq'?.55:0;this.raid.gain.value=this.mode==='raid'?.5:0;}
-   await this.ctx.resume();
-   if(this.muted)return;
+   const ctx=this.ctx;await ctx.resume();
+   if(this.ctx!==ctx||this.platform.silent||this.muted)return;
    if(!this.timer){this.next=this.ctx.currentTime+.04;this.timer=setInterval(()=>this.schedule(),100);this.schedule();}
   }catch{/* Audio unsupported/interrupted: the game remains playable. */}
  }
- setMuted(value:boolean){this.muted=value;writeMuted(this.platform.storage,value);if(this.master)this.ramp(this.master,value?0:.22,.1);if(value){if(this.timer)clearInterval(this.timer);this.timer=undefined;}for(const listener of this.listeners)listener();}
+ setMuted(value:boolean){if(this.platform.silent)return;this.muted=value;writeMuted(this.platform.storage,value);if(this.master)this.ramp(this.master,value?0:.22,.1);if(value){if(this.timer)clearInterval(this.timer);this.timer=undefined;}for(const listener of this.listeners)listener();}
  setMode(mode:MusicMode){this.mode=mode;if(this.hq&&this.raid){this.ramp(this.hq,mode==='hq'?.55:0,1.1);this.ramp(this.raid,mode==='raid'?.5:0,1.1);}}
  visibility(hidden:boolean){if(hidden){if(this.timer)clearInterval(this.timer);this.timer=undefined;void this.ctx?.suspend().catch(()=>{});}/* Safari resumes on the next explicit interaction. */}
  private note(midi:number,time:number,duration:number,volume:number,bus:AudioNode,type:OscillatorType='sine',attack=.015,slide?:number){
@@ -40,7 +42,7 @@ export class Soundscape {
   source.connect(filter);filter.connect(gain);gain.connect(bus);source.start(time);source.stop(time+duration+.01);source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};
  }
  private schedule(){
-  if(!this.ctx||this.ctx.state!=='running'||this.muted)return;
+  if(!this.ctx||this.ctx.state!=='running'||this.platform.silent||this.muted)return;
   if(this.next<this.ctx.currentTime)this.next=this.ctx.currentTime+.02;
   while(this.next<this.ctx.currentTime+.3){
    const score=musicStep(this.step++,this.mode),t=this.next;
@@ -63,7 +65,7 @@ export class Soundscape {
   }
  }
  cue=(cue:Cue)=>{
-  if(!this.ctx||this.ctx.state!=='running'||this.muted)return;const t=this.ctx.currentTime;
+  if(!this.ctx||this.ctx.state!=='running'||this.platform.silent||this.muted)return;const t=this.ctx.currentTime;
   const gap=cue==='laser'||cue==='impact'?.09:cue==='destroy'?.12:.04;if(t-(this.last.get(cue)??-10)<gap)return;this.last.set(cue,t);
   const out=this.master!;
   if(cue==='tap')this.note(81,t,.075,.13,out,'sine',.002,76);
@@ -76,7 +78,10 @@ export class Soundscape {
   const notes=cue==='win'?[62,66,69,74,78]:cue==='resources'?[81,86,90]:cue==='upgrade'?[57,62,66,74]:[];
   notes.forEach((n,i)=>this.note(n,t+i*.1,.65,.12,out,'sine',.008));
  };
- dispose(){if(this.timer)clearInterval(this.timer);this.timer=undefined;void this.ctx?.close();this.ctx=undefined;}
+ dispose(){if(this.timer)clearInterval(this.timer);this.timer=undefined;void this.ctx?.close().catch(()=>{});this.ctx=undefined;this.master=undefined;this.hq=undefined;this.raid=undefined;this.noise=undefined;this.last.clear();}
 }
 export const sound=new Soundscape();
+// Closing/navigating a preview stops all scheduled sound, including a pending unlock.
+if(typeof window!=='undefined')window.addEventListener('pagehide',()=>sound.dispose());
+if(import.meta.hot)import.meta.hot.dispose(()=>sound.dispose());
 export { MUTE_KEY };
