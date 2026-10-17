@@ -1,10 +1,12 @@
-import {avaLine,type AvaProgress,type AvaCommand} from '../../shared/ava';
+import {useEffect} from 'react';
+import {avaLine,avaPose,type AvaProgress,type AvaCommand} from '../../shared/ava';
 import type {FoundationState} from '../../shared/foundation';
 import './ava.css';
 export function AvaTutorial({progress,state,now,panel,placing,busy,error,onCommand}:{progress:AvaProgress;state:FoundationState;now:number;panel:string|null;placing:string|null;busy:boolean;error:string;onCommand:(command:AvaCommand)=>void}){
+ useEffect(()=>{for(const pose of ['welcome','point']){const image=new Image();image.src=`/characters/ava/${pose}.png`;}},[]);
  const step=progress.step,interactive=step>=7&&step<=10||step===12;
- return <aside className={`ava-dialogue ${interactive?'ava-guidance':''} ${panel==='build'?'ava-in-catalog':''}`} aria-label="Ava, your AI cofounder">
- <img src="/characters/ava/portrait.png" alt="Ava, a friendly white robot with glowing magenta eyes" width="88" height="88"/>
+ return <aside className={`ava-dialogue ava-stage ${interactive?'ava-guidance':''} ${panel==='build'?'ava-in-catalog':''} ${step===12?'ava-collection':''}`} aria-label="Ava, your AI cofounder">
+ <img key={avaPose(step)} className="ava-character" data-pose={avaPose(step)} src={`/characters/ava/${avaPose(step)}.png`} alt={avaPose(step)==='point'?'Ava points encouragingly as she explains':'Ava welcomes you with an open hand'} width="256" height="384"/>
  <div className="ava-copy"><div className="ava-heading"><strong>AVA <small>AI COFOUNDER</small></strong><button className="ava-skip" disabled={busy} onClick={()=>onCommand('skip')}>Skip Tutorial</button></div>
  <p aria-live="polite">{avaLine(progress,state,now,panel,placing)}</p>
  {error&&<span className="ava-error" role="alert">{error} <button onClick={()=>onCommand('skip')}>Dismiss tutorial</button></span>}

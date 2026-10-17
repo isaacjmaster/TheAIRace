@@ -37,9 +37,9 @@ export function avaLine(p:AvaProgress,s:FoundationState,now:number,panel:string|
  "Tap Build and choose a GPU Rig. It'll help us generate Compute.",
  "Choose the GPU Rig card under Resources. It generates Compute that we'll collect ourselves.",
  "Find some open ground. Drag or tap to position the rig, then Confirm. Pinch to zoom, or switch to Pan camera to look around.",
- "Nice! Our Builder Bot is on it. Every great company needs someone who knows how to put things together. Its Builder Station is home between jobs. Construction takes 15 seconds—you can explore while we wait.",
+ "Nice! Our Builder Bot is on it. Its Builder Station is home between jobs. Construction takes 15 seconds—feel free to explore while we wait.",
  "Look at that! Our first GPU Rig. Now we're producing Compute.",
- "When at least 1 Compute is ready, tap the rig or its collection badge. It produces 5 per minute, so the first one takes about 12 seconds. You can explore while we wait.",
+ "Our rig produces 5 Compute per minute. When at least 1 is ready, tap the rig or its badge to collect it. The first takes about 12 seconds.",
  "This is just the beginning.",
  "We'll build more technology, manufacture robots, and raid rival AI networks to grow our company.",
  "Someday, this little headquarters could become something incredible. Let's get to work!"
@@ -55,3 +55,6 @@ export function avaLine(p:AvaProgress,s:FoundationState,now:number,panel:string|
  if(p.step===12&&s.rig&&now<s.rig.completesAt)return lines[10];
  return lines[p.step]||lines[15];
 }
+
+/** Presentation only: explanations point; greetings, waiting and encouragement welcome. */
+export function avaPose(step:number):'welcome'|'point'{return step>=3&&step<=12&&step!==10?'point':'welcome';}

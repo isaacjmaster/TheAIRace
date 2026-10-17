@@ -6,6 +6,17 @@ function browserPlatform():SoundPlatform {
  let storage:Storage|undefined;try{storage=globalThis.localStorage;}catch{}
  return {storage,silent:testAudioDisabled(typeof location==='undefined'?'':location.search,typeof navigator!=='undefined'&&navigator.webdriver===true),createContext:()=>{const C=window.AudioContext||(window as unknown as {webkitAudioContext:typeof AudioContext}).webkitAudioContext;return new C();}};
 }
+/** Start and stop at exact silence; a short linear tail avoids a residual DC step. */
+export function voiceEnvelope(param:AudioParam,time:number,duration:number,volume:number,attack:number){
+ // GainNodes default to unity. Source/event rounding can expose one full-gain
+ // sample before a future zero event, so silence the node from creation.
+ param.value=0;
+ const rise=Math.min(duration/3,Math.max(.006,attack)),release=Math.min(.018,duration/4);
+ param.setValueAtTime(0,time);
+ param.linearRampToValueAtTime(volume,time+rise);
+ param.exponentialRampToValueAtTime(.0001,time+duration-release);
+ param.linearRampToValueAtTime(0,time+duration);
+}
 /** Context creation/resume is exclusively initiated by a user gesture. */
 export class Soundscape {
  private ctx?:AudioContext;private master?:GainNode;private hq?:GainNode;private raid?:GainNode;
@@ -15,7 +26,7 @@ export class Soundscape {
  constructor(platform=browserPlatform()){this.platform=platform;this.muted=!!platform.silent||readMuted(platform.storage);}
  subscribe=(listener:()=>void)=>{this.listeners.add(listener);return()=>{this.listeners.delete(listener);};};
  getSnapshot=()=>this.muted;
- private ramp(node:GainNode,value:number,seconds=.7){const t=this.ctx!.currentTime;node.gain.cancelScheduledValues(t);node.gain.setValueAtTime(node.gain.value,t);node.gain.linearRampToValueAtTime(value,t+seconds);}
+ private ramp(node:GainNode,value:number,seconds=.7){const t=this.ctx!.currentTime;if(typeof node.gain.cancelAndHoldAtTime==='function')node.gain.cancelAndHoldAtTime(t);else{node.gain.cancelScheduledValues(t);node.gain.setValueAtTime(node.gain.value,t);}node.gain.linearRampToValueAtTime(value,t+seconds);}
  async unlock(){
   if(this.platform.silent||this.muted)return;
   try{
@@ -30,7 +41,7 @@ export class Soundscape {
  visibility(hidden:boolean){if(hidden){if(this.timer)clearInterval(this.timer);this.timer=undefined;void this.ctx?.suspend().catch(()=>{});}/* Safari resumes on the next explicit interaction. */}
  private note(midi:number,time:number,duration:number,volume:number,bus:AudioNode,type:OscillatorType='sine',attack=.015,slide?:number){
   const ctx=this.ctx!,osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type;osc.frequency.setValueAtTime(frequency(midi),time);if(slide!==undefined)osc.frequency.exponentialRampToValueAtTime(frequency(slide),time+duration);
-  gain.gain.setValueAtTime(0,time);gain.gain.linearRampToValueAtTime(volume,time+attack);gain.gain.exponentialRampToValueAtTime(.0001,time+duration);osc.connect(gain);gain.connect(bus);osc.start(time);osc.stop(time+duration+.02);osc.onended=()=>{osc.disconnect();gain.disconnect();};
+  voiceEnvelope(gain.gain,time,duration,volume,attack);osc.connect(gain);gain.connect(bus);osc.start(time);osc.stop(time+duration+.02);osc.onended=()=>{osc.disconnect();gain.disconnect();};
  }
  /** Short synthesized drum strokes; shared deterministic noise, never external samples. */
  private drum(time:number,bus:AudioNode,hat:boolean,volume:number){
@@ -38,7 +49,7 @@ export class Soundscape {
   if(!this.noise){this.noise=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*.3),ctx.sampleRate);const a=this.noise.getChannelData(0);let seed=37;for(let i=0;i<a.length;i++){seed=(seed*1664525+1013904223)>>>0;a[i]=seed/2147483648-1;}}
   const source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain(),duration=hat?.045:.11;
   source.buffer=this.noise;filter.type=hat?'highpass':'bandpass';filter.frequency.value=hat?6500:1800;
-  gain.gain.setValueAtTime(0,time);gain.gain.linearRampToValueAtTime(volume,time+.003);gain.gain.exponentialRampToValueAtTime(.0001,time+duration);
+  voiceEnvelope(gain.gain,time,duration,volume,.008);
   source.connect(filter);filter.connect(gain);gain.connect(bus);source.start(time);source.stop(time+duration+.01);source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};
  }
  private schedule(){
@@ -56,7 +67,7 @@ export class Soundscape {
      this.note(score.melody-12,t,duration,.025,bus,'sine',.035);
     }
     if(score.beat===0||score.beat===4)for(const n of score.chord.slice(1))this.note(n,t,.17,.018,bus,'triangle',.012);
-    if(score.kick)this.note(43,t,.16,combat?.12:.075,bus,'sine',.004,26);
+    if(score.kick)this.note(43,t,.18,combat?.12:.075,bus,'sine',.012,26);
     if(score.snare)this.drum(t,bus,false,combat?.045:.025);
     if(score.hat)this.drum(t,bus,true,combat?.018:.009);
     if(combat&&score.beat===7)this.note(score.chord[0],t,.12,.06,bus,'triangle',.004);
@@ -73,7 +84,7 @@ export class Soundscape {
   if(cue==='laser')this.note(94,t,.11,.08,out,'sine',.002,52);
   if(cue==='impact'||cue==='destroy'){
    if(!this.noise){this.noise=this.ctx.createBuffer(1,this.ctx.sampleRate*.3,this.ctx.sampleRate);const a=this.noise.getChannelData(0);let seed=37;for(let i=0;i<a.length;i++){seed=(seed*1664525+1013904223)>>>0;a[i]=(seed/4294967296)*2-1;}}
-   const source=this.ctx.createBufferSource(),filter=this.ctx.createBiquadFilter(),gain=this.ctx.createGain();source.buffer=this.noise;filter.type='lowpass';filter.frequency.value=cue==='destroy'?800:1400;gain.gain.setValueAtTime(cue==='destroy'?.26:.08,t);gain.gain.exponentialRampToValueAtTime(.0001,t+.24);source.connect(filter);filter.connect(gain);gain.connect(out);source.start(t);source.stop(t+.26);source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};
+   const source=this.ctx.createBufferSource(),filter=this.ctx.createBiquadFilter(),gain=this.ctx.createGain();source.buffer=this.noise;filter.type='lowpass';filter.frequency.value=cue==='destroy'?800:1400;voiceEnvelope(gain.gain,t,.24,cue==='destroy'?.26:.08,.008);source.connect(filter);filter.connect(gain);gain.connect(out);source.start(t);source.stop(t+.26);source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};
   }
   const notes=cue==='win'?[62,66,69,74,78]:cue==='resources'?[81,86,90]:cue==='upgrade'?[57,62,66,74]:[];
   notes.forEach((n,i)=>this.note(n,t+i*.1,.65,.12,out,'sine',.008));
