@@ -2,7 +2,7 @@ import type express from 'express';
 import type { DatabaseSync } from 'node:sqlite';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
+import { buildFabricator,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
 /** Separate table and cookie: foundation resets never touch any previous game save. */
 export function registerFoundation(app:express.Express,db:DatabaseSync){
  db.exec('CREATE TABLE IF NOT EXISTS foundation_saves(id TEXT PRIMARY KEY,state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS foundation_actions(session TEXT,id TEXT,payload TEXT,amount INTEGER,PRIMARY KEY(session,id))');
@@ -32,6 +32,33 @@ export function registerFoundation(app:express.Express,db:DatabaseSync){
    advanceFoundation(state,now);let amount=Number(cached?.amount||0);
    if(!cached){if(input.action==='build')buildRig(state,input.position,now);else if(input.action==='move')moveRig(state,input.position,now);else amount=collectRig(state,now);db.prepare('INSERT INTO foundation_actions VALUES(?,?,?,?)').run(id,input.requestId,payload,amount);}
    state.revision++;save(id,state);db.exec('COMMIT');res.json({state,serverTime:now,amount});
+  }catch(e){db.exec('ROLLBACK');res.status(400).json({error:(e as Error).message});}
+ });
+ const botAction=z.discriminatedUnion('action',[
+  z.object({action:z.literal('build'),position:z.tuple([z.number().int(),z.number().int()])}).strict(),
+  z.object({action:z.literal('train'),count:z.number().int().min(1).max(10)}).strict(),
+  z.object({action:z.literal('start'),layout:z.number().int().min(0).max(1)}).strict(),
+  z.object({action:z.literal('deploy'),raidId:z.string().uuid(),position:z.object({x:z.number().finite(),y:z.number().finite()}).strict()}).strict(),
+  z.object({action:z.literal('retreat'),raidId:z.string().uuid()}).strict()
+ ]);
+ const botSchema=z.object({requestId:z.string().uuid(),generation:z.number().int().min(0),command:botAction}).strict();
+ app.post('/api/foundation/bots',(req,res)=>{
+  const parsed=botSchema.safeParse(req.body);if(!parsed.success){res.status(400).json({error:'Choose a valid bot action.'});return;}
+  const {id}=session(req,res),input=parsed.data,now=Date.now();db.exec('BEGIN IMMEDIATE');
+  try{const state=JSON.parse(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(id)!.state as string) as FoundationState;
+   if(input.generation!==(state.generation||0))throw new Error('Progress was reset. Reload the game.');
+   const payload='bots:'+JSON.stringify(input),cached=db.prepare('SELECT payload FROM foundation_actions WHERE session=? AND id=?').get(id,input.requestId);
+   if(cached&&cached.payload!==payload)throw new Error('Request already used for another action.');
+   advanceFoundation(state,now);
+   if(!cached){const c=input.command;
+    if(c.action==='build')buildFabricator(state,c.position,now);
+    else if(c.action==='train')trainScrap(state,c.count,now);
+    else if(c.action==='start')startBotRaid(state,randomUUID(),c.layout,now);
+    else if(c.action==='deploy')deployScrap(state,c.raidId,c.position,now);
+    else retreatBots(state,c.raidId,now);
+    db.prepare('INSERT INTO foundation_actions VALUES(?,?,?,?)').run(id,input.requestId,payload,0);
+   }
+   state.revision++;save(id,state);db.exec('COMMIT');res.json({state,serverTime:now});
   }catch(e){db.exec('ROLLBACK');res.status(400).json({error:(e as Error).message});}
  });
  app.post('/api/foundation/reset',(req,res)=>{

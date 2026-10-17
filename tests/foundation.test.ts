@@ -20,7 +20,7 @@ test('foundation saves are isolated; reset needs explicit confirmation, checks r
  const other=await fetch(url+'/api/foundation');assert.deepEqual((await other.json()).state,initialFoundation());assert.equal(db.prepare('SELECT COUNT(*) n FROM foundation_saves').get()!.n,2);
  }finally{await new Promise<void>(r=>server.close(()=>r()));db.close();}
 });
-test('active entry has no troop, production or secondary building interface',()=>{
+test('active entry keeps retired multi-resource gameplay and legacy campus menus inaccessible',()=>{
  const entry=readFileSync('src/main.tsx','utf8');assert.match(entry,/FoundationApp/);
  const app=readFileSync('src/ui/FoundationApp.tsx','utf8');assert.doesNotMatch(app,/IntegratedRaid|CampusPanel|\/api\/raid|\/api\/campus|Credits|UPGRADES|Missions/);assert.match(app,/confirm:'RESET FOUNDATION'/);assert.match(app,/Cancel/);
  const world=readFileSync('src/ui/FoundationWorld.tsx','utf8');assert.match(world,/hq:1/);assert.match(world,/compute:0,revenue:0,training:0,gpu:0,research:0,defense:0/);

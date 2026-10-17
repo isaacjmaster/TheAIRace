@@ -1,12 +1,13 @@
 import { MAP, LEVELS, raidLevel } from './level';
-export type Kind = 'scout' | 'tank' | 'breaker' | 'striker' | 'medic' | 'disruptor';
-export type Squad = Record<'scout'|'tank'|'breaker',number> & Partial<Record<'striker'|'medic'|'disruptor',number>>;
+export type Kind = 'scout' | 'tank' | 'breaker' | 'striker' | 'medic' | 'disruptor' | 'scrap';
+export type Squad = Record<'scout'|'tank'|'breaker',number> & Partial<Record<'striker'|'medic'|'disruptor'|'scrap',number>>;
 export type Point = { x: number; y: number };
 export type Building = Point & { id: number; kind: 'core' | 'vault' | 'turret' | 'wall' | 'missile' | 'shield' | 'repair'; disabledUntil?: number; hp: number; maxHp: number; cooldown: number; target?: number };
 export type Unit = Point & { id: number; kind: Kind; hp: number; maxHp: number; cooldown: number; target?: number; objective?: number; waypoint?: Point };
 export type Effect = { id: number; from: Point; to: Point; ttl: number; color: string; damage: number; source: number; target: number; destroyed: boolean };
-export type Raid = { layout: number; version?: number; time: number; buildings: Building[]; units: Unit[]; stock: Record<Kind, number>; effects: Effect[]; ended: boolean; reason: string; damage: Record<Kind, number>; lost: number; nextId: number; power: number; healthPower: number };
+export type Raid = { starter?:boolean; layout: number; version?: number; time: number; buildings: Building[]; units: Unit[]; stock: Record<Kind, number>; effects: Effect[]; ended: boolean; reason: string; damage: Record<Kind, number>; lost: number; nextId: number; power: number; healthPower: number };
 export const STATS = {
+  scrap: {name:'Scrap Bot',hp:110,speed:1.25,damage:18,range:.85,interval:.8,color:'#ffc05e',role:'Melee � 1 housing'},
   scout: { name: 'Scout', hp: 85, speed: 1.55, damage: 16, range: .85, interval: .7, color: '#52e6d2', role: 'Fast · targets compute' },
   tank: { name: 'Tank', hp: 390, speed: .68, damage: 24, range: .95, interval: 1.15, color: '#8da9ff', role: 'Armored · absorbs fire' },
   breaker: { name: 'Breaker', hp: 135, speed: 1.05, damage: 38, range: 1.05, interval: .9, color: '#ffb868', role: 'Targets defenses · breaches walls' },
@@ -34,7 +35,7 @@ export function createRaid(layout = 0, squad: Readonly<Squad> = DEFAULT_SQUAD, p
     for (const b of level.extras ?? []) add(b.kind,b.x,b.y,b.hp);
     for (const p of level.partitions ?? []) add('wall',p.x,p.y,Math.round(180*(level.strength??1)));
   }
-  return { power, healthPower, layout, version, time: 0, buildings, units: [], stock: Object.fromEntries(KINDS.map(k=>[k,squad[k]??0])) as Record<Kind,number>, effects: [], ended: false, reason: '', damage: { scout: 0, tank: 0, breaker: 0, striker:0,medic:0,disruptor:0 }, lost: 0, nextId: 100 };
+  return { power, healthPower, layout, version, time: 0, buildings, units: [], stock: Object.fromEntries(KINDS.map(k=>[k,squad[k]??0])) as Record<Kind,number>, effects: [], ended: false, reason: '', damage: { scout: 0, tank: 0, breaker: 0, striker:0,medic:0,disruptor:0,scrap:0 }, lost: 0, nextId: 100 };
 }
 export function validDeployment(p: Point) {
   const b = MAP.deployment;
@@ -123,7 +124,7 @@ export function tick(s: Raid) {
     if(b.kind==='repair') { const ally=s.buildings.filter(a=>a.id!==b.id&&a.kind!=='wall'&&a.hp>0&&a.hp<a.maxHp&&distance(a,b)<=5).sort((a,c)=>a.hp/a.maxHp-c.hp/c.maxHp||a.id-c.id)[0]; if(ally&&b.cooldown<=0){const amount=Math.min(28,ally.maxHp-ally.hp);ally.hp+=amount;b.cooldown=1;s.effects.push({id:s.nextId++,from:{x:b.x,y:b.y},to:{x:ally.x,y:ally.y},ttl:.3,color:'#90efab',damage:-amount,source:b.id,target:ally.id,destroyed:false});}continue; }
     const target = s.units.filter(u => u.hp > 0 && distance(u, b) <= (b.kind==='missile'?8:5)).sort((a, c) => distance(a, b) - distance(c, b) || a.id - c.id)[0];
     b.target = target?.id;
-    if (target && b.cooldown <= 0) { const targets=b.kind==='missile'?s.units.filter(u=>u.hp>0&&distance(u,target)<=1.4):[target]; for(const victim of targets){hit(s,b,victim,b.kind==='missile'?42:26,b.id,b.kind==='missile'?'#ffb868':'#ff6487');if(!victim.hp)s.lost++;} b.cooldown=b.kind==='missile'?2.1:.65; }
+    if (target && b.cooldown <= 0) { const targets=b.kind==='missile'?s.units.filter(u=>u.hp>0&&distance(u,target)<=1.4):[target]; for(const victim of targets){hit(s,b,victim,s.starter?8:b.kind==='missile'?42:26,b.id,b.kind==='missile'?'#ffb868':'#ff6487');if(!victim.hp)s.lost++;} b.cooldown=s.starter?1.2:b.kind==='missile'?2.1:.65; }
   }
   if (s.time >= 90) finish(s, 'Time expired');
   else if (Object.values(s.stock).every(n => !n) && s.units.every(u => !u.hp)) finish(s, 'Squad eliminated');

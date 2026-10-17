@@ -28,8 +28,8 @@ test('portrait campus has a readable horizontal frame and keeps the world explor
  }
  assert.equal(portraitCampusSpan(844/390),36*17/30*(844/390));
 });
-test('active portrait game has no rotation gate, orientation lock or revived troop interface',()=>{
+test('active portrait game keeps rotation unrestricted and uses only the new Scrap Bot screen',()=>{
  const app=readFileSync('src/ui/FoundationApp.tsx','utf8');
  assert.doesNotMatch(app,/rotation-screen|rotation-blocked|requestLandscape|PORTRAIT_GAME|IntegratedRaid/);
- assert.match(app,/Networks offline/);assert.match(app,/FoundationWorld/);
+ assert.match(app,/ScrapRaid/);assert.match(app,/FoundationWorld/);
 });
