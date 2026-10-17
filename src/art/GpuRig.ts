@@ -8,6 +8,12 @@ export function gpuRigModel(k:WorldKit){const g=new THREE.Group();
  for(const x of [-1.65,1.65])k.box(g,[.14,.14,2.5],[x,2.3,0],c.slate);
  for(let i=0;i<3;i++){const x=-1.05+i*1.05;k.box(g,[.8,1.35,1.7],[x,1.15,-.1],c.slate,.08);k.box(g,[.65,.1,1.55],[x,1.88,-.1],c.cyan,.03,true);
  const fan=k.cylinder(g,.32,.08,[x,1.18,.8],c.dark);fan.rotation.x=Math.PI/2;const rim=k.cylinder(g,.25,.09,[x,1.18,.86],c.cream);rim.rotation.x=Math.PI/2;const hub=k.cylinder(g,.09,.11,[x,1.18,.93],c.dark);hub.rotation.x=Math.PI/2;
- for(let n=0;n<4;n++){const blade=k.box(g,[.07,.43,.04],[x,1.18,.93],c.dark,.01);blade.rotation.z=n*Math.PI/4;}}
- k.box(g,[1,.4,.65],[0,.45,.6],c.dark);k.box(g,[.65,.07,.04],[0,.5,.94],c.cyan,.01,true);return g;
+ const rotor=new THREE.Group();rotor.name='gpu-fan-'+i;rotor.position.set(x,1.18,.95);g.add(rotor);for(let n=0;n<4;n++){const blade=k.box(rotor,[.07,.43,.04],[0,0,0],c.dark,.01);blade.rotation.z=n*Math.PI/4;}}
+ k.box(g,[1,.4,.65],[0,.45,.6],c.dark);const light=k.box(g,[.65,.07,.04],[0,.5,.94],c.cyan,.01,true);light.name='gpu-activity';return g;
+}
+
+export function animateGpu(group:THREE.Group|undefined,time:number,dt:number,active:boolean,reduced=false){
+ if(!group)return;for(let i=0;i<3;i++){const fan=group.getObjectByName('gpu-fan-'+i);if(fan&&!reduced)fan.rotation.z=(fan.rotation.z+dt*(active?11:1.1))%(Math.PI*2);}
+ const lamp=group.getObjectByName('gpu-activity') as THREE.Mesh|undefined;
+ if(lamp){const material=lamp.material as THREE.MeshStandardMaterial;material.emissiveIntensity=active?(reduced?.65:.65+Math.sin(time*2)*.18):.12;}
 }

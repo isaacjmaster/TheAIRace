@@ -1,9 +1,10 @@
+import {BotArrivals,dockingRoute} from './botLife';
 import * as THREE from 'three';
 import {portraitCampusSpan} from './portraitCamera';
 import {founderHQ,pickFoundationBuilding,type FoundationBuilding} from './FounderHQ';
-import {fabricatorModel,hangarModel,builderStationModel} from './BotBuildings';
-import {gpuRigModel} from './GpuRig';
-import {BUILDER_STATION_POSITION,buildingLayout,buildingFootprint,type RotatableBuilding,type Orientation,type FoundationState,type RigPosition} from '../../shared/foundation';
+import {fabricatorModel,hangarModel,builderStationModel,scrapBotModel,animateDockedBot} from './BotBuildings';
+import {animateGpu,gpuRigModel} from './GpuRig';
+import {GPU_RIG,BUILDER_STATION_POSITION,buildingLayout,buildingFootprint,type RotatableBuilding,type Orientation,type FoundationState,type RigPosition} from '../../shared/foundation';
 import { FACILITIES, constructionJobs, builderCount, type CampusState, type BuildingId } from '../../shared/progression';
 import { positionFor, BUILDING_FOOTPRINTS, OBSTACLES } from '../../shared/campus-layout';
 import { lightWorld, palette as c, WorldKit } from './world';
@@ -14,6 +15,9 @@ export class HeadquartersScene {
  private layoutPreviewKind?:RotatableBuilding;
  private stationGroup?:THREE.Group;
  private fabricatorGroup?:THREE.Group;private hangarGroup?:THREE.Group;private botKit?:WorldKit;private botKey='';private producing=false;
+ private arrivals=new BotArrivals();private lastBotState?:FoundationState;private catchup=false;private stagedCount=0;private gpuActive=false;private lifeClock=0;
+ private walkers:{slot:number;group:THREE.Group;route:THREE.Vector3[];segment:number;delay:number}[]=[];
+ private visibility=()=>{this.catchup=true;};
  private rigGroup?:THREE.Group;private rigKit?:WorldKit;private rigKey='';private rigPosition?:RigPosition;
  private rigPreview?:THREE.Group;private rigPreviewKit?:WorldKit;private rigPreviewMaterial?:THREE.MeshBasicMaterial;private rigGrid?:THREE.GridHelper;
  readonly renderer:THREE.WebGLRenderer;
@@ -32,7 +36,7 @@ export class HeadquartersScene {
   this.renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});lightWorld(this.renderer,this.scene);
   this.renderer.domElement.setAttribute('role','img');this.renderer.domElement.setAttribute('aria-label',`3D headquarters level ${campus.hq}. ${level===0?'Founder HQ, with a founder working at a laptop through the window and a Builder Bot nearby.':level===1?'A furnished workstation, chair, lamp and plants.':'GPU workbench, server racks and upgraded lighting.'} Drag to pan and pinch to zoom.`);
   this.renderer.domElement.dataset.stage=String(level);host.appendChild(this.renderer.domElement);this.renderer.domElement.addEventListener('webglcontextlost',this.lost);
-  this.buildEnvironment();this.build(Math.min(2,level),training);this.buildCampus(campus);this.buildObstacles(campus);this.buildBots(campus);if(this.minimal){this.stationGroup=builderStationModel(this.kit);this.stationGroup.position.set(BUILDER_STATION_POSITION[0],0,BUILDER_STATION_POSITION[1]);this.scene.add(this.stationGroup);this.home.set(-3,0,0);this.worldSpan=36;}this.center.copy(this.home);this.target.copy(this.home);this.camera.position.copy(this.home).add(new THREE.Vector3(this.minimal?13:7,this.minimal?28:23,30));this.camera.lookAt(this.center);
+  document.addEventListener('visibilitychange',this.visibility);this.buildEnvironment();this.build(Math.min(2,level),training);this.buildCampus(campus);this.buildObstacles(campus);this.buildBots(campus);if(this.minimal){this.stationGroup=builderStationModel(this.kit);this.stationGroup.position.set(BUILDER_STATION_POSITION[0],0,BUILDER_STATION_POSITION[1]);this.scene.add(this.stationGroup);this.home.set(-3,0,0);this.worldSpan=36;}this.center.copy(this.home);this.target.copy(this.home);this.camera.position.copy(this.home).add(new THREE.Vector3(this.minimal?13:7,this.minimal?28:23,30));this.camera.lookAt(this.center);
   this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(host);this.resize();
  }
  private build(level:number,training:number){
@@ -196,13 +200,36 @@ export class HeadquartersScene {
  }
  syncBots(state:FoundationState,now:number){
   this.producing=!!state.training?.length;
-  const f=state.fabricator,ready=!!f&&now>=f.completesAt,bots=(state.bots||0)+(!state.botRaid?.settled?(state.botRaid?.simulation.stock.scrap||0):0);
-  const key=JSON.stringify([f?.position,f?.hangarPosition,f?.orientation,f?.hangarOrientation,ready,bots]);if(key===this.botKey)return;this.botKey=key;
-  this.fabricatorGroup?.removeFromParent();this.hangarGroup?.removeFromParent();this.botKit?.dispose();this.fabricatorGroup=undefined;this.hangarGroup=undefined;if(!f)return;
-  const k=this.botKit=new WorldKit();this.fabricatorGroup=fabricatorModel(k);this.fabricatorGroup.position.set(f.position[0],0,f.position[1]);this.fabricatorGroup.rotation.y=(f.orientation??0)*Math.PI/2;this.scene.add(this.fabricatorGroup);
-  if(ready){this.hangarGroup=hangarModel(k,bots);this.hangarGroup.position.set(f.hangarPosition[0],0,f.hangarPosition[1]);this.hangarGroup.rotation.y=(f.hangarOrientation??0)*Math.PI/2;this.scene.add(this.hangarGroup);}
-  else for(const x of [-2,2]){k.box(this.fabricatorGroup,[.12,3.8,.12],[x,1.9,1.5],c.gold);k.box(this.fabricatorGroup,[4.2,.12,.12],[0,3.8,1.5],c.gold);}
+  this.gpuActive=!!state.rig&&now>=state.rig.completesAt&&state.rig.stored<GPU_RIG.storage;
+  const f=state.fabricator,ready=!!f&&now>=f.completesAt,bots=Math.min(10,(state.bots||0)+(!state.botRaid?.settled?(state.botRaid?.simulation.stock.scrap||0):0));
+  const key=JSON.stringify([f?.position,f?.hangarPosition,f?.orientation,f?.hangarOrientation,ready]),reset=this.catchup||document.hidden||this.reduced;
+  const incoming=this.arrivals.sync(state,now,reset);if(!document.hidden&&state!==this.lastBotState)this.catchup=false;this.lastBotState=state;
+  if(reset||bots<this.stagedCount||key!==this.botKey){for(const w of this.walkers)w.group.removeFromParent();this.walkers=[];}
+  this.stagedCount=bots;
+  if(key!==this.botKey){this.botKey=key;this.fabricatorGroup?.removeFromParent();this.hangarGroup?.removeFromParent();this.botKit?.dispose();this.fabricatorGroup=undefined;this.hangarGroup=undefined;
+   if(f){const k=this.botKit=new WorldKit();this.fabricatorGroup=fabricatorModel(k);this.fabricatorGroup.position.set(f.position[0],0,f.position[1]);this.fabricatorGroup.rotation.y=(f.orientation??0)*Math.PI/2;this.scene.add(this.fabricatorGroup);
+    if(ready){this.hangarGroup=hangarModel(k,10);this.hangarGroup.position.set(f.hangarPosition[0],0,f.hangarPosition[1]);this.hangarGroup.rotation.y=(f.hangarOrientation??0)*Math.PI/2;this.scene.add(this.hangarGroup);}}
+  }
+  if(ready&&this.botKit&&!reset)for(const slot of incoming){const points=dockingRoute(state,slot);if(!points.length)continue;const group=scrapBotModel(this.botKit);group.name='walking-scrapbot';group.scale.setScalar(.7);group.position.set(...points[0]);this.scene.add(group);this.walkers.push({slot,group,route:points.map(p=>new THREE.Vector3(...p)),segment:1,delay:this.walkers.length*.35});}
+  const assembly=this.fabricatorGroup?.getObjectByName('assembly-bot');if(assembly)assembly.visible=this.producing;
+  this.syncDockVisibility();
  }
+ private syncDockVisibility(){
+  for(let i=0;i<10;i++){const bot=this.hangarGroup?.getObjectByName('docked-bot-'+i);if(bot)bot.visible=i<this.stagedCount&&!this.walkers.some(w=>w.slot===i);}
+  this.renderer.domElement.dataset.walkingBots=String(this.walkers.length);this.renderer.domElement.dataset.dockedBots=String(this.stagedCount-this.walkers.length);this.renderer.domElement.dataset.gpuActive=String(this.gpuActive);
+ }
+ private animateBotLife(dt:number){
+  this.lifeClock+=dt;animateGpu(this.rigGroup,this.lifeClock,dt,this.gpuActive,this.reduced);
+  for(let i=0;i<10;i++){const bot=this.hangarGroup?.getObjectByName('docked-bot-'+i);if(bot?.visible)animateDockedBot(bot,i,this.lifeClock,this.reduced);}
+  for(const w of this.walkers){w.delay-=dt;if(w.delay>0){w.group.visible=false;continue;}w.group.visible=true;let travel=dt*3.2;
+   while(travel>0&&w.segment<w.route.length){const next=w.route[w.segment],d=w.group.position.distanceTo(next);if(d<=travel){w.group.position.copy(next);travel-=d;w.segment++;}else{w.group.rotation.y=Math.atan2(next.x-w.group.position.x,next.z-w.group.position.z);w.group.position.lerp(next,travel/d);travel=0;}}
+   for(const [name,sign] of [['leg-left',1],['leg-right',-1]] as const){const leg=w.group.getObjectByName(name);if(leg)leg.rotation.x=Math.sin(this.lifeClock*14-w.slot)*.38*sign;}
+   if(w.segment>=w.route.length)w.group.removeFromParent();
+  }
+  const count=this.walkers.length;this.walkers=this.walkers.filter(w=>w.segment<w.route.length);if(count!==this.walkers.length)this.syncDockVisibility();
+  for(let i=0;i<3;i++){const lamp=this.hangarGroup?.getObjectByName('hangar-lamp-'+i);if(lamp)lamp.visible=this.reduced||this.walkers.length===0||Math.sin(this.lifeClock*3-i)>.1;}
+ }
+
  rigScreenPoint(){if(!this.rigPosition)return;const p=new THREE.Vector3(this.rigPosition[0],3.5,this.rigPosition[1]).project(this.camera);return {x:(p.x+1)*this.host.clientWidth/2,y:(1-p.y)*this.host.clientHeight/2};}
  pickFoundation(x:number,y:number){if(!this.setRay(x,y))return;return pickFoundationBuilding(this.raycaster,this.garage,this.rigGroup,this.fabricatorGroup,this.hangarGroup,this.stationGroup);}
  buildingScreenPoint(id:FoundationBuilding){
@@ -218,6 +245,7 @@ export class HeadquartersScene {
  clearRigPreview(){for(const kind of ['hq','station','rig','fabricator','hangar'] as const){const group=this.layoutGroup(kind);if(group)group.visible=true;}this.layoutPreviewKind=undefined;this.rigPreview?.removeFromParent();this.rigPreviewKit?.dispose();this.rigPreviewMaterial?.dispose();this.rigPreview=undefined;this.rigPreviewKit=undefined;this.rigPreviewMaterial=undefined;if(this.rigGrid){this.rigGrid.removeFromParent();this.rigGrid.geometry.dispose();const m=this.rigGrid.material;(Array.isArray(m)?m:[m]).forEach(item=>item.dispose());this.rigGrid=undefined;}}
  animateClear(obstacleId:string){const group=this.obstacles.get(obstacleId);if(!group)return;this.obstacleHits=this.obstacleHits.filter(o=>o.userData.obstacleId!==obstacleId);this.clearing.push({group,time:0});this.obstacles.delete(obstacleId);}
  private animateWorld(dt:number){
+  this.animateBotLife(dt);
   const lamp=this.fabricatorGroup?.getObjectByName('production-light');if(lamp)lamp.visible=!this.producing||this.reduced||Math.sin(this.clock*5)>-.4;
   for(const item of this.clearing){item.time+=dt;item.group.scale.setScalar(Math.max(0,1-item.time/.65));item.group.rotation.y=item.time*2;item.group.position.y=item.time*.5;if(item.time>=.65)this.scene.remove(item.group);}this.clearing=this.clearing.filter(item=>item.time<.65);
   if(this.reduced){for(const bot of this.builders){bot.group.position.copy(bot.to);if(!bot.working)bot.group.rotation.y=this.builderHomeYaw;}return;}
@@ -306,5 +334,5 @@ export class HeadquartersScene {
  pan(dx:number,dy:number){const scale=(this.camera.right-this.camera.left)/Math.max(1,this.host.clientWidth)/this.camera.zoom;const right=new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld,0);const up=new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld,1);up.y=0;up.normalize();this.target.addScaledVector(right,-dx*scale).addScaledVector(up,dy*scale);this.target.y=0;if(this.minimal){this.target.x=THREE.MathUtils.clamp(this.target.x,-24,28);this.target.z=THREE.MathUtils.clamp(this.target.z,-19,24);return;}const flat=new THREE.Vector2(this.target.x-this.home.x,this.target.z-this.home.z);const limit=this.worldSpan*.28;if(flat.length()>limit)flat.setLength(limit);this.target.set(this.home.x+flat.x,0,this.home.z+flat.y);}
  reset(){this.target.copy(this.home);this.zoomTarget=1;}
  update(dt:number){if(this.paused)return;this.clock+=dt;const next=this.center.clone().lerp(this.target,this.reduced?1:Math.min(1,dt*10));this.camera.position.add(next.clone().sub(this.center));this.center.copy(next);this.camera.lookAt(this.center);this.camera.zoom=THREE.MathUtils.lerp(this.camera.zoom,this.zoomTarget,this.reduced?1:Math.min(1,dt*10));this.camera.updateProjectionMatrix();this.animateWorld(dt);this.renderer.render(this.scene,this.camera);this.renderer.domElement.dataset.drawCalls=String(this.renderer.info.render.calls);this.renderer.domElement.dataset.triangles=String(this.renderer.info.render.triangles);}
- dispose(){this.botKit?.dispose();this.clearRigPreview();this.rigKit?.dispose();this.clearPlacement();this.observer.disconnect();this.renderer.domElement.removeEventListener('webglcontextlost',this.lost);this.scene.traverse(o=>{if(o instanceof THREE.DirectionalLight)o.shadow.dispose();});this.kit.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
+ dispose(){document.removeEventListener('visibilitychange',this.visibility);for(const w of this.walkers)w.group.removeFromParent();this.walkers=[];this.botKit?.dispose();this.clearRigPreview();this.rigKit?.dispose();this.clearPlacement();this.observer.disconnect();this.renderer.domElement.removeEventListener('webglcontextlost',this.lost);this.scene.traverse(o=>{if(o instanceof THREE.DirectionalLight)o.shadow.dispose();});this.kit.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
 }

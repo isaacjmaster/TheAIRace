@@ -1,3 +1,4 @@
+import {sound} from '../audio/sound';
 import {useEffect,useRef,useState} from 'react';
 import {AvaArrow} from './AvaArrow';
 import type {FoundationBuilding} from '../art/FounderHQ';
@@ -12,7 +13,7 @@ export function FoundationWorld({state,placing,onConfirm,onCancel,onCollect,onSe
  const beacon=useRef<HTMLDivElement>(null);
  const label=useRef<HTMLDivElement>(null),selection=useRef<FoundationBuilding|null>(null);
  const [selected,setSelected]=useState<FoundationBuilding|null>(null),[editBuilding,setEditBuilding]=useState<RotatableBuilding|null>(null),[editNotice,setEditNotice]=useState('');
- const select=(value:FoundationBuilding|null)=>{selection.current=value;setSelected(value);onSelect(value);};
+ const select=(value:FoundationBuilding|null)=>{selection.current=value;setSelected(value);onSelect(value);if(value)void sound.unlock().then(()=>sound.cue(`building-${value}`));};
  const [orientation,setOrientation]=useState<Orientation>(0),[failed,setFailed]=useState(false),[position,setPosition]=useState<RigPosition>([6,0]),[panMode,setPanMode]=useState(false);
  const reason=editBuilding?validLayoutPosition(state,position,editBuilding,orientation):validFoundationPosition(state,position,placing==='fabricator'?'fabricator':'rig',orientation);
  const ready=Math.floor((state.rig?.stored||0)+1e-9),remaining=Math.min(GPU_RIG.buildSeconds,Math.max(0,Math.ceil(((state.rig?.completesAt||0)-now)/1000)));
