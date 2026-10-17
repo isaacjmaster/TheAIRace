@@ -4,7 +4,7 @@ import express from 'express';
 import {DatabaseSync} from 'node:sqlite';
 import {randomUUID} from 'node:crypto';
 import {initialFoundation,buildRig,advanceFoundation} from '../shared/foundation';
-import {newAva,legacyAva,reconcileAva,commandAva,avaLine} from '../shared/ava';
+import {newAva,legacyAva,reconcileAva,commandAva,avaLine,avaPose} from '../shared/ava';
 import {registerFoundation} from '../server/foundation-api';
 const epoch=1700000000000;
 test('Ava observes construction and offline completion without mutating gameplay',()=>{
@@ -75,4 +75,11 @@ test('foundation Ava API preserves legacy saves, persists progress, ignores stal
  assert.equal(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(legacyId)!.state,JSON.stringify(legacy));
  const invalid=await fetch(base+'/ava',{method:'POST',headers,body:JSON.stringify({command:'continue',revision:0,generation:99})});assert.equal(invalid.status,409);
  }finally{await new Promise<void>(r=>server.close(()=>r()));db.close();}
+});
+
+test('Ava gesture follows dialogue without changing tutorial or company state',()=>{
+ const s=initialFoundation(),p=newAva(),before=JSON.stringify({s,p});
+ for(const step of [0,1,2,10,13,14,15])assert.equal(avaPose(step),'welcome');
+ for(const step of [3,4,5,6,7,8,9,11,12])assert.equal(avaPose(step),'point');
+ assert.equal(JSON.stringify({s,p}),before);
 });

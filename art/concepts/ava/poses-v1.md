@@ -1,0 +1,11 @@
+# Ava tutorial pose variants
+
+Created with the built-in imagegen tool as identity-preserving edits of the approved ava-full-body-v2.png. The supplied villager screenshot is a layout reference only; none of its character artwork is used. Existing Ava concepts and portrait are preserved.
+
+Final project assets: public/characters/ava/welcome.png and public/characters/ava/point.png. True RGBA transparency is retained. UI pose switching is scripted by dialogue step and has no gameplay effects.
+
+## Welcome prompt
+Edit target: existing Ava robot character. Preserve this exact adult character identity, swept asymmetrical glossy pearl-white crown, black face visor, glowing magenta eyes and warm smile, subtle cyan joints and trim, smooth understated white torso shell and graphite joints. Do not redesign or sexualize. Create a clean transparent character cutout for a game tutorial: waist-up/upper-thigh framing, entire head and both hands inside frame, friendly welcoming open palm gesture toward viewer's right, other arm relaxed. Upright relaxed posture, eyes toward player. Premium stylized 3D render matching original. Crucially remove all background haze, glow clouds, floor, shadow planes, particles and stray marks: true transparent background directly outside the character silhouette. Character alone, no speech bubble, no text, no frame. Portrait canvas with consistent generous margins.
+
+## Point prompt
+Ava pose variant for tutorial UI. Copy only the robot character identity from reference, NOT its luminous background. Preserve white swept crown, black visor, magenta eyes, cyan trim, understated white shell and graphite joints. Same friendly adult AI cofounder. Pose: right arm bends upward, one index finger pointing toward the upper right as if explaining a building; other hand rests relaxed. Curious encouraging smile. Frame from head to upper thighs, complete head and raised pointing hand visible with margin. Clean stylized 3D character sprite/cutout. Everything outside the physical robot must be fully transparent alpha=0: NO atmospheric glow, NO background gradients, NO fog, NO halo, NO floor or ground shadows. Isolated object cutout on transparent background. Keep character proportions and rendering consistent. No words, symbols, frames or speech bubbles.

@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Soundscape,testAudioDisabled } from '../src/audio/sound';
+import { Soundscape,testAudioDisabled,voiceEnvelope } from '../src/audio/sound';
 import { frequency, MUTE_KEY, readMuted, writeMuted, type Cue } from '../src/audio/score';
 class Param {
- value=0;ramps:number[]=[];
- setValueAtTime(v:number){this.value=v;return this;}
+ value=1;ramps:number[]=[];beforeFirstEvent?:number;
+ setValueAtTime(v:number){this.beforeFirstEvent??=this.value;this.value=v;return this;}
  linearRampToValueAtTime(v:number){this.ramps.push(v);this.value=v;return this;}
  exponentialRampToValueAtTime(v:number){this.ramps.push(v);this.value=v;return this;}
  cancelScheduledValues(){return this;}
@@ -80,4 +80,23 @@ test('disposing a preview during pending resume cannot start its music scheduler
 
 test('page teardown closes playback and a normal player can resume with effects after returning',async()=>{
  const h=harness();try{await h.sound.unlock();h.ctx.currentTime=50;h.sound.cue('tap');h.sound.dispose();assert.equal(h.ctx.state,'closed');assert.equal((h.sound as any).timer,undefined);h.ctx.currentTime=0;await h.sound.unlock();const before=h.ctx.sources.length;h.sound.cue('tap');assert.ok(h.ctx.sources.length>before);assert.equal(h.data.get(MUTE_KEY),undefined);}finally{h.sound.dispose();}
+});
+
+test('every synthesized voice starts from silent initialization and ends at exact silence',async()=>{
+ const h=harness();try{
+  await h.sound.unlock();for(const cue of ['tap','deploy','laser','impact','destroy','win','resources','upgrade'] as Cue[]){h.ctx.currentTime++;h.sound.cue(cue);}
+  for(const voice of h.ctx.gains.slice(3)){
+   assert.equal(voice.gain.beforeFirstEvent,0,'unity gain must never precede the future attack event');
+   assert.equal(voice.gain.value,0,'release must finish at exact zero before stop/disconnect');
+   assert.ok(voice.gain.ramps.includes(.0001),'exponential decay has a positive floor');
+   assert.equal(voice.gain.ramps.at(-1),0);
+  }
+ }finally{h.sound.dispose();}
+});
+test('voice envelope clamps short attacks and schedules a zero tail before the source stops',()=>{
+ const events:{kind:string;value:number;time:number}[]=[];
+ const p={value:1,setValueAtTime(value:number,time:number){assert.equal(this.value,0);events.push({kind:'set',value,time});},linearRampToValueAtTime(value:number,time:number){events.push({kind:'linear',value,time});},exponentialRampToValueAtTime(value:number,time:number){events.push({kind:'exponential',value,time});}};
+ voiceEnvelope(p as unknown as AudioParam,4,.075,.13,.002);
+ assert.deepEqual(events.map(e=>e.value),[0,.13,.0001,0]);assert.equal(events[1].time,4.006);assert.equal(events.at(-1)!.time,4.075);
+ assert.ok(events.every((e,i)=>i===0||e.time>events[i-1].time));
 });
