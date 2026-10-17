@@ -2,7 +2,7 @@ import type express from 'express';
 import type { DatabaseSync } from 'node:sqlite';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { rotateBuilding,buildFabricator,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
+import { moveBuilding,rotateBuilding,buildFabricator,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
 /** Separate table and cookie: foundation resets never touch any previous game save. */
 export function registerFoundation(app:express.Express,db:DatabaseSync){
  db.exec('CREATE TABLE IF NOT EXISTS foundation_saves(id TEXT PRIMARY KEY,state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS foundation_actions(session TEXT,id TEXT,payload TEXT,amount INTEGER,PRIMARY KEY(session,id))');
@@ -36,7 +36,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync){
  });
  const botAction=z.discriminatedUnion('action',[
   z.object({action:z.literal('build'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
-  z.object({action:z.literal('rotate'),building:z.enum(['rig','fabricator','hangar']),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('rotate'),building:z.enum(['hq','station','rig','fabricator','hangar']),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('move'),building:z.enum(['hq','station','rig','fabricator','hangar']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('train'),count:z.number().int().min(1).max(10)}).strict(),
   z.object({action:z.literal('start'),layout:z.number().int().min(0).max(1)}).strict(),
   z.object({action:z.literal('deploy'),raidId:z.string().uuid(),position:z.object({x:z.number().finite(),y:z.number().finite()}).strict()}).strict(),
@@ -53,6 +54,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync){
    advanceFoundation(state,now);
    if(!cached){const c=input.command;
     if(c.action==='build')buildFabricator(state,c.position,now,c.orientation);
+    else if(c.action==='move')moveBuilding(state,c.building,c.position,c.orientation,now);
     else if(c.action==='rotate')rotateBuilding(state,c.building,c.orientation,now);
     else if(c.action==='train')trainScrap(state,c.count,now);
     else if(c.action==='start')startBotRaid(state,randomUUID(),c.layout,now);
