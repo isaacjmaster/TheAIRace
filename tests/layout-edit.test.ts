@@ -1,3 +1,4 @@
+import {buildLegacyFabricator as buildFabricator} from './helpers/legacy-foundation';
 import {identityHeaders,saveIdForCookie} from './helpers/identity';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -8,7 +9,7 @@ import {join} from 'node:path';
 import express from 'express';
 import {DatabaseSync} from 'node:sqlite';
 import {registerFoundation} from '../server/foundation-api';
-import {initialFoundation,buildRig,buildFabricator,advanceFoundation,trainScrap,moveBuilding,rotateBuilding,buildingLayout,validLayoutPosition,validFoundationPosition,type FoundationState,type RotatableBuilding,type RigPosition,type Orientation} from '../shared/foundation';
+import {initialFoundation,buildRig,advanceFoundation,trainScrap,moveBuilding,rotateBuilding,buildingLayout,validLayoutPosition,validFoundationPosition,type FoundationState,type RotatableBuilding,type RigPosition,type Orientation} from '../shared/foundation';
 const epoch=1700000000000;
 function ready(){const s=initialFoundation();s.compute=500;buildRig(s,[6,0],epoch);buildFabricator(s,[16,-6],epoch+15000);advanceFoundation(s,epoch+30000);trainScrap(s,3,epoch+30000);return s;}
 test('all five HQ structures move and rotate without charging, rebuilding, losing stored Compute or altering queued bots',()=>{

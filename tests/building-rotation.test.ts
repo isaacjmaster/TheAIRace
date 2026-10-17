@@ -1,3 +1,4 @@
+import {buildLegacyFabricator as buildFabricator} from './helpers/legacy-foundation';
 import {identityHeaders,saveIdForCookie} from './helpers/identity';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -9,7 +10,7 @@ import express from 'express';
 import {DatabaseSync} from 'node:sqlite';
 import * as THREE from 'three';
 import {registerFoundation} from '../server/foundation-api';
-import {initialFoundation,buildRig,buildFabricator,advanceFoundation,rotateBuilding,moveRig,trainScrap,buildingFootprint,hangarPlacement,validFoundationPosition,BUILDER_STATION_POSITION,type Orientation,type FoundationState} from '../shared/foundation';
+import {initialFoundation,buildRig,advanceFoundation,rotateBuilding,moveRig,trainScrap,buildingFootprint,hangarPlacement,validFoundationPosition,BUILDER_STATION_POSITION,type Orientation,type FoundationState} from '../shared/foundation';
 import {builderStationModel} from '../src/art/BotBuildings';
 import {founderHQ,pickFoundationBuilding} from '../src/art/FounderHQ';
 import {WorldKit} from '../src/art/world';
