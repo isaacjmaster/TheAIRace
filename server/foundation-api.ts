@@ -8,7 +8,7 @@ import type express from 'express';
 import type { DatabaseSync } from 'node:sqlite';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { establishBuilderStation,moveBuilding,rotateBuilding,buildFabricator,buildHangar,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
+import { upgradeFounderHQ,establishBuilderStation,moveBuilding,rotateBuilding,buildFabricator,buildHangar,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
 /** Separate table and cookie: foundation resets never touch any previous game save. */
 export function registerFoundation(app:express.Express,db:DatabaseSync,options:{cookieName?:string;legacyPaths?:string[];clock?:()=>number}={}){
  db.exec('CREATE TABLE IF NOT EXISTS foundation_saves(id TEXT PRIMARY KEY,state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS foundation_actions(session TEXT,id TEXT,payload TEXT,amount INTEGER,PRIMARY KEY(session,id))');
@@ -80,6 +80,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   }catch(e){db.exec('ROLLBACK');res.status(400).json({error:(e as Error).message});}
  });
  const botAction=z.discriminatedUnion('action',[
+  z.object({action:z.literal('upgrade-hq')}).strict(),
   z.object({action:z.literal('establish-station'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('clear-obstacle'),obstacleId:z.string().min(1).max(100)}).strict(),
   z.object({action:z.literal('build-hangar'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
@@ -101,7 +102,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
    if(cached&&cached.payload!==payload)throw new Error('Request already used for another action.');
    ensureLandscape(state,now,randomUUID());advanceFoundation(state,now);influence.settle(player.company.playerId,state,now);xp.settle(player.company.playerId,state,now);
    if(!cached){const c=input.command;
-    if(c.action==='establish-station')establishBuilderStation(state,c.position,c.orientation);
+    if(c.action==='upgrade-hq')upgradeFounderHQ(state,now,input.requestId);
+    else if(c.action==='establish-station')establishBuilderStation(state,c.position,c.orientation);
     else if(c.action==='clear-obstacle')clearObstacle(state,c.obstacleId,now);
     else if(c.action==='build')buildFabricator(state,c.position,now,c.orientation);
     else if(c.action==='build-hangar')buildHangar(state,c.position,now,c.orientation);

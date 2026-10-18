@@ -1,3 +1,4 @@
+import {founderHqLevel} from '../../shared/founder-hq';
 import {lightCampus} from './CampusFinish';
 import {constructionSignature,constructionWork,builderReturn,type BuilderWork} from './builderWork';
 import {animateScrapBot,turnScrapBot,handoffScrapPose} from './ScrapBotMotion';
@@ -35,6 +36,7 @@ export class HeadquartersScene {
  private scene=new THREE.Scene();private camera=new THREE.OrthographicCamera();private kit=new WorldKit('campus');
  private center=new THREE.Vector3(-3,0,0);private target=new THREE.Vector3(-3,0,0);private zoomTarget=1;
  private home=new THREE.Vector3(-3,0,0);private worldSpan=30;private pickables:THREE.Object3D[]=[];private raycaster=new THREE.Raycaster();
+ private hqReveal=0;private founderHouse?:THREE.Group;private founderLevel:1|2=1;private hqScaffold?:THREE.Group;private hqScaffoldKey='';
  private garage=new THREE.Group();private buildingGroups=new Map<BuildingId,THREE.Group>();
  private obstacles=new Map<string,THREE.Group>();private obstacleHits:THREE.Object3D[]=[];
  private builders:{group:THREE.Group;from:THREE.Vector3;to:THREE.Vector3;working:boolean;spark:THREE.Object3D}[]=[];
@@ -52,7 +54,7 @@ export class HeadquartersScene {
  }
  private build(level:number,training:number){
   const k=this.kit,s=this.garage;this.scene.add(s);this.buildingGroups.set('hq',s);
-  if(this.minimal){founderHQ(k,s);return;}
+  if(this.minimal){this.founderHouse=founderHQ(k,s);return;}
   k.box(s,[12,.25,9],[-5,.09,-1],'#d9e9df',.15);
   for(let x=-10;x<=0;x+=2)for(let z=-4;z<=2;z+=2)k.box(s,[1.94,.035,1.94],[x,.24,z],'#fff5dc',.03);
   k.box(s,[12,4.3,.28],[-5,2.35,-5.4],c.dark);k.box(s,[.28,4.3,9],[-11,2.35,-1],c.slate);
@@ -188,14 +190,15 @@ export class HeadquartersScene {
   this.previewMaterials.forEach(m=>m.dispose());this.previewMaterials=[];
  }
  syncLandmarks(state:FoundationState){
+  const level=founderHqLevel(state);if(this.minimal&&level!==this.founderLevel){this.founderHouse?.removeFromParent();this.founderHouse=founderHQ(this.kit,this.garage,level);this.founderLevel=level;this.renderer.domElement.dataset.founderHqLevel=String(level);if(this.landmarksSynced&&!this.reduced){this.hqReveal=.45;const fx=new THREE.Group();const layout=buildingLayout(state,'hq')!;fx.position.set(layout.position[0],1,layout.position[1]);for(let i=0;i<10;i++)this.particleKit.box(fx,[.13,.12,.13],[Math.sin(i*2.4)*3,1+i*.25,Math.cos(i*2.4)*2],i%2?c.gold:c.cyan,.025);this.scene.add(fx);this.cleanupParticles.push({group:fx,time:0});}}
   const hq=buildingLayout(state,'hq')!,station=buildingLayout(state,'station');this.stationOwned=!!station;this.builderHomeYaw=(station?.orientation??0)*Math.PI/2;const bot=this.builders[0];if(bot)bot.group.visible=!!station;if(this.stationGroup)this.stationGroup.visible=!!station;this.renderer.domElement.dataset.builders=String(state.builders);this.home.set(hq.position[0]+2,0,hq.position[1]+1);if(!this.landmarksSynced&&state.hqLayout)this.target.copy(this.home);this.landmarksSynced=true;
-  this.garage.position.set(hq.position[0]+5,0,hq.position[1]+1);if(this.garage.children[0])this.garage.children[0].rotation.y=hq.orientation*Math.PI/2;
+  this.garage.position.set(hq.position[0]+5,0,hq.position[1]+1);if(this.founderHouse)this.founderHouse.rotation.y=hq.orientation*Math.PI/2;
   if(station){this.stationGroup?.position.set(station.position[0],0,station.position[1]);if(this.stationGroup)this.stationGroup.rotation.y=station.orientation*Math.PI/2;}
  }
  private layoutGroup(kind:RotatableBuilding){return kind==='hq'?this.garage:kind==='station'?this.stationGroup:kind==='rig'?this.rigGroup:kind==='rig2'?this.rig2Group:kind==='fabricator'?this.fabricatorGroup:this.hangarGroup;}
  previewLayout(kind:RotatableBuilding,position:RigPosition,orientation:Orientation,valid:boolean){
   if(this.layoutPreviewKind!==kind){this.clearRigPreview();this.layoutPreviewKind=kind;const k=this.rigPreviewKit=new WorldKit();
-   if(kind==='hq'){this.rigPreview=new THREE.Group();const house=founderHQ(k,this.rigPreview);house.position.set(0,0,0);}
+   if(kind==='hq'){this.rigPreview=new THREE.Group();const house=founderHQ(k,this.rigPreview,this.founderLevel);house.position.set(0,0,0);}
    else this.rigPreview=kind==='station'?builderStationModel(k):kind==='rig'||kind==='rig2'?gpuRigModel(k):kind==='fabricator'?fabricatorModel(k):hangarModel(k,0);
    this.rigPreviewMaterial=new THREE.MeshBasicMaterial({color:c.cyan,transparent:true,opacity:.55,depthWrite:false});this.rigPreview.traverse(o=>{if(o instanceof THREE.Mesh){o.material=this.rigPreviewMaterial!;o.castShadow=false;}if(o instanceof THREE.Light)o.visible=false;});this.scene.add(this.rigPreview);
    this.rigGrid=new THREE.GridHelper(56,56,c.cyan,c.slate);this.rigGrid.position.set(2,.13,3);this.scene.add(this.rigGrid);
@@ -204,7 +207,7 @@ export class HeadquartersScene {
   this.rigPreview!.position.set(position[0],.2,position[1]);this.rigPreview!.rotation.y=orientation*Math.PI/2;this.rigPreviewMaterial!.color.set(valid?c.cyan:c.coral);
  }
  syncRig(state:FoundationState,now=Date.now()){
-  this.syncConstruction(state,now);
+  this.syncConstruction(state,now);this.syncHQScaffold(state,now);
   const rig=state.rig,rig2=state.rig2,h=getHangar(state),key=JSON.stringify([state.stationLayout,rig?.position,rig?.orientation,rig2?.position,rig2?.orientation,state.fabricator,h,!!state.buildersBusy,!!state.landscape?.clearing,rig?.completesAt,rig2?.completesAt]);if(key===this.rigKey)return;this.rigKey=key;
   this.rigGroup?.removeFromParent();this.rigKit?.dispose();this.rig2Group?.removeFromParent();this.rig2Kit?.dispose();this.rigGroup=undefined;this.rig2Group=undefined;this.rigPosition=rig?.position;this.rig2Position=rig2?.position;
   const bot=this.builders[0];if(bot){bot.working=!!state.buildersBusy;const home=buildingLayout(state,'station')?.position;if(home)bot.to.set(home[0],.12,home[1]);}
@@ -284,6 +287,13 @@ export class HeadquartersScene {
   if(working)bot.group.rotation.y=Math.atan2(j.obstacle.position[0]-bot.group.position.x,j.obstacle.position[1]-bot.group.position.z);bot.group.rotation.z=working&&!this.reduced?Math.sin(this.lifeClock*12)*.07:0;bot.spark.visible=working&&!this.reduced&&Math.sin(this.lifeClock*18)>0;
   this.renderer.domElement.dataset.builderPosition=bot.group.position.x.toFixed(1)+','+bot.group.position.z.toFixed(1);return true;
  }
+ private syncHQScaffold(state:FoundationState,now:number){
+  const active=!!state.hqUpgrade&&now<state.hqUpgrade.completesAt,key=active?JSON.stringify([state.hqUpgrade!.id,buildingLayout(state,'hq')]):'';
+  if(key===this.hqScaffoldKey)return;this.hqScaffoldKey=key;this.hqScaffold?.removeFromParent();this.hqScaffold=undefined;if(!active)return;
+  const g=new THREE.Group(),layout=buildingLayout(state,'hq')!;g.position.set(...[layout.position[0],0,layout.position[1]] as [number,number,number]);g.rotation.y=layout.orientation*Math.PI/2;this.scene.add(g);this.hqScaffold=g;
+  for(const x of [-4.2,4.2])for(const z of [-2.8,3.4]){const pole=this.kit.box(g,[.08,4.9,.08],[x,2.5,z],'#e3ba65',.02);pole.raycast=()=>{};}
+  for(const x of [-4.2,4.2]){const rail=this.kit.box(g,[.09,.1,6.25],[x,3.75,.3],'#e3ba65',.02);rail.raycast=()=>{};}
+ }
  private syncConstruction(state:FoundationState,now:number){
   const bot=this.builders[0];if(!bot)return;const signature=constructionSignature(state,now);if(signature&&signature===this.constructionKey)return;const plan=signature?constructionWork(state,now):undefined;
   if(plan){if(plan.key!==this.constructionKey){this.constructionKey=plan.key;this.workPlan=plan;this.workRoute=0;this.workPause=0;this.returning=false;this.builderRoute=plan.routes[0]||[];this.builderSegment=1;const first=this.builderRoute[0];if(first)bot.group.position.set(first[0],.12,first[1]);}}
@@ -301,6 +311,7 @@ export class HeadquartersScene {
   this.renderer.domElement.dataset.builderPhase=this.returning?'returning':working?'construction-working':'construction-traveling';this.renderer.domElement.dataset.builderPosition=g.position.x.toFixed(2)+','+g.position.z.toFixed(2);return true;
  }
  private animateWorld(dt:number){
+  if(this.hqReveal>0&&this.founderHouse){this.hqReveal=Math.max(0,this.hqReveal-dt);this.founderHouse.scale.setScalar(1-.025*this.hqReveal/.45);}
   this.mapBoundary?.update(dt,this.reduced);
   this.animateBotLife(dt);
   const lamp=this.fabricatorGroup?.getObjectByName('production-light');if(lamp)lamp.visible=!this.producing||this.reduced||Math.sin(this.clock*5)>-.4;
@@ -393,5 +404,5 @@ export class HeadquartersScene {
  pan(dx:number,dy:number){const scale=(this.camera.right-this.camera.left)/Math.max(1,this.host.clientWidth)/this.camera.zoom;const right=new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld,0);const up=new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld,1);up.y=0;up.normalize();this.target.addScaledVector(right,-dx*scale).addScaledVector(up,dy*scale);this.target.y=0;if(this.minimal){this.target.x=THREE.MathUtils.clamp(this.target.x,-24,28);this.target.z=THREE.MathUtils.clamp(this.target.z,-19,24);return;}const flat=new THREE.Vector2(this.target.x-this.home.x,this.target.z-this.home.z);const limit=this.worldSpan*.28;if(flat.length()>limit)flat.setLength(limit);this.target.set(this.home.x+flat.x,0,this.home.z+flat.y);}
  reset(){this.target.copy(this.home);this.zoomTarget=1;}
  update(dt:number){if(this.paused)return;this.clock+=dt;const next=this.center.clone().lerp(this.target,this.reduced?1:Math.min(1,dt*10));this.camera.position.add(next.clone().sub(this.center));this.center.copy(next);this.camera.lookAt(this.center);this.camera.zoom=THREE.MathUtils.lerp(this.camera.zoom,this.zoomTarget,this.reduced?1:Math.min(1,dt*10));this.camera.updateProjectionMatrix();this.animateWorld(dt);this.renderer.render(this.scene,this.camera);this.renderer.domElement.dataset.drawCalls=String(this.renderer.info.render.calls);this.renderer.domElement.dataset.triangles=String(this.renderer.info.render.triangles);}
- dispose(){this.mapBoundary?.dispose();this.landscapeKit?.dispose();this.particleKit.dispose();document.removeEventListener('visibilitychange',this.visibility);for(const w of this.walkers)w.group.removeFromParent();this.walkers=[];this.botKit?.dispose();this.clearRigPreview();this.rigKit?.dispose();this.rig2Kit?.dispose();this.clearPlacement();this.observer.disconnect();this.renderer.domElement.removeEventListener('webglcontextlost',this.lost);this.scene.traverse(o=>{if(o instanceof THREE.DirectionalLight)o.shadow.dispose();});this.kit.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
+ dispose(){this.hqScaffold?.removeFromParent();this.mapBoundary?.dispose();this.landscapeKit?.dispose();this.particleKit.dispose();document.removeEventListener('visibilitychange',this.visibility);for(const w of this.walkers)w.group.removeFromParent();this.walkers=[];this.botKit?.dispose();this.clearRigPreview();this.rigKit?.dispose();this.rig2Kit?.dispose();this.clearPlacement();this.observer.disconnect();this.renderer.domElement.removeEventListener('webglcontextlost',this.lost);this.scene.traverse(o=>{if(o instanceof THREE.DirectionalLight)o.shadow.dispose();});this.kit.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
 }

@@ -8,7 +8,7 @@ import {readFileSync} from 'node:fs';
 import {registerFoundation} from '../server/foundation-api';
 import {initialFoundation} from '../shared/foundation';
 
-test('foundation starts with only Founder HQ, no builder yet and sole Compute resource',()=>{assert.deepEqual(initialFoundation(),{version:1,revision:0,companyName:'Garage Intelligence',level:1,compute:100,capacity:1000,builders:0,starterStation:'unplaced',raidRecord:{wins:[],completeHistory:true}});});
+test('foundation starts with only Founder HQ, no builder yet and sole Compute resource',()=>{assert.deepEqual(initialFoundation(),{version:1,revision:0,founderHqLevel:1,companyName:'Garage Intelligence',level:1,compute:100,capacity:1000,builders:0,starterStation:'unplaced',raidRecord:{wins:[],completeHistory:true}});});
 test('foundation saves are isolated; reset needs explicit confirmation, checks revision and never touches old data',async()=>{
  const db=new DatabaseSync(':memory:');db.exec("CREATE TABLE sessions(id TEXT PRIMARY KEY,state TEXT); INSERT INTO sessions VALUES('old','preserve all legacy progress'); CREATE TABLE unrelated(value TEXT); INSERT INTO unrelated VALUES('untouched');");
  const app=express();app.use(express.json());registerFoundation(app,db);const server=app.listen(0,'127.0.0.1');await new Promise<void>(r=>server.once('listening',r));const url=`http://127.0.0.1:${(server.address() as {port:number}).port}`;
