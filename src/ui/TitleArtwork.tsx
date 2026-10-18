@@ -1,7 +1,14 @@
-/** Static optimized art plus lightweight road-light layers; no WebGL or game state. */
-export function TitleArtwork(){return <div className="title-artwork" aria-hidden="true">
- <picture><source media="(orientation: landscape)" srcSet="/art/title/ava-hq-title-v1-desktop.webp"/><img src="/art/title/ava-hq-title-v1-portrait.webp" alt="" width="941" height="1672" fetchPriority="high" draggable={false}/></picture>
- <svg className="title-road-lights title-road-portrait" viewBox="0 0 941 1672" preserveAspectRatio="xMidYMid slice"><path className="road-glow road-cyan" d="M941 1280C740 1230 470 1200 610 1140S950 1080 690 1070S230 1100 0 1170"/><path className="road-glow road-pink" d="M941 1018C740 962 570 965 450 940S200 908 100 903"/></svg>
- <svg className="title-road-lights title-road-desktop" viewBox="0 0 1672 941" preserveAspectRatio="xMidYMid slice"><path className="road-glow road-cyan" d="M1672 940C1330 800 960 680 610 610S290 540 470 520S730 520 510 505S180 520 0 550"/><path className="road-glow road-pink" d="M290 465C470 432 690 428 585 398S690 354 785 355"/></svg>
- <div className="title-sun-glow"/>
- </div>;}
+import {useEffect,useRef,useState} from 'react';
+import type {TitleDiorama} from '../art/TitleDiorama';
+
+/** Decorative menu scene only: no player state, input handling, or game simulation. */
+export function TitleArtwork({active=true}:{active?:boolean}){
+ const host=useRef<HTMLDivElement>(null),scene=useRef<TitleDiorama|null>(null),activeRef=useRef(active);
+ const [failed,setFailed]=useState(false);activeRef.current=active;
+ useEffect(()=>{let cancelled=false;
+  void import('../art/TitleDiorama').then(({TitleDiorama})=>{if(cancelled||!host.current)return;scene.current=new TitleDiorama(host.current,()=>setFailed(true));scene.current.setActive(activeRef.current);}).catch(()=>{if(!cancelled)setFailed(true);});
+  return ()=>{cancelled=true;scene.current?.dispose();scene.current=null;};
+ },[]);
+ useEffect(()=>{scene.current?.setActive(active);},[active]);
+ return <div className="title-artwork" aria-hidden="true"><div className="title-diorama" ref={host} hidden={failed}/>{failed&&<svg className="title-scene-fallback" viewBox="0 0 480 340"><path d="M40 200 240 85 440 200 240 315Z" fill="#24b9b4"/><path d="M40 184 240 69 440 184 240 299Z" fill="#fffbe8"/><path d="m120 162 80-46 76 44v80l-76 44-80-46Z" fill="#f1f5ef"/><path d="m105 163 95-79 90 73-90 53Z" fill="#294a60"/><path d="m155 191 42 24v36l-42-24Z" fill="#ffd359"/><path d="m306 180 47-27 38 22v55l-47 27-38-22Z" fill="#294a60"/><circle cx="325" cy="212" r="12" fill="#33d9d5"/><circle cx="350" cy="227" r="12" fill="#33d9d5"/></svg>}</div>;
+}

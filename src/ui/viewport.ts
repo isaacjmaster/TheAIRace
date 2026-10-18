@@ -1,11 +1,11 @@
 /** CSS owns the dynamic viewport, matching Maze Sprint's working mobile approach. */
-export const SCREEN_BACKGROUNDS={splash:'#07090c',menu:'#58bbfd',game:'#b5eafa'} as const;
+export const SCREEN_BACKGROUNDS={splash:'#07090c',menu:'#ace8f5',game:'#b5eafa'} as const;
 export function setPresentationBackground(phase:keyof typeof SCREEN_BACKGROUNDS){
  const color=SCREEN_BACKGROUNDS[phase];
  document.documentElement.dataset.presentation=phase;
  document.documentElement.style.setProperty('--app-background',color);
  // The standalone native region can paint the page background rather than artwork.
- // Keep the studio fade's endpoint synchronized with the title sky, not HQ blue.
+ // Keep the studio fade's endpoint synchronized with the menu sky, not HQ blue.
  document.documentElement.style.setProperty('--title-sky-color',SCREEN_BACKGROUNDS.menu);
  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',color);
 }
