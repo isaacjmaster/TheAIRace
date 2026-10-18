@@ -1,3 +1,4 @@
+import {lightCampus} from './CampusFinish';
 import {constructionSignature,constructionWork,builderReturn,type BuilderWork} from './builderWork';
 import {animateScrapBot,turnScrapBot,handoffScrapPose} from './ScrapBotMotion';
 import {MapBoundary,boundaryView} from './MapBoundary';
@@ -18,7 +19,7 @@ import { lightWorld, palette as c, WorldKit } from './world';
 export class HeadquartersScene {
  private mapBoundary?:MapBoundary;
  private landscapeKit?:WorldKit;private landscapeGroup?:THREE.Group;private landscapeKey='';private landscapeHits:THREE.Object3D[]=[];private landscapeItems:LandscapeObstacle[]=[];private cleanupJob?:ClearingJob;private cleanupNow=0;private cleanupEnd?:number;private lastCleanup?:string;
- private cleanupParticles:{group:THREE.Group;time:number}[]=[];private particleKit=new WorldKit();
+ private cleanupParticles:{group:THREE.Group;time:number}[]=[];private particleKit=new WorldKit('campus');
  private stationOwned=true;private workPlan?:BuilderWork;private builderRoute:RigPosition[]=[];private builderSegment=1;private workRoute=0;private workPause=0;private returning=false;private constructionKey='';
  private landmarksSynced=false;private builderHomeYaw=0;
  private layoutPreviewKind?:RotatableBuilding;
@@ -31,7 +32,7 @@ export class HeadquartersScene {
  private rigGroup?:THREE.Group;private rigKit?:WorldKit;private rigKey='';private rigPosition?:RigPosition;
  private rigPreview?:THREE.Group;private rigPreviewKit?:WorldKit;private rigPreviewMaterial?:THREE.MeshBasicMaterial;private rigGrid?:THREE.GridHelper;
  readonly renderer:THREE.WebGLRenderer;
- private scene=new THREE.Scene();private camera=new THREE.OrthographicCamera();private kit=new WorldKit();
+ private scene=new THREE.Scene();private camera=new THREE.OrthographicCamera();private kit=new WorldKit('campus');
  private center=new THREE.Vector3(-3,0,0);private target=new THREE.Vector3(-3,0,0);private zoomTarget=1;
  private home=new THREE.Vector3(-3,0,0);private worldSpan=30;private pickables:THREE.Object3D[]=[];private raycaster=new THREE.Raycaster();
  private garage=new THREE.Group();private buildingGroups=new Map<BuildingId,THREE.Group>();
@@ -43,10 +44,10 @@ export class HeadquartersScene {
  private reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  private lost=(e:Event)=>{e.preventDefault();this.paused=true;this.onError();};
  constructor(private host:HTMLDivElement,level:number,training:number,private campus:CampusState,private onError:()=>void,private minimal=false){
-  this.renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});lightWorld(this.renderer,this.scene);
+  this.renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});const sun=lightWorld(this.renderer,this.scene);lightCampus(this.renderer,this.scene,sun);
   this.renderer.domElement.setAttribute('role','img');this.renderer.domElement.setAttribute('aria-label',`3D headquarters level ${campus.hq}. ${level===0?'Founder HQ, with a founder working at a laptop through the window and a Builder Bot nearby.':level===1?'A furnished workstation, chair, lamp and plants.':'GPU workbench, server racks and upgraded lighting.'} Drag to pan and pinch to zoom.`);
   this.renderer.domElement.dataset.stage=String(level);host.appendChild(this.renderer.domElement);this.renderer.domElement.addEventListener('webglcontextlost',this.lost);
-  document.addEventListener('visibilitychange',this.visibility);this.buildEnvironment();this.build(Math.min(2,level),training);this.buildCampus(campus);this.buildObstacles(campus);this.buildBots(campus);if(this.minimal){this.stationGroup=builderStationModel(this.kit);this.stationGroup.position.set(BUILDER_STATION_POSITION[0],0,BUILDER_STATION_POSITION[1]);this.scene.add(this.stationGroup);this.home.set(-3,0,0);this.worldSpan=36;}this.center.copy(this.home);this.target.copy(this.home);const offset=new THREE.Vector3(this.minimal?13:7,this.minimal?28:23,30);if(this.minimal){const extended=boundaryView(offset);offset.copy(extended.offset);if(this.scene.fog instanceof THREE.Fog){this.scene.fog.near+=extended.fogShift;this.scene.fog.far+=extended.fogShift;}}this.camera.position.copy(this.home).add(offset);this.camera.lookAt(this.center);
+  document.addEventListener('visibilitychange',this.visibility);this.buildEnvironment();this.build(Math.min(2,level),training);this.buildCampus(campus);this.buildObstacles(campus);this.buildBots(campus);if(this.minimal){this.stationGroup=builderStationModel(this.kit);this.kit.grounding(this.stationGroup,3.7,2.8);this.stationGroup.position.set(BUILDER_STATION_POSITION[0],0,BUILDER_STATION_POSITION[1]);this.scene.add(this.stationGroup);this.home.set(-3,0,0);this.worldSpan=36;}this.center.copy(this.home);this.target.copy(this.home);const offset=new THREE.Vector3(this.minimal?13:7,this.minimal?28:23,30);if(this.minimal){const extended=boundaryView(offset);offset.copy(extended.offset);if(this.scene.fog instanceof THREE.Fog){this.scene.fog.near+=extended.fogShift;this.scene.fog.far+=extended.fogShift;}}this.camera.position.copy(this.home).add(offset);this.camera.lookAt(this.center);
   this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(host);this.resize();
  }
  private build(level:number,training:number){
@@ -99,7 +100,7 @@ export class HeadquartersScene {
   const k=this.kit,s=this.scene;k.terrain(s,33,29,this.minimal?{minX:-31.5,maxX:35.5,minZ:-26,maxZ:31}:undefined);
   if(this.minimal){this.mapBoundary=new MapBoundary();s.add(this.mapBoundary.group);}
   // Low retaining walls, a continuous service road and planted border make this a miniature campus.
-  k.box(s,[55,.1,3.2],[1,-.02,9],c.dark,.03);
+  const road=k.box(s,[55,.1,3.2],[1,-.02,9],c.dark,.03);road.material=k.roadMaterial();
   for(const z of [7.3,10.7])k.box(s,[55,.18,.24],[1,.01,z],c.slate);
   for(let x=-24;x<28;x+=5)k.box(s,[1.7,.025,.07],[x,.045,9],'#fff5dc',.01);
   for(const z of [-20,25]){k.box(s,[55,.4,.65],[2,.08,z],c.dark);k.box(s,[55,.04,.12],[2,.31,z],c.slate);}
@@ -207,7 +208,7 @@ export class HeadquartersScene {
   const rig=state.rig,rig2=state.rig2,h=getHangar(state),key=JSON.stringify([state.stationLayout,rig?.position,rig?.orientation,rig2?.position,rig2?.orientation,state.fabricator,h,!!state.buildersBusy,!!state.landscape?.clearing,rig?.completesAt,rig2?.completesAt]);if(key===this.rigKey)return;this.rigKey=key;
   this.rigGroup?.removeFromParent();this.rigKit?.dispose();this.rig2Group?.removeFromParent();this.rig2Kit?.dispose();this.rigGroup=undefined;this.rig2Group=undefined;this.rigPosition=rig?.position;this.rig2Position=rig2?.position;
   const bot=this.builders[0];if(bot){bot.working=!!state.buildersBusy;const home=buildingLayout(state,'station')?.position;if(home)bot.to.set(home[0],.12,home[1]);}
-  for(const [slot,r] of [['rig',rig],['rig2',rig2]] as const){if(!r)continue;const k=new WorldKit(),group=gpuRigModel(k);group.position.set(r.position[0],0,r.position[1]);group.rotation.y=(r.orientation??0)*Math.PI/2;this.scene.add(group);if(slot==='rig'){this.rigKit=k;this.rigGroup=group;}else{this.rig2Kit=k;this.rig2Group=group;}
+  for(const [slot,r] of [['rig',rig],['rig2',rig2]] as const){if(!r)continue;const k=new WorldKit('campus'),group=gpuRigModel(k);k.grounding(group,4.6,3.6);group.position.set(r.position[0],0,r.position[1]);group.rotation.y=(r.orientation??0)*Math.PI/2;this.scene.add(group);if(slot==='rig'){this.rigKit=k;this.rigGroup=group;}else{this.rig2Kit=k;this.rig2Group=group;}
    if(state.buildersBusy&&!state.landscape?.clearing&&r.completesAt===Math.max(...[rig,rig2,state.fabricator,h].filter(v=>!!v).map(v=>v!.completesAt))){for(const x of [-2,2])for(const z of [-1.5,1.5])k.box(group,[.1,2.8,.1],[x,1.4,z],c.gold);for(const z of [-1.5,1.5])k.box(group,[4.1,.1,.1],[0,2.8,z],c.gold);}}
  }
  syncBots(state:FoundationState,now:number){
@@ -219,8 +220,8 @@ export class HeadquartersScene {
   if(reset||bots<this.stagedCount||key!==this.botKey){for(const w of this.walkers)w.group.removeFromParent();this.walkers=[];}
   this.stagedCount=bots;
   if(key!==this.botKey){this.botKey=key;this.fabricatorGroup?.removeFromParent();this.hangarGroup?.removeFromParent();this.botKit?.dispose();this.fabricatorGroup=undefined;this.hangarGroup=undefined;
-   if(f||h){const k=this.botKit=new WorldKit();if(f){this.fabricatorGroup=fabricatorModel(k);this.fabricatorGroup.position.set(f.position[0],0,f.position[1]);this.fabricatorGroup.rotation.y=(f.orientation??0)*Math.PI/2;this.scene.add(this.fabricatorGroup);}
-    if(h){this.hangarGroup=hangarModel(k,10);this.hangarGroup.position.set(h.position[0],0,h.position[1]);this.hangarGroup.rotation.y=(h.orientation??0)*Math.PI/2;this.scene.add(this.hangarGroup);}}
+   if(f||h){const k=this.botKit=new WorldKit('campus');if(f){this.fabricatorGroup=fabricatorModel(k);k.grounding(this.fabricatorGroup,4.7,3.7);this.fabricatorGroup.position.set(f.position[0],0,f.position[1]);this.fabricatorGroup.rotation.y=(f.orientation??0)*Math.PI/2;this.scene.add(this.fabricatorGroup);}
+    if(h){this.hangarGroup=hangarModel(k,10);k.grounding(this.hangarGroup,4.7,3.7);this.hangarGroup.position.set(h.position[0],0,h.position[1]);this.hangarGroup.rotation.y=(h.orientation??0)*Math.PI/2;this.scene.add(this.hangarGroup);}}
 
   }
   if(ready&&this.botKit&&!reset)for(const slot of incoming){const points=dockingRoute(state,slot);if(!points.length)continue;const group=scrapBotModel(this.botKit);group.name='walking-scrapbot';group.scale.setScalar(.7);group.position.set(...points[0]);group.visible=false;this.scene.add(group);this.walkers.push({slot,group,motion:new DeliveryMotion(points),delay:this.walkers.length*.35,settled:0,finished:false});}
@@ -265,7 +266,7 @@ export class HeadquartersScene {
  animateClear(obstacleId:string){const group=this.obstacles.get(obstacleId);if(!group)return;this.obstacleHits=this.obstacleHits.filter(o=>o.userData.obstacleId!==obstacleId);this.clearing.push({group,time:0});this.obstacles.delete(obstacleId);}
  syncLandscape(state:FoundationState,now:number){
   this.cleanupJob=state.landscape?.clearing;this.cleanupNow=now;const items=state.landscape?.items||[],key=JSON.stringify(items);
-  if(key!==this.landscapeKey){this.landscapeKey=key;this.landscapeGroup?.removeFromParent();this.landscapeKit?.dispose();this.landscapeKit=new WorldKit();this.landscapeGroup=new THREE.Group();this.scene.add(this.landscapeGroup);this.landscapeHits=[];this.landscapeItems=items;
+  if(key!==this.landscapeKey){this.landscapeKey=key;this.landscapeGroup?.removeFromParent();this.landscapeKit?.dispose();this.landscapeKit=new WorldKit('campus');this.landscapeGroup=new THREE.Group();this.scene.add(this.landscapeGroup);this.landscapeHits=[];this.landscapeItems=items;
    for(const o of items){const model=landscapeModel(this.landscapeKit,o);this.landscapeGroup.add(model.group);this.landscapeHits.push(model.hit);}}
   const last=state.landscape?.lastClear;if(last&&this.lastCleanup&&last.id!==this.lastCleanup&&now-last.at<6000&&!this.reduced){const g=new THREE.Group();g.position.set(last.position[0],.5,last.position[1]);for(let i=0;i<10;i++){const p=this.particleKit.box(g,[.12,.1,.15],[Math.sin(i*2.4)*.8,.3+i*.1,Math.cos(i*2.4)*.8],last.kind==='tree'?'#75bd83':i%3===0?c.gold:c.slate,.02);p.rotation.y=i;}this.scene.add(g);this.cleanupParticles.push({group:g,time:0});}this.lastCleanup=last?.id||'none';
   this.renderer.domElement.dataset.obstacles=String(items.length);
