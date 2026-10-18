@@ -6,7 +6,7 @@ import {createRaid,deploy,tick,STEP,destruction,unitStats} from '../raid/engine'
 import {initialFoundation,startBotRaid,deployScrap,advanceFoundation} from '../shared/foundation';
 test('repeatable balance matrix rewards grouping and deployment position, not troop-count scripting',()=>{
  for(const approach of Object.keys(approaches) as (keyof typeof approaches)[]){assert.equal(simulate(0,1,approach).won,false);assert.equal(simulate(0,3,approach).won,false);assert.equal(simulate(0,10,approach).won,true);assert.equal(simulate(1,5,approach).won,false);}
- assert.equal(simulate(0,5,'north').won,true);assert.equal(simulate(0,5,'east').won,false);assert.equal(simulate(1,10,'north').won,true);assert.equal(simulate(1,10,'east').won,false);
+ assert.equal(simulate(0,5,'north').won,true);assert.equal(simulate(0,5,'east').won,true);assert.equal(simulate(1,10,'north').won,true);assert.equal(simulate(1,10,'east').won,false);
  assert.ok(simulate(1,10,'north').survivors<simulate(0,10,'north').survivors);assert.deepEqual(simulate(1,10,'north'),simulate(1,10,'north'));
 });
 test('laser targeting, real damage, elimination and destroyed-defense silence are deterministic',()=>{

@@ -5,7 +5,7 @@ export type Point = { x: number; y: number };
 export type Building = Point & { id: number; kind: 'core' | 'vault' | 'turret' | 'wall' | 'missile' | 'shield' | 'repair'; disabledUntil?: number; hp: number; maxHp: number; cooldown: number; target?: number };
 export type Unit = Point & { id: number; kind: Kind; hp: number; maxHp: number; cooldown: number; target?: number; objective?: number; waypoint?: Point };
 export type Effect = { id: number; from: Point; to: Point; ttl: number; color: string; damage: number; source: number; target: number; destroyed: boolean };
-export type Raid = { starter?:boolean; combatVersion?:number; defenseDamage?:Record<number,number>; layout: number; version?: number; time: number; buildings: Building[]; units: Unit[]; stock: Record<Kind, number>; effects: Effect[]; ended: boolean; reason: string; damage: Record<Kind, number>; lost: number; nextId: number; power: number; healthPower: number };
+export type Raid = { starterLayout?:number; starter?:boolean; combatVersion?:number; defenseDamage?:Record<number,number>; layout: number; version?: number; time: number; buildings: Building[]; units: Unit[]; stock: Record<Kind, number>; effects: Effect[]; ended: boolean; reason: string; damage: Record<Kind, number>; lost: number; nextId: number; power: number; healthPower: number };
 export const STATS = {
   scrap: {name:'Scrap Bot',hp:62,speed:1.15,damage:9,range:.85,interval:1,color:'#ffc05e',role:'Melee - 1 housing'},
   scout: { name: 'Scout', hp: 85, speed: 1.55, damage: 16, range: .85, interval: .7, color: '#52e6d2', role: 'Fast · targets compute' },

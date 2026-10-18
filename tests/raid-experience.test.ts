@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {createStarterRaid} from '../raid/starter';import {deploy,tick,destruction,validDeployment,unitStats} from '../raid/engine';import {raidRating} from '../src/ui/RaidSymbols';
+const squad={scout:0,tank:0,breaker:0,scrap:10};
+test('new compounds spread existing objectives, use irregular walls, and never occupy deployable cells',()=>{
+ for(const layout of [0,1]){const r=createStarterRaid(layout,squad),old=createStarterRaid(layout,squad,1);assert.equal(r.starterLayout,2);assert.equal(old.starterLayout,undefined);assert.equal(r.combatVersion,old.combatVersion);assert.deepEqual(unitStats(r,'scrap'),unitStats(old,'scrap'));
+ const walls=r.buildings.filter(b=>b.kind==='wall'),objectives=r.buildings.filter(b=>b.kind!=='wall');assert.deepEqual([...new Set(objectives.map(b=>b.kind))].sort(),['core','turret','vault']);assert.equal(new Set(r.buildings.map(b=>`${b.x},${b.y}`)).size,r.buildings.length);assert.ok(Math.max(...walls.map(b=>b.x))-Math.min(...walls.map(b=>b.x))>12);assert.ok(Math.max(...walls.map(b=>b.y))-Math.min(...walls.map(b=>b.y))>8);for(const b of r.buildings){assert.equal(validDeployment(b),false);assert.ok(b.id<100);}for(let i=0;i<objectives.length;i++)for(let j=i+1;j<objectives.length;j++)assert.ok(Math.hypot(objectives[i].x-objectives[j].x,objectives[i].y-objectives[j].y)>=4);
+ }
+});
+test('serialized previous-layout battles retain exact geometry and deterministic settlement',()=>{for(const layout of [0,1]){const old=createStarterRaid(layout,squad,1);for(let i=0;i<10;i++)deploy(old,'scrap',{x:9,y:2});for(let i=0;i<50;i++)tick(old);const saved=structuredClone(old);while(!old.ended)tick(old);while(!saved.ended)tick(saved);assert.deepEqual(saved,old);assert.equal(destruction(saved),100);assert.equal(saved.starterLayout,undefined);}});
+test('tech-core ratings follow destruction alone without changing battle outcomes',()=>{assert.deepEqual([0,25,33,50,66,67,75,99,100].map(raidRating),[0,0,1,1,2,2,2,2,3]);});

@@ -86,12 +86,19 @@ export class RaidScene {
     const d = MAP.deployment;
     const outerWidth = d.maxX - d.minX, outerDepth = d.maxY - d.minY;
     const northDepth = d.innerTop - d.minY, westWidth = d.innerLeft - d.minX;
-    for (const z of [-1, 1]) this.box(this.root, [outerWidth, .025, northDepth], [0, .015, z * (outerDepth - northDepth) / 2], '#286875', .04);
-    for (const x of [-1, 1]) this.box(this.root, [westWidth, .025, outerDepth - northDepth * 2], [x * (outerWidth - westWidth) / 2, .016, 0], '#286875', .04);
-    this.box(this.root, [15.7, .06, 11.7], [0, .025, 0], '#29445c', .12);
+    for (const z of [-1, 1]) this.box(this.root, [outerWidth, .025, northDepth], [0, .015, z * (outerDepth - northDepth) / 2], '#76cdd2', .04);
+    for (const x of [-1, 1]) this.box(this.root, [westWidth, .025, outerDepth - northDepth * 2], [x * (outerWidth - westWidth) / 2, .016, 0], '#76cdd2', .04);
+    this.box(this.root, [d.innerRight-d.innerLeft, .06, d.innerBottom-d.innerTop], [0, .025, 0], '#c4ced2', .12);
     for (const sign of [-1, 1]) {
       this.box(this.root, [outerWidth, .035, .06], [0, .043, sign * outerDepth / 2], '#70ddec', .01, true);
       this.box(this.root, [.06, .035, outerDepth], [sign * outerWidth / 2, .043, 0], '#70ddec', .01, true);
+    }
+    // Inner amber exclusion edge and repeated cyan chevrons mark deployable lanes.
+    for(const sign of [-1,1]){
+      this.box(this.root,[d.innerRight-d.innerLeft,.04,.10],[0,.075,sign*(d.innerBottom-d.innerTop)/2],'#efb84e',.01);
+      this.box(this.root,[.10,.04,d.innerBottom-d.innerTop],[sign*(d.innerRight-d.innerLeft)/2,.075,0],'#efb84e',.01);
+      for(const x of [-9,-5,0,5,9])for(const side of [-1,1]){const mark=this.box(this.root,[.48,.025,.09],[x+side*.17,.065,sign*7.1+sign*side*.17],'#e5ffff',.01,true);mark.rotation.y=side*sign*Math.PI/4;}
+      for(const z of [-4,0,4])for(const side of [-1,1]){const mark=this.box(this.root,[.09,.025,.48],[sign*10.8+sign*side*.17,.065,z+side*.17],'#e5ffff',.01,true);mark.rotation.y=side*sign*-Math.PI/4;}
     }
     for (const [x, z] of [[-13.4,-9.3],[13.35,9.3],[-13.4,9.3],[13.35,-9.3]]) {
       this.box(this.root, [.75, .35, .65], [x, .1, z], '#36536b', .18);
@@ -145,8 +152,8 @@ export class RaidScene {
       this.box(g,[1.4,.025,.04],[x,.09,z+1.03],b.kind==='vault'?colors.gold:colors.cyan,.01,true);
     }
     // Gate posts are mounted on the neighboring wall cells; the actual breach stays clear.
-    const gates=[{x:level.gate,y:bounds.top},...(level.openings??[])];
-    for(const gate of gates){const x=gate.x-MAP.center.x,z=gate.y-MAP.center.y,side=gate.x===bounds.left||gate.x===bounds.right;
+    const gates=s.starterLayout===2?[{x:9,y:4},{x:17,y:14},{x:6,y:9},{x:20,y:9}]:[{x:level.gate,y:bounds.top},...(level.openings??[])];
+    for(const gate of gates){const x=gate.x-MAP.center.x,z=gate.y-MAP.center.y,side=s.starterLayout===2?(gate.x===6||gate.x===20):gate.x===bounds.left||gate.x===bounds.right;
       this.box(g,side?[1.4,.025,1]:[1,.025,1.4],[x,.08,z],'#50717e',.01);
       for(const sign of [-1,1]) {
         this.box(g,[.22,1.22,.22],[x+(side?0:sign*.7),.65,z+(side?sign*.7:0)],colors.dark);
@@ -371,6 +378,7 @@ export class RaidScene {
         v.body.position.x = crowded ? Math.cos(u.id * 2.4) * .16 : 0; v.body.position.z = crowded ? Math.sin(u.id * 2.4) * .16 : 0;
 
         const spawn = this.reduced ? 1 : Math.min(1, (this.clock - v.born) * 5); v.body.scale.setScalar(Math.max(.05, spawn) * (u.kind === 'tank' ? 1.12 : 1.22));
+        if(v.scrapBot)animateScrapBot(v.scrapBot,dt,this.reduced,Math.max(0,1-(this.clock-(v.lastAttack??-10))/.28));
         if (v.rotor) v.rotor.rotation.y += dt * 16;
       } else {
         if (v.rotor) { v.rotor.rotation.y += dt * .7; v.rotor.position.y = 2.52 + (this.reduced ? 0 : Math.sin(this.clock * 2) * .08); }
@@ -378,7 +386,6 @@ export class RaidScene {
           v.turret.position.z = this.reduced ? 0 : -Math.max(0, 1 - (this.clock - v.lastHit) / .2) * .09;
         }
         const hit = Math.max(0, 1 - (this.clock - v.lastHit) / .18); v.body.rotation.z = this.reduced ? 0 : Math.sin(hit * 15) * hit * .025;
-        if(v.scrapBot)animateScrapBot(v.scrapBot,dt,this.reduced,Math.max(0,1-(this.clock-(v.lastAttack??-10))/.28));
       }
     }
     for (const e of s.effects) if (!this.seenEffects.has(e.id)) { this.seenEffects.add(e.id); this.shot(e); }
@@ -387,6 +394,9 @@ export class RaidScene {
     this.pulses=this.pulses.filter(p=>{p.age+=dt;const t=p.age/p.life;p.mesh.scale.setScalar((.2+t)*p.size);(p.mesh.material as THREE.MeshBasicMaterial).opacity=Math.max(0,(1-t)*.65);if(t>=1){p.mesh.removeFromParent();(p.mesh.material as THREE.Material).dispose();return false;}return true;});
     this.cursor.visible = !!this.pointer && !s.ended && s.stock[selected] > 0;
     if (this.pointer) { this.cursor.position.copy(world(this.pointer, .09)); (this.cursor.material as THREE.MeshBasicMaterial).color.set(validDeployment(this.pointer) ? STATS[selected].color : '#ff6f72'); }
+    let walking=0,phase=0;for(const v of this.visuals.values())if(v.scrapBot&&(v.scrapBot.userData.walkActivity??0)>.1){walking++;phase=v.scrapBot.userData.walkPhase??0;}
+    this.renderer.domElement.dataset.walkingBots=String(walking);
+    this.renderer.domElement.dataset.walkPhase=String(phase);
     this.renderer.render(this.scene, this.camera);
     if (this.clock - this.statsAt > 1) {
       this.statsAt = this.clock;
