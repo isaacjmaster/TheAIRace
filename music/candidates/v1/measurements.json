@@ -1,0 +1,58 @@
+[
+  {
+    "name": "After Hours, First Ideas",
+    "mode": "hq",
+    "bpm": 112,
+    "bars": 16,
+    "sampleRate": 48000,
+    "channels": 2,
+    "frames": 1645714,
+    "seconds": 34.28570833333333,
+    "integratedLUFS": -17.999999999999996,
+    "samplePeakDbFS": -6.682357441163597,
+    "truePeakDbTP": -6.676830066132529,
+    "dc": [
+      1.4685653168069168e-08,
+      6.96909252880153e-07
+    ],
+    "seamDelta": [
+      0.00038366696948787145,
+      0.00022492044561354257
+    ],
+    "normalDelta99_9": [
+      0.027545273607077456,
+      0.027702816487385123
+    ],
+    "authoredNotes": 436,
+    "wavBytes": 6582900,
+    "aacBytes": 711909
+  },
+  {
+    "name": "Race the Network",
+    "mode": "raid",
+    "bpm": 128,
+    "bars": 16,
+    "sampleRate": 48000,
+    "channels": 2,
+    "frames": 1440000,
+    "seconds": 30.0,
+    "integratedLUFS": -18.00000000000002,
+    "samplePeakDbFS": -4.11432741364753,
+    "truePeakDbTP": -4.108800038616462,
+    "dc": [
+      1.1388084643221716e-05,
+      9.414000470623737e-06
+    ],
+    "seamDelta": [
+      0.0001515039199612156,
+      0.0006451587914401563
+    ],
+    "normalDelta99_9": [
+      0.03168676871534599,
+      0.030631686540648635
+    ],
+    "authoredNotes": 546,
+    "wavBytes": 5760044,
+    "aacBytes": 638324
+  }
+]

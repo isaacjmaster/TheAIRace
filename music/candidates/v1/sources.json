@@ -1,0 +1,154 @@
+{
+  "repository": "https://github.com/sgossner/VSCO-2-CE",
+  "commit": "440300901dfe9275fd84e0b7763af1f8443ae62e",
+  "license": "CC0-1.0",
+  "files": [
+    {
+      "path": "LICENSE",
+      "local": "LICENSE",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/LICENSE",
+      "bytes": 6555,
+      "sha256": "36ffd9dc085d529a7e60e1276d73ae5a030b020313e6c5408593a6ae2af39673"
+    },
+    {
+      "path": "Readme.txt",
+      "local": "Readme.txt",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Readme.txt",
+      "bytes": 1838,
+      "sha256": "101ddb88eb013900cc911834ecbdfbd49497bcd913bf09417160b9677952bb38"
+    },
+    {
+      "path": "Keys/Upright Piano/MappingChart.txt",
+      "local": "MappingChart.txt",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Keys/Upright%20Piano/MappingChart.txt",
+      "bytes": 338,
+      "sha256": "9ccfbdee3d58873e9632ba188ed5837979948eb7868e824ec24e0d3eb4e3fda8"
+    },
+    {
+      "path": "Keys/Upright Piano/Info.txt",
+      "local": "Info.txt",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Keys/Upright%20Piano/Info.txt",
+      "bytes": 220,
+      "sha256": "a3bd9d49720187b10269e78b091316d043dcd7b059ec77edb582195152aaf1ce"
+    },
+    {
+      "path": "Keys/Upright Piano/Player_dyn2_rr1_020.wav",
+      "local": "Player_dyn2_rr1_020.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Keys/Upright%20Piano/Player_dyn2_rr1_020.wav",
+      "bytes": 4346848,
+      "sha256": "dc314226819e7af0768cd7fc08933f5e5b550083145e05af630fd7556f4d3913"
+    },
+    {
+      "path": "Keys/Upright Piano/Player_dyn2_rr1_022.wav",
+      "local": "Player_dyn2_rr1_022.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Keys/Upright%20Piano/Player_dyn2_rr1_022.wav",
+      "bytes": 4476550,
+      "sha256": "9a4e03fa389b7e59ea6b3a6719eef52be8d607844283c7163662030f57b60942"
+    },
+    {
+      "path": "Keys/Upright Piano/Player_dyn2_rr1_024.wav",
+      "local": "Player_dyn2_rr1_024.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Keys/Upright%20Piano/Player_dyn2_rr1_024.wav",
+      "bytes": 3204940,
+      "sha256": "a00ae1a2b2a78c154b067a9709afc1ce2d3be9f08d9f4ad3c9c869a7db80eb75"
+    },
+    {
+      "path": "Keys/Upright Piano/Player_dyn2_rr1_026.wav",
+      "local": "Player_dyn2_rr1_026.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Keys/Upright%20Piano/Player_dyn2_rr1_026.wav",
+      "bytes": 2656870,
+      "sha256": "4e668e75c3922c79ef06bd46806224dbf8dbfa0be1569847a1cd17e573a967ec"
+    },
+    {
+      "path": "Keys/Upright Piano/Player_dyn2_rr1_028.wav",
+      "local": "Player_dyn2_rr1_028.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Keys/Upright%20Piano/Player_dyn2_rr1_028.wav",
+      "bytes": 3008866,
+      "sha256": "84fe87bd24dc93d354213f730517a29f485c40715d5959af97976b364110b70a"
+    },
+    {
+      "path": "Keys/Upright Piano/Player_dyn2_rr1_030.wav",
+      "local": "Player_dyn2_rr1_030.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Keys/Upright%20Piano/Player_dyn2_rr1_030.wav",
+      "bytes": 3144364,
+      "sha256": "4b558995c108f7f1dcede12c7e0444caa2658205fea34a314abf485dc6b7e710"
+    },
+    {
+      "path": "Keys/Upright Piano/Player_dyn3_rr1_020.wav",
+      "local": "Player_dyn3_rr1_020.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Keys/Upright%20Piano/Player_dyn3_rr1_020.wav",
+      "bytes": 5212972,
+      "sha256": "515e6d85e51050867174eb901dd2fdc8018e7be0e8f320d23cdeb854531ea4c8"
+    },
+    {
+      "path": "Keys/Upright Piano/Player_dyn3_rr1_022.wav",
+      "local": "Player_dyn3_rr1_022.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Keys/Upright%20Piano/Player_dyn3_rr1_022.wav",
+      "bytes": 4898926,
+      "sha256": "c2c1f3d7f6ffa05d2a840094a3191537445436bc1ef6efe01af7f0876a39d06e"
+    },
+    {
+      "path": "Keys/Upright Piano/Player_dyn3_rr1_024.wav",
+      "local": "Player_dyn3_rr1_024.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Keys/Upright%20Piano/Player_dyn3_rr1_024.wav",
+      "bytes": 4721116,
+      "sha256": "cc8b22d1779248f6edc88fa5d072b8ce8b51b06fbe62be3d3d19a324d1da9030"
+    },
+    {
+      "path": "Keys/Upright Piano/Player_dyn3_rr1_026.wav",
+      "local": "Player_dyn3_rr1_026.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Keys/Upright%20Piano/Player_dyn3_rr1_026.wav",
+      "bytes": 3849658,
+      "sha256": "d89966bb53c4bdabdfe453c15d9779cf1eebae10069aaa7f78bd8074bad98b1a"
+    },
+    {
+      "path": "Keys/Upright Piano/Player_dyn3_rr1_028.wav",
+      "local": "Player_dyn3_rr1_028.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Keys/Upright%20Piano/Player_dyn3_rr1_028.wav",
+      "bytes": 2854090,
+      "sha256": "bf6c7d1bbf94b66e4167ecafef413835eee568f6f750dae30c2f3b9250fd89f5"
+    },
+    {
+      "path": "Keys/Upright Piano/Player_dyn3_rr1_030.wav",
+      "local": "Player_dyn3_rr1_030.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Keys/Upright%20Piano/Player_dyn3_rr1_030.wav",
+      "bytes": 3738850,
+      "sha256": "d19dfdb6db0ade3b2cb7a5f6d152adc8824c86c79b4b9da0a82ac0c8bb58c02e"
+    },
+    {
+      "path": "Percussion/Snare2-taps_v2_rr1_Sum.wav",
+      "local": "Snare2-taps_v2_rr1_Sum.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Percussion/Snare2-taps_v2_rr1_Sum.wav",
+      "bytes": 191420,
+      "sha256": "a6a1bad6298434123bd8a9b6c77438ef30668a1009a0bbe132dec193717b007a"
+    },
+    {
+      "path": "Percussion/Snare2-HitSN_v3_rr1_Sum.wav",
+      "local": "Snare2-HitSN_v3_rr1_Sum.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Percussion/Snare2-HitSN_v3_rr1_Sum.wav",
+      "bytes": 457934,
+      "sha256": "3df96009d655dd4fe43c635bd3c20314a1e0cbdf9f571ee8a66207f9ef917d08"
+    },
+    {
+      "path": "Percussion/Snare2-HitSN_v3_rr2_Sum.wav",
+      "local": "Snare2-HitSN_v3_rr2_Sum.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Percussion/Snare2-HitSN_v3_rr2_Sum.wav",
+      "bytes": 346874,
+      "sha256": "3ed6158d6873089e0f4967f303c3fab514ddde3991117a45d259d419f6bc62b8"
+    },
+    {
+      "path": "Percussion/BrakeDrum1_Hammer_v2_Sum.wav",
+      "local": "BrakeDrum1_Hammer_v2_Sum.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Percussion/BrakeDrum1_Hammer_v2_Sum.wav",
+      "bytes": 282756,
+      "sha256": "ceb398df6b2b0e021836d5857fd4ec620c26aa19ecb7dd74266172748e976043"
+    },
+    {
+      "path": "Percussion/Marimba/Marimba_hit_Outrigger_C4_loud_01.wav",
+      "local": "Marimba_hit_Outrigger_C4_loud_01.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Percussion/Marimba/Marimba_hit_Outrigger_C4_loud_01.wav",
+      "bytes": 1016564,
+      "sha256": "4af539d47a452d7fad26e171b1c8adcca272cee97191f040d192680462c880b8"
+    }
+  ]
+}
