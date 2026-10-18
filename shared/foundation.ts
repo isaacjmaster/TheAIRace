@@ -1,4 +1,5 @@
-import {advanceLandscape,type Landscape,obstacleSize} from './landscape';
+import {FOUNDER_HQ,founderHqLevel,gpuRigCapacity,type FounderHQUpgrade} from './founder-hq';
+import {advanceLandscape,landscapeRoute,type Landscape,obstacleSize} from './landscape';
 import {createStarterRaid} from '../raid/starter';
 import {deploy,tick,finish,STEP,destruction,type Raid,type Point} from '../raid/engine';
 import {OBSTACLES} from './campus-layout';
@@ -17,8 +18,8 @@ export type BotRaid={id:string;simulation:Raid;lastTick:number;started:boolean;s
 export const FABRICATOR={cost:50,buildSeconds:15,maxCount:1} as const;
 export const HANGAR={cost:0,buildSeconds:15,maxCount:1} as const;
 export const SCRAP_BOT={cost:5,trainSeconds:5,housing:1,capacity:10} as const;
-export type FoundationState = {starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
-export function initialFoundation(revision=0):FoundationState{return {version:1,revision,companyName:'Garage Intelligence',level:1,compute:STARTING_COMPUTE,capacity:COMPUTE_CAPACITY,builders:0,starterStation:'unplaced',raidRecord:{wins:[],completeHistory:true}};}
+export type FoundationState = {founderHqLevel?:1|2;hqUpgrade?:FounderHQUpgrade;starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
+export function initialFoundation(revision=0):FoundationState{return {version:1,revision,founderHqLevel:1,companyName:'Garage Intelligence',level:1,compute:STARTING_COMPUTE,capacity:COMPUTE_CAPACITY,builders:0,starterStation:'unplaced',raidRecord:{wins:[],completeHistory:true}};}
 export const hasBuilderStation=(s:FoundationState)=>s.starterStation!=='unplaced';
 export function establishBuilderStation(s:FoundationState,position:RigPosition,orientation:Orientation=0){if(hasBuilderStation(s))throw new Error('Builder Station — 1/1 Built');const reason=validFoundationPosition(s,position,'station',orientation);if(reason)throw new Error(reason);s.stationLayout={position:[...position],orientation};s.starterStation='placed';s.builders=1;s.buildersBusy=0;}
 export const RIG_BOUNDS={minX:-24,maxX:28,minZ:-19,maxZ:24};
@@ -37,7 +38,8 @@ export function validRigPosition(position:RigPosition,orientation:Orientation=0)
 export function advanceFoundation(s:FoundationState,now=Date.now()){
  const rigs=[s.rig,s.rig2].filter((r):r is GpuRig=>!!r),jobs=[...rigs,s.fabricator,getHangar(s)].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
  const clearing=!!s.landscape?.clearing;advanceLandscape(s,now);
- if(jobs.length||clearing)s.buildersBusy=jobs.some(b=>now<b.completesAt)||!!s.landscape?.clearing?1:0;
+ if(s.hqUpgrade&&now>=s.hqUpgrade.completesAt)s.founderHqLevel=2;
+ if(jobs.length||clearing||s.hqUpgrade)s.buildersBusy=jobs.filter(b=>now<b.completesAt).length+Number(!!s.landscape?.clearing)+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt);
  if(s.training){const completed=s.training.filter(t=>t<=now).length;s.bots=(s.bots||0)+completed;s.training=s.training.filter(t=>t>now);}
  advanceBotRaid(s,now);
  for(const r of rigs){const cursor=Math.max(r.lastProducedAt,r.completesAt);if(now>cursor){r.stored=Math.min(GPU_RIG.storage,r.stored+(now-cursor)*GPU_RIG.perMinute/60000);r.lastProducedAt=now;}}
@@ -45,10 +47,10 @@ export function advanceFoundation(s:FoundationState,now=Date.now()){
  return s;
 }
 export function buildRig(s:FoundationState,position:RigPosition,now=Date.now(),orientation:Orientation=0){
- advanceFoundation(s,now);if(s.rig&&s.rig2)throw new Error('GPU Rig — 2/2 Built');
+ advanceFoundation(s,now);const owned=Number(!!s.rig)+Number(!!s.rig2);if(owned>=gpuRigCapacity(s))throw new Error(owned>=2?'GPU Rig — 2/2 Built':'Upgrade Founder HQ to Level 2 for another GPU Rig.');
  if((s.buildersBusy||0)>=s.builders)throw new Error('Your Builder Bot is busy.');
  const slot=s.rig?'rig2':'rig',reason=validFoundationPosition(s,position,slot,orientation);if(reason)throw new Error(reason);if(s.compute<GPU_RIG.cost)throw new Error('You need 50 Compute.');
- s.compute-=GPU_RIG.cost;s.buildersBusy=1;s[slot]={orientation,position:[...position],startedAt:now,completesAt:now+GPU_RIG.buildSeconds*1000,lastProducedAt:now+GPU_RIG.buildSeconds*1000,stored:0};
+ s.compute-=GPU_RIG.cost;s.buildersBusy=(s.buildersBusy||0)+1;s[slot]={orientation,position:[...position],startedAt:now,completesAt:now+GPU_RIG.buildSeconds*1000,lastProducedAt:now+GPU_RIG.buildSeconds*1000,stored:0};
 }
 export function moveRig(s:FoundationState,position:RigPosition,now=Date.now(),orientation?:Orientation,slot:'rig'|'rig2'='rig'){
  advanceFoundation(s,now);if(!s[slot])throw new Error('Build a GPU Rig first.');if(s.buildersBusy)throw new Error('Wait for construction to finish before moving.');const next=orientation??s[slot]!.orientation??0;const reason=validFoundationPosition(s,position,slot,next);if(reason)throw new Error(reason);s[slot]!.position=[...position];s[slot]!.orientation=next;
@@ -72,7 +74,8 @@ export function buildingLayout(s:FoundationState,kind:RotatableBuilding):Buildin
  return s.fabricator?{position:s.fabricator.position,orientation:s.fabricator.orientation??0}:undefined;
 }
 export function buildingReady(s:FoundationState,kind:RotatableBuilding,now=Date.now()){
- return kind==='hq'||kind==='station'||(kind==='rig'||kind==='rig2'?!!s[kind]&&now>=s[kind]!.completesAt:kind==='fabricator'?!!s.fabricator&&now>=s.fabricator.completesAt:hangarReady(s,now));
+ if(kind==='hq')return !s.hqUpgrade||now>=s.hqUpgrade.completesAt;
+ return kind==='station'||(kind==='rig'||kind==='rig2'?!!s[kind]&&now>=s[kind]!.completesAt:kind==='fabricator'?!!s.fabricator&&now>=s.fabricator.completesAt:hangarReady(s,now));
 }
 export function footprint(kind:RotatableBuilding,layout:BuildingLayout,reserved=false){
  let [w,d]=kind==='hq'?(reserved?[14,10]:[9,8]):kind==='station'?(reserved?[4,3]:[2.7,1.8]):[4,3];
@@ -169,4 +172,21 @@ export function deployScrap(s:FoundationState,id:string,p:Point,now=Date.now()){
 export function retreatBots(s:FoundationState,id:string,now=Date.now()){
  advanceFoundation(s,now);const r=s.botRaid;if(!r||r.id!==id)throw new Error('Unknown raid.');if(r.settled)return;
  finish(r.simulation,'Retreated');advanceBotRaid(s,now);
+}
+
+export function founderHQWorkSites(s:FoundationState):RigPosition[]{
+ const layout=buildingLayout(s,'hq')!,a=footprint('hq',layout),candidates:RigPosition[]=[];
+ for(let x=Math.ceil(a.x-a.w/2);x<=Math.floor(a.x+a.w/2);x+=2){candidates.push([x,Math.ceil(a.z+a.d/2+1.5)],[x,Math.floor(a.z-a.d/2-1.5)]);}
+ for(let z=Math.ceil(a.z-a.d/2);z<=Math.floor(a.z+a.d/2);z+=2){candidates.push([Math.ceil(a.x+a.w/2+1.5),z],[Math.floor(a.x-a.w/2-1.5),z]);}
+ return candidates.filter(p=>landscapeRoute(s,p,undefined,1.1).length>0);
+}
+export function upgradeFounderHQ(s:FoundationState,now:number,id:string){
+ advanceFoundation(s,now);
+ if(founderHqLevel(s)>=FOUNDER_HQ.maxLevel)throw new Error('Founder HQ is already Level 2.');
+ if(s.hqUpgrade&&now<s.hqUpgrade.completesAt)throw new Error('Founder HQ upgrade is already in progress.');
+ if(!hasBuilderStation(s)||s.builders<1)throw new Error('Place your free Builder Station first.');
+ if((s.buildersBusy||0)>=s.builders)throw new Error('Your Builder Bot is busy.');
+ if(s.compute<FOUNDER_HQ.upgradeCost)throw new Error(`You need ${FOUNDER_HQ.upgradeCost} Compute.`);
+ if(!founderHQWorkSites(s).length)throw new Error('Clear a path from the Builder Station to Founder HQ first.');
+ s.compute-=FOUNDER_HQ.upgradeCost;s.hqUpgrade={id,targetLevel:2,startedAt:now,completesAt:now+FOUNDER_HQ.upgradeMs};s.buildersBusy=(s.buildersBusy||0)+1;
 }

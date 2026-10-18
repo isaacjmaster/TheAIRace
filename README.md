@@ -129,3 +129,14 @@ See [RAILWAY_DEPLOYMENT.md](RAILWAY_DEPLOYMENT.md) for the private deployment br
 ## Current local portrait preview
 
 The active development build is now portrait-first. See [PORTRAIT_TESTING.md](PORTRAIT_TESTING.md) for camera/UI changes and iPhone testing. The landscape deployment branch has not been updated by this work.
+
+
+## Founder HQ Level 2 (local progression update)
+
+Founder HQ building level is independent of Company XP. `shared/founder-hq.ts` configures the first upgrade: 500 Compute, 300 seconds, one available Builder Bot; GPU capacity is one at HQ Level 1 and two at Level 2. Existing second rigs remain owned, productive and movable. Both HQ models retain the same 9×8 gameplay footprint, with rotation and work-route validation.
+
+Save compatibility uses additive optional fields in the existing SQLite `foundation_saves.state` JSON: `founderHqLevel` and `hqUpgrade` (`id`, `targetLevel`, `startedAt`, `completesAt`). Missing levels read as 1; existing records are not replaced or bulk rewritten. Completed upgrade metadata is retained. The existing authenticated action transaction and request receipts atomically save cost, builder reservation and upgrade; normal server-time advancement completes it after an offline interval. There are no new SQL tables, credentials, Company XP rules or deployment settings. Verified SQLite backups were made before implementation under ignored `data/backups/`.
+
+Run `npm run build`, then `npm run preview:hq` for a separate local preview database, cookie and review company. Open `http://192.168.1.40:3036/hq-upgrade-preview` on the same Wi-Fi, press PLAY, select Founder HQ and Upgrade. This isolated company starts with 650 Compute, a Builder Station and one GPU Rig; the normal five-minute timer applies. Do not use this development script in production. Automated previews append `?testAudio=off` and close their browsers.
+
+Verification: `npm test`, `npm run build`, `npm run test:production`. Upgrade tests use temporary SQLite databases and an injected server clock; browser captures use isolated preview companies with only their test deadlines advanced for completion screenshots. Physical iPhone Safari/PWA rendering still requires device review.
