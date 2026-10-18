@@ -13,4 +13,12 @@ test('company HUD reads saved level and builder availability without exposing cu
  assert.match(render({...initial,buildersBusy:5}),/0\/1 Builders/);
 });
 
-test('new company HUD accurately shows zero builders before the free station',async()=>{const {initialFoundation}=await import('../shared/foundation');const html=renderToStaticMarkup(React.createElement(CompanyStatus,{state:initialFoundation(),xp:{total:35,level:1,nextLevel:2,nextThreshold:100}}));assert.match(html,/0\/0 Builders/);assert.match(html,/Company Level 1, view XP/);assert.match(html,/company-emblem/);});
+test('new company HUD accurately shows zero builders before the free station',async()=>{const {initialFoundation}=await import('../shared/foundation');const html=renderToStaticMarkup(React.createElement(CompanyStatus,{state:initialFoundation(),xp:{total:35,level:1,nextLevel:2,nextThreshold:100}}));assert.match(html,/0\/0 Builders/);assert.match(html,/Company Level 1/);assert.match(html,/company-emblem/);assert.match(html,/aria-valuenow="35"/);assert.match(html,/35 of 100 XP toward Company Level 2/);assert.doesNotMatch(html,/<button|view XP/);});
+
+// Server XP remains independent of the physical Founder HQ level, including the current cap.
+test('company progress uses authoritative XP and handles the highest defined level',()=>{
+ const state={...initialFoundation(),level:1};
+ const capped=renderToStaticMarkup(React.createElement(CompanyStatus,{state,xp:{total:130,level:2,nextLevel:null,nextThreshold:null}}));
+ assert.match(capped,/aria-label="Company Level 2"/);assert.match(capped,/aria-valuenow="100"/);assert.match(capped,/Current highest Company Level/);assert.doesNotMatch(capped,/Level 3/);
+ const loading=renderToStaticMarkup(React.createElement(CompanyStatus,{state}));assert.match(loading,/aria-valuenow="0"/);assert.match(loading,/Loading company XP/);
+});

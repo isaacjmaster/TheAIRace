@@ -107,10 +107,20 @@
 .foundation-dialog .raid-level-button,.foundation-dialog .raid-level-2{background:linear-gradient(145deg,#ffbd4d 0%,#ff962b 45%,#f77b1b 100%);border:1px solid #ffd38b;color:#47280f;box-shadow:0 4px 0 #b94d0f,inset 0 1px 0 #ffe6af;font-weight:850}.raid-level-button span{color:#78360c;opacity:.85}.foundation-dialog .raid-level-button:hover:enabled{filter:brightness(1.05);transform:translateY(-1px)}.foundation-dialog .raid-level-button:active:enabled{transform:translateY(3px);filter:brightness(.97);box-shadow:0 1px 0 #a5440c,inset 0 1px 0 #ffe6af}.foundation-dialog .raid-level-button:focus-visible{outline:3px solid #247b91;outline-offset:5px}.foundation-dialog .raid-level-button:disabled{opacity:1;color:#72513b;background:linear-gradient(145deg,#f2c590,#e5ad76);border-color:#dfb58c;box-shadow:0 2px 0 #b98a63;cursor:not-allowed}
 
 /* Company experience is separate from the Founder HQ structure level. */
-.foundation-app .company-emblem{position:relative;width:38px;height:43px;flex-shrink:0;padding:0;background:none;border:0;border-radius:8px;pointer-events:auto;cursor:pointer;filter:drop-shadow(0 2px 1px #254d6433)}.company-emblem svg{position:absolute;inset:0;width:100%;height:100%}.company-emblem>span{position:relative;color:#f0ffff;font-size:21px;font-weight:900;text-shadow:0 2px #143b59}.company-emblem:focus-visible{outline:2px solid #167895;outline-offset:3px}.company-emblem.company-level-up{animation:company-promotion .6s ease-in-out 3}.company-xp-bar{width:100%;height:12px;border:0;border-radius:12px;overflow:hidden;accent-color:#28b4ce}.company-xp-bar::-webkit-progress-bar{background:#dbe8e7}.company-xp-bar::-webkit-progress-value{background:linear-gradient(90deg,#218cc2,#63e2d6)}.foundation-dialog .xp-readout{font-size:20px;font-weight:800;color:#24485d}
-@keyframes company-promotion{50%{filter:drop-shadow(0 0 8px #f5c96a);transform:translateY(-2px)}}
+.foundation-app .company-emblem{position:relative;width:38px;height:43px;flex-shrink:0;padding:0;background:none;border:0;border-radius:8px;pointer-events:none;filter:drop-shadow(0 2px 1px #254d6433)}.company-emblem svg{position:absolute;inset:0;width:100%;height:100%}.company-emblem>span{position:relative;color:#f0ffff;font-size:21px;font-weight:900;text-shadow:0 2px #143b59}.company-emblem.company-level-up{animation:company-promotion .6s ease-in-out 3}@keyframes company-promotion{50%{filter:drop-shadow(0 0 8px #f5c96a);transform:translateY(-2px)}}
 @media(min-width:901px){.compute-hud{width:235px;height:80px}.compute-meter{width:calc(100% - 28px);height:41px;border-radius:12px}.compute-meter strong{font-size:25px;padding-right:39px}.compute-chip{width:72px;height:72px;top:10px}.compute-hud-caption{padding-right:34px;padding-bottom:6px}.compute-hud-caption>span{font-size:11px}.compute-hud-caption small{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.company-emblem.company-level-up{animation:none}}
 
 /* Keep first-station placement controls fully visible in front of the guide illustration. */
 .foundation-home:has([aria-label="Builder Station placement"]) .rig-placement{z-index:40}
+
+/* Company XP belongs to the company emblem, never the Founder HQ upgrade level. */
+.foundation-company-label{min-width:0;display:flex;flex-direction:column;gap:2px}
+.foundation-company-label strong{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.company-hud-xp{height:9px;width:100%;min-width:48px;border:1px solid #6cabbc;border-radius:5px;background:#234f6933;box-shadow:inset 0 1px 2px #143f6755,0 1px #fff9;overflow:hidden;margin-top:3px;box-sizing:border-box}
+.company-hud-xp>span{display:block;height:100%;border-radius:3px;background:linear-gradient(180deg,#a1f3f5 0%,#49c7e6 40%,#2285b8 100%);box-shadow:inset 0 1px #e3ffffa6;transition:width .45s ease-out}
+@media(orientation:portrait){.foundation-company-label strong{max-width:min(108px,calc(50vw - 90px))}}
+@media(prefers-reduced-motion:reduce){.company-hud-xp>span{transition:none}}
+
+/* The numeral uses the same coordinate system as its shield: no inherited line box. */
+.company-emblem .company-level-number{font-family:system-ui,sans-serif;font-size:27px;font-weight:900;fill:#f0ffff;paint-order:stroke;stroke:#143b5966;stroke-width:.6px}

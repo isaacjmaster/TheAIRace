@@ -1,3 +1,4 @@
+import {RankMedal} from './RankMedal';
 import {useEffect,useRef,useState} from 'react';
 import type {LeaderboardData} from '../../shared/influence';
 import './leaderboard.css';
@@ -13,7 +14,7 @@ export function Leaderboard({onClose}:{onClose:()=>void}){
  <div className="leaderboard-columns"><span>Company</span><span>Influence</span></div>
  {error&&<p role="status">{error}</p>}
  {!data&&!error&&<p role="status">Loading rankings…</p>}
- <ol className="leaderboard-rows">{data?.rows.map(row=><li key={row.rank} className={row.current?'is-current':''} aria-current={row.current?'true':undefined}><span className={`rank-medal rank-${row.rank}`}>{row.rank}</span><strong title={row.name}>{row.name}</strong><b className="influence-score" aria-label={`${row.influence.toLocaleString()} Influence`}><span>{row.influence.toLocaleString()}</span><InfluenceIcon/></b></li>)}</ol>
+ <ol className="leaderboard-rows">{data?.rows.map(row=><li key={row.rank} className={row.current?'is-current':''} aria-current={row.current?'true':undefined}><span className={`rank-medal rank-${row.rank}`}>{row.rank<=3?<RankMedal rank={row.rank as 1|2|3}/>:<span className="rank-numeral">{row.rank}</span>}</span><strong title={row.name}>{row.name}</strong><b className="influence-score" aria-label={`${row.influence.toLocaleString()} Influence`}><span>{row.influence.toLocaleString()}</span><InfluenceIcon/></b></li>)}</ol>
  {data&&!data.rows.length&&<p className="leaderboard-empty">No named companies yet.</p>}
  {data?.own&&data.own.rank>5&&<footer><span>#{data.own.rank}</span><strong>{data.own.name}</strong><b className="influence-score" aria-label={`${data.own.influence.toLocaleString()} Influence`}><span>{data.own.influence.toLocaleString()}</span><InfluenceIcon/></b></footer>}
  </section></div>;
