@@ -1,5 +1,7 @@
+import {RecordedMusic,type TrackLoader} from './RecordedMusic';
+import {loadApprovedTrack,MUSIC_GAIN} from './tracks';
 import { BUILDING_SOUNDS, MUTE_KEY, readMuted, writeMuted, type Cue, type MusicMode } from './score';
-export type SoundPlatform={storage?:Pick<Storage,'getItem'|'setItem'>;createContext:()=>AudioContext;silent?:boolean};
+export type SoundPlatform={storage?:Pick<Storage,'getItem'|'setItem'>;createContext:()=>AudioContext;silent?:boolean;loadTrack?:TrackLoader};
 /** Explicit opt-in for agent previews; standard automation is silent automatically. */
 export function testAudioDisabled(search:string,webdriver=false){return webdriver||new URLSearchParams(search).get('testAudio')==='off';}
 function browserPlatform():SoundPlatform {
@@ -8,11 +10,11 @@ function browserPlatform():SoundPlatform {
 }
 export {voiceEnvelope} from './envelope';
 import {voiceEnvelope} from './envelope';
-import {MusicSynth,playMusicStep} from './musicSynth';
+import {MusicSynth} from './musicSynth';
 /** Context creation/resume is exclusively initiated by a user gesture. */
 export class Soundscape {
  private ctx?:AudioContext;private master?:GainNode;private hq?:GainNode;private raid?:GainNode;
- private timer?:ReturnType<typeof setInterval>;private synth?:MusicSynth;private clocks={hq:{next:0,step:0},raid:{next:0,step:0}};private fadeUntil={hq:0,raid:0};private mode:MusicMode='hq';
+ private timer?:ReturnType<typeof setInterval>;private synth?:MusicSynth;private music?:RecordedMusic;private playingMode?:MusicMode;private hidden=false;private fadeUntil={hq:0,raid:0};private mode:MusicMode='hq';
  private gainRamps=new Map<GainNode,{from:number;to:number;start:number;end:number}>();
  private listeners=new Set<()=>void>();private last=new Map<Cue,number>();private noise?:AudioBuffer;
  muted:boolean;private platform:SoundPlatform;
@@ -29,24 +31,27 @@ export class Soundscape {
  async unlock(){
   if(this.platform.silent||this.muted)return;
   try{
-   if(!this.ctx){this.ctx=this.platform.createContext();this.synth=new MusicSynth(this.ctx);this.master=this.ctx.createGain();this.master.gain.value=.22;this.master.connect(this.ctx.destination);this.hq=this.ctx.createGain();this.raid=this.ctx.createGain();this.hq.connect(this.master);this.raid.connect(this.master);this.hq.gain.value=this.mode==='hq'?.55:0;this.raid.gain.value=this.mode==='raid'?.5:0;}
+   if(!this.ctx){this.ctx=this.platform.createContext();this.synth=new MusicSynth(this.ctx);this.master=this.ctx.createGain();this.master.gain.value=.22;this.master.connect(this.ctx.destination);this.hq=this.ctx.createGain();this.raid=this.ctx.createGain();this.hq.connect(this.master);this.raid.connect(this.master);this.hq.gain.value=0;this.raid.gain.value=0;this.music=new RecordedMusic(this.ctx,{hq:this.hq,raid:this.raid},this.platform.loadTrack??loadApprovedTrack);}
    const ctx=this.ctx;await ctx.resume();
-   if(this.ctx!==ctx||this.platform.silent||this.muted)return;
-   if(!this.timer){this.clocks[this.mode].next=this.ctx.currentTime+.04;this.timer=setInterval(()=>this.schedule(),100);this.schedule();}
+   if(this.ctx!==ctx||this.platform.silent||this.muted||this.hidden)return;
+   if(!this.timer)this.timer=setInterval(()=>this.schedule(),100);void this.activate(this.mode);this.schedule();
   }catch{/* Audio unsupported/interrupted: the game remains playable. */}
  }
- setMuted(value:boolean){if(this.platform.silent)return;this.muted=value;writeMuted(this.platform.storage,value);if(this.master)this.ramp(this.master,value?0:.22,.1);if(value){if(this.timer)clearInterval(this.timer);this.timer=undefined;}for(const listener of this.listeners)listener();}
- setMode(mode:MusicMode){if(mode===this.mode)return;const previous=this.mode;this.mode=mode;if(this.ctx&&this.hq&&this.raid){this.fadeUntil[previous]=this.ctx.currentTime+1.1;this.clocks[mode].next=Math.max(this.clocks[mode].next,this.ctx.currentTime+.02);this.ramp(this.hq,mode==='hq'?.55:0,1.1);this.ramp(this.raid,mode==='raid'?.5:0,1.1);if(this.timer)this.schedule();}}
- visibility(hidden:boolean){if(hidden){if(this.timer)clearInterval(this.timer);this.timer=undefined;void this.ctx?.suspend().catch(()=>{});}/* Safari resumes on the next explicit interaction. */}
+ private async activate(mode:MusicMode){
+  const ctx=this.ctx,music=this.music;if(!ctx||!music||this.muted||this.hidden||ctx.state!=='running')return;
+  try{await music.load(mode);if(this.ctx!==ctx||this.music!==music||this.muted||this.hidden||this.mode!==mode||ctx.state!=='running')return;
+   if(this.playingMode!==mode||!music.has(mode)){const previous=this.playingMode;music.start(mode);if(previous)this.fadeUntil[previous]=ctx.currentTime+1.1;this.ramp(this.hq!,mode==='hq'?MUSIC_GAIN:0,1.1);this.ramp(this.raid!,mode==='raid'?MUSIC_GAIN:0,1.1);this.playingMode=mode;}
+   // HQ is needed first; warm the attack buffer after it becomes audible.
+   if(mode==='hq')void music.load('raid').catch(()=>{});
+  }catch{/* Missing/unsupported audio never blocks gameplay; a later gesture retries. */}
+ }
+ setMuted(value:boolean){if(this.platform.silent)return;this.muted=value;writeMuted(this.platform.storage,value);if(this.master)this.ramp(this.master,value?0:.22,.1);if(!value)void this.unlock();for(const listener of this.listeners)listener();}
+ setMode(mode:MusicMode){if(mode===this.mode)return;this.mode=mode;void this.activate(mode);}
+ visibility(hidden:boolean){this.hidden=hidden;if(hidden){if(this.timer)clearInterval(this.timer);this.timer=undefined;void this.ctx?.suspend().catch(()=>{});}/* Safari resumes on the next explicit interaction. */}
  private note(...args:Parameters<MusicSynth['note']>){this.synth?.note(...args);}
  private schedule(){
-  if(!this.ctx||!this.synth||this.ctx.state!=='running'||this.platform.silent||this.muted)return;
-  for(const mode of ['hq','raid'] as const){
-   if(mode!==this.mode&&this.ctx.currentTime>=this.fadeUntil[mode])continue;
-   const clock=this.clocks[mode],bus=mode==='hq'?this.hq!:this.raid!;
-   if(clock.next<this.ctx.currentTime)clock.next=this.ctx.currentTime+.02;
-   while(clock.next<this.ctx.currentTime+.3){clock.next+=playMusicStep(this.synth,clock.step++,mode,clock.next,bus);}
-  }
+  if(!this.ctx||!this.music||this.ctx.state!=='running'||this.platform.silent||this.hidden)return;
+  for(const mode of ['hq','raid'] as const)if(mode!==this.playingMode&&this.ctx.currentTime>=this.fadeUntil[mode])this.music.stop(mode);
  }
  cue=(cue:Cue)=>{
   if(!this.ctx||this.ctx.state!=='running'||this.platform.silent||this.muted)return;const t=this.ctx.currentTime;
@@ -65,7 +70,7 @@ export class Soundscape {
   const notes=cue==='win'?[62,66,69,74,78]:cue==='resources'?[81,86,90]:cue==='upgrade'?[57,62,66,74]:[];
   notes.forEach((n,i)=>this.note(n,t+i*.1,.65,.12,out,'sine',.008));
  };
- dispose(){if(this.timer)clearInterval(this.timer);this.timer=undefined;void this.ctx?.close().catch(()=>{});this.ctx=undefined;this.synth=undefined;this.clocks={hq:{next:0,step:0},raid:{next:0,step:0}};this.fadeUntil={hq:0,raid:0};this.gainRamps.clear();this.master=undefined;this.hq=undefined;this.raid=undefined;this.noise=undefined;this.last.clear();}
+ dispose(){if(this.timer)clearInterval(this.timer);this.timer=undefined;this.music?.dispose();void this.ctx?.close().catch(()=>{});this.music=undefined;this.playingMode=undefined;this.ctx=undefined;this.synth=undefined;this.fadeUntil={hq:0,raid:0};this.gainRamps.clear();this.master=undefined;this.hq=undefined;this.raid=undefined;this.noise=undefined;this.last.clear();}
 }
 export const sound=new Soundscape();
 // Closing/navigating a preview stops all scheduled sound, including a pending unlock.
