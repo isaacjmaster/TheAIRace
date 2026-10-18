@@ -137,6 +137,12 @@ export function trainScrap(s:FoundationState,count:number,now=Date.now()){
  s.compute-=count*5;s.training??=[];
  let cursor=Math.max(now,s.training.at(-1)||0);for(let i=0;i<count;i++){cursor+=5000;s.training.push(cursor);}
 }
+/** Cancel only unstarted queue entries. Active training and completed troops are never refunded. */
+export function cancelWaitingScrap(s:FoundationState,now=Date.now()){
+ advanceFoundation(s,now);const waiting=Math.max(0,(s.training?.length||0)-1),refund=waiting*SCRAP_BOT.cost;
+ if(refund>s.capacity-s.compute)throw new Error(`Make room for ${refund} Compute before cancelling waiting bots.`);
+ if(waiting){s.training=s.training!.slice(0,1);s.compute+=refund;}return refund;
+}
 export function startBotRaid(s:FoundationState,id:string,layout:number,now=Date.now()){
  advanceFoundation(s,now);if(s.botRaid&&!s.botRaid.settled)throw new Error('Resume your current raid.');
  if(!s.bots)throw new Error('Train a Scrap Bot first.');

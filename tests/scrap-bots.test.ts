@@ -56,6 +56,8 @@ test('SQLite restart, concurrent requests and action retries never duplicate bui
  const hangar=action({action:'build-hangar',position:[12,-6]});assert.equal((await post(hangar)).status,200);const h=read();h.hangar!.completesAt=Date.now()-1000;db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(h),id);
  const train=action({action:'train',count:5});const attempts=await Promise.all([post(train),post(train)]);assert.ok(attempts.every(r=>r.status===200));assert.equal(read().compute,25);assert.equal(read().training!.length,5);
  assert.equal((await post({...train,command:{action:'train',count:1}})).status,400);
+ const cancel=action({action:'cancel-training'});const cancellations=await Promise.all([post(cancel),post(cancel)]);assert.ok(cancellations.every(r=>r.status===200));assert.equal(read().training!.length,1);assert.equal(read().compute,45,'four waiting bots refunded exactly once');assert.equal((await post(action({action:'train',count:4}))).status,200);assert.equal(read().compute,25);assert.equal(read().training!.length,5);
+
  const waiting=read();waiting.training=waiting.training!.map(()=>Date.now()-1000);db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(waiting),id);
  await stop();db=new DatabaseSync(path);url=await boot();const loaded=await(await fetch(url+'/api/foundation',{headers:{cookie}})).json();assert.equal(loaded.state.bots,5);assert.equal(loaded.state.compute,25);
  const start=action({action:'start',layout:0});assert.equal((await post(start)).status,200);assert.equal((await post(start)).status,200);const raidId=read().botRaid!.id;

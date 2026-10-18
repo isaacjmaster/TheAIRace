@@ -62,7 +62,13 @@ export class Soundscape {
   if(cue==='clear-scrap'){[50,62,78].forEach((n,i)=>this.note(n,t+i*.07,.16,.065,out,'triangle',.01));return;}
   if(cue==='punch'){this.note(47,t,.1,.13,out,'triangle',.005,35);this.note(91,t,.075,.055,out,'sine',.003,76);return;}
   if(cue==='tap')this.note(81,t,.075,.13,out,'sine',.002,76);
-  if(cue==='scrap-deploy'){const shift=[0,1,-1,2,0,-2][this.deploymentVoice++%6];this.note(57+shift,t,.075,.085,out,'triangle',.004,48+shift);this.note(70+shift,t+.045,.21,.11,out,'sine',.008,85+shift);this.note(82+shift,t+.16,.12,.05,out,'triangle',.004,76+shift);return;}
+  if(cue==='scrap-deploy'){const shift=[0,1,-1,2,0,-2][this.deploymentVoice++%6];
+   // A two-syllable filtered robot bark, with a low mechanical body and a rising command formant.
+   this.note(43+shift,t,.085,.22,out,'triangle',.004,52+shift);
+   this.note(62+shift,t+.012,.11,.16,out,'square',.005,48+shift,1700);
+   this.note(55+shift,t+.12,.17,.18,out,'square',.006,70+shift,1350);
+   this.note(43+shift,t+.12,.19,.14,out,'triangle',.007,50+shift);
+   this.note(75+shift,t+.26,.1,.1,out,'sine',.005,68+shift);return;}
   if(cue==='deploy'){this.note(62,t,.18,.16,out,'triangle',.005);this.note(74,t+.06,.3,.13,out);}
   if(cue==='laser')this.note(94,t,.11,.08,out,'sine',.002,52);
   if(cue==='impact'||cue==='destroy'){
