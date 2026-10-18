@@ -1,3 +1,4 @@
+import {establishedFoundation as initialFoundation,placeTestStation} from './helpers/established-foundation';
 import {assertLandscapeMigration} from './helpers/landscape';
 import {identityHeaders,saveIdForCookie} from './helpers/identity';
 import test from 'node:test';
@@ -5,7 +6,7 @@ import assert from 'node:assert/strict';
 import express from 'express';
 import {DatabaseSync} from 'node:sqlite';
 import {randomUUID} from 'node:crypto';
-import {initialFoundation,buildRig,advanceFoundation} from '../shared/foundation';
+import {buildRig,advanceFoundation} from '../shared/foundation';
 import {newAva,legacyAva,reconcileAva,commandAva,avaLine,avaPose} from '../shared/ava';
 import {registerFoundation} from '../server/foundation-api';
 const epoch=1700000000000;
@@ -55,7 +56,7 @@ test('foundation Ava API preserves legacy saves, persists progress, ignores stal
  const command=async(command:string,revision=snapshot.ava.revision)=>{const r=await fetch(base+'/ava',{method:'POST',headers,body:JSON.stringify({command,revision,generation:0})});assert.equal(r.status,200);snapshot.ava=(await r.json()).ava;};
  const initialRevision=snapshot.ava.revision;await command('continue');await command('continue',initialRevision);assert.equal(snapshot.ava.step,1);
  await read();assert.equal(snapshot.ava.step,1); // Reload restores the exact dialogue moment.
- for(let i=0;i<6;i++)await command('continue');assert.equal(snapshot.ava.step,7);
+ while(snapshot.ava.step<7){if(snapshot.ava.step===5&&snapshot.ava.builderStep===1){await command('build-menu');await command('station-selected');await placeTestStation(base,headers);await read();}else await command('continue');}assert.equal(snapshot.ava.step,7);
  await command('continue');assert.equal(snapshot.ava.step,7);
  await command('build-menu');await command('rig-selected');assert.equal(snapshot.ava.step,9);
  const purchase={action:'build',position:[6,0],generation:0,requestId:randomUUID()};

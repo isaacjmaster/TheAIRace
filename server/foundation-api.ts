@@ -1,3 +1,4 @@
+import {companyXPStore} from './company-xp';
 import {ensureLandscape,clearObstacle} from '../shared/landscape';
 import {influenceStore} from './influence';
 import {restoreLocalLegacy} from './legacy-session';
@@ -7,7 +8,7 @@ import type express from 'express';
 import type { DatabaseSync } from 'node:sqlite';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { moveBuilding,rotateBuilding,buildFabricator,buildHangar,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
+import { establishBuilderStation,moveBuilding,rotateBuilding,buildFabricator,buildHangar,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
 /** Separate table and cookie: foundation resets never touch any previous game save. */
 export function registerFoundation(app:express.Express,db:DatabaseSync,options:{cookieName?:string;legacyPaths?:string[];clock?:()=>number}={}){
  db.exec('CREATE TABLE IF NOT EXISTS foundation_saves(id TEXT PRIMARY KEY,state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS foundation_actions(session TEXT,id TEXT,payload TEXT,amount INTEGER,PRIMARY KEY(session,id))');
@@ -17,7 +18,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
  const observeAva=(id:string,state:FoundationState,now:number)=>{const old=readAva(id),next=reconcileAva(old,state,now);if(next.revision!==old.revision)saveAva(id,next);return next;};
  const identities=identityStore(db,options.cookieName);
  registerIdentity(app,db,identities);
- const influence=influenceStore(db),clock=options.clock??Date.now;
+ const influence=influenceStore(db),clock=options.clock??Date.now,xp=companyXPStore(db,clock());
  function session(req:express.Request,res:express.Response){
   let player=identities.authenticate(req,res);
   if(!player&&req.method==='GET'&&identities.hasCookie(req)){try{player=restoreLocalLegacy(req,res,db,identities,options.legacyPaths||[]);}catch{res.status(503).json({code:'SESSION_RESTORE_UNAVAILABLE',error:'We could not safely restore this local session. Your saved companies have not been replaced. Please retry or open the original preview.'});return;}}
@@ -45,14 +46,14 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   const player=session(req,res);if(!player)return;const {id,company}=player,now=clock();
   db.exec('BEGIN IMMEDIATE');
   try{const state=JSON.parse(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(id)!.state as string) as FoundationState,before=JSON.stringify(state);
-   ensureLandscape(state,now,randomUUID());advanceFoundation(state,now);influence.settle(company.playerId,state,now);
+   ensureLandscape(state,now,randomUUID());advanceFoundation(state,now);influence.settle(company.playerId,state,now);xp.settle(company.playerId,state,now);
    if(JSON.stringify(state)!==before){state.revision++;save(id,state);}
-   const ava=observeAva(id,state,now),competition=influence.snapshot(company.playerId,state,now);db.exec('COMMIT');
-   res.set('Cache-Control','private, no-store').json({state,company,serverTime:now,ava,competition});
+   company.level=xp.snapshot(company.playerId).level;const ava=observeAva(id,state,now),competition=influence.snapshot(company.playerId,state,now);db.exec('COMMIT');
+   res.set('Cache-Control','private, no-store').json({state,company,serverTime:now,ava,competition,companyXp:xp.snapshot(company.playerId)});
   }catch(e){db.exec('ROLLBACK');throw e;}
  }catch{res.status(503).json({code:'BACKEND_UNAVAILABLE',error:'The save service is temporarily unavailable. Your saved companies have not been replaced. Please retry.'});}});
  app.post('/api/foundation/ava',(req,res)=>{
-  const parsed=z.object({command:z.enum(['continue','build-menu','rig-selected','skip','replay']),revision:z.number().int().min(0),generation:z.number().int().min(0)}).strict().safeParse(req.body);
+  const parsed=z.object({command:z.enum(['continue','build-menu','rig-selected','station-selected','skip','replay']),revision:z.number().int().min(0),generation:z.number().int().min(0)}).strict().safeParse(req.body);
   if(!parsed.success){res.status(400).json({error:'Invalid Ava action.'});return;}
   const player=session(req,res);if(!player)return;const {id,state}=player,old=readAva(id),input=parsed.data;
   if(input.generation!==(state.generation||0)){res.status(409).json({error:'Progress changed. Reload the game.'});return;}
@@ -73,12 +74,13 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
    if(input.generation!==(state.generation||0))throw new Error('Progress was reset. Reopen the building menu.');
    const payload=JSON.stringify(input),cached=db.prepare('SELECT payload,amount FROM foundation_actions WHERE session=? AND id=?').get(id,input.requestId);
    if(cached&&cached.payload!==payload)throw new Error('Request already used for another action.');
-   ensureLandscape(state,now,randomUUID());advanceFoundation(state,now);influence.settle(player.company.playerId,state,now);let amount=Number(cached?.amount||0);
+   ensureLandscape(state,now,randomUUID());advanceFoundation(state,now);influence.settle(player.company.playerId,state,now);xp.settle(player.company.playerId,state,now);let amount=Number(cached?.amount||0);
    if(!cached){if(input.action==='build')buildRig(state,input.position,now,input.orientation);else if(input.action==='move')moveRig(state,input.position,now,input.orientation,input.rig);else amount=collectRig(state,now,input.rig);db.prepare('INSERT INTO foundation_actions VALUES(?,?,?,?)').run(id,input.requestId,payload,amount);}
-   influence.settle(player.company.playerId,state,now);state.revision++;save(id,state);let ava=observeAva(id,state,now);if(!cached&&input.action==='collect'&&amount>0&&ava.status==='active'&&ava.step>=7){ava=reconcileAva({...ava,collected:true,revision:ava.revision+1},state,now);saveAva(id,ava);}db.exec('COMMIT');res.json({state,serverTime:now,amount,ava,competition:influence.snapshot(player.company.playerId,state,now)});
+   influence.settle(player.company.playerId,state,now);xp.settle(player.company.playerId,state,now);state.revision++;save(id,state);let ava=observeAva(id,state,now);if(!cached&&input.action==='collect'&&amount>0&&ava.status==='active'&&ava.step>=7){ava=reconcileAva({...ava,collected:true,revision:ava.revision+1},state,now);saveAva(id,ava);}db.exec('COMMIT');res.json({state,serverTime:now,amount,ava,competition:influence.snapshot(player.company.playerId,state,now),companyXp:xp.snapshot(player.company.playerId)});
   }catch(e){db.exec('ROLLBACK');res.status(400).json({error:(e as Error).message});}
  });
  const botAction=z.discriminatedUnion('action',[
+  z.object({action:z.literal('establish-station'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('clear-obstacle'),obstacleId:z.string().min(1).max(100)}).strict(),
   z.object({action:z.literal('build-hangar'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
@@ -97,9 +99,10 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
    if(input.generation!==(state.generation||0))throw new Error('Progress was reset. Reload the game.');
    const payload='bots:'+JSON.stringify(input),cached=db.prepare('SELECT payload FROM foundation_actions WHERE session=? AND id=?').get(id,input.requestId);
    if(cached&&cached.payload!==payload)throw new Error('Request already used for another action.');
-   ensureLandscape(state,now,randomUUID());advanceFoundation(state,now);influence.settle(player.company.playerId,state,now);
+   ensureLandscape(state,now,randomUUID());advanceFoundation(state,now);influence.settle(player.company.playerId,state,now);xp.settle(player.company.playerId,state,now);
    if(!cached){const c=input.command;
-    if(c.action==='clear-obstacle')clearObstacle(state,c.obstacleId,now);
+    if(c.action==='establish-station')establishBuilderStation(state,c.position,c.orientation);
+    else if(c.action==='clear-obstacle')clearObstacle(state,c.obstacleId,now);
     else if(c.action==='build')buildFabricator(state,c.position,now,c.orientation);
     else if(c.action==='build-hangar')buildHangar(state,c.position,now,c.orientation);
     else if(c.action==='move')moveBuilding(state,c.building,c.position,c.orientation,now);
@@ -110,13 +113,13 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
     else retreatBots(state,c.raidId,now);
     db.prepare('INSERT INTO foundation_actions VALUES(?,?,?,?)').run(id,input.requestId,payload,0);
    }
-   influence.settle(player.company.playerId,state,now);state.revision++;save(id,state);db.exec('COMMIT');res.json({state,serverTime:now,competition:influence.snapshot(player.company.playerId,state,now)});
+   influence.settle(player.company.playerId,state,now);xp.settle(player.company.playerId,state,now);state.revision++;save(id,state);const ava=observeAva(id,state,now);db.exec('COMMIT');res.json({state,ava,serverTime:now,competition:influence.snapshot(player.company.playerId,state,now),companyXp:xp.snapshot(player.company.playerId)});
   }catch(e){db.exec('ROLLBACK');res.status(400).json({error:(e as Error).message});}
  });
  app.post('/api/foundation/reset',(req,res)=>{
   const input=z.object({confirm:z.literal('RESET FOUNDATION'),revision:z.number().int().min(0)}).strict().safeParse(req.body);
   if(!input.success){res.status(400).json({error:'Confirm the reset before continuing.'});return;}
   const player=session(req,res);if(!player)return;const {id,state}=player;if(state.revision!==input.data.revision){res.status(409).json({error:'Progress changed. Reopen Settings and try again.'});return;}
-  const next=initialFoundation(state.revision+1);next.raidRecord=state.raidRecord||{wins:[],completeHistory:false};next.generation=(state.generation||0)+1;db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(next),id);saveAva(id,newAva(readAva(id).revision+1));res.json({state:next,ava:readAva(id)});
+  const next=initialFoundation(state.revision+1);next.raidRecord=state.raidRecord||{wins:[],completeHistory:false};next.generation=(state.generation||0)+1;db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(next),id);saveAva(id,newAva(readAva(id).revision+1));res.json({state:next,ava:readAva(id),companyXp:xp.snapshot(player.company.playerId)});
  });
 }

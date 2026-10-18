@@ -1,3 +1,4 @@
+import {establishedFoundation as initialFoundation,placeTestStation} from './helpers/established-foundation';
 import {buildLegacyFabricator as buildFabricator} from './helpers/legacy-foundation';
 import {identityHeaders,saveIdForCookie} from './helpers/identity';
 import test from 'node:test';
@@ -9,7 +10,7 @@ import {join} from 'node:path';
 import express from 'express';
 import {DatabaseSync} from 'node:sqlite';
 import {registerFoundation} from '../server/foundation-api';
-import {initialFoundation,buildRig,advanceFoundation,trainScrap,moveBuilding,rotateBuilding,buildingLayout,validLayoutPosition,validFoundationPosition,type FoundationState,type RotatableBuilding,type RigPosition,type Orientation} from '../shared/foundation';
+import {buildRig,advanceFoundation,trainScrap,moveBuilding,rotateBuilding,buildingLayout,validLayoutPosition,validFoundationPosition,type FoundationState,type RotatableBuilding,type RigPosition,type Orientation} from '../shared/foundation';
 const epoch=1700000000000;
 function ready(){const s=initialFoundation();s.compute=500;buildRig(s,[6,0],epoch);buildFabricator(s,[16,-6],epoch+15000);advanceFoundation(s,epoch+30000);trainScrap(s,3,epoch+30000);return s;}
 test('all five HQ structures move and rotate without charging, rebuilding, losing stored Compute or altering queued bots',()=>{
@@ -38,7 +39,7 @@ test('SQLite restart retains moved landmarks and retries never move twice or res
  async function boot(){const app=express();app.use(express.json());registerFoundation(app,db);server=app.listen(0,'127.0.0.1');await new Promise<void>(r=>server.once('listening',r));return `http://127.0.0.1:${(server.address() as {port:number}).port}`;}
  const stop=()=>new Promise<void>(r=>server.close(()=>{db.close();r();}));let url=await boot();
  try{const first=await fetch(url+'/api/foundation'),cookie=first.headers.get('set-cookie')!.split(';')[0];const post=(body:unknown)=>fetch(url+'/api/foundation/bots',{method:'POST',headers:identityHeaders(db,cookie),body:JSON.stringify(body)});
- const input={requestId:randomUUID(),generation:0,command:{action:'move',building:'hq',position:[-10,-11],orientation:1}};
+ await placeTestStation(url+'/api/foundation',identityHeaders(db,cookie));const input={requestId:randomUUID(),generation:0,command:{action:'move',building:'hq',position:[-10,-11],orientation:1}};
  assert.equal((await post(input)).status,200);assert.equal((await post(input)).status,200);assert.equal((await post({...input,command:{...input.command,position:[-12,-12]}})).status,400);
  const station={requestId:randomUUID(),generation:0,command:{action:'move',building:'station',position:[-5,-1],orientation:2}};assert.equal((await post(station)).status,200);
  assert.equal((await post({...station,requestId:randomUUID(),command:{...station.command,position:[0,9]}})).status,400);

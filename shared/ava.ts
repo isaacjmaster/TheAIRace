@@ -1,22 +1,25 @@
-import type {FoundationState} from './foundation';
-export type AvaProgress={status:'active'|'skipped'|'complete'|'legacy';step:number;revision:number;collected:boolean};
-export const newAva=(revision=0):AvaProgress=>({status:'active',step:0,revision,collected:false});
+import {hasBuilderStation,type FoundationState} from './foundation';
+export type AvaProgress={builderStep?:number;status:'active'|'skipped'|'complete'|'legacy';step:number;revision:number;collected:boolean};
+export const newAva=(revision=0):AvaProgress=>({status:'active',builderStep:0,step:0,revision,collected:false});
 export const legacyAva=():AvaProgress=>({status:'legacy',step:16,revision:0,collected:false});
 /** Observe authoritative state only. Never construct, collect, or award anything. */
 export function reconcileAva(progress:AvaProgress,state:FoundationState,now:number):AvaProgress{
  const next={...progress};
  if(next.status!=='active')return next;
+ if(next.step===5&&(next.builderStep??4)<3&&hasBuilderStation(state)){next.builderStep=next.builderStep===0?4:3;next.revision++;}
  if(next.step>=7&&next.step<=10&&state.rig){next.step=now>=state.rig.completesAt?11:10;}
  if(next.step===12&&next.collected)next.step=13;
  if(next.step!==progress.step)next.revision++;
  return next;
 }
-export type AvaCommand='continue'|'build-menu'|'rig-selected'|'skip'|'replay';
+export const builderLesson=(p:AvaProgress)=>p.step===5&&(p.builderStep??4)<4;
+export type AvaCommand='continue'|'build-menu'|'rig-selected'|'station-selected'|'skip'|'replay';
 export function commandAva(progress:AvaProgress,command:AvaCommand,state:FoundationState,now:number):AvaProgress{
  if(command==='replay')return newAva(progress.revision+1);
  let next=reconcileAva(progress,state,now);
  if(next.status!=='active')return next;
  if(command==='skip')return {...next,status:'skipped',revision:next.revision+1};
+ if(builderLesson(next)){const b=next.builderStep!;if(command==='continue'&&(b===0||b===3))return {...next,builderStep:b===0?1:4,revision:next.revision+1};if((command==='build-menu'||command==='station-selected')&&(b===1||b===2))return {...next,builderStep:2,revision:next.revision+1};return next;}
  const step=next.step;
  if(command==='continue'&&(step<=6||step===11||step>=13)){
   next={...next,step:step+1,revision:next.revision+1};
@@ -26,6 +29,7 @@ export function commandAva(progress:AvaProgress,command:AvaCommand,state:Foundat
  return reconcileAva(next,state,now);
 }
 export function avaLine(p:AvaProgress,s:FoundationState,now:number,panel:string|null,placing:string|null):string{
+ if(builderLesson(p))return p.builderStep===0?"Every company needs someone who can turn ideas into reality. Let's get our first Builder Bot!":p.builderStep===3?"Meet our Builder Bot! Its station is home and charging dock between jobs. Now let's put it to work.":placing==='station'?"Choose an open spot for the Builder Station, then Confirm. Our first station is free and ready immediately.":panel==='build'?"Choose Builder Station. It's our little robot's home and charging dock.":"Tap Build and choose Builder Station. We'll choose where our first builder lives.";
  const lines=[
  "Hey, Founder! I'm Ava, your AI cofounder.",
  "Welcome to 2028. We're starting an AI company, and I have a feeling we're going to build something incredible.",

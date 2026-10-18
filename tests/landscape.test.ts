@@ -1,6 +1,7 @@
+import {establishedFoundation as initialFoundation,placeTestStation} from './helpers/established-foundation';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initialFoundation,advanceFoundation,buildRig,moveBuilding,validLayoutPosition,buildingLayout,FOUNDATION_BUILDINGS,footprint,type FoundationState} from '../shared/foundation';
+import {advanceFoundation,buildRig,moveBuilding,validLayoutPosition,buildingLayout,FOUNDATION_BUILDINGS,footprint,type FoundationState} from '../shared/foundation';
 import {LANDSCAPE,ensureLandscape,clearObstacle,validObstaclePosition,obstacleSize} from '../shared/landscape';
 import express from 'express';
 import {DatabaseSync} from 'node:sqlite';
@@ -16,7 +17,7 @@ test('rotated structures, roads, station approaches, lamps and initial plots rem
  const o=s.landscape!.items[0];assert.match(validLayoutPosition(s,o.position,'rig2',0)!,/Clear the/);assert.throws(()=>buildRig(s,o.position,1000),/Clear the/);assert.equal(validObstaclePosition(s,{id:'bad',kind:'scrap',position:[0,9],variant:0}),false);assert.equal(validObstaclePosition(s,{id:'bad',kind:'tree',position:[-1,4],variant:0}),false);
 });
 async function fixture(path=':memory:',time=100000){let now=time;const db=new DatabaseSync(path),app=express();app.use(express.json());registerFoundation(app,db,{clock:()=>now});const server=app.listen(0,'127.0.0.1');await new Promise<void>(r=>server.once('listening',r));const url=`http://127.0.0.1:${(server.address() as {port:number}).port}`;
- const get=async(cookie='')=>{const r=await fetch(url+'/api/foundation',{headers:{cookie}});return {status:r.status,data:await r.json(),cookie:r.headers.get('set-cookie')?.split(';')[0]||cookie};};
+ const get=async(cookie='')=>{const r=await fetch(url+'/api/foundation',{headers:{cookie}}),data=await r.json(),c=r.headers.get('set-cookie')?.split(';')[0]||cookie;if(!cookie){await placeTestStation(url+'/api/foundation',identityHeaders(db,c));return get(c);}return {status:r.status,data,cookie:c};};
  const post=async(cookie:string,route:string,body:unknown)=>{const r=await fetch(url+'/api/foundation'+route,{method:'POST',headers:identityHeaders(db,cookie),body:JSON.stringify(body)});return {status:r.status,data:await r.json(),cookie:r.headers.get('set-cookie')?.split(';')[0]||cookie};};
  const clear=(cookie:string,id:string,requestId=randomUUID())=>post(cookie,'/bots',{generation:0,requestId,command:{action:'clear-obstacle',obstacleId:id}});
  return {db,get,post,clear,setTime:(t:number)=>now=t,close:()=>new Promise<void>(r=>server.close(()=>{db.close();r();}))};}
