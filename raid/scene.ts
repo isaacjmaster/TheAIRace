@@ -1,12 +1,13 @@
+import {punchExtension,punchWindup} from '../src/art/ScrapCombatMotion';
 import {animateScrapBot,turnScrapBot} from '../src/art/ScrapBotMotion';
 import { palette as colors, lightWorld, material, WorldKit } from '../src/art/world';
 import {scrapBotModel} from '../src/art/BotBuildings';
 import { MAP, raidLevel } from './level';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { STATS, validDeployment, type Building, type Effect, type Kind, type Point, type Raid, type Unit } from './engine';
+import { STATS, unitStats, distance, validDeployment, type Building, type Effect, type Kind, type Point, type Raid, type Unit } from './engine';
 
-type Visual = { scrapBot?:THREE.Group; group: THREE.Group; body: THREE.Group; hp: THREE.Sprite; hpTexture: THREE.CanvasTexture; hpCanvas: HTMLCanvasElement; lastHp: number; lastHit: number; born: number; lastAttack?:number; lastDamage?:number; turret?: THREE.Group; rotor?: THREE.Object3D; dead: boolean; destroyedAt?: number };
+type Visual = { scrapBot?:THREE.Group; group: THREE.Group; body: THREE.Group; hp: THREE.Sprite; hpTexture: THREE.CanvasTexture; hpCanvas: HTMLCanvasElement; lastHp: number; lastHit: number; born: number; lastAttack?:number; attackTarget?:Point; lastDamage?:number; turret?: THREE.Group; rotor?: THREE.Object3D; dead: boolean; destroyedAt?: number };
 type Burst = { group: THREE.Group; age: number; life: number; particles: { mesh: THREE.Mesh; velocity: THREE.Vector3 }[] };
 const world = (p: Point, height = 0) => new THREE.Vector3(p.x - MAP.center.x, height, p.y - MAP.center.y);
 
@@ -338,17 +339,20 @@ export class RaidScene {
     const melee=this.lastState?.units.some(u=>u.id===e.source&&u.kind==='scrap');
     const beam = new THREE.Mesh(this.geometry('beam', () => new THREE.CylinderGeometry(.032, .032, 1, 6)), this.mat(e.color, true));
     beam.position.copy(start.clone().add(end).multiplyScalar(.5)); beam.scale.y = delta.length(); beam.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), delta.normalize()); if(!melee)group.add(beam);
-    this.beams.set(e.id, { group, life: .17, age: 0, effect: e });
+    if(melee){group.position.copy(end);group.userData.melee=true;const flash=new THREE.Mesh(this.geometry('melee-flash',()=>new THREE.OctahedronGeometry(.18)),this.mat('#d8fff5',true));group.add(flash);}
+    this.beams.set(e.id, { group, life: melee?.12:.17, age: 0, effect: e });
     this.burst(end, e.color);
     const attacker=this.lastState?.buildings.find(b=>b.id===e.source);
     if(attacker?.kind==='missile'||e.destroyed||e.damage<0)this.pulse(end,e.color,attacker?.kind==='missile'?1.1:e.damage<0?.6:.85);
-    const source = this.visuals.get(e.source); if (source) {source.lastHit = this.clock;source.lastAttack=this.clock;}
+    const source = this.visuals.get(e.source); if (source) {source.lastHit = this.clock;source.lastAttack=this.clock-Math.max(0,.3-e.ttl);source.attackTarget=e.to;}
     const target = this.visuals.get(e.target); if (target) {target.lastHit = this.clock;target.lastDamage=this.clock;}
   }
   update(s: Raid, selected: Kind, dt: number) {
     if (this.paused) return;
     this.clock += dt;
     if (s !== this.lastState) { this.clearBattle(); this.lastState = s; this.compoundEnvironment(s); this.walls(s.buildings); for (const b of s.buildings) this.visuals.set(b.id, this.building(b)); this.center.set(0, .2, 0); this.camera.position.set(7, 25, 32); this.camera.zoom = 1; this.camera.lookAt(this.center); this.camera.updateProjectionMatrix(); }
+    for(const u of s.units)if(!this.visuals.has(u.id)){this.visuals.set(u.id,this.unit(u));this.burst(world(u,.1),STATS[u.kind].color);}
+    for (const e of s.effects) if (!this.seenEffects.has(e.id)) { this.seenEffects.add(e.id); this.shot(e); }
     for (const entity of [...s.buildings, ...s.units]) {
       let v = this.visuals.get(entity.id); if (!v) { v = this.unit(entity as Unit); this.visuals.set(entity.id, v); this.burst(world(entity, .1), STATS[(entity as Unit).kind].color); }
       const isUnit = entity.id >= 100;
@@ -366,7 +370,7 @@ export class RaidScene {
       if (isUnit) {
         const u = entity as Unit, desired = world(entity), old = v.group.position.clone(); v.group.position.lerp(desired, 1 - Math.exp(-24 * dt));
         const target = s.buildings.find(b => b.id === u.target);
-        const direction = u.waypoint ? world(u.waypoint).sub(v.group.position) : target ? world(target).sub(v.group.position) : desired.clone().sub(old);
+        const direction = v.scrapBot&&this.clock-(v.lastAttack??-10)<.15&&v.attackTarget?world(v.attackTarget).sub(v.group.position):u.waypoint ? world(u.waypoint).sub(v.group.position) : target ? world(target).sub(v.group.position) : desired.clone().sub(old);
         if (direction.lengthSq() > .001){const yaw=Math.atan2(direction.x,direction.z);if(u.kind==='scrap')turnScrapBot(v.body,yaw,dt,this.reduced);else v.body.rotation.y=yaw;}
         const moving = old.distanceTo(desired) > .025;
         const bounce = this.reduced ? 0 : moving ? Math.sin(this.clock * (u.kind === 'scout' ? 18 : 11) + u.id) * .035 : 0;
@@ -378,7 +382,7 @@ export class RaidScene {
         v.body.position.x = crowded ? Math.cos(u.id * 2.4) * .16 : 0; v.body.position.z = crowded ? Math.sin(u.id * 2.4) * .16 : 0;
 
         const spawn = this.reduced ? 1 : Math.min(1, (this.clock - v.born) * 5); v.body.scale.setScalar(Math.max(.05, spawn) * (u.kind === 'tank' ? 1.12 : 1.22));
-        if(v.scrapBot)animateScrapBot(v.scrapBot,dt,this.reduced,Math.max(0,1-(this.clock-(v.lastAttack??-10))/.28));
+        if(v.scrapBot){const extension=punchExtension(this.clock-(v.lastAttack??-10)),inRange=!!target&&target.hp>0&&distance(u,target)<=unitStats(s,'scrap').range+.002;animateScrapBot(v.scrapBot,dt,this.reduced,extension,0,extension?0:punchWindup(u.cooldown,inRange,!u.waypoint&&!moving));}
         if (v.rotor) v.rotor.rotation.y += dt * 16;
       } else {
         if (v.rotor) { v.rotor.rotation.y += dt * .7; v.rotor.position.y = 2.52 + (this.reduced ? 0 : Math.sin(this.clock * 2) * .08); }
@@ -388,12 +392,12 @@ export class RaidScene {
         const hit = Math.max(0, 1 - (this.clock - v.lastHit) / .18); v.body.rotation.z = this.reduced ? 0 : Math.sin(hit * 15) * hit * .025;
       }
     }
-    for (const e of s.effects) if (!this.seenEffects.has(e.id)) { this.seenEffects.add(e.id); this.shot(e); }
-    for (const [id, beam] of this.beams) { beam.age += dt; if (beam.age >= beam.life) { this.root.remove(beam.group); this.beams.delete(id); } }
+    for (const [id, beam] of this.beams) { beam.age += dt;if(beam.group.userData.melee)beam.group.scale.setScalar(Math.max(0,1-beam.age/beam.life)); if (beam.age >= beam.life) { this.root.remove(beam.group); this.beams.delete(id); } }
     this.bursts = this.bursts.filter(b => { b.age += dt; for (const p of b.particles) { p.mesh.position.addScaledVector(p.velocity, dt); p.velocity.y -= dt * 4; p.mesh.scale.setScalar(Math.max(0, 1 - b.age / b.life)); p.mesh.rotation.x += dt * 4; } if (b.age >= b.life) { this.root.remove(b.group); return false; } return true; });
     this.pulses=this.pulses.filter(p=>{p.age+=dt;const t=p.age/p.life;p.mesh.scale.setScalar((.2+t)*p.size);(p.mesh.material as THREE.MeshBasicMaterial).opacity=Math.max(0,(1-t)*.65);if(t>=1){p.mesh.removeFromParent();(p.mesh.material as THREE.Material).dispose();return false;}return true;});
     this.cursor.visible = !!this.pointer && !s.ended && s.stock[selected] > 0;
     if (this.pointer) { this.cursor.position.copy(world(this.pointer, .09)); (this.cursor.material as THREE.MeshBasicMaterial).color.set(validDeployment(this.pointer) ? STATS[selected].color : '#ff6f72'); }
+    let punching=0;for(const v of this.visuals.values())if(v.scrapBot&&(v.scrapBot.userData.punchExtension??0)>.1)punching++;this.renderer.domElement.dataset.punchingBots=String(punching);
     let walking=0,phase=0;for(const v of this.visuals.values())if(v.scrapBot&&(v.scrapBot.userData.walkActivity??0)>.1){walking++;phase=v.scrapBot.userData.walkPhase??0;}
     this.renderer.domElement.dataset.walkingBots=String(walking);
     this.renderer.domElement.dataset.walkPhase=String(phase);

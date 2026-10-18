@@ -10,7 +10,7 @@ function solveLeg(p:Pose,leg:BotLeg){
  p.hip.set(leg.side*.17,.43+p.core.position.y,0);p.ankle.copy(leg.foot.position);p.ankle.y+=.12;p.direction.copy(p.ankle).sub(p.hip);const distance=p.direction.length();p.bend.set(0,p.direction.z,-p.direction.y).normalize();p.knee.copy(p.hip).add(p.ankle).multiplyScalar(.5).addScaledVector(p.bend,Math.sqrt(Math.max(0,.25*.25-distance*distance/4)));leg.knee.position.copy(p.knee);bone(leg.upper,p.hip,p.knee,p.direction);bone(leg.lower,p.knee,p.ankle,p.direction);
 }
 /** Read-only animation: actual rendered displacement drives cadence; a stance foot never translates in world X/Z. */
-export function animateScrapBot(bot:THREE.Object3D,dt:number,reduced=false,attack=0,idleBob=0){
+export function animateScrapBot(bot:THREE.Object3D,dt:number,reduced=false,attack=0,idleBob=0,windup=0){
  const p=poses.get(bot);if(!p)return;dt=Math.min(.1,Math.max(0,dt));p.rig.updateWorldMatrix(true,false);p.rig.getWorldPosition(p.target);p.rig.getWorldScale(p.scale);const scale=Math.max(.001,Math.abs(p.scale.z));
  let distance=p.initialized?Math.hypot(p.target.x-p.position.x,p.target.z-p.position.z):0,dy=p.initialized?p.target.y-p.position.y:0;
  if(!p.initialized||distance>1.5||Math.abs(scale-p.previousScale)>scale*.2){for(let i=0;i<2;i++){p.feet[i].anchor.copy(p.legs[i].foot.position).applyMatrix4(p.rig.matrixWorld);p.feet[i].swing=false;p.feet[i].phase=(.275+i*.5)%1;}distance=0;dy=0;p.initialized=true;}
@@ -26,7 +26,17 @@ export function animateScrapBot(bot:THREE.Object3D,dt:number,reduced=false,attac
   }else{foot.anchor.y+=(p.position.y-foot.anchor.y)*(1-Math.exp(-dt*24));if(reduced){p.target.set(leg.side*.17,0,0).applyMatrix4(p.rig.matrixWorld);foot.anchor.copy(p.target);foot.swing=false;}}
   leg.foot.position.copy(foot.anchor).applyMatrix4(p.inverse);leg.foot.rotation.x=foot.swing&&moving&&!reduced?Math.sin((q-stance)/(1-stance)*Math.PI)*-.1:0;solveLeg(p,leg);foot.phase=q;
  }
- const swing=Math.sin(phase*Math.PI*2)*.22*p.activity;for(let i=0;i<2;i++){const arm=p.arms[i],target=reduced?0:i===1&&attack>0?-1.15*attack:(i===0?-swing:swing);arm.rotation.x+=(target-arm.rotation.x)*(1-Math.exp(-dt*22));}
+ const striking=attack>0&&!reduced,preparing=windup>0&&!reduced;
+ // Upper-body motion leaves the stance feet and ground anchors untouched.
+ const lean=striking?-.19*attack:preparing?.08*windup:0,twist=striking?.18*attack:preparing?-.16*windup:0;
+ p.core.rotation.x+=(lean-p.core.rotation.x)*(1-Math.exp(-dt*24));p.core.rotation.y+=(twist-p.core.rotation.y)*(1-Math.exp(-dt*24));
+ const swing=Math.sin(phase*Math.PI*2)*.22*p.activity;
+ for(let i=0;i<2;i++){const arm=p.arms[i],target=reduced?0:i===1&&striking?-1.85*attack:i===1&&preparing?.8*windup:i===0&&(striking||preparing)?-.4*Math.max(attack,windup):(i===0?-swing:swing);
+  // The hit pose is applied on its event frame; recovery and anticipation ease naturally.
+  if(i===1&&striking)arm.rotation.x=target;else arm.rotation.x+=(target-arm.rotation.x)*(1-Math.exp(-dt*22));
+  const forward=i===1&&striking?.13*attack:0;arm.position.z+=(forward-arm.position.z)*(1-Math.exp(-dt*35));
+ }
+ bot.userData.punchExtension=attack;bot.userData.punchWindup=windup;
  bot.userData.walkPhase=phase;bot.userData.walkActivity=p.activity;
 }
 /** Copy the settled delivery pose into its existing authoritative Hangar representation. */

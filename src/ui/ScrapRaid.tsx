@@ -16,7 +16,7 @@ export function ScrapRaid({raid,influence,busy,error,onDeploy,onReturn}:{raid:Bo
  useEffect(()=>{Object.assign(sim.current,structuredClone(raid.simulation));started.current=raid.started;},[raid]);
  useEffect(()=>{let view:RaidScene|undefined,frame=0,last=performance.now(),elapsed=0,uiAt=0;try{view=new RaidScene(host.current!,setNotice,true);scene.current=view;
  const draw=(time:number)=>{const dt=Math.min(.1,(time-last)/1000);last=time;if(!document.hidden){elapsed+=dt;while(elapsed>=STEP){if(started.current)tick(sim.current);elapsed-=STEP;}
- for(const e of sim.current.effects){if(heard.current.has(e.id))continue;heard.current.add(e.id);sound.cue(e.destroyed?'destroy':e.source<100?'laser':'impact');}
+ for(const e of sim.current.effects){if(heard.current.has(e.id))continue;heard.current.add(e.id);sound.cue(e.destroyed?'destroy':e.source<100?'laser':sim.current.units.some(u=>u.id===e.source&&u.kind==='scrap')?'punch':'impact');}
  view!.update(sim.current,'scrap',dt);if(time-uiAt>200){uiAt=time;setBattle({time:sim.current.time,destroyed:destruction(sim.current),alive:sim.current.units.filter(u=>u.hp>0).length});}}frame=requestAnimationFrame(draw);};frame=requestAnimationFrame(draw);}catch{setNotice('Graphics unavailable. Return to HQ and retry.');}
  return()=>{cancelAnimationFrame(frame);view?.dispose();};},[]);
  useEffect(()=>{if(raid.settled){if(raid.simulation.reason==='Network cleared')sound.cue('win');if(raid.reward)sound.cue('resources');}},[raid.settled]);

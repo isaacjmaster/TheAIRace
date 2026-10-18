@@ -55,11 +55,12 @@ export class Soundscape {
  }
  cue=(cue:Cue)=>{
   if(!this.ctx||this.ctx.state!=='running'||this.platform.silent||this.muted)return;const t=this.ctx.currentTime;
-  const gap=cue.startsWith('building-')?.16:cue==='laser'||cue==='impact'?.09:cue==='destroy'?.12:.04;if(t-(this.last.get(cue)??-10)<gap)return;this.last.set(cue,t);
+  const gap=cue.startsWith('building-')?.16:cue==='laser'||cue==='impact'||cue==='punch'?.09:cue==='destroy'?.12:.04;if(t-(this.last.get(cue)??-10)<gap)return;this.last.set(cue,t);
   const out=this.master!;
   if(cue in BUILDING_SOUNDS){const voice=BUILDING_SOUNDS[cue as keyof typeof BUILDING_SOUNDS];voice.notes.forEach((note,i)=>this.note(note,t+i*voice.gap,voice.duration,.1,out,voice.type,.012));return;}
   if(cue==='clear-tree'){[74,81,86].forEach((n,i)=>this.note(n,t+i*.065,.2,.055,out,'sine',.015));return;}
   if(cue==='clear-scrap'){[50,62,78].forEach((n,i)=>this.note(n,t+i*.07,.16,.065,out,'triangle',.01));return;}
+  if(cue==='punch'){this.note(47,t,.1,.13,out,'triangle',.005,35);this.note(91,t,.075,.055,out,'sine',.003,76);return;}
   if(cue==='tap')this.note(81,t,.075,.13,out,'sine',.002,76);
   if(cue==='deploy'){this.note(62,t,.18,.16,out,'triangle',.005);this.note(74,t+.06,.3,.13,out);}
   if(cue==='laser')this.note(94,t,.11,.08,out,'sine',.002,52);

@@ -5,9 +5,9 @@ export type Point = { x: number; y: number };
 export type Building = Point & { id: number; kind: 'core' | 'vault' | 'turret' | 'wall' | 'missile' | 'shield' | 'repair'; disabledUntil?: number; hp: number; maxHp: number; cooldown: number; target?: number };
 export type Unit = Point & { id: number; kind: Kind; hp: number; maxHp: number; cooldown: number; target?: number; objective?: number; waypoint?: Point };
 export type Effect = { id: number; from: Point; to: Point; ttl: number; color: string; damage: number; source: number; target: number; destroyed: boolean };
-export type Raid = { starterLayout?:number; starter?:boolean; combatVersion?:number; defenseDamage?:Record<number,number>; layout: number; version?: number; time: number; buildings: Building[]; units: Unit[]; stock: Record<Kind, number>; effects: Effect[]; ended: boolean; reason: string; damage: Record<Kind, number>; lost: number; nextId: number; power: number; healthPower: number };
+export type Raid = { scrapSpeedVersion?:2; starterLayout?:number; starter?:boolean; combatVersion?:number; defenseDamage?:Record<number,number>; layout: number; version?: number; time: number; buildings: Building[]; units: Unit[]; stock: Record<Kind, number>; effects: Effect[]; ended: boolean; reason: string; damage: Record<Kind, number>; lost: number; nextId: number; power: number; healthPower: number };
 export const STATS = {
-  scrap: {name:'Scrap Bot',hp:62,speed:1.15,damage:9,range:.85,interval:1,color:'#ffc05e',role:'Melee - 1 housing'},
+  scrap: {name:'Scrap Bot',hp:62,speed:1.4375,damage:9,range:.85,interval:1,color:'#ffc05e',role:'Melee - 1 housing'},
   scout: { name: 'Scout', hp: 85, speed: 1.55, damage: 16, range: .85, interval: .7, color: '#52e6d2', role: 'Fast · targets compute' },
   tank: { name: 'Tank', hp: 390, speed: .68, damage: 24, range: .95, interval: 1.15, color: '#8da9ff', role: 'Armored · absorbs fire' },
   breaker: { name: 'Breaker', hp: 135, speed: 1.05, damage: 38, range: 1.05, interval: .9, color: '#ffb868', role: 'Targets defenses · breaches walls' },
@@ -15,8 +15,9 @@ export const STATS = {
   medic: { name:'Medic',hp:125,speed:1.15,damage:8,range:2.4,interval:.9,color:'#90efab',role:'Repairs nearby wounded allies' },
   disruptor: { name:'Disruptor',hp:145,speed:.95,damage:17,range:2.6,interval:1.4,color:'#bd9cff',role:'Disables defenses for 2 seconds' },
 } as const;
+const PREVIOUS_SCRAP={...STATS.scrap,speed:1.15};
 const LEGACY_SCRAP={...STATS.scrap,hp:110,speed:1.25,damage:18,interval:.8};
-export const unitStats=(s:Raid,kind:Kind)=>kind==='scrap'&&s.starter&&s.combatVersion!==2?LEGACY_SCRAP:STATS[kind];
+export const unitStats=(s:Raid,kind:Kind)=>kind==='scrap'&&s.starter&&s.combatVersion!==2?LEGACY_SCRAP:kind==='scrap'&&s.starter&&s.combatVersion===2&&s.scrapSpeedVersion!==2?PREVIOUS_SCRAP:STATS[kind];
 export const KINDS = Object.keys(STATS) as Kind[];
 export const STEP = .05;
 export const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
