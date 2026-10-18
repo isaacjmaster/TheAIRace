@@ -52,30 +52,37 @@ export function fabricatorModel(k:WorldKit){
 export function hangarModel(k:WorldKit,bots:number){
  const g=new THREE.Group();g.name='Bot Hangar';
  k.box(g,[4,.22,3],[0,.15,0],c.dark,.12);k.box(g,[3.88,.12,2.9],[0,.32,0],c.cream,.08);
- k.box(g,[3.7,1.9,.16],[0,1.35,-1.35],c.dark,.05);
- for(const x of [-1.83,1.83]){
-  k.box(g,[.3,1.65,2.7],[x,1.18,-.03],c.dark,.09);
-  k.box(g,[.32,1.1,.68],[x,1.1,1.02],c.cream,.07);
-  k.box(g,[.06,.64,.04],[x,1.2,1.39],c.cyan,.02,true);
+ // Open four-sided charging pavilion: no opaque rear wall or preferred facade.
+ for(const x of [-1.78,1.78])for(const z of [-1.22,1.22]){
+  k.box(g,[.28,1.75,.28],[x,1.26,z],c.dark,.07);
+  k.box(g,[.3,.62,.3],[x,.72,z],c.cream,.06);
+  k.box(g,[.08,.65,.035],[x,1.42,z+Math.sign(z)*.15],c.cyan,.012,true);
+  k.box(g,[.035,.65,.08],[x+Math.sign(x)*.15,1.42,z],c.cyan,.012,true);
+  k.box(g,[.34,.12,.34],[x,2.18,z],c.gold,.035);
  }
- // Segmented barrel canopy over rear docking row; open apron keeps bots legible.
- for(const side of [-1,1]){
-  const shoulder=k.box(g,[.9,.2,1.55],[side*1.48,2.12,-.64],c.slate,.06);shoulder.rotation.z=-side*.65;
-  const roof=k.box(g,[1.22,.2,1.55],[side*.55,2.46,-.64],c.cream,.06);roof.rotation.z=-side*.12;
-  for(const z of [-1.37,-.65,.08]){const seam=k.box(g,[1.22,.035,.04],[side*.55,2.57,z],c.slate,.01);seam.rotation.z=-side*.12;}
+ // Segmented perimeter canopy leaves a generous central skylight for visible troops.
+ for(const z of [-1.17,1.17]){
+  const roof=k.box(g,[3.8,.18,.62],[0,2.38,z],c.cream,.09);roof.rotation.x=Math.sign(z)*.12;
+  k.box(g,[2.7,.14,.08],[0,2.19,z+Math.sign(z)*.29],c.dark,.035);
+  k.box(g,[.95,.045,.03],[0,2.2,z+Math.sign(z)*.31],c.cyan,.01,true);
+  for(const x of [-.24,0,.24])k.box(g,[.1,.055,.03],[x,2.21,z+Math.sign(z)*.31],c.gold,.01,true);
  }
- k.box(g,[2.3,.2,.14],[0,2.29,.17],c.dark,.04);k.box(g,[.8,.045,.03],[0,2.3,.25],c.cyan,.01,true);
- k.box(g,[2.7,.08,.06],[0,1.8,-1.24],c.gold,.02,true);
+ for(const x of [-1.56,1.56]){
+  const roof=k.box(g,[.65,.18,1.85],[x,2.38,0],c.slate,.075);roof.rotation.z=-Math.sign(x)*.12;
+  k.box(g,[.08,.14,1.65],[x+Math.sign(x)*.31,2.19,0],c.dark,.025);
+  k.box(g,[.03,.045,.8],[x+Math.sign(x)*.36,2.2,0],c.cyan,.01,true);
+ }
  for(let i=0;i<10;i++){const x=-1.46+(i%5)*.73,z=i<5?-.65:.65;
   k.box(g,[.62,.025,.91],[x,.405,z],c.slate,.04);k.box(g,[.46,.03,.06],[x,.43,z+.4],c.cyan,.01,true);
   if(i<bots){const bot=scrapBotModel(k);bot.scale.setScalar(.7);bot.position.set(x,.44,z);bot.name='docked-bot-'+i;g.add(bot);}
  }
- k.box(g,[2.8,.08,.12],[0,.4,1.44],c.cyan,.02,true);
- // Docking equipment stays inside the original lot: charge rails, latch and status panel.
- for(const x of [-1.45,0,1.45]){k.box(g,[.1,.85,.12],[x,.95,-1.2],c.slate,.025);k.box(g,[.12,.08,.04],[x,1.4,-1.1],c.cyan,.01,true);}
- const sign=k.box(g,[.9,.22,.04],[0,2.28,.26],c.dark,.03);sign.name='hangar-status';
- for(let i=0;i<3;i++){const lamp=k.box(g,[.1,.06,.025],[-.22+i*.22,2.29,.3],c.cyan,.01,true);lamp.name='hangar-lamp-'+i;}
- k.box(g,[.38,.65,.25],[1.5,.75,1.12],c.dark,.04);k.box(g,[.26,.16,.03],[1.5,.94,1.26],c.gold,.02,true);return g;
+ for(const z of [-1.44,1.44])k.box(g,[2.8,.06,.08],[0,.4,z],c.cyan,.02,true);
+ for(const x of [-1.88,1.88]){
+  k.box(g,[.06,.06,1.7],[x,.4,0],c.cyan,.015,true);
+  k.box(g,[.22,.48,.42],[x,.64,0],c.dark,.04);
+  k.box(g,[.025,.14,.26],[x+Math.sign(x)*.1,.76,0],c.gold,.02,true);
+ }
+ return g;
 }
 
 /** Free permanent worker dock; fits entirely inside the already reserved work area. */
@@ -83,13 +90,21 @@ export function builderStationModel(k:WorldKit){
  const g=new THREE.Group();g.name='Builder Station';
  k.box(g,[2.7,.18,1.8],[0,.12,0],c.dark,.13);k.box(g,[2.55,.1,1.7],[0,.26,0],c.cream,.1);
  k.box(g,[1.35,.03,1.1],[0,.33,.13],c.slate,.08);k.box(g,[1,.025,.08],[0,.36,.61],c.cyan,.02,true);
- k.box(g,[2.2,1.55,.2],[0,1.1,-.73],c.dark,.1);
- for(const side of [-1,1]){k.box(g,[.22,1.5,1.6],[side*1.14,1.1,0],c.slate,.06);k.box(g,[.24,.65,.3],[side*1.14,.66,.61],c.cream,.05);}
- const roof=k.box(g,[2.65,.24,1.3],[0,1.97,-.28],c.cream,.14);roof.rotation.x=-.12;
- k.box(g,[.6,.06,.3],[0,2.14,-.28],c.gold,.04);
- k.box(g,[1.15,.06,.04],[0,1.7,-.57],c.gold,.02,true);
- k.box(g,[.45,.64,.4],[-.83,.63,-.35],c.dark,.04);k.box(g,[.22,.12,.03],[-.83,.82,-.12],c.cyan,.02,true);
- for(const x of [.62,.82]){k.box(g,[.07,.4,.07],[x,1.15,-.59],c.slate,.02);k.box(g,[.16,.08,.08],[x,1.35,-.59],c.gold,.02);}
+ // Four-sided micro workshop: matching pillars, hip canopy and side tool benches.
+ for(const x of [-1.08,1.08])for(const z of [-.64,.64]){
+  k.box(g,[.16,1.45,.16],[x,1.06,z],c.slate,.04);
+  k.box(g,[.22,.48,.22],[x,.6,z],c.cream,.045);
+  k.box(g,[.035,.4,.025],[x+Math.sign(x)*.085,1.2,z],c.cyan,.01,true);
+ }
+ for(const z of [-.48,.48]){const roof=k.box(g,[2.65,.16,.88],[0,1.94,z],c.cream,.09);roof.rotation.x=Math.sign(z)*.22;k.box(g,[1.15,.07,.04],[0,1.72,z+Math.sign(z)*.38],c.gold,.015,true);}
+ k.box(g,[2.45,.12,.2],[0,2.08,0],c.dark,.05);k.box(g,[.48,.08,.32],[0,2.18,0],c.gold,.05);
+ for(const x of [-1,1]){
+  k.box(g,[.3,.12,.9],[x,.78,0],c.dark,.04);
+  k.box(g,[.31,.06,.85],[x,.87,0],c.gold,.025);
+  k.box(g,[.05,.32,.24],[x+Math.sign(x)*.12,1.05,-.12],c.slate,.02);
+  k.box(g,[.025,.12,.18],[x+Math.sign(x)*.15,1.09,-.12],c.cyan,.01,true);
+  for(const z of [-.26,.17]){k.box(g,[.09,.1,.12],[x,.96,z],c.cream,.025);k.box(g,[.05,.25,.05],[x,1.13,z],c.slate,.01);}
+ }
  return g;
 }
 

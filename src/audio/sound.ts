@@ -14,7 +14,7 @@ import {MusicSynth} from './musicSynth';
 /** Context creation/resume is exclusively initiated by a user gesture. */
 export class Soundscape {
  private ctx?:AudioContext;private master?:GainNode;private hq?:GainNode;private raid?:GainNode;
- private timer?:ReturnType<typeof setInterval>;private synth?:MusicSynth;private music?:RecordedMusic;private playingMode?:MusicMode;private hidden=false;private fadeUntil={hq:0,raid:0};private mode:MusicMode='hq';
+ private timer?:ReturnType<typeof setInterval>;private synth?:MusicSynth;private music?:RecordedMusic;private playingMode?:MusicMode;private hidden=false;private deploymentVoice=0;private fadeUntil={hq:0,raid:0};private mode:MusicMode='hq';
  private gainRamps=new Map<GainNode,{from:number;to:number;start:number;end:number}>();
  private listeners=new Set<()=>void>();private last=new Map<Cue,number>();private noise?:AudioBuffer;
  muted:boolean;private platform:SoundPlatform;
@@ -55,13 +55,14 @@ export class Soundscape {
  }
  cue=(cue:Cue)=>{
   if(!this.ctx||this.ctx.state!=='running'||this.platform.silent||this.muted)return;const t=this.ctx.currentTime;
-  const gap=cue.startsWith('building-')?.16:cue==='laser'||cue==='impact'||cue==='punch'?.09:cue==='destroy'?.12:.04;if(t-(this.last.get(cue)??-10)<gap)return;this.last.set(cue,t);
+  const gap=cue==='scrap-deploy'?0:cue.startsWith('building-')?.16:cue==='laser'||cue==='impact'||cue==='punch'?.09:cue==='destroy'?.12:.04;if(t-(this.last.get(cue)??-10)<gap)return;this.last.set(cue,t);
   const out=this.master!;
   if(cue in BUILDING_SOUNDS){const voice=BUILDING_SOUNDS[cue as keyof typeof BUILDING_SOUNDS];voice.notes.forEach((note,i)=>this.note(note,t+i*voice.gap,voice.duration,.1,out,voice.type,.012));return;}
   if(cue==='clear-tree'){[74,81,86].forEach((n,i)=>this.note(n,t+i*.065,.2,.055,out,'sine',.015));return;}
   if(cue==='clear-scrap'){[50,62,78].forEach((n,i)=>this.note(n,t+i*.07,.16,.065,out,'triangle',.01));return;}
   if(cue==='punch'){this.note(47,t,.1,.13,out,'triangle',.005,35);this.note(91,t,.075,.055,out,'sine',.003,76);return;}
   if(cue==='tap')this.note(81,t,.075,.13,out,'sine',.002,76);
+  if(cue==='scrap-deploy'){const shift=[0,1,-1,2,0,-2][this.deploymentVoice++%6];this.note(57+shift,t,.075,.085,out,'triangle',.004,48+shift);this.note(70+shift,t+.045,.21,.11,out,'sine',.008,85+shift);this.note(82+shift,t+.16,.12,.05,out,'triangle',.004,76+shift);return;}
   if(cue==='deploy'){this.note(62,t,.18,.16,out,'triangle',.005);this.note(74,t+.06,.3,.13,out);}
   if(cue==='laser')this.note(94,t,.11,.08,out,'sine',.002,52);
   if(cue==='impact'||cue==='destroy'){

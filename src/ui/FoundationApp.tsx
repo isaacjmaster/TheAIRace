@@ -1,3 +1,5 @@
+import {FabricatorPanel} from './FabricatorPanel';
+import {DeploymentSoundGate} from '../audio/DeploymentSoundGate';
 import {type CompanyXP} from '../../shared/company-xp';
 import {TitleArtwork} from './TitleArtwork';
 import './title-screen.css';
@@ -16,6 +18,7 @@ import {builderLesson,type AvaProgress,type AvaCommand} from '../../shared/ava';
 import {sound} from '../audio/sound';
 
 import './foundation.css';
+import './fabricator-panel.css';
 import {setPresentationBackground} from './viewport';
 import {ComputeHud} from './ComputeHud';
 import {CompanyStatus} from './CompanyStatus';
@@ -63,18 +66,19 @@ export function App(){
   try{const r=await fetch('/api/foundation/rig',{method:'POST',headers:identityHeaders(),body:JSON.stringify(pending.current.body)});const data=await r.json();if(!r.ok){pending.current=null;if(r.status===401||data.identityChanged)setIdentityChanged(true);throw new Error(data.error);}pending.current=null;if(data.ava)receiveAva(data.ava);if(data.competition)receiveCompetition(data.competition);if(data.companyXp)receiveXP(data.companyXp);offset.current=data.serverTime-Date.now();setState(old=>!old||data.state.revision>=old.revision?data.state:old);if(action!=='collect')setPlacing(null);if(data.amount>0){setCollected({id:Date.now(),amount:data.amount});sound.cue('resources');}else if(action==='build')sound.cue('upgrade');}
   catch(e){setError((e as Error).message);}finally{gate.current=false;setBusy(false);}
  }
+ const deploymentSounds=useRef(new DeploymentSoundGate());
  const botPending=useRef<{key:string;body:unknown;command:Record<string,unknown>}|null>(null);
  async function botAction(command:Record<string,unknown>){
   if(!state||gate.current||identityChanged)return;gate.current=true;setBusy(true);setError('');
   const key=JSON.stringify([state.generation||0,command]);
   if(botPending.current&&botPending.current.key!==key){setError('Retry the previous action first to confirm its result.');gate.current=false;setBusy(false);return;}
   botPending.current??={key,command,body:{command,generation:state.generation||0,requestId:[...crypto.getRandomValues(new Uint8Array(16))].map((n,i)=>(i===6?(n&15)|64:i===8?(n&63)|128:n).toString(16).padStart(2,'0')).join('').replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/,'$1-$2-$3-$4-$5')}};
-  try{const r=await fetch('/api/foundation/bots',{method:'POST',headers:identityHeaders(),body:JSON.stringify(botPending.current.body)});const data=await r.json();if(!r.ok){botPending.current=null;if(r.status===401||data.identityChanged)setIdentityChanged(true);throw new Error(data.error);}
+  try{const requestId=(botPending.current.body as {requestId:string}).requestId;const r=await fetch('/api/foundation/bots',{method:'POST',headers:identityHeaders(),body:JSON.stringify(botPending.current.body)});const data=await r.json();if(!r.ok){botPending.current=null;if(r.status===401||data.identityChanged)setIdentityChanged(true);throw new Error(data.error);}
    botPending.current=null;if(data.ava)receiveAva(data.ava);if(data.competition)receiveCompetition(data.competition);if(data.companyXp)receiveXP(data.companyXp);offset.current=data.serverTime-Date.now();setState(old=>!old||data.state.revision>=old.revision?data.state:old);
    if(command.action==='build'||command.action==='build-hangar'){setPlacing(null);setPanel(command.action==='build-hangar'?'hangar':'fabricator');sound.cue('upgrade');}
    if(command.action==='establish-station'){setPlacing(null);setPanel(null);sound.cue('upgrade');}
    if(command.action==='train')sound.cue('upgrade');
-   if(command.action==='start')setPanel('raid');if(command.action==='deploy')sound.cue('deploy');if(command.action==='retreat')setPanel(null);return true;
+   if(command.action==='start')setPanel('raid');if(command.action==='deploy'&&deploymentSounds.current.accepted(String(command.raidId),requestId))sound.cue('scrap-deploy');if(command.action==='retreat')setPanel(null);return true;
   }catch(e){setError((e as Error).message);return false;}finally{gate.current=false;setBusy(false);}
  }
  useEffect(()=>{sound.setMode(musicModeFor(phase,panel,state?.botRaid));},[phase,panel,state?.botRaid?.id,state?.botRaid?.settled]);
@@ -95,8 +99,9 @@ export function App(){
  {!placing&&!editMode&&<><button className="foundation-build glass" onClick={()=>{open('build');if(avaActive&&(ava!.step===7||stationLesson))void avaCommand('build-menu');}}>＋ Build</button><button className="foundation-attack" onClick={()=>open('attack')}><NetworkIcon/><strong>ATTACK</strong></button><button className="foundation-settings glass" aria-label="Settings" onClick={()=>open('settings')}><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m13 3-.7 3-2.3 1.3-3-.9-3 5.2 2.3 2.1v2.6L4 18.4l3 5.2 3-.9 2.3 1.3.7 3h6l.7-3 2.3-1.3 3 .9 3-5.2-2.3-2.1v-2.6l2.3-2.1-3-5.2-3 .9L19.7 6 19 3Z"/><circle cx="16" cy="15" r="4.2"/></svg></button></>}</main>}
  {panel==='raid'&&state.botRaid&&<Suspense fallback={<div className="scene-loading">Opening network…</div>}><RaidView key={state.botRaid.id} raid={state.botRaid} influence={competition?.result} busy={busy} error={error} onDeploy={position=>botAction({action:'deploy',raidId:state.botRaid!.id,position})} onReturn={()=>state.botRaid!.settled?setPanel(null):void botAction({action:'retreat',raidId:state.botRaid!.id})}/></Suspense>}
  {error&&(!panel||panel==='raid'||panel==='fabricator'||panel==='hangar')&&<div className="rig-error glass" role="alert">{error}{botPending.current&&<button disabled={busy} onClick={()=>void botAction(botPending.current!.command)}>Retry action</button>}<button aria-label="Dismiss error" onClick={()=>setError('')}>×</button></div>}
- {(panel==='hangar'?getHangar(state):state.fabricator)&&(panel==='fabricator'||panel==='hangar')&&<section className="bot-panel glass" aria-label={panel==='fabricator'?'Bot Fabricator':'Bot Hangar'}><button className="bot-close" aria-label="Close building panel" onClick={()=>setPanel(null)}>×</button><h2>{panel==='fabricator'?'Bot Fabricator':'Bot Hangar'} — Level 1</h2>
- {!buildingReady(state,panel==='hangar'?'hangar':'fabricator',now)?<p>Building {panel==='hangar'?'Bot Hangar':'Bot Fabricator'} · {Math.min(15,Math.max(0,Math.ceil((((panel==='hangar'?getHangar(state):state.fabricator)?.completesAt||now)-now)/1000)))}s</p>:<><p><strong>{(state.bots||0)+(!state.botRaid?.settled?(state.botRaid?.simulation.stock.scrap||0):0)} / 10 Bots</strong> · {state.training?.length||0} queued</p>{panel==='fabricator'?<><div className="scrap-training-art" aria-hidden="true">▣</div><strong>Scrap Bot</strong><p>5 Compute · 5 seconds · 1 housing</p>{!hangarReady(state,now)&&<p>Build and finish a Bot Hangar before training bots.</p>}{!state.rig&&<p>Build a GPU Rig for renewable Compute before spending your remaining balance.</p>}{state.training?.length?<p role="status">Training {state.training.length} · next bot in {Math.min(5,Math.max(0,Math.ceil((state.training[0]-now)/1000)))}s</p>:null}<div className="bot-train-actions">{[1,5].map(count=><button key={count} className="primary" disabled={busy||!hangarReady(state,now)||armyUsed(state)+count>10||state.compute<count*5} onClick={()=>void botAction({action:'train',count})}>Train {count===1?'1 Scrap Bot':'5 Bots'}</button>)}</div>{armyUsed(state)>=10?<p role="status">Hangar full — including queued and reserved bots.</p>:state.compute<5?<p>Collect Compute from your GPU Rig to train.</p>:null}</>:<p>Trained Scrap Bots wait on the docking platform. Deployed bots are consumed; undeployed bots return here.</p>}</>}
+ {panel==='fabricator'&&buildingReady(state,'fabricator',now)&&<FabricatorPanel state={state} now={now} busy={busy} onTrain={()=>void botAction({action:'train',count:1})} onClose={()=>setPanel(null)}/>}
+ {(panel==='hangar'?getHangar(state):state.fabricator)&&(panel==='hangar'||panel==='fabricator'&&!buildingReady(state,'fabricator',now))&&<section className="bot-panel glass" aria-label={panel==='fabricator'?'Bot Fabricator':'Bot Hangar'}><button className="bot-close" aria-label="Close building panel" onClick={()=>setPanel(null)}>×</button><h2>{panel==='fabricator'?'Bot Fabricator':'Bot Hangar'} — Level 1</h2>
+ {!buildingReady(state,panel==='hangar'?'hangar':'fabricator',now)?<p>Building {panel==='hangar'?'Bot Hangar':'Bot Fabricator'} · {Math.min(15,Math.max(0,Math.ceil((((panel==='hangar'?getHangar(state):state.fabricator)?.completesAt||now)-now)/1000)))}s</p>:<><p><strong>{(state.bots||0)+(!state.botRaid?.settled?(state.botRaid?.simulation.stock.scrap||0):0)} / 10 Bots</strong> · {state.training?.length||0} queued</p><p>Trained Scrap Bots wait on the docking platform. Deployed bots are consumed; undeployed bots return here.</p></>}
 
  </section>}
  {panel==='leaderboard'&&<Leaderboard onClose={()=>setPanel(null)}/>}

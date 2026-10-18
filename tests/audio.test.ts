@@ -1,3 +1,4 @@
+import {DeploymentSoundGate} from '../src/audio/DeploymentSoundGate';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Soundscape,testAudioDisabled,voiceEnvelope } from '../src/audio/sound';
@@ -31,7 +32,7 @@ test('audio never creates a context before interaction and remembered mute preve
 });
 test('music crossfades gently, all effects produce bounded voices, and mute silences every bus',async()=>{
  const h=harness();try{await ready(h.sound);assert.equal(h.ctx.gains[0].gain.value,.22);assert.ok(h.ctx.sources.length>0);h.sound.setMode('raid');await (h.sound as any).activate('raid');assert.equal(h.ctx.gains[1].gain.value,0);assert.equal(h.ctx.gains[2].gain.value,2);
- for(const cue of ['tap','deploy','laser','impact','punch','destroy','win','resources','upgrade'] as Cue[]){h.ctx.currentTime++;const before=h.ctx.sources.length;h.sound.cue(cue);assert.ok(h.ctx.sources.length>before,cue);}
+ for(const cue of ['tap','deploy','laser','impact','punch','scrap-deploy','destroy','win','resources','upgrade'] as Cue[]){h.ctx.currentTime++;const before=h.ctx.sources.length;h.sound.cue(cue);assert.ok(h.ctx.sources.length>before,cue);}
  const before=h.ctx.sources.length;h.sound.cue('laser');h.sound.cue('laser');assert.equal(h.ctx.sources.length,before+1,'rapid fire is rate limited');
  h.sound.setMuted(true);assert.equal(h.ctx.gains[0].gain.value,0);const mutedCount=h.ctx.sources.length;h.sound.cue('win');assert.equal(h.ctx.sources.length,mutedCount);assert.equal(new Soundscape(h.platform).muted,true);
  h.sound.setMuted(false);await ready(h.sound);assert.equal(h.ctx.gains[0].gain.value,.22);
@@ -67,7 +68,7 @@ test('test audio policy is explicit and normal player URLs keep audio enabled',(
 });
 test('silent previews block every cue and unmute without altering either saved preference',async()=>{
  for(const saved of ['false','true']){const h=harness(saved),audio=new Soundscape({...h.platform,silent:true});
- try{assert.equal(audio.getSnapshot(),true);audio.setMuted(false);audio.setMuted(true);audio.setMode('raid');await ready(audio);for(const cue of ['tap','deploy','laser','impact','punch','destroy','win','resources','upgrade'] as Cue[])audio.cue(cue);assert.equal(h.created(),0);assert.equal(h.data.get(MUTE_KEY),saved);assert.equal(new Soundscape(h.platform).muted,saved==='true');}finally{audio.dispose();h.sound.dispose();}}
+ try{assert.equal(audio.getSnapshot(),true);audio.setMuted(false);audio.setMuted(true);audio.setMode('raid');await ready(audio);for(const cue of ['tap','deploy','laser','impact','punch','scrap-deploy','destroy','win','resources','upgrade'] as Cue[])audio.cue(cue);assert.equal(h.created(),0);assert.equal(h.data.get(MUTE_KEY),saved);assert.equal(new Soundscape(h.platform).muted,saved==='true');}finally{audio.dispose();h.sound.dispose();}}
 });
 test('disposing a preview during pending resume cannot start its music scheduler',async()=>{
  const h=harness();let resume!:()=>void;h.ctx.resume=()=>new Promise<void>(resolve=>{resume=()=>{h.ctx.state='running';resolve();};});
@@ -80,7 +81,7 @@ test('page teardown closes playback and a normal player can resume with effects 
 
 test('every synthesized voice starts from silent initialization and ends at exact silence',async()=>{
  const h=harness();try{
-  await ready(h.sound);for(const cue of ['tap','deploy','laser','impact','punch','destroy','win','resources','upgrade'] as Cue[]){h.ctx.currentTime++;h.sound.cue(cue);}
+  await ready(h.sound);for(const cue of ['tap','deploy','laser','impact','punch','scrap-deploy','destroy','win','resources','upgrade'] as Cue[]){h.ctx.currentTime++;h.sound.cue(cue);}
   for(const voice of h.ctx.gains.slice(3)){
    assert.equal(voice.gain.beforeFirstEvent,0,'unity gain must never precede the future attack event');
    assert.equal(voice.gain.value,0,'release must finish at exact zero before stop/disconnect');
@@ -123,4 +124,8 @@ test('late asset loads cannot start a disposed, hidden or wrong-mode track',asyn
 
 test('music loading failures retry on interaction while effects remain usable',async()=>{
  const h=harness();let attempts=0;const audio=new Soundscape({...h.platform,loadTrack:async()=>{attempts++;throw Error('offline');}});try{await ready(audio);audio.cue('tap');assert.equal(h.ctx.sources.length,1);await ready(audio);assert.equal(attempts,2);assert.equal(h.ctx.sources.length,1);}finally{audio.dispose();h.sound.dispose();}
+});
+
+test('accepted Scrap Bot deployment chirps once per request, varies pitch and never suppresses rapid accepted bots',async()=>{
+ const h=harness(),gate=new DeploymentSoundGate();try{await ready(h.sound);const initial=h.ctx.sources.length;for(const id of ['a','a','b','c','c','d','e'])if(gate.accepted('raid1',id))h.sound.cue('scrap-deploy');assert.equal(h.ctx.sources.length-initial,15,'five unique accepted placements produce three notes each, even at the same audio time');const notes=h.ctx.sources.slice(initial).filter((_,i)=>i%3===0).map(n=>n.frequency.events[0].value);assert.ok(new Set(notes).size>=3);const count=h.ctx.sources.length;assert.equal(gate.accepted('raid1','a'),false);assert.equal(h.ctx.sources.length,count);h.sound.setMuted(true);h.sound.cue('scrap-deploy');assert.equal(h.ctx.sources.length,count);assert.equal(gate.accepted('raid2','a'),true);}finally{h.sound.dispose();}
 });

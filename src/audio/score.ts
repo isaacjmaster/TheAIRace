@@ -10,7 +10,7 @@ export const BUILDING_SOUNDS={
  'building-hangar':{notes:[62,69,64],type:'triangle',duration:.14,gap:.055},
  'building-station':{notes:[55,79],type:'triangle',duration:.1,gap:.075},
 } as const;
-export type Cue='punch'|'clear-tree'|'clear-scrap'|keyof typeof BUILDING_SOUNDS|'tap'|'deploy'|'laser'|'impact'|'destroy'|'win'|'resources'|'upgrade';
+export type Cue='scrap-deploy'|'punch'|'clear-tree'|'clear-scrap'|keyof typeof BUILDING_SOUNDS|'tap'|'deploy'|'laser'|'impact'|'destroy'|'win'|'resources'|'upgrade';
 export const MUTE_KEY='airace-audio-muted-v1';
 export const frequency=(midi:number)=>440*2**((midi-69)/12);
 export const MUSIC_BPM={hq:112,raid:128} as const;
