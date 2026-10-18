@@ -1,3 +1,4 @@
+import {xpProgress} from '../shared/company-xp';
 import {newShortRecoveryCode,recoveryVerifier} from './recovery-code';
 import type express from 'express';
 import type {DatabaseSync} from 'node:sqlite';
@@ -31,7 +32,7 @@ export function identityStore(db:DatabaseSync,cookieName=COOKIE){
  }
  db.prepare('INSERT OR IGNORE INTO identity_migrations VALUES(2,?)').run(Date.now());
  db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;}
- const publicProfile=(p:Player):CompanyIdentity=>{const state=JSON.parse(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(p.save_id)!.state as string);return {playerId:p.id,name:p.name,level:state.level,nameDeferred:!!p.name_deferred,secured:!!p.recovery_hash,recoveryUpdatedAt:p.recovery_updated_at};};
+ const publicProfile=(p:Player):CompanyIdentity=>{const state=JSON.parse(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(p.save_id)!.state as string);return {playerId:p.id,name:p.name,level:db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='company_xp'").get()?(()=>{const xp=db.prepare('SELECT total,floor_level FROM company_xp WHERE company_id=?').get(p.id);return xpProgress(Number(xp?.total||0),Math.max(state.level,Number(xp?.floor_level||1))).level;})():state.level,nameDeferred:!!p.name_deferred,secured:!!p.recovery_hash,recoveryUpdatedAt:p.recovery_updated_at};};
  const getPlayer=(id:string)=>db.prepare('SELECT * FROM company_players WHERE id=?').get(id) as Player|undefined;
  function cookie(res:express.Response,req:express.Request,credential:string){res.cookie(cookieName,credential,{httpOnly:true,sameSite:'strict',secure:req.secure||process.env.NODE_ENV==='production',maxAge:YEAR,path:'/'});}
  function issue(res:express.Response,p:Player,req:express.Request,credential:string=token(),sendCookie=true){

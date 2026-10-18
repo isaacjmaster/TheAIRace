@@ -11,18 +11,18 @@ export function door(s:FoundationState,kind:typeof FOUNDATION_BUILDINGS[number])
  const l=buildingLayout(s,kind)!,a=l.orientation*Math.PI/2,dist=(kind==='hq'?5.8:kind==='station'?2:3.3);return [l.position[0]+Math.sin(a)*dist,l.position[1]+Math.cos(a)*dist];
 }
 /** Builder route stays inside the fence, avoids all solid footprints, and may cross the service road. */
-export function landscapeRoute(s:FoundationState,target:RigPosition):RigPosition[]{
- const start=door(s,'station'),from=[Math.round(start[0]),Math.round(start[1])],to=[Math.round(target[0]),Math.round(target[1])];
+export function landscapeRoute(s:FoundationState,target:RigPosition,origin?:RigPosition,clearance=.3):RigPosition[]{
+ const start=origin??door(s,buildingLayout(s,'station')?'station':'hq'),from=[Math.round(start[0]),Math.round(start[1])],to=[Math.round(target[0]),Math.round(target[1])];
  const solids=FOUNDATION_BUILDINGS.map(k=>{const l=buildingLayout(s,k);return l?footprint(k,l):null;}).filter((r):r is NonNullable<typeof r>=>!!r);
  for(const o of OBSTACLES.filter(o=>o.kind==='rock'))solids.push({x:o.position[0],z:o.position[1],w:o.width,d:o.depth});
  for(const o of s.landscape?.items||[])solids.push(rect(o));
  for(const [x,z] of [[-16,7],[13,7],[-16,11],[25,11]])solids.push({x,z,w:1.4,d:1.4});
- const blocked=(x:number,z:number)=>solids.some(r=>overlap({x,z,w:.3,d:.3},r));
+ const blocked=(x:number,z:number)=>solids.some(r=>overlap({x,z,w:clearance,d:clearance},r));
  const key=(p:number[])=>p.join(','),queue=[from],previous=new Map<string,string|null>([[key(from),null]]),end=key(to);
  if(blocked(...from as RigPosition)||blocked(...to as RigPosition))return [];
  for(let i=0;i<queue.length&&!previous.has(end);i++){const p=queue[i];for(const [dx,dz] of [[1,0],[0,1],[-1,0],[0,-1]]){const q=[p[0]+dx,p[1]+dz],k=key(q);if(q[0]<-23||q[0]>27||q[1]<-18||q[1]>23||previous.has(k)||blocked(...q as RigPosition))continue;previous.set(k,key(p));queue.push(q);}}
  if(!previous.has(end))return [];const path:RigPosition[]=[];for(let k:string|null=end;k;k=previous.get(k)??null)path.unshift(k.split(',').map(Number) as RigPosition);
- return [buildingLayout(s,'station')!.position,start,...path,target];
+ return [...(origin?[]:[buildingLayout(s,'station')?.position??start]),start,...path,target];
 }
 export function validObstaclePosition(s:FoundationState,o:LandscapeObstacle){
  const a=rect(o);if(a.x-a.w/2<-23||a.x+a.w/2>27||a.z-a.d/2<-18||a.z+a.d/2>23||a.z+a.d/2>6.2&&a.z-a.d/2<11.8)return false;
@@ -51,7 +51,7 @@ export function advanceLandscape(s:FoundationState,now:number){const l=s.landsca
  const paid=Math.min(l.pendingCompute,Math.max(0,s.capacity-s.compute));s.compute+=paid;l.pendingCompute-=paid;
  if(now>=l.nextSpawnAt){if(l.items.length<LANDSCAPE.maxCount)spawn(s);l.nextSpawnAt=now+LANDSCAPE.regenerationMs;}
 }
-export function clearObstacle(s:FoundationState,id:string,now:number){const l=s.landscape;if(!l)throw new Error('Reload your landscape first.');if(s.buildersBusy||l.clearing)throw new Error('Your Builder Bot is busy.');const o=l.items.find(o=>o.id===id);if(!o)throw new Error('This obstacle was already cleared.');const [w,d]=obstacleSize(o);
+export function clearObstacle(s:FoundationState,id:string,now:number){if(s.builders<1)throw new Error('Place your free Builder Station first.');const l=s.landscape;if(!l)throw new Error('Reload your landscape first.');if(s.buildersBusy||l.clearing)throw new Error('Your Builder Bot is busy.');const o=l.items.find(o=>o.id===id);if(!o)throw new Error('This obstacle was already cleared.');const [w,d]=obstacleSize(o);
  const targets:RigPosition[]=[[o.position[0],o.position[1]+d/2+1],[o.position[0]+w/2+1,o.position[1]],[o.position[0],o.position[1]-d/2-1],[o.position[0]-w/2-1,o.position[1]]];
  const route=targets.map(t=>landscapeRoute(s,t)).filter(p=>p.length).sort((a,b)=>a.length-b.length)[0];if(!route)throw new Error('The Builder Bot needs a clear route to this obstacle.');
  const travel=Math.max(600,route.reduce((d,p,i)=>i?d+Math.hypot(p[0]-route[i-1][0],p[1]-route[i-1][1]):d,0)/LANDSCAPE.travelSpeed*1000);

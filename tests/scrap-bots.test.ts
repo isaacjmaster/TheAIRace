@@ -1,3 +1,4 @@
+import {establishedFoundation as initialFoundation,placeTestStation} from './helpers/established-foundation';
 import {buildLegacyFabricator as buildFabricator} from './helpers/legacy-foundation';
 import {identityHeaders,saveIdForCookie} from './helpers/identity';
 import test from 'node:test';
@@ -9,7 +10,7 @@ import {join} from 'node:path';
 import express from 'express';
 import {DatabaseSync} from 'node:sqlite';
 import {registerFoundation} from '../server/foundation-api';
-import {initialFoundation,buildRig,collectRig,advanceFoundation,trainScrap,armyUsed,startBotRaid,deployScrap,retreatBots,validFoundationPosition,type FoundationState} from '../shared/foundation';
+import {buildRig,collectRig,advanceFoundation,trainScrap,armyUsed,startBotRaid,deployScrap,retreatBots,validFoundationPosition,type FoundationState} from '../shared/foundation';
 import {distance,STATS,STEP,tick} from '../raid/engine';
 const epoch=1700000000000;
 const position:[number,number]=[6,-6];
@@ -50,7 +51,7 @@ test('SQLite restart, concurrent requests and action retries never duplicate bui
  const read=()=>JSON.parse(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(id)!.state as string) as FoundationState;
  const post=async(body:unknown)=>{const r=await fetch(url+'/api/foundation/bots',{method:'POST',headers:identityHeaders(db,cookie),body:JSON.stringify(body)});return {status:r.status,data:await r.json()};};
  const action=(command:unknown)=>({requestId:randomUUID(),generation:0,command});
- const build=action({action:'build',position});assert.equal((await post(build)).status,200);assert.equal((await post(build)).status,200);assert.equal(read().compute,50);assert.equal((await post(action({action:'build',position}))).status,400);
+ await placeTestStation(url+'/api/foundation',identityHeaders(db,cookie));const build=action({action:'build',position});assert.equal((await post(build)).status,200);assert.equal((await post(build)).status,200);assert.equal(read().compute,50);assert.equal((await post(action({action:'build',position}))).status,400);
  const s=read();s.fabricator!.completesAt=Date.now()-1000;db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(s),id);
  const hangar=action({action:'build-hangar',position:[12,-6]});assert.equal((await post(hangar)).status,200);const h=read();h.hangar!.completesAt=Date.now()-1000;db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(h),id);
  const train=action({action:'train',count:5});const attempts=await Promise.all([post(train),post(train)]);assert.ok(attempts.every(r=>r.status===200));assert.equal(read().compute,25);assert.equal(read().training!.length,5);
