@@ -1,0 +1,29 @@
+{
+  "name": "Breach Protocol",
+  "mode": "raid",
+  "bpm": 120,
+  "bars": 16,
+  "sampleRate": 48000,
+  "channels": 2,
+  "frames": 1536000,
+  "seconds": 32.0,
+  "integratedLUFS": -18.00000000000001,
+  "samplePeakDbFS": -5.965915111762835,
+  "truePeakDbTP": -5.960387736731766,
+  "dc": [
+    5.36598770684591e-06,
+    7.340666072528849e-06
+  ],
+  "seamDelta": [
+    9.480269271955333e-05,
+    5.1646782527170476e-05
+  ],
+  "normalDelta99_9": [
+    0.022791090433893303,
+    0.022571265508573822
+  ],
+  "authoredNotes": 357,
+  "wavBytes": 6144044,
+  "aacBytes": 671684,
+  "revision": 2
+}
