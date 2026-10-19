@@ -140,3 +140,23 @@ Save compatibility uses additive optional fields in the existing SQLite `foundat
 Run `npm run build`, then `npm run preview:hq` for a separate local preview database, cookie and review company. Open `http://192.168.1.40:3036/hq-upgrade-preview` on the same Wi-Fi, press PLAY, select Founder HQ and Upgrade. This isolated company starts with 650 Compute, a Builder Station and one GPU Rig; the normal five-minute timer applies. Do not use this development script in production. Automated previews append `?testAudio=off` and close their browsers.
 
 Verification: `npm test`, `npm run build`, `npm run test:production`. Upgrade tests use temporary SQLite databases and an injected server clock; browser captures use isolated preview companies with only their test deadlines advanced for completion screenshots. Physical iPhone Safari/PWA rendering still requires device review.
+
+
+## Technology district environment (local reskin)
+
+`src/art/TechnologyDistrict.ts` supplies decorative roads, sidewalks, crossings, landscaped verges, parking and neighboring low-rise offices for the current Founder HQ and raid scenes. Building models, simulation geometry, cameras, placement validation and persistence are unchanged. HQ property aprons read existing positions and rotations; all new raised scenery stays outside the playable bounds, except the four existing reserved streetlight locations. Scenery has no raycast targets. Static neighborhood pieces are merged by material; changing property aprons use instancing plus one outline batch. No additional lights or server simulation jobs are introduced. Ambient traffic uses the existing scene update loop, pauses while hidden, and stays still with reduced-motion preferences.
+
+The pre-reskin HQ implementation remains in `buildLegacyEnvironment()` and the raid implementation in `legacyEnvironment()`. Append `?landscape=legacy` to compare or revert presentation immediately; remove the parameter to use the district. This switch is read-only and does not touch player state or browser preferences. Existing raid deployment markings are shared unchanged between both styles.
+
+Run `npm run preview:district` after `npm run build`. On the same Wi-Fi, open `http://192.168.1.40:3037/district-preview` for a separate development database/cookie and review company containing the current buildings and ten Scrap Bots for attack testing. The development script refuses production mode. To compare the same preview company, visit `http://192.168.1.40:3037/?landscape=legacy`, then return to `/` for the new district. No live database or Railway configuration is involved.
+
+Verification: `npm test`, `npm run build`, `npm run test:production`; scene captures compare desktop, portrait and landscape rendering, identical ground-picking coordinates and unchanged state after render. Browser flows check raid selection, accepted deployment, panning without deployment and returning to HQ. Physical iPhone GPU/thermal performance remains a device review step.
+
+
+### Urban-density refinement
+
+The surrounding blocks now contain ten independent decorative silhouettes (`DistrictBuildings.ts`), connected intersections, multiple parking arrangements and predominantly paved commercial parcels. The protected HQ lawn/placement area remains intact. There are 48 background properties around HQ and 36 around raids, with simplified distant facades. The initial suburban renderer is preserved locally at ignored `data/TechnologyDistrict-suburban.ts`; original pre-district scenery remains selectable with `?landscape=legacy`.
+
+`DistrictTraffic.ts` draws all compact cars, sedans, SUVs and delivery vans through one shared instanced mesh. Traffic follows two separate right-hand lanes on constant-speed rounded routes around the protected campus, with eight vehicles at desktop sizes and four on smaller viewports. Routes have no server authority or collision objects. Vehicle animation reuses the existing render clock; hidden pages stop advancing it, reduced-motion mode leaves vehicles stationary, and resumed frames do not fast-forward. Background district geometry does not cast additional shadows.
+
+Tests cover all ten building variants, decorative bounds including vehicle instances, continuous turns and loop seams, constant speed, road containment, visibility/reduced-motion pauses, adaptive vehicle counts, disposal and unchanged picking/state. Browser previews use isolated test companies and close automation contexts on completion. Physical iPhone performance requires device review.

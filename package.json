@@ -15,6 +15,7 @@
     "test:production": "node scripts/smoke-production.mjs",
     "preview:combat": "node --import tsx scripts/preview-combat.ts",
     "preview:identity": "node --import tsx scripts/preview-identity.ts",
+    "preview:district": "node --import tsx scripts/preview-district.ts",
     "preview:hq": "node --import tsx scripts/preview-founder-hq.ts"
   },
   "dependencies": {
