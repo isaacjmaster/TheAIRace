@@ -1,0 +1,12 @@
+.company-opening{position:fixed;inset:0;z-index:110;overflow:hidden;background:#b8d5d6;touch-action:none}
+.company-opening.is-revealing{animation:company-reveal-base 3.6s ease both}
+.opening-mist{position:absolute;inset:-15%;background:radial-gradient(ellipse at 25% 42%,#d5e5df 8%,#c3dedc 36%,transparent 65%),radial-gradient(ellipse at 80% 60%,#dde9dc 3%,#b6d9db 40%,transparent 70%);will-change:opacity,transform}
+.is-revealing .opening-mist{animation:company-mist-parts 3.6s ease both}
+.opening-skip{position:absolute;right:calc(18px + env(safe-area-inset-right));top:calc(18px + env(safe-area-inset-top));min-height:44px;padding:10px 17px;color:#284e61;font-weight:800}
+@keyframes company-reveal-base{0%,12%{background:#b8d5d6}40%{background:#b8d5d688}100%{background:transparent}}
+@keyframes company-mist-parts{0%,10%{opacity:1;transform:scale(1)}55%{opacity:.58;transform:scale(1.18) translateY(-3%)}100%{opacity:0;transform:scale(1.45) translateY(-8%)}}
+/* Keep HUD geometry stable, while removing hidden controls from touch, focus and accessibility. */
+.game-session[data-hud-company=false] .foundation-player,.game-session[data-hud-compute=false] .compute-hud:not(.research-hud),.game-session[data-hud-research=false] .research-hud,.game-session[data-hud-builders=false] .foundation-builder-box,.game-session[data-hud-build=false] .foundation-build,.game-session[data-hud-full=false] :is(.foundation-attack,.foundation-settings,.foundation-arrange,.foundation-leaderboard){visibility:hidden!important;pointer-events:none!important}
+.game-session[data-hud-company=true] .foundation-player,.game-session[data-hud-compute=true] .compute-hud:not(.research-hud),.game-session[data-hud-research=true] .research-hud,.game-session[data-hud-builders=true] .foundation-builder-box,.game-session[data-hud-build=true] .foundation-build,.game-session[data-hud-full=true] :is(.foundation-attack,.foundation-settings,.foundation-arrange,.foundation-leaderboard){animation:hud-discovery .35s ease both}
+@keyframes hud-discovery{from{opacity:0;filter:brightness(1.15)}to{opacity:1;filter:brightness(1)}}
+@media(prefers-reduced-motion:reduce){.company-opening,.company-opening *,.game-session :is(.foundation-player,.foundation-builder-box,.compute-hud,button){animation:none!important}.company-opening.is-revealing{background:transparent}.is-revealing .opening-mist{opacity:0}}

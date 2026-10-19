@@ -1,6 +1,6 @@
 import {GPU_RIG,hasBuilderStation,type FoundationState} from './foundation';
-export type AvaProgress={builderStep?:number;status:'active'|'skipped'|'complete'|'legacy';step:number;revision:number;collected:boolean};
-export const newAva=(revision=0):AvaProgress=>({status:'active',builderStep:0,step:0,revision,collected:false});
+export type AvaProgress={opening?:'pending'|'shown';builderStep?:number;status:'active'|'skipped'|'complete'|'legacy';step:number;revision:number;collected:boolean};
+export const newAva=(revision=0,opening=true):AvaProgress=>({... (opening?{opening:'pending' as const}:{}),status:'active',builderStep:0,step:0,revision,collected:false});
 export const legacyAva=():AvaProgress=>({status:'legacy',step:16,revision:0,collected:false});
 /** Observe authoritative state only. Never construct, collect, or award anything. */
 export function reconcileAva(progress:AvaProgress,state:FoundationState,now:number):AvaProgress{
@@ -13,9 +13,10 @@ export function reconcileAva(progress:AvaProgress,state:FoundationState,now:numb
  return next;
 }
 export const builderLesson=(p:AvaProgress)=>p.step===5&&(p.builderStep??4)<4;
-export type AvaCommand='continue'|'build-menu'|'rig-selected'|'station-selected'|'skip'|'replay';
+export type AvaCommand='continue'|'build-menu'|'rig-selected'|'station-selected'|'skip'|'replay'|'begin-opening';
 export function commandAva(progress:AvaProgress,command:AvaCommand,state:FoundationState,now:number):AvaProgress{
- if(command==='replay')return newAva(progress.revision+1);
+ if(command==='replay')return newAva(progress.revision+1,false);
+ if(command==='begin-opening')return progress.opening==='pending'?{...progress,opening:'shown',revision:progress.revision+1}:progress;
  let next=reconcileAva(progress,state,now);
  if(next.status!=='active')return next;
  if(command==='skip')return {...next,status:'skipped',revision:next.revision+1};

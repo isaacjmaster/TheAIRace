@@ -54,6 +54,7 @@ test('foundation Ava API preserves legacy saves, persists progress, ignores stal
  const headers=identityHeaders(db,cookie);
  const read=async()=>{snapshot=await(await fetch(base,{headers})).json();return snapshot;};
  const command=async(command:string,revision=snapshot.ava.revision)=>{const r=await fetch(base+'/ava',{method:'POST',headers,body:JSON.stringify({command,revision,generation:0})});assert.equal(r.status,200);snapshot.ava=(await r.json()).ava;};
+ assert.equal(snapshot.ava.opening,'pending');const openingRevision=snapshot.ava.revision;await command('begin-opening');await read();assert.equal(snapshot.ava.opening,'shown');assert.equal(snapshot.ava.step,0);await command('begin-opening',openingRevision);assert.equal(snapshot.ava.opening,'shown');
  const initialRevision=snapshot.ava.revision;await command('continue');await command('continue',initialRevision);assert.equal(snapshot.ava.step,1);
  await read();assert.equal(snapshot.ava.step,1); // Reload restores the exact dialogue moment.
  while(snapshot.ava.step<7){if(snapshot.ava.step===5&&snapshot.ava.builderStep===1){await command('build-menu');await command('station-selected');await placeTestStation(base,headers);await read();}else await command('continue');}assert.equal(snapshot.ava.step,7);
@@ -73,6 +74,7 @@ test('foundation Ava API preserves legacy saves, persists progress, ignores stal
  await fetch(base+'/rig',{method:'POST',headers,body:JSON.stringify(request)});await read();assert.equal(snapshot.state.compute,balance);assert.equal(snapshot.ava.step,13);
  for(let i=0;i<3;i++)await command('continue');assert.equal(snapshot.ava.status,'complete');
  await command('replay');assert.equal(snapshot.ava.step,0);await command('skip');await read();assert.equal(snapshot.ava.status,'skipped');assert.equal(snapshot.state.compute,balance);
+ assert.equal(snapshot.ava.opening,undefined);
  // Replaying a legacy save changes only its separate tutorial row.
  const replay=await fetch(base+'/ava',{method:'POST',headers:identityHeaders(db,oldCookie),body:JSON.stringify({command:'replay',revision:0,generation:0})});assert.equal((await replay.json()).ava.status,'active');
  assert.equal(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(legacyId)!.state,JSON.stringify(old.state));

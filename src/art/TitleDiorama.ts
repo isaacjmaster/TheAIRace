@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {titlePixelRatio} from './titleQuality';
 import {WorldKit,palette as c} from './world';
 import {founderHQ,animateFounderIdle} from './FounderHQ';
 import {researchLabModel,animateResearchLab} from './ResearchLab';
@@ -19,13 +20,13 @@ export class TitleDiorama {
  private observer:ResizeObserver;private motion=matchMedia('(prefers-reduced-motion: reduce)');
  constructor(private host:HTMLElement,private onFailure:()=>void){
   this.renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});
-  this.renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));this.renderer.outputColorSpace=THREE.SRGBColorSpace;
+  this.renderer.outputColorSpace=THREE.SRGBColorSpace;
   this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.15;
   this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   this.renderer.setClearColor(0x000000,0);this.renderer.domElement.setAttribute('aria-hidden','true');host.append(this.renderer.domElement);
   this.scene.add(new THREE.HemisphereLight('#e1f4ff','#88a48d',1.9));
   const sun=new THREE.DirectionalLight('#fff2cf',3);sun.position.set(-10,22,16);sun.castShadow=true;
-  sun.shadow.mapSize.set(512,512);Object.assign(sun.shadow.camera,{left:-17,right:17,top:17,bottom:-17,near:1,far:70});sun.shadow.normalBias=.04;sun.shadow.autoUpdate=false;sun.shadow.needsUpdate=true;this.scene.add(sun);
+  sun.shadow.mapSize.set(devicePixelRatio>=2?1024:512,devicePixelRatio>=2?1024:512);Object.assign(sun.shadow.camera,{left:-17,right:17,top:17,bottom:-17,near:1,far:70});sun.shadow.normalBias=.04;sun.shadow.autoUpdate=false;sun.shadow.needsUpdate=true;this.scene.add(sun);
   this.scene.add(this.campus);const k=this.kit;
   // A curated showcase, never a snapshot of the player's save.
   k.box(this.campus,[24,.65,20],[0,-.16,0],'#239eaa',.3);
@@ -60,13 +61,13 @@ export class TitleDiorama {
   this.renderer.domElement.dataset.showcase='hq2,gpu,builder,research,droneStation,drone,walls,gardens';
   this.camera.position.set(23,29,35);this.camera.lookAt(0,1,0);
   this.observer=new ResizeObserver(this.resize);this.observer.observe(host);
-  document.addEventListener('visibilitychange',this.updateActivity);this.motion.addEventListener('change',this.updateActivity);
+  window.addEventListener('resize',this.resize);document.addEventListener('visibilitychange',this.updateActivity);this.motion.addEventListener('change',this.updateActivity);
   this.renderer.domElement.addEventListener('webglcontextlost',this.contextLost);
   this.resize();this.updateActivity();
  }
  private resize=()=>{if(this.disposed)return;const {width,height}=this.host.getBoundingClientRect();if(width<1||height<1)return;
   const aspect=width/height,span=Math.max(22,32/aspect);this.camera.left=-span*aspect/2;this.camera.right=span*aspect/2;this.camera.top=span/2;this.camera.bottom=-span/2;this.camera.updateProjectionMatrix();
-  this.renderer.setSize(width,height);this.render();
+  this.renderer.setPixelRatio(titlePixelRatio(width,height,devicePixelRatio||1));this.renderer.setSize(width,height,false);const canvas=this.renderer.domElement;canvas.dataset.pixelRatio=String(this.renderer.getPixelRatio());canvas.dataset.bufferSize=canvas.width+'x'+canvas.height;this.render();
  };
  private render=()=>{this.renderer.render(this.scene,this.camera);this.renderer.domElement.dataset.drawCalls=String(this.renderer.info.render.calls);this.renderer.domElement.dataset.triangles=String(this.renderer.info.render.triangles);};
  private tick=(now:number)=>{this.frame=0;if(this.disposed||!this.active||document.hidden||this.motion.matches)return;
@@ -81,5 +82,5 @@ export class TitleDiorama {
  };
  private contextLost=(event:Event)=>{event.preventDefault();cancelAnimationFrame(this.frame);this.frame=0;this.active=false;this.onFailure();};
  setActive(active:boolean){this.active=active;this.updateActivity();}
- dispose(){if(this.disposed)return;this.disposed=true;cancelAnimationFrame(this.frame);this.observer.disconnect();document.removeEventListener('visibilitychange',this.updateActivity);this.motion.removeEventListener('change',this.updateActivity);this.renderer.domElement.removeEventListener('webglcontextlost',this.contextLost);this.walls.dispose();this.kit.dispose();this.scene.traverse(o=>{if(o instanceof THREE.Light)o.dispose();});this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
+ dispose(){if(this.disposed)return;this.disposed=true;cancelAnimationFrame(this.frame);this.observer.disconnect();window.removeEventListener('resize',this.resize);document.removeEventListener('visibilitychange',this.updateActivity);this.motion.removeEventListener('change',this.updateActivity);this.renderer.domElement.removeEventListener('webglcontextlost',this.contextLost);this.walls.dispose();this.kit.dispose();this.scene.traverse(o=>{if(o instanceof THREE.Light)o.dispose();});this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
 }

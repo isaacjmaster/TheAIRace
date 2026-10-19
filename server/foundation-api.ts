@@ -59,7 +59,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   }catch(e){db.exec('ROLLBACK');throw e;}
  }catch{res.status(503).json({code:'BACKEND_UNAVAILABLE',error:'The save service is temporarily unavailable. Your saved companies have not been replaced. Please retry.'});}});
  app.post('/api/foundation/ava',(req,res)=>{
-  const parsed=z.object({command:z.enum(['continue','build-menu','rig-selected','station-selected','skip','replay']),revision:z.number().int().min(0),generation:z.number().int().min(0)}).strict().safeParse(req.body);
+  const parsed=z.object({command:z.enum(['continue','build-menu','rig-selected','station-selected','skip','replay','begin-opening']),revision:z.number().int().min(0),generation:z.number().int().min(0)}).strict().safeParse(req.body);
   if(!parsed.success){res.status(400).json({error:'Invalid Ava action.'});return;}
   const player=session(req,res);if(!player)return;const {id,state}=player,old=readAva(id),input=parsed.data;
   if(input.generation!==(state.generation||0)){res.status(409).json({error:'Progress changed. Reload the game.'});return;}
