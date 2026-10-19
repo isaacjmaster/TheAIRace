@@ -1,3 +1,4 @@
+import {ownedSecurityWalls} from './security-catalog';
 import {DECORATIONS,decorationFootprint,overlapsRect,type DecorationKind,type Decoration} from './decoration-catalog';
 import {FOUNDATION_BUILDINGS,buildingLayout,footprint,type FoundationState,type RigPosition,type Orientation} from './foundation';
 import {FOUNDATION_PLOT as P} from './foundation-plot';
@@ -11,6 +12,7 @@ export function validDecorationPosition(s:FoundationState,kind:DecorationKind,po
  for(const k of FOUNDATION_BUILDINGS){const l=buildingLayout(s,k);if(l&&overlapsRect(a,footprint(k,l),.25))return 'Leave space around buildings.';}
  for(const o of OBSTACLES.filter(o=>o.kind==='rock'||!s.landscape&&o.kind==='tree'))if(overlapsRect(a,{x:o.position[0],z:o.position[1],w:o.width,d:o.depth},.2))return 'Choose open ground.';
  for(const o of s.landscape?.items||[]){const [w,d]=obstacleSize(o);if(overlapsRect(a,{x:o.position[0],z:o.position[1],w,d},.2))return 'Clear the obstacle first.';}
+ for(const wall of ownedSecurityWalls(s))if(overlapsRect(a,wall,.2))return 'Keep Security Walls clear.';
  for(const o of s.decorations||[])if(o.id!==ignoreId&&overlapsRect(a,decorationFootprint(o),.15))return 'Leave space between decorations.';
  for(const [x,z] of [[-16,7],[13,7],[-16,11],[25,11]])if(overlapsRect(a,{x,z,w:1.4,d:1.4},.2))return 'Keep the streetlight clear.';
  if(s.landscape?.clearing?.route.some(([x,z])=>overlapsRect(a,{x,z,w:1,d:1},.2)))return 'Keep the Builder Bot’s route clear.';

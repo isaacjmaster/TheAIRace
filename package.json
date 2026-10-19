@@ -22,7 +22,8 @@
     "preview:territory": "node --import tsx scripts/preview-territory.ts",
     "preview:plot": "node --import tsx scripts/preview-hq-plot.ts",
     "preview:hq": "node --import tsx scripts/preview-founder-hq.ts",
-    "preview:compound": "node --import tsx scripts/preview-compound.ts"
+    "preview:compound": "node --import tsx scripts/preview-compound.ts",
+    "preview:cybersecurity": "node --import tsx scripts/preview-cybersecurity.ts"
   },
   "dependencies": {
     "express": "^5.1.0",

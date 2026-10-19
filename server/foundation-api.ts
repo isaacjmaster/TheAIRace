@@ -1,3 +1,4 @@
+import {buyWall,moveWall,buildDroneStation} from '../shared/cybersecurity';
 import {infiltrationStore,releaseReserve} from './infiltration';
 import {newOperation,commandOperation} from '../shared/infiltration';
 import {buildResearchLab,collectResearch} from '../shared/research';
@@ -84,6 +85,9 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   }catch(e){db.exec('ROLLBACK');res.status(400).json({error:(e as Error).message});}
  });
  const botAction=z.discriminatedUnion('action',[
+  z.object({action:z.literal('buy-wall'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('move-wall'),id:z.string().uuid(),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('build-drone-station'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('infiltration-start'),targetId:z.enum(['lumen-labs','vector-works']),tool:z.enum(['probe','jammer'])}).strict(),
   z.object({action:z.literal('infiltration-command'),operationId:z.string().uuid(),intent:z.discriminatedUnion('action',[z.object({action:z.literal('deploy')}).strict(),z.object({action:z.literal('move'),position:z.tuple([z.number().finite(),z.number().finite()])}).strict(),z.object({action:z.literal('hack'),assetId:z.string().min(1).max(40)}).strict(),z.object({action:z.literal('tool')}).strict(),z.object({action:z.literal('extract')}).strict(),z.object({action:z.literal('abandon')}).strict()])}).strict(),
   z.object({action:z.literal('build-lab'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
@@ -96,8 +100,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   z.object({action:z.literal('clear-obstacle'),obstacleId:z.string().min(1).max(100)}).strict(),
   z.object({action:z.literal('build-hangar'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
-  z.object({action:z.literal('rotate'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab']),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
-  z.object({action:z.literal('move'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('rotate'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation']),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('move'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('train'),count:z.number().int().min(1).max(10)}).strict(),
   z.object({action:z.literal('start'),layout:z.number().int().min(0).max(1)}).strict(),
   z.object({action:z.literal('deploy'),raidId:z.string().uuid(),position:z.object({x:z.number().finite(),y:z.number().finite()}).strict()}).strict(),
@@ -113,7 +117,10 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
    if(cached&&cached.payload!==payload)throw new Error('Request already used for another action.');
    ensureLandscape(state,now,randomUUID());advanceFoundation(state,now);influence.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);
    if(!cached){const c=input.command;
-    if(c.action==='infiltration-start'){if(state.botRaid&&!state.botRaid.settled)throw new Error('Finish your previous raid before infiltrating.');if(state.infiltration&&['ready','active'].includes(state.infiltration.status))throw new Error('Resume your current infiltration.');state.infiltration=newOperation(randomUUID(),c.targetId,c.tool,now);}
+    if(c.action==='buy-wall')buyWall(state,c.position,c.orientation,input.requestId);
+    else if(c.action==='move-wall')moveWall(state,c.id,c.position,c.orientation);
+    else if(c.action==='build-drone-station')buildDroneStation(state,c.position,now,c.orientation);
+    else if(c.action==='infiltration-start'){if(state.botRaid&&!state.botRaid.settled)throw new Error('Finish your previous raid before infiltrating.');if(state.infiltration&&['ready','active'].includes(state.infiltration.status))throw new Error('Resume your current infiltration.');state.infiltration=newOperation(randomUUID(),c.targetId,c.tool,now);}
     else if(c.action==='infiltration-command'){if(state.infiltration?.id!==c.operationId)throw new Error('This operation is no longer active.');commandOperation(state.infiltration,c.intent,now);}
     else if(c.action==='build-lab')buildResearchLab(state,c.position,now,c.orientation);
     else if(c.action==='collect-research')collectResearch(state,now);

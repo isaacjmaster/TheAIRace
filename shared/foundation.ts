@@ -1,3 +1,5 @@
+import {canPatrol} from './security';
+import {ownedSecurityWalls,type OwnedWall} from './security-catalog';
 import type {CompanySecurity} from './security';
 import {advanceOperation,type Operation} from './infiltration';
 import {advanceResearch,type ResearchLab} from './research';
@@ -12,7 +14,7 @@ export const STARTING_COMPUTE = 100;
 export const COMPUTE_CAPACITY = 1000;
 export const GPU_RIG={cost:50,buildSeconds:15,perMinute:5,storage:25,maxCount:2,width:4,depth:3} as const;
 export type Orientation=0|1|2|3;
-export type RotatableBuilding='hq'|'station'|'rig'|'rig2'|'fabricator'|'hangar'|'lab';
+export type RotatableBuilding='hq'|'station'|'rig'|'rig2'|'fabricator'|'hangar'|'lab'|'droneStation';
 export type BuildingLayout={position:RigPosition;orientation:Orientation;size?:'expanded'};
 export const BUILDER_STATION_POSITION:RigPosition=[-1,4.8];
 export type RigPosition=[number,number];
@@ -23,7 +25,7 @@ export type BotRaid={id:string;simulation:Raid;lastTick:number;started:boolean;s
 export const FABRICATOR={cost:50,buildSeconds:15,maxCount:1} as const;
 export const HANGAR={cost:0,buildSeconds:15,maxCount:1} as const;
 export const SCRAP_BOT={cost:5,trainSeconds:5,housing:1,capacity:10} as const;
-export type FoundationState = {security?:CompanySecurity;infiltration?:Operation;infiltrationReserve?:{compute:number;research:number};research?:number;researchCapacity?:number;lab?:ResearchLab;decorations?:Decoration[];founderHqLevel?:1|2;hqUpgrade?:FounderHQUpgrade;starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
+export type FoundationState = {walls?:OwnedWall[];droneStation?:Hangar;security?:CompanySecurity;infiltration?:Operation;infiltrationReserve?:{compute:number;research:number};research?:number;researchCapacity?:number;lab?:ResearchLab;decorations?:Decoration[];founderHqLevel?:1|2;hqUpgrade?:FounderHQUpgrade;starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
 export function initialFoundation(revision=0):FoundationState{return {version:1,revision,research:0,researchCapacity:500,founderHqLevel:1,companyName:'Garage Intelligence',level:1,compute:STARTING_COMPUTE,capacity:COMPUTE_CAPACITY,builders:0,starterStation:'unplaced',raidRecord:{wins:[],completeHistory:true}};}
 export const hasBuilderStation=(s:FoundationState)=>s.starterStation!=='unplaced';
 export function establishBuilderStation(s:FoundationState,position:RigPosition,orientation:Orientation=0){if(hasBuilderStation(s))throw new Error('Builder Station — 1/1 Built');const reason=validFoundationPosition(s,position,'station',orientation);if(reason)throw new Error(reason);s.stationLayout={position:[...position],orientation};s.starterStation='placed';s.builders=1;s.buildersBusy=0;}
@@ -41,7 +43,7 @@ export function validRigPosition(position:RigPosition,orientation:Orientation=0)
  return null;
 }
 export function advanceFoundation(s:FoundationState,now=Date.now()){
- const rigs=[s.rig,s.rig2].filter((r):r is GpuRig=>!!r),jobs=[...rigs,s.fabricator,getHangar(s),s.lab].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
+ const rigs=[s.rig,s.rig2].filter((r):r is GpuRig=>!!r),jobs=[...rigs,s.fabricator,getHangar(s),s.lab,s.droneStation].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
  const clearing=!!s.landscape?.clearing;advanceLandscape(s,now);
  if(s.hqUpgrade&&now>=s.hqUpgrade.completesAt)s.founderHqLevel=2;
  if(jobs.length||clearing||s.hqUpgrade)s.buildersBusy=jobs.filter(b=>now<b.completesAt).length+Number(!!s.landscape?.clearing)+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt);
@@ -74,22 +76,22 @@ export function getHangar(s:FoundationState):Hangar|undefined{const h=s.hangar||
 export function hangarReady(s:FoundationState,now=Date.now()){const h=getHangar(s);return !!h&&now>=h.completesAt;}
 export function buildingFootprint(orientation:Orientation=0):[number,number]{return orientation%2?[3,4]:[4,3];}
 export function hangarPlacement(p:RigPosition,orientation:Orientation=0):RigPosition{const offsets:RigPosition[]=[[6,0],[0,-6],[-6,0],[0,6]];return [p[0]+offsets[orientation][0],p[1]+offsets[orientation][1]];}
-export const FOUNDATION_BUILDINGS:RotatableBuilding[]=['hq','station','rig','rig2','fabricator','hangar','lab'];
+export const FOUNDATION_BUILDINGS:RotatableBuilding[]=['hq','station','rig','rig2','fabricator','hangar','lab','droneStation'];
 export function buildingLayout(s:FoundationState,kind:RotatableBuilding):BuildingLayout|undefined{
  if(kind==='hq')return s.hqLayout??{position:[-5,-1],orientation:0};
  if(kind==='station')return !hasBuilderStation(s)?undefined:s.stationLayout??{position:[...BUILDER_STATION_POSITION],orientation:0};
  if(kind==='rig'||kind==='rig2'){const r=s[kind];return r?{position:r.position,orientation:r.orientation??0}:undefined;}
- if(kind==='lab'){const l=s.lab;return l?{position:l.position,orientation:l.orientation??0}:undefined;}
+ if(kind==='lab'||kind==='droneStation'){const l=s[kind];return l?{position:l.position,orientation:l.orientation??0}:undefined;}
  if(kind==='hangar'){const h=getHangar(s);return h?{position:h.position,orientation:h.orientation??0,...(h.size?{size:h.size}:{})}:undefined;}
  return s.fabricator?{position:s.fabricator.position,orientation:s.fabricator.orientation??0}:undefined;
 }
 export function buildingReady(s:FoundationState,kind:RotatableBuilding,now=Date.now()){
  if(kind==='hq')return !s.hqUpgrade||now>=s.hqUpgrade.completesAt;
- if(kind==='lab')return !!s.lab&&now>=s.lab.completesAt;
+ if(kind==='lab'||kind==='droneStation')return !!s[kind]&&now>=s[kind]!.completesAt;
  return kind==='station'||(kind==='rig'||kind==='rig2'?!!s[kind]&&now>=s[kind]!.completesAt:kind==='fabricator'?!!s.fabricator&&now>=s.fabricator.completesAt:hangarReady(s,now));
 }
 export function footprint(kind:RotatableBuilding,layout:BuildingLayout,reserved=false){
- let [w,d]=kind==='hq'?(reserved?[14,10]:[9,8]):kind==='station'?(reserved?[4,3]:[2.7,1.8]):kind==='hangar'&&layout.size==='expanded'?[5.6,4.2]:[4,3];
+ let [w,d]=kind==='droneStation'?[3,3]:kind==='hq'?(reserved?[14,10]:[9,8]):kind==='station'?(reserved?[4,3]:[2.7,1.8]):kind==='hangar'&&layout.size==='expanded'?[5.6,4.2]:[4,3];
  if(layout.orientation%2)[w,d]=[d,w];
  const [x,z]=layout.position;
  // The house's foundation extends 0.6 forward from its rotation pivot.
@@ -108,6 +110,7 @@ function validateLayout(s:FoundationState,p:RigPosition,kind:RotatableBuilding,o
  for(const obstacle of OBSTACLES.filter(o=>o.kind==='rock'||!s.landscape&&o.kind==='tree'))if(overlaps(...obstacle.position,obstacle.width,obstacle.depth))return 'Choose open ground away from trees and rocks.';
  for(const o of s.landscape?.items||[]){const [w,d]=obstacleSize(o);if(overlaps(...o.position,w,d))return 'Clear the '+(o.kind==='tree'?'Tree':o.kind==='rock'?'Boulder':'Scrap Pile')+' before building here.';}
  for(const [x,z] of [[-16,7],[13,7],[-16,11],[25,11]])if(overlaps(x,z,1.4,1.4))return 'Leave space around the lights.';
+ for(const wall of ownedSecurityWalls(s))if(overlaps(wall.x,wall.z,wall.w,wall.d,.15))return 'Move the Security Wall before building here.';
  for(const o of s.decorations||[]){const r=decorationFootprint(o);if(overlaps(r.x,r.z,r.w,r.d,.2))return 'Move the decoration before building here.';}
  for(const other of FOUNDATION_BUILDINGS){if(other===kind||(pair&&other==='hangar'))continue;const layout=buildingLayout(s,other);if(!layout)continue;
  const reserved=!editing&&(other==='hq'||other==='station');const o=footprint(other,layout,reserved);
@@ -124,10 +127,11 @@ export function validLayoutPosition(s:FoundationState,p:RigPosition,kind:Rotatab
 export function moveBuilding(s:FoundationState,kind:RotatableBuilding,position:RigPosition,orientation:Orientation,now=Date.now()){
  advanceFoundation(s,now);if(s.landscape?.clearing)throw new Error('Wait for your Builder Bot to return before rearranging buildings.');if(!buildingLayout(s,kind))throw new Error('Build this structure first.');if(!buildingReady(s,kind,now))throw new Error('Wait for this building to finish construction.');
  const reason=validLayoutPosition(s,position,kind,orientation);if(reason)throw new Error(reason);
+ if(kind==='droneStation'&&!canPatrol({...s,droneStation:{...s.droneStation!,position,orientation}}))throw Error('Leave a wide route for the Security Drone.');
  const layout:BuildingLayout={position:[...position],orientation};
  if(kind==='hq')s.hqLayout=layout;else if(kind==='station')s.stationLayout=layout;
  else if(kind==='rig'||kind==='rig2'){s[kind]!.position=layout.position;s[kind]!.orientation=orientation;}
- else if(kind==='lab'){s.lab!.position=layout.position;s.lab!.orientation=orientation;}
+ else if(kind==='lab'||kind==='droneStation'){s[kind]!.position=layout.position;s[kind]!.orientation=orientation;}
  else if(kind==='fabricator'){s.fabricator!.position=layout.position;s.fabricator!.orientation=orientation;}
  else if(s.hangar){s.hangar.position=layout.position;s.hangar.orientation=orientation;s.hangar.size='expanded';}else {s.fabricator!.hangarPosition=layout.position;s.fabricator!.hangarOrientation=orientation;s.fabricator!.hangarSize='expanded';}
 }

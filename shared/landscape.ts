@@ -1,10 +1,10 @@
 import {findPath} from './navigation';
-import {hqSecurityWalls} from './security-walls';
+import {ownedSecurityWalls} from './security-catalog';
 import {decorationFootprint} from './decoration-catalog';
 import {FOUNDATION_PLOT as P} from './foundation-plot';
 import {FOUNDATION_BUILDINGS,buildingLayout,footprint,type FoundationState,type RigPosition} from './foundation';
 import {OBSTACLES} from './campus-layout';
-export const LANDSCAPE={initialCount:28,maxCount:40,regenerationMs:3*60*60*1000,workMs:6000,travelSpeed:8,rewards:{tree:2,scrap:3,rock:4}} as const;
+export const LANDSCAPE={initialCount:28,maxCount:40,regenerationMs:3*60*60*1000,workByKind:{tree:15000,rock:15000,scrap:30000},travelSpeed:8,rewards:{tree:2,scrap:3,rock:4}} as const;
 export type LandscapeObstacle={id:string;kind:'tree'|'scrap'|'rock';position:RigPosition;variant:number};
 export type ClearingJob={id:string;obstacle:LandscapeObstacle;route:RigPosition[];startedAt:number;workAt:number;clearedAt:number;completesAt:number;rewarded:boolean};
 export type Landscape={version:1;epoch:string;sequence:number;nextSpawnAt:number;items:LandscapeObstacle[];clearing?:ClearingJob;pendingCompute:number;lastClear?:{id:string;kind:'tree'|'scrap'|'rock';position:RigPosition;at:number;reward:number}};
@@ -14,8 +14,8 @@ function rect(o:LandscapeObstacle){const [w,d]=obstacleSize(o);return {x:o.posit
 export function door(s:FoundationState,kind:typeof FOUNDATION_BUILDINGS[number]):RigPosition{
  const l=buildingLayout(s,kind)!,a=l.orientation*Math.PI/2,dist=(kind==='hq'?5.8:kind==='station'?2:3.3);return [l.position[0]+Math.sin(a)*dist,l.position[1]+Math.cos(a)*dist];
 }
-/** Leave wide entrances at every owned building's rotated approach, including older layouts. */
-export function campusSecurityWalls(s:FoundationState){return hqSecurityWalls(FOUNDATION_BUILDINGS.filter(k=>buildingLayout(s,k)).map(k=>door(s,k)));}
+/** Purchased segments only. Old automatic HQ perimeter scenery is never regenerated. */
+export function campusSecurityWalls(s:FoundationState){return ownedSecurityWalls(s);}
 /** Builder route stays inside the fence, avoids all solid footprints, and may cross the service road. */
 export function landscapeRoute(s:FoundationState,target:RigPosition,origin?:RigPosition,clearance=.3):RigPosition[]{
  const start=origin??door(s,buildingLayout(s,'station')?'station':'hq');
@@ -32,6 +32,7 @@ export function validObstaclePosition(s:FoundationState,o:LandscapeObstacle){
  const a=rect(o);if(a.x-a.w/2<P.minX+1||a.x+a.w/2>P.maxX-1||a.z-a.d/2<P.minZ+1||a.z+a.d/2>P.maxZ-1||a.z+a.d/2>6.2&&a.z-a.d/2<11.8)return false;
  for(const k of FOUNDATION_BUILDINGS){const l=buildingLayout(s,k);if(!l)continue;if(overlap(a,footprint(k,l,true),1))return false;const [x,z]=door(s,k);if(overlap(a,{x,z,w:3,d:3},1))return false;}
  for(const r of OBSTACLES.filter(o=>o.kind==='rock'))if(overlap(a,{x:r.position[0],z:r.position[1],w:r.width,d:r.depth},1))return false;
+ for(const wall of ownedSecurityWalls(s))if(overlap(a,wall,1))return false;
  for(const o of s.decorations||[])if(overlap(a,decorationFootprint(o),1))return false;
  for(const p of s.landscape?.items||[])if(overlap(a,rect(p),1))return false;
  for(const [x,z] of [[-16,7],[13,7],[-16,11],[25,11],[-18,-15],[23,-15],[-18,19],[22,20]])if(overlap(a,{x,z,w:3,d:2},.5))return false;
@@ -65,5 +66,5 @@ export function clearObstacle(s:FoundationState,id:string,now:number){if(s.build
  const targets:RigPosition[]=[[o.position[0],o.position[1]+d/2+1],[o.position[0]+w/2+1,o.position[1]],[o.position[0],o.position[1]-d/2-1],[o.position[0]-w/2-1,o.position[1]]];
  const route=targets.map(t=>landscapeRoute(s,t)).filter(p=>p.length).sort((a,b)=>a.length-b.length)[0];if(!route)throw new Error('The Builder Bot needs a clear route to this obstacle.');
  const travel=Math.max(600,route.reduce((d,p,i)=>i?d+Math.hypot(p[0]-route[i-1][0],p[1]-route[i-1][1]):d,0)/LANDSCAPE.travelSpeed*1000);
- l.clearing={id:o.id,obstacle:structuredClone(o),route,startedAt:now,workAt:now+travel,clearedAt:now+travel+LANDSCAPE.workMs,completesAt:now+travel*2+LANDSCAPE.workMs,rewarded:false};s.buildersBusy=1;
+ l.clearing={id:o.id,obstacle:structuredClone(o),route,startedAt:now,workAt:now+travel,clearedAt:now+travel+LANDSCAPE.workByKind[o.kind],completesAt:now+travel*2+LANDSCAPE.workByKind[o.kind],rewarded:false};s.buildersBusy=1;
 }
