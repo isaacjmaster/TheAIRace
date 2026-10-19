@@ -289,3 +289,12 @@ Construction and first-collection messages offer **Explore** and automatically c
 Isolated review: `node --import tsx scripts/preview-ava-polish.ts` serves port **3053** using `data/ava-polish-preview.sqlite`. Open `/?testAudio=off` in a private window for a genuinely fresh company, or `/ava-preview/research?testAudio=off`, `/ava-preview/construction?testAudio=off`, or `/ava-preview/ready?testAudio=off` for specific local-only fixtures. These routes create isolated preview companies and are not registered by the production server.
 
 Validation: 334 automated tests, production build and production smoke test passed. A fresh local company completed naming, Builder Station, GPU construction, waiting, collection, and tutorial completion through the actual UI. Browser checks covered projected arrow alignment during panning/zoom, offscreen hiding, Research HUD alignment across live resizing, refresh during both waiting states, Ask Ava, skip, completed-state persistence, and leaderboard opening. Physical iPhone Safari/installed PWA rendering still requires device review.
+
+
+### Local home-screen campus refresh
+
+The menu uses an original angular SVG wordmark and a decorative, independent Level 2 campus showcase. The vignette reuses the actual Founder HQ Level 2, GPU Rig, Builder Station, Research Lab, Security Drone Station, drone, modular wall, and decoration models. Paths, landscaping and a front access opening organize the miniature campus; no saved player layout or ownership is read or changed.
+
+Ambient animation includes GPU fans, the research core, a gently hovering drone, founder idle motion and the menu helper. Rendering is capped at 30 fps with pixel ratio capped at 1.5; static shadows are cached. Animation stops when the menu is inactive or the page is hidden, and reduced-motion preferences produce a static view. The no-WebGL fallback also depicts the developed campus. Play, recovery, sound controls, studio splash and PWA status-bar backgrounds retain their existing behavior.
+
+Review with the isolated port-3053 preview documented above. Checked 390×844, 320×568, 844×390 and 1440×900 layouts, recovery entry, Play-to-HQ/Ava, context-loss fallback and reduced motion. Browser rendering reported 167 draw calls / 44,812 triangles per normal frame after shadow caching; this is a rendering-work measurement, not a physical-iPhone frame-rate claim. All 334 tests, the production build and isolated production smoke test passed. This visual refresh is local pending review.
