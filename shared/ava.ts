@@ -1,4 +1,4 @@
-import {hasBuilderStation,type FoundationState} from './foundation';
+import {GPU_RIG,hasBuilderStation,type FoundationState} from './foundation';
 export type AvaProgress={builderStep?:number;status:'active'|'skipped'|'complete'|'legacy';step:number;revision:number;collected:boolean};
 export const newAva=(revision=0):AvaProgress=>({status:'active',builderStep:0,step:0,revision,collected:false});
 export const legacyAva=():AvaProgress=>({status:'legacy',step:16,revision:0,collected:false});
@@ -43,7 +43,7 @@ export function avaLine(p:AvaProgress,s:FoundationState,now:number,panel:string|
  "Find some open ground. Drag or tap to position the rig, then Confirm. Pinch to zoom, or switch to Pan camera to look around.",
  "Nice! Our Builder Bot is on it. Feel free to explore while it builds.",
  "Look at that! Our first GPU Rig. Now we're producing Compute.",
- "Our rig produces 5 Compute per minute. When Compute is ready, tap the rig or its badge to collect it.",
+ `Our rig produces ${GPU_RIG.perMinute} Compute per minute. When Compute is ready, tap the rig or its badge to collect it.`,
  "This is just the beginning.",
  "We'll build more technology, manufacture robots, and infiltrate rival AI networks to grow our company.",
  "Someday, this little headquarters could become something incredible. Let's get to work!"

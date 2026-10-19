@@ -47,7 +47,7 @@ export const AGENT_CLEARANCE=.65;
 const common: Asset[] = [{ id: 'hq', kind: 'hq', name: 'Founder HQ', position: [-1, -3], size: [7, 6], compute: 0, research: 0 }, { id: 'gpu', kind: 'gpu', name: 'Compute cache', position: [-6, 1], size: [4, 3], access: [-6, 3.2], hackSeconds: 3, compute: 20, research: 0 }, { id: 'lab', kind: 'lab', name: 'Research Lab', position: [6, 1], size: [3.8, 2.8], access: [6, 3.3], hackSeconds: 5, compute: 0, research: 12 }, { id: 'terminal', kind: 'terminal', name: 'Core terminal', position: [7, -5], size: [1.6, 1.4], access: [7, -3.5], hackSeconds: 7, compute: 10, research: 8, intel: true }];
 export const INFILTRATION_TARGETS: TargetSnapshot[] = [{ version: 1, id: 'lumen-labs', name: 'Lumen Labs', difficulty: 'Startup', entry: [-10, 6], exit: [-10, 6], assets: common, defenses: [{ id: 'sentinel-1', route: [[0, 2], [4, 4], [8, 3], [8, -1]], radius: 3.1, patrolSpeed: 1.1, pursuitSpeed: 2, warningSeconds: 2.2 }], influence: 25 }, { version: 1, id: 'vector-works', name: 'Vector Works', difficulty: 'Established', entry: [-10, 6], exit: [-10, 6], assets: common.map(a => ({ ...a, position: a.id === 'gpu' ? [-6, -1] : a.id === 'lab' ? [6, -1] : a.id === 'terminal' ? [7, -6] : a.position, access: a.id === 'gpu' ? [-6, 1.2] : a.id === 'lab' ? [6, 1.3] : a.id === 'terminal' ? [7, -4.5] : a.access, hackSeconds: a.hackSeconds ? a.hackSeconds + 1 : undefined, compute: a.compute * 2, research: a.research * 2 })), defenses: [{ id: 'sentinel-1', route: [[-4, 3], [1, 4], [5, 3], [1, 2]], radius: 3.3, patrolSpeed: 1.2, pursuitSpeed: 2.2, warningSeconds: 2 }, { id: 'sentinel-2', route: [[6, 4], [9, 1], [9, -5], [5, -6]], radius: 3.2, patrolSpeed: 1.1, pursuitSpeed: 2.1, warningSeconds: 2 }], influence: 50 }];
 // New operations capture the compound layout. Already saved snapshots are not rewritten.
-for(const target of INFILTRATION_TARGETS){target.navigationVersion=2;target.entry=[-8,6.5];target.exit=[-8,6.5];target.walls=rivalSecurityWalls(target.id==='vector-works');for(const defense of target.defenses)defense.route=defense.route.map(p=>nearestOpen(p,infiltrationSolids(target),INFILTRATION_BOUNDS,DRONE_CLEARANCE,.5)??p);}
+for(const target of INFILTRATION_TARGETS){target.navigationVersion=2;target.entry=[-8,6.5];target.exit=[-10.5,6.5];target.walls=rivalSecurityWalls(target.id==='vector-works');for(const defense of target.defenses)defense.route=defense.route.map(p=>nearestOpen(p,infiltrationSolids(target),INFILTRATION_BOUNDS,DRONE_CLEARANCE,.5)??p);}
 export type DroneState = {
     id: string;
     path?:Vec[];
@@ -66,6 +66,8 @@ export type InfiltrationEvent = {
     detail?: string;
 };
 export type Operation = {
+    unit?:{kind:'scrap';reservationId:string;status:'reserved'|'returned'|'lost'};
+    ownershipRequired?:boolean;
     version: 1;
     id: string;
     target: TargetSnapshot;
@@ -108,6 +110,7 @@ export type Operation = {
 };
 export type InfiltrationCommand = {
     action: 'deploy';
+    position?:Vec;
 } | {
     action: 'move';
     position: Vec;
@@ -129,6 +132,7 @@ export function newOperation(id: string, targetId: string, tool: Tool, now: numb
 export function operationFromSnapshot(id: string, target: TargetSnapshot, tool: Tool, now: number): Operation { return { version: 1, id, target: structuredClone(target), tool, toolUsed: false, probeUntil: 0, createdAt: now, lastTick: now, status: 'ready', orders: [], agent: { position: [...target.entry], path: [], mode: 'idle', hack: 0, yaw: 0 }, drones: target.defenses.map(d => ({ id: d.id, position: [...d.route[0]], segment: 1, alert: 0, lost: 0, mode: 'patrol', jammedUntil: 0 })), hacked: [], carried: { compute: 0, research: 0, intel: false }, events: [{ at: now, type: 'prepared' }] }; }
 export function infiltrationSolids(t:TargetSnapshot):NavRect[]{return [...t.assets.map(a=>({x:a.position[0],z:a.position[1],w:a.size[0],d:a.size[1]})),...(t.walls??[])];}
 export function navigable(t: TargetSnapshot, p: Vec) { if(t.navigationVersion===2)return pointClear(p,infiltrationSolids(t),INFILTRATION_BOUNDS,AGENT_CLEARANCE);return p.every(Number.isFinite) && Math.abs(p[0]) <= 11.5 && Math.abs(p[1]) <= 7.5 && !t.assets.some(a => Math.abs(p[0] - a.position[0]) < a.size[0] / 2 + .3 && Math.abs(p[1] - a.position[1]) < a.size[1] / 2 + .3); }
+export function validDeployment(t:TargetSnapshot,p:Vec){return p.every(Number.isFinite)&&Math.abs(p[0]-t.entry[0])<=1.2&&Math.abs(p[1]-t.entry[1])<=.55&&navigable(t,p)&&infiltrationPath(t,p,t.exit).length>0;}
 /** Small bounded half-unit grid, deterministic and reusable by future target snapshots. */
 export function infiltrationPath(t:TargetSnapshot,from:Vec,to:Vec):Vec[]{return t.navigationVersion===2?findPath(from,to,infiltrationSolids(t),INFILTRATION_BOUNDS,AGENT_CLEARANCE):legacyInfiltrationPath(t,from,to);}
 function legacyInfiltrationPath(t: TargetSnapshot, from: Vec, to: Vec): Vec[] { if (!navigable(t, to))
@@ -257,6 +261,8 @@ export function commandOperation(o: Operation, c: InfiltrationCommand, now: numb
     if (c.action === 'deploy') {
         if (o.status !== 'ready')
             throw new Error('Agent already deployed.');
+        const deployment=c.position??o.target.entry;if(!validDeployment(o.target,deployment))throw new Error('Deploy inside the cyan staging zone.');
+        o.agent.position=[...deployment];
         o.status = 'active';
         o.startedAt = now;
         o.lastTick = now;

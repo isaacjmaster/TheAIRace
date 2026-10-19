@@ -20,7 +20,7 @@ test('Fabricator grants one Hangar, reserves both footprints, and shares the one
  assert.ok(validFoundationPosition(s,[12,-6],'rig'));assert.ok(validFoundationPosition(s,[6,-6],'rig'));assert.equal(validFoundationPosition(s,[16,0],'rig'),null);
  assert.throws(()=>trainScrap(s,1,epoch+16000),/Finish/);advanceFoundation(s,epoch+30000);assert.equal(s.buildersBusy,0);
  // A completed GPU keeps producing and can be collected while the Fabricator builds.
- const t=initialFoundation();t.compute=200;buildRig(t,[6,0],epoch);buildFabricator(t,position,epoch+75000);assert.equal(collectRig(t,epoch+75000),5);
+ const t=initialFoundation();t.compute=200;buildRig(t,[6,0],epoch);buildFabricator(t,position,epoch+75000);assert.equal(collectRig(t,epoch+75000),10);
 });
 test('training is sequential, charges once, includes queued capacity, and survives clock rollback and offline time',()=>{
  const s=ready();trainScrap(s,5,epoch+15000);trainScrap(s,5,epoch+15000);assert.equal(s.compute,400);assert.equal(armyUsed(s),10);assert.throws(()=>trainScrap(s,1,epoch+15000),/full/);assert.equal(s.training!.at(-1),epoch+65000);

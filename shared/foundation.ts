@@ -2,6 +2,7 @@ import {canPatrol} from './security';
 import {ownedSecurityWalls,type OwnedWall} from './security-catalog';
 import type {CompanySecurity} from './security';
 import {advanceOperation,type Operation} from './infiltration';
+import {ensureOwnedOperation,settleOwnedUnit,reservedAgent} from './infiltration-army';
 import {advanceResearch,type ResearchLab} from './research';
 import {decorationFootprint,type Decoration} from './decoration-catalog';
 import {FOUNDATION_PLOT} from './foundation-plot';
@@ -12,7 +13,7 @@ import {deploy,tick,finish,STEP,destruction,type Raid,type Point} from '../raid/
 import {OBSTACLES} from './campus-layout';
 export const STARTING_COMPUTE = 100;
 export const COMPUTE_CAPACITY = 1000;
-export const GPU_RIG={cost:50,buildSeconds:15,perMinute:5,storage:25,maxCount:2,width:4,depth:3} as const;
+export const GPU_RIG={cost:50,buildSeconds:15,perMinute:10,storage:25,maxCount:2,width:4,depth:3} as const;
 export type Orientation=0|1|2|3;
 export type RotatableBuilding='hq'|'station'|'rig'|'rig2'|'fabricator'|'hangar'|'lab'|'droneStation';
 export type BuildingLayout={position:RigPosition;orientation:Orientation;size?:'expanded'};
@@ -25,7 +26,7 @@ export type BotRaid={id:string;simulation:Raid;lastTick:number;started:boolean;s
 export const FABRICATOR={cost:50,buildSeconds:15,maxCount:1} as const;
 export const HANGAR={cost:0,buildSeconds:15,maxCount:1} as const;
 export const SCRAP_BOT={cost:5,trainSeconds:5,housing:1,capacity:10} as const;
-export type FoundationState = {walls?:OwnedWall[];droneStation?:Hangar;security?:CompanySecurity;infiltration?:Operation;infiltrationReserve?:{compute:number;research:number};research?:number;researchCapacity?:number;lab?:ResearchLab;decorations?:Decoration[];founderHqLevel?:1|2;hqUpgrade?:FounderHQUpgrade;starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
+export type FoundationState = {walls?:OwnedWall[];droneStation?:Hangar;security?:CompanySecurity;infiltrationTutorial?:'complete'|'skipped';infiltration?:Operation;infiltrationReserve?:{compute:number;research:number};research?:number;researchCapacity?:number;lab?:ResearchLab;decorations?:Decoration[];founderHqLevel?:1|2;hqUpgrade?:FounderHQUpgrade;starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
 export function initialFoundation(revision=0):FoundationState{return {version:1,revision,research:0,researchCapacity:500,founderHqLevel:1,companyName:'Garage Intelligence',level:1,compute:STARTING_COMPUTE,capacity:COMPUTE_CAPACITY,builders:0,starterStation:'unplaced',raidRecord:{wins:[],completeHistory:true}};}
 export const hasBuilderStation=(s:FoundationState)=>s.starterStation!=='unplaced';
 export function establishBuilderStation(s:FoundationState,position:RigPosition,orientation:Orientation=0){if(hasBuilderStation(s))throw new Error('Builder Station — 1/1 Built');const reason=validFoundationPosition(s,position,'station',orientation);if(reason)throw new Error(reason);s.stationLayout={position:[...position],orientation};s.starterStation='placed';s.builders=1;s.buildersBusy=0;}
@@ -48,7 +49,7 @@ export function advanceFoundation(s:FoundationState,now=Date.now()){
  if(s.hqUpgrade&&now>=s.hqUpgrade.completesAt)s.founderHqLevel=2;
  if(jobs.length||clearing||s.hqUpgrade)s.buildersBusy=jobs.filter(b=>now<b.completesAt).length+Number(!!s.landscape?.clearing)+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt);
  if(s.training){const completed=s.training.filter(t=>t<=now).length;s.bots=(s.bots||0)+completed;s.training=s.training.filter(t=>t>now);}
- if(s.infiltration)advanceOperation(s.infiltration,now);
+ ensureOwnedOperation(s,now);if(s.infiltration)advanceOperation(s.infiltration,now);settleOwnedUnit(s);
  advanceResearch(s,now);advanceBotRaid(s,now);
  for(const r of rigs){const cursor=Math.max(r.lastProducedAt,r.completesAt);if(now>cursor){r.stored=Math.min(GPU_RIG.storage,r.stored+(now-cursor)*GPU_RIG.perMinute/60000);r.lastProducedAt=now;}}
 
@@ -68,7 +69,7 @@ export function collectRig(s:FoundationState,now=Date.now(),slot:'rig'|'rig2'='r
  const amount=Math.min(Math.floor(s[slot]!.stored+1e-9),Math.max(0,s.capacity-s.compute));s[slot]!.stored=Math.max(0,s[slot]!.stored-amount);s.compute+=amount;return amount;
 }
 /** Existing saves gain optional fields only when the associated action is used. */
-export function armyUsed(s:FoundationState){return (s.bots||0)+(s.training?.length||0)+(!s.botRaid?.settled?(s.botRaid?.simulation.stock.scrap||0):0);}
+export function armyUsed(s:FoundationState){return reservedAgent(s.infiltration)+(s.bots||0)+(s.training?.length||0)+(!s.botRaid?.settled?(s.botRaid?.simulation.stock.scrap||0):0);}
 /** Pure compatibility view: expand old Hangars only when the existing layout has room.
  * The candidate validation skips this Hangar, so this does not recurse through itself.
  * New purchases/moves persist the larger size; crowded old saves keep every coordinate. */
@@ -152,7 +153,7 @@ export function buildHangar(s:FoundationState,p:RigPosition,now=Date.now(),orien
 export function trainScrap(s:FoundationState,count:number,now=Date.now()){
  advanceFoundation(s,now);if(!s.fabricator||now<s.fabricator.completesAt)throw new Error('Finish building your Bot Fabricator first.');if(!hangarReady(s,now))throw new Error('Build and finish a Bot Hangar first.');
  if(!Number.isInteger(count)||count<1||count>10)throw new Error('Choose 1 to 10 Scrap Bots.');
- if(armyUsed(s)+count>10)throw new Error('Hangar full — deployed bots free housing.');
+ if(armyUsed(s)+count>10)throw new Error('Hangar full — finish an operation or cancel waiting bots.');
  if(s.compute<count*5)throw new Error('Each Scrap Bot costs 5 Compute.');
  s.compute-=count*5;s.training??=[];
  let cursor=Math.max(now,s.training.at(-1)||0);for(let i=0;i<count;i++){cursor+=5000;s.training.push(cursor);}
