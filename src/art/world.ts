@@ -65,6 +65,8 @@ export class WorldKit {
   if(this.finish==='campus'){const relief=campusRelief();relief.repeat.set(80,80);this.textures.push(relief);mat.bumpMap=relief;mat.bumpScale=.045;mat.flatShading=false;}
   const mesh=new THREE.Mesh(g,mat);mesh.receiveShadow=true;parent.add(mesh);return mesh;
  }
+ /** Shared faceted boulders for removable landscape obstacles. */
+ boulder(parent:THREE.Object3D,position:[number,number,number],scale:[number,number,number],color:string,yaw:number){const mesh=new THREE.Mesh(this.geometry('landscape-boulder',()=>new THREE.DodecahedronGeometry(1,0)),this.mat(color));mesh.position.set(...position);mesh.scale.set(...scale);mesh.rotation.set(.1,yaw,.12);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;}
  label(parent:THREE.Object3D,text:string,position:[number,number,number],width:number){
   const canvas=document.createElement('canvas');canvas.width=512;canvas.height=96;const c=canvas.getContext('2d')!;c.fillStyle=palette.dark;c.fillRect(0,0,512,96);c.font='700 40px Segoe UI, sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle=palette.cream;c.fillText(text,256,48,480);
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;this.textures.push(texture);
