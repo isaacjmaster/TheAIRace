@@ -1,3 +1,6 @@
+import {findPath} from '../../shared/navigation';
+import {infiltrationSolids,INFILTRATION_BOUNDS,DRONE_CLEARANCE} from '../../shared/infiltration';
+import {SecurityWalls} from './SecurityWalls';
 import * as THREE from 'three';
 import { WorldKit, lightWorld, palette as C } from './world';
 import { TechnologyDistrict } from './TechnologyDistrict';
@@ -14,6 +17,7 @@ export class InfiltrationScene {
     readonly camera = new THREE.OrthographicCamera();
     readonly renderer: THREE.WebGLRenderer;
     private k = new WorldKit('campus');
+    private walls?:SecurityWalls;
     private district = new TechnologyDistrict('raid');
     private agent = scrapBotModel(this.k);
     private drones = new Map<string, {
@@ -45,7 +49,7 @@ export class InfiltrationScene {
         this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
         this.renderer.domElement.setAttribute('aria-label', 'Rival company campus');
         this.host.append(this.renderer.domElement);
-        this.scene.add(this.district.group);
+        this.scene.add(this.district.group);if(o.target.walls){this.walls=new SecurityWalls(o.target.walls);this.scene.add(this.walls.group);}
         this.k.box(this.scene, [25, .12, 17], [0, -.03, 0], '#adc795');
         for (const x of [-12, 12])
             this.k.box(this.scene, [.12, .22, 16], [x, .12, 0], C.cream);
@@ -92,7 +96,8 @@ export class InfiltrationScene {
             model.scale.setScalar(1.15);
             this.scene.add(model, scan, alert);
             this.drones.set(d.id, { model, scan, alert });
-            const points = d.route.concat([d.route[0]]).map(p => new THREE.Vector3(p[0], .16, p[1])), line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineDashedMaterial({ color: '#785da9', dashSize: .3, gapSize: .25 }));
+            const patrol=o.target.navigationVersion===2?d.route.flatMap((p,i)=>findPath(p,d.route[(i+1)%d.route.length],infiltrationSolids(o.target),INFILTRATION_BOUNDS,DRONE_CLEARANCE)):d.route.concat([d.route[0]]);
+            const points = patrol.map(p => new THREE.Vector3(p[0], .16, p[1])), line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineDashedMaterial({ color: '#785da9', dashSize: .3, gapSize: .25 }));
             line.computeLineDistances();
             this.paths.add(line);
         }
@@ -126,7 +131,7 @@ export class InfiltrationScene {
         return; this.clock += dt; const o = this.op; advanceOperation(o, this.server + Math.min(1100, performance.now() - this.anchor)); const a = o.agent; this.agent.visible = o.status !== 'ready'; this.agent.position.set(a.position[0], .13, a.position[1]); turnScrapBot(this.agent, a.yaw, dt, this.reduced); animateScrapBot(this.agent, dt, this.reduced, 0, a.mode === 'idle' ? .015 * Math.sin(this.clock * 2) : 0); this.hackRing.visible = a.mode === 'hacking';this.beam.visible=a.mode==='hacking';if(this.beam.visible){const target=o.target.assets.find(v=>v.id===a.target)!;const positions=this.beamGeometry.attributes.position as THREE.BufferAttribute;positions.setXYZ(0,a.position[0],1.15,a.position[1]);positions.setXYZ(1,target.position[0],1.65,target.position[1]);positions.needsUpdate=true;(this.beam.material as THREE.LineBasicMaterial).opacity=this.reduced?.7:.55+Math.sin(this.clock*7)*.2;} this.hackRing.position.set(a.position[0], .13, a.position[1]); this.hackRing.scale.setScalar(this.reduced ? 1 : 1 + Math.sin(this.clock * 5) * .05); for (const d of o.drones) {
         const v = this.drones.get(d.id)!;
         v.model.position.set(d.position[0], 2.6, d.position[1]);
-        animateSecurityDrone(v.model, this.clock, this.reduced);
+        animateSecurityDrone(v.model, this.clock, this.reduced);if(d.yaw!==undefined){const delta=Math.atan2(Math.sin(d.yaw-v.model.rotation.y),Math.cos(d.yaw-v.model.rotation.y));v.model.rotation.y+=delta*(this.reduced?1:1-Math.exp(-dt*12));}
         v.scan.position.set(d.position[0], .12, d.position[1]);
         (v.scan.material as THREE.MeshBasicMaterial).color.set(d.mode === 'jammed' ? C.purple : d.mode === 'patrol' ? C.cyan : C.coral);
         v.alert.visible = d.mode === 'warning' || d.mode === 'pursuit';
@@ -139,7 +144,7 @@ export class InfiltrationScene {
         if (id === 'hq')
             animateFounderIdle(g, this.clock, this.reduced);
     } this.district.update(dt, this.host.clientWidth, this.host.clientHeight, this.reduced); this.renderer.render(this.scene, this.camera); this.renderer.domElement.dataset.drawCalls = String(this.renderer.info.render.calls); this.renderer.domElement.dataset.triangles = String(this.renderer.info.render.triangles); }
-    dispose() { this.observer.disconnect(); this.scene.traverse(o => { if (o instanceof THREE.DirectionalLight)
+    dispose() { this.walls?.dispose();this.observer.disconnect(); this.scene.traverse(o => { if (o instanceof THREE.DirectionalLight)
         o.shadow.dispose(); }); for (const v of this.drones.values()) {
         v.scan.geometry.dispose();
         (v.scan.material as THREE.Material).dispose();

@@ -1,22 +1,20 @@
+import {findPath,type NavRect} from '../../shared/navigation';
+import {hangarBay} from '../../shared/bot-presentation';
+import {footprint} from '../../shared/foundation';
+import {obstacleSize,campusSecurityWalls} from '../../shared/landscape';
 import {FOUNDATION_PLOT as P} from '../../shared/foundation-plot';
 import {decorationFootprint} from '../../shared/decoration-catalog';
 import {FOUNDATION_BUILDINGS,getHangar,buildingLayout,type FoundationState} from '../../shared/foundation';
 import {OBSTACLES} from '../../shared/campus-layout';
 export type WalkPoint=[number,number,number];
-export const bayPosition=(slot:number):WalkPoint=>[-1.46+(slot%5)*.73,.44,slot<5?-.65:.65];
+export const bayPosition=hangarBay;
 export function localPoint(position:number[],orientation:number,p:WalkPoint):WalkPoint{const a=orientation*Math.PI/2;return [position[0]+p[0]*Math.cos(a)+p[2]*Math.sin(a),p[1],position[1]-p[0]*Math.sin(a)+p[2]*Math.cos(a)];}
 /** Small presentation-only grid search, outside building footprints; never affects army logic. */
 export function dockingRoute(s:FoundationState,slot:number):WalkPoint[]{
- const f=s.fabricator,h=getHangar(s);if(!f||!h)return [];const start=localPoint(f.position,f.orientation??0,[0,-.1,2.5]),end=localPoint(h.position,h.orientation??0,[0,-.1,2.5]);
- const blocked=(x:number,z:number)=>FOUNDATION_BUILDINGS.some(kind=>{const l=buildingLayout(s,kind);if(!l)return false;let [w,d]=kind==='hq'?[9,8]:kind==='station'?[2.7,1.8]:[4,3];if(l.orientation%2)[w,d]=[d,w];const offset=kind==='hq'?localPoint(l.position,l.orientation,[0,0,.6]):[...l.position];return Math.abs(x-offset[0])<w/2+.22&&Math.abs(z-offset[kind==='hq'?2:1])<d/2+.22;})||OBSTACLES.some(o=>(o.kind==='rock'||!s.landscape&&o.kind==='tree')&&Math.abs(x-o.position[0])<o.width/2+.15&&Math.abs(z-o.position[1])<o.depth/2+.15)||(s.landscape?.items||[]).some(o=>Math.abs(x-o.position[0])<(o.kind==='tree'?2:1.5)+.15&&Math.abs(z-o.position[1])<(o.kind==='tree'?2:1.5)+.15);
- const decoratedBlocked=blocked;
- const blockedWithDecorations=(x:number,z:number)=>decoratedBlocked(x,z)||(s.decorations||[]).some(o=>{const r=decorationFootprint(o);return Math.abs(x-r.x)<r.w/2+.22&&Math.abs(z-r.z)<r.d/2+.22;});
- if(blockedWithDecorations(Math.round(start[0]),Math.round(start[2]))||blockedWithDecorations(Math.round(end[0]),Math.round(end[2])))return [];
- const key=(x:number,z:number)=>x+','+z,from=key(Math.round(start[0]),Math.round(start[2])),to=key(Math.round(end[0]),Math.round(end[2])),queue=[from],previous=new Map<string,string|null>([[from,null]]);
- for(let i=0;i<queue.length&&!previous.has(to);i++){const [x,z]=queue[i].split(',').map(Number);for(const [dx,dz] of [[1,0],[0,1],[-1,0],[0,-1]]){const a=x+dx,b=z+dz,k=key(a,b);if(a<P.minX+1||a>P.maxX-1||b<P.minZ+1||b>P.maxZ-1||previous.has(k)||blockedWithDecorations(a,b))continue;previous.set(k,queue[i]);queue.push(k);}}
- if(!previous.has(to))return [];
- const path:WalkPoint[]=[];for(let k:string|null=to;k;k=previous.get(k)??null){const [x,z]=k.split(',').map(Number);path.unshift([x,z>7.1&&z<10.9?.06:-.1,z]);}
- return [localPoint(f.position,f.orientation??0,[0,.99,.08]),start,...path,end,localPoint(h.position,h.orientation??0,bayPosition(slot))];
+ const f=s.fabricator,h=getHangar(s);if(!f||!h)return [];const expanded=h.size==='expanded',start=localPoint(f.position,f.orientation??0,[0,.05,2.5]),end=localPoint(h.position,h.orientation??0,[0,.05,expanded?3:2.5]);
+ const rects:NavRect[]=FOUNDATION_BUILDINGS.flatMap(kind=>{const l=buildingLayout(s,kind);return l?[footprint(kind,l)]:[]});for(const o of OBSTACLES.filter(o=>o.kind==='rock'||!s.landscape&&o.kind==='tree'))rects.push({x:o.position[0],z:o.position[1],w:o.width,d:o.depth});for(const o of s.landscape?.items??[]){const [w,d]=obstacleSize(o);rects.push({x:o.position[0],z:o.position[1],w,d});}for(const o of s.decorations??[])rects.push(decorationFootprint(o));rects.push(...campusSecurityWalls(s));
+ const path=findPath([start[0],start[2]],[end[0],end[2]],rects,P,.46,1);if(!path.length)return [];
+ return [localPoint(f.position,f.orientation??0,[0,.99,.08]),localPoint(f.position,f.orientation??0,[0,.43,1.45]),start,...path.slice(1).map(([x,z]):WalkPoint=>[x,z>7.1&&z<10.9?.06:.05,z]),end,localPoint(h.position,h.orientation??0,bayPosition(slot,expanded))];
 }
 export class BotArrivals{
  private previous?:{count:number;training:number[];generation:number;layout:string};

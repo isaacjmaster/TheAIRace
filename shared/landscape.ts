@@ -1,3 +1,5 @@
+import {findPath} from './navigation';
+import {hqSecurityWalls} from './security-walls';
 import {decorationFootprint} from './decoration-catalog';
 import {FOUNDATION_PLOT as P} from './foundation-plot';
 import {FOUNDATION_BUILDINGS,buildingLayout,footprint,type FoundationState,type RigPosition} from './foundation';
@@ -12,20 +14,19 @@ function rect(o:LandscapeObstacle){const [w,d]=obstacleSize(o);return {x:o.posit
 export function door(s:FoundationState,kind:typeof FOUNDATION_BUILDINGS[number]):RigPosition{
  const l=buildingLayout(s,kind)!,a=l.orientation*Math.PI/2,dist=(kind==='hq'?5.8:kind==='station'?2:3.3);return [l.position[0]+Math.sin(a)*dist,l.position[1]+Math.cos(a)*dist];
 }
+/** Leave wide entrances at every owned building's rotated approach, including older layouts. */
+export function campusSecurityWalls(s:FoundationState){return hqSecurityWalls(FOUNDATION_BUILDINGS.filter(k=>buildingLayout(s,k)).map(k=>door(s,k)));}
 /** Builder route stays inside the fence, avoids all solid footprints, and may cross the service road. */
 export function landscapeRoute(s:FoundationState,target:RigPosition,origin?:RigPosition,clearance=.3):RigPosition[]{
- const start=origin??door(s,buildingLayout(s,'station')?'station':'hq'),from=[Math.round(start[0]),Math.round(start[1])],to=[Math.round(target[0]),Math.round(target[1])];
+ const start=origin??door(s,buildingLayout(s,'station')?'station':'hq');
  const solids=FOUNDATION_BUILDINGS.map(k=>{const l=buildingLayout(s,k);return l?footprint(k,l):null;}).filter((r):r is NonNullable<typeof r>=>!!r);
+ solids.push(...campusSecurityWalls(s));
  for(const o of OBSTACLES.filter(o=>o.kind==='rock'))solids.push({x:o.position[0],z:o.position[1],w:o.width,d:o.depth});
  for(const o of s.landscape?.items||[])solids.push(rect(o));
  for(const o of s.decorations||[])solids.push(decorationFootprint(o));
  for(const [x,z] of [[-16,7],[13,7],[-16,11],[25,11]])solids.push({x,z,w:1.4,d:1.4});
- const blocked=(x:number,z:number)=>solids.some(r=>overlap({x,z,w:clearance,d:clearance},r));
- const key=(p:number[])=>p.join(','),queue=[from],previous=new Map<string,string|null>([[key(from),null]]),end=key(to);
- if(blocked(...from as RigPosition)||blocked(...to as RigPosition))return [];
- for(let i=0;i<queue.length&&!previous.has(end);i++){const p=queue[i];for(const [dx,dz] of [[1,0],[0,1],[-1,0],[0,-1]]){const q=[p[0]+dx,p[1]+dz],k=key(q);if(q[0]<P.minX+1||q[0]>P.maxX-1||q[1]<P.minZ+1||q[1]>P.maxZ-1||previous.has(k)||blocked(...q as RigPosition))continue;previous.set(k,key(p));queue.push(q);}}
- if(!previous.has(end))return [];const path:RigPosition[]=[];for(let k:string|null=end;k;k=previous.get(k)??null)path.unshift(k.split(',').map(Number) as RigPosition);
- return [...(origin?[]:[buildingLayout(s,'station')?.position??start]),start,...path,target];
+ const path=findPath(start,target,solids,{minX:P.minX+.5,maxX:P.maxX-.5,minZ:P.minZ+.5,maxZ:P.maxZ-.5},clearance/2,.5);
+ return path.length?[...(origin?[]:[buildingLayout(s,'station')?.position??start]),...path]:[];
 }
 export function validObstaclePosition(s:FoundationState,o:LandscapeObstacle){
  const a=rect(o);if(a.x-a.w/2<P.minX+1||a.x+a.w/2>P.maxX-1||a.z-a.d/2<P.minZ+1||a.z+a.d/2>P.maxZ-1||a.z+a.d/2>6.2&&a.z-a.d/2<11.8)return false;

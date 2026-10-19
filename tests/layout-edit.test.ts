@@ -16,10 +16,10 @@ function ready(){const s=initialFoundation();s.compute=500;buildRig(s,[6,0],epoc
 test('all five HQ structures move and rotate without charging, rebuilding, losing stored Compute or altering queued bots',()=>{
  const s=ready(),before=structuredClone(s);
  const moves:[RotatableBuilding,RigPosition,Orientation][]=[['hq',[-10,-11],1],['station',[-5,-1],1],['rig',[6,15],2],['fabricator',[12,15],3],['hangar',[18,15],1]];
- for(const [kind,position,orientation] of moves){moveBuilding(s,kind,position,orientation,epoch+30000);assert.deepEqual(buildingLayout(s,kind),{position,orientation});}
+ for(const [kind,position,orientation] of moves){moveBuilding(s,kind,position,orientation,epoch+30000);assert.deepEqual(buildingLayout(s,kind),{position,orientation,...(kind==='hangar'?{size:'expanded'}:{})});}
  assert.equal(s.compute,before.compute);assert.deepEqual(s.training,before.training);assert.equal(s.bots,before.bots);assert.equal(s.builders,before.builders);assert.equal(s.buildersBusy,0);
  for(const key of ['startedAt','completesAt','lastProducedAt','stored'] as const)assert.equal(s.rig![key],before.rig![key]);assert.equal(s.fabricator!.completesAt,before.fabricator!.completesAt);
- const restored=JSON.parse(JSON.stringify(s));for(const [kind,position,orientation] of moves)assert.deepEqual(buildingLayout(restored,kind),{position,orientation});
+ const restored=JSON.parse(JSON.stringify(s));for(const [kind,position,orientation] of moves)assert.deepEqual(buildingLayout(restored,kind),{position,orientation,...(kind==='hangar'?{size:'expanded'}:{})});
 });
 test('moving landmarks frees their old lots and protects the new footprint on future purchases',()=>{
  const s=initialFoundation();assert.ok(validFoundationPosition(s,[-5,-1],'rig'));moveBuilding(s,'hq',[-10,-11],0,epoch);assert.equal(validFoundationPosition(s,[-5,-1],'rig'),null);assert.ok(validFoundationPosition(s,[-10,-11],'rig'));

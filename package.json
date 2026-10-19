@@ -21,7 +21,8 @@
     "preview:decorations": "node --import tsx scripts/preview-decorations.ts",
     "preview:territory": "node --import tsx scripts/preview-territory.ts",
     "preview:plot": "node --import tsx scripts/preview-hq-plot.ts",
-    "preview:hq": "node --import tsx scripts/preview-founder-hq.ts"
+    "preview:hq": "node --import tsx scripts/preview-founder-hq.ts",
+    "preview:compound": "node --import tsx scripts/preview-compound.ts"
   },
   "dependencies": {
     "express": "^5.1.0",
