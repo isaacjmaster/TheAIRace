@@ -22,6 +22,7 @@ export const APPROVED_TRACKS={
 } as const;
 export const MUSIC_GAIN=2; // Through the unchanged .22 master: quiet .44 playback gain.
 export async function loadApprovedTrack(ctx:AudioContext,mode:MusicMode,signal:AbortSignal){
+ if(mode==='infiltration'){const response=await fetch('/audio/infiltration-heist-v1.wav',{signal,cache:'force-cache'});if(!response.ok)throw new Error('Infiltration music unavailable');const buffer=await ctx.decodeAudioData(await response.arrayBuffer());if(signal.aborted)throw new Error('Music canceled');return buffer;}
  const track=APPROVED_TRACKS[mode];let last:unknown;
  for(const url of [track.flac,track.wav]){try{const response=await fetch(url,{signal,cache:'force-cache'});if(!response.ok)throw new Error('Music unavailable');const buffer=await ctx.decodeAudioData(await response.arrayBuffer());if(signal.aborted)throw new Error('Music canceled');if(Math.abs(buffer.duration-track.seconds)>2/ctx.sampleRate)throw new Error('Incomplete music decode');return buffer;}catch(e){last=e;if(signal.aborted)throw e;}}
  throw last;

@@ -45,7 +45,7 @@ test('legacy JSON balances and rig survive additive training fields',()=>{
 });
 test('SQLite restart, concurrent requests and action retries never duplicate buildings, troops or consumed stock',async()=>{
  const dir=mkdtempSync(join(tmpdir(),'airace-bots-')),path=join(dir,'test.sqlite');let db=new DatabaseSync(path);let server:ReturnType<express.Express['listen']>;
- async function boot(){const app=express();app.use(express.json());registerFoundation(app,db);server=app.listen(0,'127.0.0.1');await new Promise<void>(r=>server.once('listening',r));return `http://127.0.0.1:${(server.address() as {port:number}).port}`;}
+ async function boot(){const app=express();app.use(express.json());registerFoundation(app,db,{legacyRaids:true});server=app.listen(0,'127.0.0.1');await new Promise<void>(r=>server.once('listening',r));return `http://127.0.0.1:${(server.address() as {port:number}).port}`;}
  const stop=()=>new Promise<void>(r=>server.close(()=>{db.close();r();}));let url=await boot();
  try{const first=await fetch(url+'/api/foundation');const cookie=first.headers.get('set-cookie')!.split(';')[0],id=saveIdForCookie(db,cookie);
  const read=()=>JSON.parse(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(id)!.state as string) as FoundationState;
