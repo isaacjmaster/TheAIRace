@@ -1,3 +1,17 @@
+# Stylized organic cloud reveal
+
+The current intro uses three original code-native SVG mist islands (`public/textures/intro/stylized-mist-{1,2,3}.svg`). Rounded irregular silhouettes, cream highlights and pastel cyan shading match the low-poly campus. These are deliberately simple stylized shapes, with no photographic textures or runtime image-generation dependency.
+
+Ten overlapping compositor layers follow independent curved trajectories: upward, diagonal, sideways and downward, with restrained rotation, spreading and thinning. There are no mirrored full-height banks, reveal masks, straight split seams or curtain wipe. Three depth groups progress at different rates over 6.6 seconds. Static SVG shading is reused; only transform and opacity animate. No additional WebGL draw calls, volumetric passes, particles or per-frame noise are introduced.
+
+Existing once-only server claim, new/reset-company gating, interrupted-intro recovery, reduced-motion bypass and hidden Skip during the cloud-only portion are preserved. Founder HQ camera framing and the rest of onboarding remain unchanged.
+
+The older WebP banks below remain available for historical reference/reversion but are no longer loaded by the intro.
+
+---
+
+## Previous asset provenance (retired)
+
 # Cloud reveal assets
 
 The foreground cloud bank was generated using the built-in imagegen tool. Its transparent alpha is preserved in `public/textures/intro/cloud-bank-v1.webp` (1024x1536, WebP quality 90). The original generation output remains under Codex generated_images; the application references only the asset copied into this repository.

@@ -22,7 +22,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
  const readAva=(id:string):AvaProgress=>{const row=db.prepare('SELECT progress FROM foundation_ava WHERE session=?').get(id);return row?JSON.parse(row.progress as string):legacyAva();};
  const saveAva=(id:string,p:AvaProgress)=>db.prepare('INSERT INTO foundation_ava VALUES(?,?) ON CONFLICT(session) DO UPDATE SET progress=excluded.progress').run(id,JSON.stringify(p));
  const observeAva=(id:string,state:FoundationState,now:number)=>{const old=readAva(id),next=reconcileAva(old,state,now);if(next.revision!==old.revision)saveAva(id,next);return next;};
- const identities=identityStore(db,options.cookieName);
+ const identities=identityStore(db,options.cookieName,options.clock);
  registerIdentity(app,db,identities);
  const influence=influenceStore(db),infiltrations=infiltrationStore(db),clock=options.clock??Date.now,xp=companyXPStore(db,clock());
  function session(req:express.Request,res:express.Response){

@@ -11,3 +11,12 @@
 @media(max-width:350px){.ava-dialogue.ava-naming .ava-copy{margin-left:100px}.ava-dialogue.ava-naming .ava-character{left:-20px;width:170px;height:255px}}
 @media(max-height:650px){.ava-dialogue.ava-naming{top:112px;bottom:130px;min-height:0;align-items:stretch}.ava-dialogue.ava-naming .ava-copy{overflow-y:auto;max-height:100%;box-sizing:border-box}}
 .connection-error button{background:#eefaf4;color:#244e62;border:1px solid #8bbbc2;border-radius:12px;padding:10px 12px;min-height:44px;margin:4px;font:inherit;font-size:13px;touch-action:manipulation}
+
+.username-label{display:flex!important;align-items:baseline;gap:.18em;min-width:0;font-family:Rajdhani,Eurostile,"Trebuchet MS",sans-serif;font-weight:900;letter-spacing:.015em;line-height:1.2}
+.username-label .username-hash{font:700 .66em/1 sans-serif;color:#819198;flex:none;opacity:.9}
+.username-label .username-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;font-size:inherit;font-weight:900}
+.username-panel{display:grid;gap:16px}.username-panel>.username-label{font-size:28px}.username-form{gap:12px}.username-form input{font-size:19px;font-weight:750;min-height:52px}.username-form button,.username-panel>button{min-height:50px;width:100%;font-size:18px}.username-form label{font-size:16px}.username-cooldown{font-weight:800}.username-success{color:#178573;font-weight:800}.company-profile button:disabled{opacity:.5;cursor:default}
+.leaderboard li>.username-label,.leaderboard footer>.username-label{overflow:hidden}.leaderboard .username-hash{font-size:.66em}.company-profile-name .username-text{font-size:inherit}
+
+.foundation-app .username-form .primary,.foundation-app .username-panel>.primary{background:linear-gradient(#a9eee2,#7bd6cc);color:#193c52;border:1px solid #58aab0;box-shadow:0 4px #4a8d9a}
+.foundation-app .username-form .primary:active:not(:disabled){transform:translateY(2px);box-shadow:0 2px #4a8d9a}

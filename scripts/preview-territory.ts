@@ -10,7 +10,7 @@ const server=app.listen(3040,'0.0.0.0',async()=>{try{
  const response=await fetch('http://127.0.0.1:3040/api/foundation'),data=await response.json();previewCookie=response.headers.get('set-cookie')!;const cookie=previewCookie.split(';')[0],row=db.prepare('SELECT save_id FROM company_players WHERE id=?').get(data.company.playerId)!;
  const now=Date.now(),state=data.state;Object.assign(state,{compute:650,builders:1,starterStation:'placed',stationLayout:{position:[3,5],orientation:0},rig:{position:[6,0],orientation:0,startedAt:now-30000,completesAt:now-15000,lastProducedAt:now,stored:0}});
  db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(state),row.save_id as string);db.prepare('UPDATE foundation_ava SET progress=? WHERE session=?').run(JSON.stringify({status:'legacy',step:16,revision:0,collected:false}),row.save_id as string);
- await fetch('http://127.0.0.1:3040/api/foundation/company/name',{method:'POST',headers:{cookie,'Content-Type':'application/json','X-Company-ID':data.company.playerId},body:JSON.stringify({name:'Upgrade Preview '+Date.now().toString().slice(-5)})});
+ await fetch('http://127.0.0.1:3040/api/foundation/company/username',{method:'POST',headers:{cookie,'Content-Type':'application/json','X-Company-ID':data.company.playerId},body:JSON.stringify({name:'Upgrade Preview '+Date.now().toString().slice(-5)})});
  console.log('Isolated territory preview: http://192.168.1.40:3040/territory-preview');
  }catch(e){console.error('Preview setup failed:',(e as Error).message);server.close();}});
 process.on('SIGTERM',()=>server.close(()=>db.close()));
