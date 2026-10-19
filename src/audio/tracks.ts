@@ -2,14 +2,14 @@ import type {MusicMode} from './score';
 /** Approved lossless masters. PCM fallback protects browsers with missing FLAC decoders. */
 export const APPROVED_TRACKS={
   "hq": {
-    "flac": "/audio/hq-approved-bb235848ed58.flac",
-    "wav": "/audio/hq-approved-bb235848ed58.wav",
-    "sha256Wav": "bb235848ed58ca803d09cb549028f23a41bdacb63d5391f3c1c5bd24c1acb7a5",
-    "frames": 1645714,
+    "flac": "/audio/hq-campus-aa9fc1f29160.flac",
+    "wav": "/audio/hq-campus-aa9fc1f29160.wav",
+    "sha256Wav": "aa9fc1f29160c00df2989c495f95efd62ec81e0ef5084c7c1c14015e0823119c",
+    "frames": 1920000,
     "sampleRate": 48000,
-    "seconds": 34.28570833333333,
-    "compressedBytes": 1934077
-  },
+    "seconds": 40.0,
+    "compressedBytes": 1977798
+},
   "raid": {
     "flac": "/audio/raid-approved-ab2683c155eb.flac",
     "wav": "/audio/raid-approved-ab2683c155eb.wav",

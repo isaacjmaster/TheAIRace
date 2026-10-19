@@ -1,3 +1,4 @@
+import {purchaseDecoration,moveDecoration,removeDecoration} from '../shared/decorations';
 import {companyXPStore} from './company-xp';
 import {ensureLandscape,clearObstacle} from '../shared/landscape';
 import {influenceStore} from './influence';
@@ -80,6 +81,9 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   }catch(e){db.exec('ROLLBACK');res.status(400).json({error:(e as Error).message});}
  });
  const botAction=z.discriminatedUnion('action',[
+  z.object({action:z.literal('buy-decoration'),kind:z.enum(['ornamental','cypress','flowers','planter']),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('move-decoration'),id:z.string().uuid(),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('remove-decoration'),id:z.string().uuid()}).strict(),
   z.object({action:z.literal('upgrade-hq')}).strict(),
   z.object({action:z.literal('establish-station'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('clear-obstacle'),obstacleId:z.string().min(1).max(100)}).strict(),
@@ -103,7 +107,10 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
    if(cached&&cached.payload!==payload)throw new Error('Request already used for another action.');
    ensureLandscape(state,now,randomUUID());advanceFoundation(state,now);influence.settle(player.company.playerId,state,now);xp.settle(player.company.playerId,state,now);
    if(!cached){const c=input.command;
-    if(c.action==='upgrade-hq')upgradeFounderHQ(state,now,input.requestId);
+    if(c.action==='buy-decoration')purchaseDecoration(state,c.kind,c.position,c.orientation,input.requestId);
+    else if(c.action==='move-decoration')moveDecoration(state,c.id,c.position,c.orientation);
+    else if(c.action==='remove-decoration')removeDecoration(state,c.id);
+    else if(c.action==='upgrade-hq')upgradeFounderHQ(state,now,input.requestId);
     else if(c.action==='establish-station')establishBuilderStation(state,c.position,c.orientation);
     else if(c.action==='clear-obstacle')clearObstacle(state,c.obstacleId,now);
     else if(c.action==='build')buildFabricator(state,c.position,now,c.orientation);

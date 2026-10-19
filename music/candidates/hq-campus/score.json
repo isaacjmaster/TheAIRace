@@ -1,0 +1,2286 @@
+{
+  "chords": [
+    [
+      41,
+      57,
+      60,
+      64,
+      67
+    ],
+    [
+      48,
+      55,
+      60,
+      64,
+      69
+    ],
+    [
+      38,
+      57,
+      60,
+      65,
+      69
+    ],
+    [
+      46,
+      53,
+      57,
+      60,
+      65
+    ],
+    [
+      41,
+      57,
+      60,
+      64,
+      67
+    ],
+    [
+      45,
+      57,
+      60,
+      64,
+      67
+    ],
+    [
+      43,
+      55,
+      58,
+      62,
+      65
+    ],
+    [
+      48,
+      55,
+      58,
+      62,
+      67
+    ],
+    [
+      46,
+      53,
+      57,
+      60,
+      65
+    ],
+    [
+      41,
+      53,
+      57,
+      60,
+      64
+    ],
+    [
+      43,
+      55,
+      58,
+      62,
+      65
+    ],
+    [
+      48,
+      55,
+      58,
+      62,
+      69
+    ],
+    [
+      38,
+      57,
+      60,
+      65,
+      69
+    ],
+    [
+      46,
+      53,
+      57,
+      60,
+      65
+    ],
+    [
+      48,
+      55,
+      58,
+      62,
+      67
+    ],
+    [
+      41,
+      57,
+      60,
+      64,
+      67
+    ]
+  ],
+  "melody": [
+    [
+      [
+        0.25,
+        69,
+        0.55
+      ],
+      [
+        1,
+        72,
+        0.4
+      ],
+      [
+        1.75,
+        74,
+        0.6
+      ],
+      [
+        3,
+        72,
+        0.55
+      ]
+    ],
+    [
+      [
+        0.5,
+        67,
+        0.6
+      ],
+      [
+        1.5,
+        69,
+        0.4
+      ],
+      [
+        2.25,
+        72,
+        0.75
+      ]
+    ],
+    [
+      [
+        0.25,
+        69,
+        0.5
+      ],
+      [
+        1,
+        65,
+        0.6
+      ],
+      [
+        2,
+        64,
+        0.4
+      ],
+      [
+        2.75,
+        65,
+        0.65
+      ]
+    ],
+    [
+      [
+        0.5,
+        67,
+        0.55
+      ],
+      [
+        1.5,
+        65,
+        0.5
+      ],
+      [
+        2.5,
+        62,
+        0.75
+      ]
+    ],
+    [
+      [
+        0.25,
+        69,
+        0.55
+      ],
+      [
+        1,
+        72,
+        0.4
+      ],
+      [
+        1.75,
+        74,
+        0.55
+      ],
+      [
+        2.75,
+        76,
+        0.5
+      ],
+      [
+        3.5,
+        72,
+        0.3
+      ]
+    ],
+    [
+      [
+        0.5,
+        69,
+        0.6
+      ],
+      [
+        1.5,
+        67,
+        0.5
+      ],
+      [
+        2.5,
+        64,
+        0.7
+      ]
+    ],
+    [
+      [
+        0.5,
+        65,
+        0.55
+      ],
+      [
+        1.5,
+        69,
+        0.4
+      ],
+      [
+        2.25,
+        67,
+        0.7
+      ]
+    ],
+    [
+      [
+        0.25,
+        64,
+        0.5
+      ],
+      [
+        1,
+        62,
+        0.6
+      ],
+      [
+        2.5,
+        60,
+        0.8
+      ]
+    ],
+    [
+      [
+        0.5,
+        65,
+        0.9
+      ],
+      [
+        2,
+        69,
+        0.55
+      ],
+      [
+        3,
+        67,
+        0.5
+      ]
+    ],
+    [
+      [
+        0.25,
+        64,
+        0.7
+      ],
+      [
+        1.5,
+        65,
+        0.5
+      ],
+      [
+        2.75,
+        60,
+        0.7
+      ]
+    ],
+    [
+      [
+        0.5,
+        62,
+        0.6
+      ],
+      [
+        1.5,
+        65,
+        0.65
+      ],
+      [
+        3,
+        69,
+        0.55
+      ]
+    ],
+    [
+      [
+        0.25,
+        67,
+        0.65
+      ],
+      [
+        1.5,
+        64,
+        0.55
+      ],
+      [
+        2.75,
+        62,
+        0.6
+      ]
+    ],
+    [
+      [
+        0.25,
+        69,
+        0.55
+      ],
+      [
+        1,
+        72,
+        0.4
+      ],
+      [
+        1.75,
+        74,
+        0.7
+      ],
+      [
+        3,
+        72,
+        0.5
+      ]
+    ],
+    [
+      [
+        0.5,
+        70,
+        0.55
+      ],
+      [
+        1.5,
+        69,
+        0.6
+      ],
+      [
+        2.75,
+        65,
+        0.7
+      ]
+    ],
+    [
+      [
+        0.25,
+        67,
+        0.55
+      ],
+      [
+        1.25,
+        64,
+        0.5
+      ],
+      [
+        2.25,
+        62,
+        0.6
+      ],
+      [
+        3.25,
+        60,
+        0.35
+      ]
+    ],
+    [
+      [
+        0.25,
+        65,
+        0.8
+      ],
+      [
+        1.75,
+        69,
+        0.5
+      ],
+      [
+        2.75,
+        67,
+        0.4
+      ]
+    ]
+  ],
+  "events": [
+    {
+      "stem": "keys",
+      "beat": 0.04,
+      "midi": 57,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 0.065,
+      "midi": 60,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 0.09,
+      "midi": 64,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 0.11500000000000002,
+      "midi": 67,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "pad",
+      "beat": 0.08,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 0.08,
+      "midi": 60,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 0.08,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 0.25,
+      "midi": 69,
+      "durationBeats": 0.55,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "detail",
+      "beat": 0.27,
+      "midi": 57,
+      "durationBeats": 0.55,
+      "instrument": "piano",
+      "volume": 0.048
+    },
+    {
+      "stem": "lead",
+      "beat": 1,
+      "midi": 72,
+      "durationBeats": 0.4,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 1.75,
+      "midi": 74,
+      "durationBeats": 0.6,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 3,
+      "midi": 72,
+      "durationBeats": 0.55,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "bass",
+      "beat": 0,
+      "midi": 41,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "bass",
+      "beat": 2.25,
+      "midi": 41,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "keys",
+      "beat": 4.04,
+      "midi": 55,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 4.065,
+      "midi": 60,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 4.09,
+      "midi": 64,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 4.115,
+      "midi": 69,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "pad",
+      "beat": 4.08,
+      "midi": 55,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 4.08,
+      "midi": 60,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 4.08,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 4.5,
+      "midi": 67,
+      "durationBeats": 0.6,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "detail",
+      "beat": 4.52,
+      "midi": 55,
+      "durationBeats": 0.6,
+      "instrument": "piano",
+      "volume": 0.048
+    },
+    {
+      "stem": "lead",
+      "beat": 5.5,
+      "midi": 69,
+      "durationBeats": 0.4,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 6.25,
+      "midi": 72,
+      "durationBeats": 0.75,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "bass",
+      "beat": 4,
+      "midi": 48,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "bass",
+      "beat": 6.25,
+      "midi": 48,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "arp",
+      "beat": 6.75,
+      "midi": 72,
+      "durationBeats": 0.26,
+      "instrument": "keys",
+      "volume": 0.028
+    },
+    {
+      "stem": "arp",
+      "beat": 7.5,
+      "midi": 76,
+      "durationBeats": 0.26,
+      "instrument": "keys",
+      "volume": 0.028
+    },
+    {
+      "stem": "keys",
+      "beat": 8.04,
+      "midi": 57,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 8.065,
+      "midi": 60,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 8.09,
+      "midi": 65,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 8.114999999999998,
+      "midi": 69,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "pad",
+      "beat": 8.08,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 8.08,
+      "midi": 60,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 8.08,
+      "midi": 65,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 8.25,
+      "midi": 69,
+      "durationBeats": 0.5,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "detail",
+      "beat": 8.27,
+      "midi": 57,
+      "durationBeats": 0.5,
+      "instrument": "piano",
+      "volume": 0.048
+    },
+    {
+      "stem": "lead",
+      "beat": 9,
+      "midi": 65,
+      "durationBeats": 0.6,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 10,
+      "midi": 64,
+      "durationBeats": 0.4,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 10.75,
+      "midi": 65,
+      "durationBeats": 0.65,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "bass",
+      "beat": 8,
+      "midi": 38,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "bass",
+      "beat": 10.25,
+      "midi": 38,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "keys",
+      "beat": 12.04,
+      "midi": 53,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 12.065,
+      "midi": 57,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 12.09,
+      "midi": 60,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 12.114999999999998,
+      "midi": 65,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "pad",
+      "beat": 12.08,
+      "midi": 53,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 12.08,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 12.08,
+      "midi": 60,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 12.5,
+      "midi": 67,
+      "durationBeats": 0.55,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "detail",
+      "beat": 12.52,
+      "midi": 55,
+      "durationBeats": 0.55,
+      "instrument": "piano",
+      "volume": 0.048
+    },
+    {
+      "stem": "lead",
+      "beat": 13.5,
+      "midi": 65,
+      "durationBeats": 0.5,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 14.5,
+      "midi": 62,
+      "durationBeats": 0.75,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "bass",
+      "beat": 12,
+      "midi": 46,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "bass",
+      "beat": 14.25,
+      "midi": 46,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "arp",
+      "beat": 14.75,
+      "midi": 69,
+      "durationBeats": 0.26,
+      "instrument": "keys",
+      "volume": 0.028
+    },
+    {
+      "stem": "arp",
+      "beat": 15.5,
+      "midi": 72,
+      "durationBeats": 0.26,
+      "instrument": "keys",
+      "volume": 0.028
+    },
+    {
+      "stem": "detail",
+      "beat": 15.5,
+      "midi": 72,
+      "durationBeats": 0.2,
+      "instrument": "keys",
+      "volume": 0.035
+    },
+    {
+      "stem": "keys",
+      "beat": 16.04,
+      "midi": 57,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 16.064999999999998,
+      "midi": 60,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 16.09,
+      "midi": 64,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 16.115,
+      "midi": 67,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "pad",
+      "beat": 16.08,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 16.08,
+      "midi": 60,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 16.08,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 16.25,
+      "midi": 69,
+      "durationBeats": 0.55,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "detail",
+      "beat": 16.27,
+      "midi": 57,
+      "durationBeats": 0.55,
+      "instrument": "piano",
+      "volume": 0.048
+    },
+    {
+      "stem": "lead",
+      "beat": 17,
+      "midi": 72,
+      "durationBeats": 0.4,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 17.75,
+      "midi": 74,
+      "durationBeats": 0.55,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 18.75,
+      "midi": 76,
+      "durationBeats": 0.5,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 19.5,
+      "midi": 72,
+      "durationBeats": 0.3,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "bass",
+      "beat": 16,
+      "midi": 41,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "bass",
+      "beat": 18.25,
+      "midi": 41,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "keys",
+      "beat": 20.04,
+      "midi": 57,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 20.064999999999998,
+      "midi": 60,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 20.09,
+      "midi": 64,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 20.115,
+      "midi": 67,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "pad",
+      "beat": 20.08,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 20.08,
+      "midi": 60,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 20.08,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 20.5,
+      "midi": 69,
+      "durationBeats": 0.6,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "detail",
+      "beat": 20.52,
+      "midi": 57,
+      "durationBeats": 0.6,
+      "instrument": "piano",
+      "volume": 0.048
+    },
+    {
+      "stem": "lead",
+      "beat": 21.5,
+      "midi": 67,
+      "durationBeats": 0.5,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 22.5,
+      "midi": 64,
+      "durationBeats": 0.7,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "bass",
+      "beat": 20,
+      "midi": 45,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "bass",
+      "beat": 22.25,
+      "midi": 45,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "arp",
+      "beat": 22.75,
+      "midi": 72,
+      "durationBeats": 0.26,
+      "instrument": "keys",
+      "volume": 0.028
+    },
+    {
+      "stem": "arp",
+      "beat": 23.5,
+      "midi": 76,
+      "durationBeats": 0.26,
+      "instrument": "keys",
+      "volume": 0.028
+    },
+    {
+      "stem": "keys",
+      "beat": 24.04,
+      "midi": 55,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 24.064999999999998,
+      "midi": 58,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 24.09,
+      "midi": 62,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 24.115,
+      "midi": 65,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "pad",
+      "beat": 24.08,
+      "midi": 55,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 24.08,
+      "midi": 58,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 24.08,
+      "midi": 62,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 24.5,
+      "midi": 65,
+      "durationBeats": 0.55,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "detail",
+      "beat": 24.52,
+      "midi": 53,
+      "durationBeats": 0.55,
+      "instrument": "piano",
+      "volume": 0.048
+    },
+    {
+      "stem": "lead",
+      "beat": 25.5,
+      "midi": 69,
+      "durationBeats": 0.4,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 26.25,
+      "midi": 67,
+      "durationBeats": 0.7,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "bass",
+      "beat": 24,
+      "midi": 43,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "bass",
+      "beat": 26.25,
+      "midi": 43,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "keys",
+      "beat": 28.04,
+      "midi": 55,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 28.064999999999998,
+      "midi": 58,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 28.09,
+      "midi": 62,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 28.115,
+      "midi": 67,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "pad",
+      "beat": 28.08,
+      "midi": 55,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 28.08,
+      "midi": 58,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 28.08,
+      "midi": 62,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 28.25,
+      "midi": 64,
+      "durationBeats": 0.5,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "detail",
+      "beat": 28.27,
+      "midi": 52,
+      "durationBeats": 0.5,
+      "instrument": "piano",
+      "volume": 0.048
+    },
+    {
+      "stem": "lead",
+      "beat": 29,
+      "midi": 62,
+      "durationBeats": 0.6,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 30.5,
+      "midi": 60,
+      "durationBeats": 0.8,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "bass",
+      "beat": 28,
+      "midi": 48,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "bass",
+      "beat": 30.25,
+      "midi": 48,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "arp",
+      "beat": 30.75,
+      "midi": 70,
+      "durationBeats": 0.26,
+      "instrument": "keys",
+      "volume": 0.028
+    },
+    {
+      "stem": "arp",
+      "beat": 31.5,
+      "midi": 74,
+      "durationBeats": 0.26,
+      "instrument": "keys",
+      "volume": 0.028
+    },
+    {
+      "stem": "detail",
+      "beat": 31.5,
+      "midi": 74,
+      "durationBeats": 0.2,
+      "instrument": "keys",
+      "volume": 0.035
+    },
+    {
+      "stem": "keys",
+      "beat": 32.04,
+      "midi": 53,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 32.065,
+      "midi": 57,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 32.089999999999996,
+      "midi": 60,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 32.115,
+      "midi": 65,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "pad",
+      "beat": 32.08,
+      "midi": 53,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 32.08,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 32.08,
+      "midi": 60,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 32.5,
+      "midi": 65,
+      "durationBeats": 0.9,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "detail",
+      "beat": 32.52,
+      "midi": 53,
+      "durationBeats": 0.9,
+      "instrument": "piano",
+      "volume": 0.048
+    },
+    {
+      "stem": "lead",
+      "beat": 34,
+      "midi": 69,
+      "durationBeats": 0.55,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 35,
+      "midi": 67,
+      "durationBeats": 0.5,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "bass",
+      "beat": 32,
+      "midi": 46,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "bass",
+      "beat": 34.25,
+      "midi": 46,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "keys",
+      "beat": 36.04,
+      "midi": 53,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 36.065,
+      "midi": 57,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 36.089999999999996,
+      "midi": 60,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 36.115,
+      "midi": 64,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "pad",
+      "beat": 36.08,
+      "midi": 53,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 36.08,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 36.08,
+      "midi": 60,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 36.25,
+      "midi": 64,
+      "durationBeats": 0.7,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "detail",
+      "beat": 36.27,
+      "midi": 52,
+      "durationBeats": 0.7,
+      "instrument": "piano",
+      "volume": 0.048
+    },
+    {
+      "stem": "lead",
+      "beat": 37.5,
+      "midi": 65,
+      "durationBeats": 0.5,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 38.75,
+      "midi": 60,
+      "durationBeats": 0.7,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "bass",
+      "beat": 36,
+      "midi": 41,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "bass",
+      "beat": 38.25,
+      "midi": 41,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "arp",
+      "beat": 38.75,
+      "midi": 69,
+      "durationBeats": 0.26,
+      "instrument": "keys",
+      "volume": 0.028
+    },
+    {
+      "stem": "arp",
+      "beat": 39.5,
+      "midi": 72,
+      "durationBeats": 0.26,
+      "instrument": "keys",
+      "volume": 0.028
+    },
+    {
+      "stem": "keys",
+      "beat": 40.04,
+      "midi": 55,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 40.065,
+      "midi": 58,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 40.089999999999996,
+      "midi": 62,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 40.115,
+      "midi": 65,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "pad",
+      "beat": 40.08,
+      "midi": 55,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 40.08,
+      "midi": 58,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 40.08,
+      "midi": 62,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 40.5,
+      "midi": 62,
+      "durationBeats": 0.6,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "detail",
+      "beat": 40.52,
+      "midi": 50,
+      "durationBeats": 0.6,
+      "instrument": "piano",
+      "volume": 0.048
+    },
+    {
+      "stem": "lead",
+      "beat": 41.5,
+      "midi": 65,
+      "durationBeats": 0.65,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 43,
+      "midi": 69,
+      "durationBeats": 0.55,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "bass",
+      "beat": 40,
+      "midi": 43,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "bass",
+      "beat": 42.25,
+      "midi": 43,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "keys",
+      "beat": 44.04,
+      "midi": 55,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 44.065,
+      "midi": 58,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 44.089999999999996,
+      "midi": 62,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 44.115,
+      "midi": 69,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "pad",
+      "beat": 44.08,
+      "midi": 55,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 44.08,
+      "midi": 58,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 44.08,
+      "midi": 62,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 44.25,
+      "midi": 67,
+      "durationBeats": 0.65,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "detail",
+      "beat": 44.27,
+      "midi": 55,
+      "durationBeats": 0.65,
+      "instrument": "piano",
+      "volume": 0.048
+    },
+    {
+      "stem": "lead",
+      "beat": 45.5,
+      "midi": 64,
+      "durationBeats": 0.55,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 46.75,
+      "midi": 62,
+      "durationBeats": 0.6,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "bass",
+      "beat": 44,
+      "midi": 48,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "bass",
+      "beat": 46.25,
+      "midi": 48,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "arp",
+      "beat": 46.75,
+      "midi": 70,
+      "durationBeats": 0.26,
+      "instrument": "keys",
+      "volume": 0.028
+    },
+    {
+      "stem": "arp",
+      "beat": 47.5,
+      "midi": 74,
+      "durationBeats": 0.26,
+      "instrument": "keys",
+      "volume": 0.028
+    },
+    {
+      "stem": "detail",
+      "beat": 47.5,
+      "midi": 74,
+      "durationBeats": 0.2,
+      "instrument": "keys",
+      "volume": 0.035
+    },
+    {
+      "stem": "keys",
+      "beat": 48.04,
+      "midi": 57,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 48.065,
+      "midi": 60,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 48.089999999999996,
+      "midi": 65,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 48.115,
+      "midi": 69,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "pad",
+      "beat": 48.08,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 48.08,
+      "midi": 60,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 48.08,
+      "midi": 65,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 48.25,
+      "midi": 69,
+      "durationBeats": 0.55,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "detail",
+      "beat": 48.27,
+      "midi": 57,
+      "durationBeats": 0.55,
+      "instrument": "piano",
+      "volume": 0.048
+    },
+    {
+      "stem": "lead",
+      "beat": 49,
+      "midi": 72,
+      "durationBeats": 0.4,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 49.75,
+      "midi": 74,
+      "durationBeats": 0.7,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 51,
+      "midi": 72,
+      "durationBeats": 0.5,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "bass",
+      "beat": 48,
+      "midi": 38,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "bass",
+      "beat": 50.25,
+      "midi": 38,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "keys",
+      "beat": 52.04,
+      "midi": 53,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 52.065,
+      "midi": 57,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 52.089999999999996,
+      "midi": 60,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 52.115,
+      "midi": 65,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "pad",
+      "beat": 52.08,
+      "midi": 53,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 52.08,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 52.08,
+      "midi": 60,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 52.5,
+      "midi": 70,
+      "durationBeats": 0.55,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "detail",
+      "beat": 52.52,
+      "midi": 58,
+      "durationBeats": 0.55,
+      "instrument": "piano",
+      "volume": 0.048
+    },
+    {
+      "stem": "lead",
+      "beat": 53.5,
+      "midi": 69,
+      "durationBeats": 0.6,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 54.75,
+      "midi": 65,
+      "durationBeats": 0.7,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "bass",
+      "beat": 52,
+      "midi": 46,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "bass",
+      "beat": 54.25,
+      "midi": 46,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "arp",
+      "beat": 54.75,
+      "midi": 69,
+      "durationBeats": 0.26,
+      "instrument": "keys",
+      "volume": 0.028
+    },
+    {
+      "stem": "arp",
+      "beat": 55.5,
+      "midi": 72,
+      "durationBeats": 0.26,
+      "instrument": "keys",
+      "volume": 0.028
+    },
+    {
+      "stem": "keys",
+      "beat": 56.04,
+      "midi": 55,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 56.065,
+      "midi": 58,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 56.089999999999996,
+      "midi": 62,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 56.115,
+      "midi": 67,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "pad",
+      "beat": 56.08,
+      "midi": 55,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 56.08,
+      "midi": 58,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 56.08,
+      "midi": 62,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 56.25,
+      "midi": 67,
+      "durationBeats": 0.55,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "detail",
+      "beat": 56.27,
+      "midi": 55,
+      "durationBeats": 0.55,
+      "instrument": "piano",
+      "volume": 0.048
+    },
+    {
+      "stem": "lead",
+      "beat": 57.25,
+      "midi": 64,
+      "durationBeats": 0.5,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 58.25,
+      "midi": 62,
+      "durationBeats": 0.6,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 59.25,
+      "midi": 60,
+      "durationBeats": 0.35,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "bass",
+      "beat": 56,
+      "midi": 48,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "bass",
+      "beat": 58.25,
+      "midi": 48,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "keys",
+      "beat": 60.04,
+      "midi": 57,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 60.065,
+      "midi": 60,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 60.089999999999996,
+      "midi": 64,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "keys",
+      "beat": 60.115,
+      "midi": 67,
+      "durationBeats": 2.8,
+      "instrument": "piano",
+      "volume": 0.07
+    },
+    {
+      "stem": "pad",
+      "beat": 60.08,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 60.08,
+      "midi": 60,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "pad",
+      "beat": 60.08,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "volume": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 60.25,
+      "midi": 65,
+      "durationBeats": 0.8,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "detail",
+      "beat": 60.27,
+      "midi": 53,
+      "durationBeats": 0.8,
+      "instrument": "piano",
+      "volume": 0.048
+    },
+    {
+      "stem": "lead",
+      "beat": 61.75,
+      "midi": 69,
+      "durationBeats": 0.5,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "lead",
+      "beat": 62.75,
+      "midi": 67,
+      "durationBeats": 0.4,
+      "instrument": "CC0 marimba",
+      "volume": 0.22
+    },
+    {
+      "stem": "bass",
+      "beat": 60,
+      "midi": 41,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "bass",
+      "beat": 62.25,
+      "midi": 41,
+      "durationBeats": 1.35,
+      "instrument": "bass",
+      "volume": 0.085
+    },
+    {
+      "stem": "arp",
+      "beat": 62.75,
+      "midi": 72,
+      "durationBeats": 0.26,
+      "instrument": "keys",
+      "volume": 0.028
+    },
+    {
+      "stem": "arp",
+      "beat": 63.5,
+      "midi": 76,
+      "durationBeats": 0.26,
+      "instrument": "keys",
+      "volume": 0.028
+    }
+  ]
+}

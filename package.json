@@ -16,6 +16,7 @@
     "preview:combat": "node --import tsx scripts/preview-combat.ts",
     "preview:identity": "node --import tsx scripts/preview-identity.ts",
     "preview:district": "node --import tsx scripts/preview-district.ts",
+    "preview:decorations": "node --import tsx scripts/preview-decorations.ts",
     "preview:territory": "node --import tsx scripts/preview-territory.ts",
     "preview:plot": "node --import tsx scripts/preview-hq-plot.ts",
     "preview:hq": "node --import tsx scripts/preview-founder-hq.ts"
