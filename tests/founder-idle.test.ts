@@ -1,16 +1,17 @@
 import test from 'node:test';import assert from 'node:assert/strict';import * as THREE from 'three';
 import {WorldKit} from '../src/art/world';import {founderHQ,animateFounderIdle} from '../src/art/FounderHQ';
-test('both HQ levels retain animated founder joints after campus batching, rest between bursts and respect reduced motion',()=>{
- for(const level of [1,2] as const){const k=new WorldKit('campus'),parent=new THREE.Group(),house=founderHQ(k,parent,level);try{
- const left=house.getObjectByName('founder-left-arm')!,right=house.getObjectByName('founder-right-arm')!,head=house.getObjectByName('founder-head')!;
- assert.ok(left&&right&&head);assert.equal(left.children.length,2);
- const placement=house.position.clone(),size=house.scale.clone(),count=house.children.length;
- animateFounderIdle(house,2);assert.equal(left.rotation.x,0);assert.equal(right.rotation.x,0);
- animateFounderIdle(house,4.7);assert.ok(Math.abs(left.rotation.x-right.rotation.x)>.02);assert.ok(head.rotation.x>0);
- const pose=left.rotation.x;animateFounderIdle(house,13.7);assert.ok(Math.abs(left.rotation.x-pose)<1e-10);
- animateFounderIdle(house,4.7,true);assert.equal(left.rotation.x,0);assert.equal(right.rotation.x,0);assert.equal(head.rotation.x,0);
- animateFounderIdle(house,6);assert.equal(left.rotation.x,0);assert.deepEqual(house.position,placement);assert.deepEqual(house.scale,size);assert.equal(house.children.length,count);
- // Eased boundaries return to the seated pose without snapping.
- animateFounderIdle(house,4.001);assert.ok(Math.abs(left.rotation.x)<.00001);animateFounderIdle(house,5.999);assert.ok(Math.abs(left.rotation.x)<.00001);
- }finally{k.dispose();}}
-});
+test('both HQ levels type occasionally with hands entirely behind the laptop lid, then sip and replace coffee smoothly',()=>{for(const level of [1,2] as const){const k=new WorldKit('campus'),house=founderHQ(k,new THREE.Group(),level);try{const founder=house.getObjectByName('Founder at laptop')!,left=house.getObjectByName('founder-left-hand')!,right=house.getObjectByName('founder-right-hand')!,mug=house.getObjectByName('founder-coffee')!,steam=house.getObjectByName('founder-steam')!,screen=house.getObjectByName('founder-laptop-screen')!;
+ animateFounderIdle(house,0);const rest=right.position.clone(),cup=mug.position.clone(),count=house.children.length;
+ animateFounderIdle(house,4.7);assert.notEqual(left.position.y,right.position.y);assert.ok(right.position.y>=rest.y);
+ for(let t=0;t<36;t+=.08){animateFounderIdle(house,t);house.updateMatrixWorld(true);const lidBox=new THREE.Box3().setFromObject(screen);for(const hand of [left,right]){const box=new THREE.Box3().setFromObject(hand);assert.ok(!box.intersectsBox(lidBox),`hand intersects laptop at ${t}`);}assert.equal(house.children.length,count);}
+ animateFounderIdle(house,30.5);assert.ok(mug.position.y>cup.y+.25);assert.ok(right.position.y>rest.y+.25);assert.equal(steam.visible,false);
+ const before=mug.position.clone();animateFounderIdle(house,30.51);assert.ok(before.distanceTo(mug.position)<.02);
+ animateFounderIdle(house,34);assert.deepEqual(mug.position,cup);assert.deepEqual(right.position,rest);
+ animateFounderIdle(house,8.8);assert.equal(steam.visible,true);for(const puff of steam.children)assert.ok(puff.scale.x<.04&&puff.scale.y<.1);
+ animateFounderIdle(house,30.5,true);assert.deepEqual(mug.position,cup);assert.deepEqual(right.position,rest);assert.equal(steam.visible,false);assert.equal(founder.position.y,-.5);
+ }finally{k.dispose();}}});
+
+test('founder has a separate seated chair and bent legs; typing/coffee forearms clear the desk in both HQ levels',()=>{for(const level of [1,2] as const){const k=new WorldKit('campus'),house=founderHQ(k,new THREE.Group(),level);try{const founder=house.getObjectByName('Founder at laptop')!,chair=house.getObjectByName('founder-chair')!,legs=house.getObjectByName('founder-seated-legs')!,hair=house.getObjectByName('founder-hair')!,desk=house.getObjectByName('founder-desk')!;assert.ok(chair&&legs&&hair&&desk);assert.equal(legs.children.length,2);for(const leg of legs.children){assert.equal(leg.children.length,3);const thigh=leg.children[0] as THREE.Mesh,shin=leg.children[1] as THREE.Mesh;assert.ok(thigh.geometry.boundingBox||thigh.geometry);assert.ok(shin.position.y<thigh.position.y);assert.ok(leg.children[2].position.y<shin.position.y);}
+ for(let t=0;t<36;t+=.1){animateFounderIdle(house,t);house.updateMatrixWorld(true);const deskBox=new THREE.Box3().setFromObject(desk);for(const id of ['founder-left-arm','founder-right-arm']){const arm=house.getObjectByName(id)!;const elbow=arm.children[1] as THREE.Mesh;assert.ok(!new THREE.Box3().setFromObject(elbow).intersectsBox(deskBox),'forearm must stay above the desktop');}}
+ animateFounderIdle(house,0);house.updateMatrixWorld(true);const direction=new THREE.Vector3(13,28,30).normalize();for(const [name,target]of [['founder-seated-legs',new THREE.Vector3(.24,1.16,.72)],['founder-hair',new THREE.Vector3(-.1,3.49,.59)]] as const){const point=founder.localToWorld(target.clone()),ray=new THREE.Raycaster(point.clone().addScaledVector(direction,30),direction.clone().negate()),hit=ray.intersectObject(house,true)[0];assert.ok(hit);assert.ok(house.getObjectByName(name)!.getObjectById(hit.object.id),`${name} must be visible from normal gameplay camera`);}
+ }finally{k.dispose();}}});

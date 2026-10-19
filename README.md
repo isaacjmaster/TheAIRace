@@ -189,3 +189,19 @@ During placement/Arrange, drag the preview to move it, drag empty terrain to pan
 HQ music is the original 40-second, 96 BPM composition *Small Campus, Big Dreams*: licensed CC0 sampled marimba/piano, soft synthesized pads and restrained percussion. This is an offline authored sampled/synthesized production, with no paid service or runtime synthesis cost. It is not a live musician recording; physical iPhone listening is still required. Source provenance, score, renderer and loudness/loop measurements are under `music/candidates/hq-campus/` and the retained VSCO license. The raid master is byte-for-byte unchanged; existing transition, autoplay, suspension, mute-preference and test-mute behavior remain in use. The previous HQ files are retained for rollback.
 
 Run `npm run preview:decorations` after building: `http://192.168.1.40:3042/decorations-preview` on the same Wi-Fi, with a separate SQLite database/cookie and review company. Automation is muted and closes every browser context. Development SQLite was backed up through SQLite's consistent backup API and integrity-checked before implementation. Production data is never used for local tests.
+
+
+### Local UI / founder-idle refinement review
+
+Decoration thumbnails use projected full model/base bounds with consistent 15% framing margins. Other building thumbnails retain their previous framing. The Fabricator shows a level badge, Scrap Bot portrait, capacity, five-second duration and exact Train 1 / Train 5 actions; active queue progress and cancellation remain available without the former quantity controls or explanatory text. Compute costs, sequential training, housing and save authority are unchanged.
+
+The HQ workspace uses a shared hinged laptop with a separate keyboard, articulated hand targets behind its screen, occasional two-second typing bursts and one slow coffee pickup/sip/replace sequence per 36 seconds. Tiny pooled steam puffs appear intermittently while the mug rests; reduced motion returns everything to a still seated pose. Both HQ levels use this workspace; exterior footprints, upgrade rules and saved state are unchanged. Desktop fine-pointer HQ zoom limits are 0.58–1.65 versus the previous 0.65–2.0. Coarse-pointer/mobile limits remain 0.65–2.0, in both orientations.
+
+After `npm run build`, `npm run preview:refinements` serves an isolated company/database/cookie at `http://192.168.1.40:3044/refinements-preview` on the same Wi-Fi. It includes completed bot buildings and 650 Compute for checking the two training buttons. Coffee sipping occurs around 28–33 seconds into the visible idle cycle. Captures under ignored `data/refinements-media/` use actual game models; close-up interior renders use a review camera. Physical iPhone Safari/PWA testing remains a device review step. No push or deployment is authorized for this refinement until the owner approves.
+
+
+### Seated founder refinement (local review)
+
+Both HQ interiors now use an explicit chair, separate lap, bent trouser legs and planted shoes. The torso sits behind the shortened desktop rather than intersecting it. Arms remain connected at the shoulders with elbows above the wood and hands behind the laptop lid; the 36-second idle cycle and coffee/steam behavior are retained. Swept hair has a longer fringe, side pieces and back. These are client-only model/pose changes, with no save fields, prices, timing, progression or exterior-footprint changes.
+
+Full-cycle tests check hand/screen and forearm/desk clearance, coffee return, reduced motion and normal-camera rays to the legs and hair in both HQ levels. `data/seated-founder-media/` contains captures from the actual HeadquartersScene at its normal camera and existing closer gameplay zoom; the interior close-up captures use the review camera. Continue using the isolated `/refinements-preview` on port 3044 for owner review. Nothing is pushed or deployed without approval.
