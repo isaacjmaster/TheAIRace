@@ -45,12 +45,12 @@ export function avaLine(p:AvaProgress,s:FoundationState,now:number,panel:string|
  "Look at that! Our first GPU Rig. Now we're producing Compute.",
  "Our rig produces 5 Compute per minute. When at least 1 is ready, tap the rig or its badge to collect it. The first takes about 12 seconds.",
  "This is just the beginning.",
- "We'll build more technology, manufacture robots, and raid rival AI networks to grow our company.",
+ "We'll build more technology, manufacture robots, and infiltrate rival AI networks to grow our company.",
  "Someday, this little headquarters could become something incredible. Let's get to work!"
  ];
  if(p.step>=7&&p.step<=9&&!s.rig){
   if(s.buildersBusy)return "Our Builder Bot is finishing another job. Once it's free, open Build and choose GPU Rig. You can explore or skip the tutorial for now.";
-  if(s.compute<50)return "A GPU Rig costs 50 Compute. We don't have enough yet. You can earn more from raids if you have bots, or skip for now and replay from Settings whenever you're ready.";
+  if(s.compute<50)return "A GPU Rig costs 50 Compute. We don't have enough yet. You can extract more from rival companies, or skip for now and replay from Settings whenever you're ready.";
   if(placing==='build')return lines[9];
   if(placing!=='build'&&p.step===9)return "Open Build and choose GPU Rig again when you're ready to place it. Nothing is charged until you Confirm.";
   if(panel!=='build'&&p.step===8)return lines[7];

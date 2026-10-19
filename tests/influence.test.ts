@@ -12,7 +12,7 @@ import {INFLUENCE,influenceStatus} from '../shared/influence';
 import {identityHeaders,saveIdForCookie} from './helpers/identity';
 type Player={cookie:string;id:string};
 async function fixture(path=':memory:',initialTime=Date.now()){
- const db=new DatabaseSync(path);let now=initialTime;const app=express();app.use(express.json());registerFoundation(app,db,{clock:()=>now});
+ const db=new DatabaseSync(path);let now=initialTime;const app=express();app.use(express.json());registerFoundation(app,db,{clock:()=>now,legacyRaids:true});
  const server=app.listen(0,'127.0.0.1');await new Promise<void>(r=>server.once('listening',r));const url=`http://127.0.0.1:${(server.address() as {port:number}).port}`;
  const get=async(p?:Player,route='')=>{const r=await fetch(url+'/api/foundation'+route,{headers:p?{cookie:p.cookie}:{}});return {status:r.status,data:await r.json(),cookie:r.headers.get('set-cookie')?.split(';')[0]||''};};
  const fresh=async()=>{const r=await get();return {cookie:r.cookie,id:r.data.company.playerId} as Player;};

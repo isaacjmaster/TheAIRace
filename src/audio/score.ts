@@ -2,18 +2,19 @@
  * A buoyant adventure march: plucked strings, warm horn-like lead and light drums.
  * All notes and synthesis are original; no recordings, samples or borrowed melodies.
  */
-export type MusicMode='hq'|'raid';
+export type MusicMode='hq'|'raid'|'infiltration';
 export const BUILDING_SOUNDS={
+ 'building-lab':{notes:[79,86,90],type:'sine',duration:.14,gap:.07},
  'building-hq':{notes:[60,67],type:'sine',duration:.22,gap:.07},
  'building-rig':{notes:[84,91,88],type:'sine',duration:.09,gap:.045},
  'building-fabricator':{notes:[45,52,57],type:'triangle',duration:.11,gap:.06},
  'building-hangar':{notes:[62,69,64],type:'triangle',duration:.14,gap:.055},
  'building-station':{notes:[55,79],type:'triangle',duration:.1,gap:.075},
 } as const;
-export type Cue='scrap-deploy'|'punch'|'clear-tree'|'clear-scrap'|keyof typeof BUILDING_SOUNDS|'tap'|'deploy'|'laser'|'impact'|'destroy'|'win'|'resources'|'upgrade';
+export type Cue='hack'|'security-alert'|'extraction'|'scrap-deploy'|'punch'|'clear-tree'|'clear-scrap'|keyof typeof BUILDING_SOUNDS|'tap'|'deploy'|'laser'|'impact'|'destroy'|'win'|'resources'|'upgrade';
 export const MUTE_KEY='airace-audio-muted-v1';
 export const frequency=(midi:number)=>440*2**((midi-69)/12);
-export const MUSIC_BPM={hq:112,raid:128} as const;
+export const MUSIC_BPM={hq:112,raid:128,infiltration:120} as const;
 // Eight bars, eight eighth-notes per bar; each phrase has a breath before its answer.
 export const CHORDS=[[48,55,60,64],[48,55,60,64],[45,52,57,60],[41,48,53,57],[48,55,60,64],[50,57,62,65],[43,50,55,59],[48,55,60,64]];
 export const MELODY=[

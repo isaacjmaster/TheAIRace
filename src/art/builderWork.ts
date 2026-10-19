@@ -1,7 +1,7 @@
 import {founderHQWorkSites,buildingLayout,footprint,FOUNDATION_BUILDINGS,type FoundationState,type RigPosition} from '../../shared/foundation';
 import {landscapeRoute,door} from '../../shared/landscape';
 export type BuilderWork={key:string;center:RigPosition;positions:RigPosition[];routes:RigPosition[][]};
-const activeKind=(s:FoundationState,now:number)=>s.hqUpgrade&&now<s.hqUpgrade.completesAt?'hq':(['rig','rig2','fabricator','hangar'] as const).find(k=>{const b=k==='hangar'?s.hangar:s[k];return b&&now<b.completesAt;});
+const activeKind=(s:FoundationState,now:number)=>s.hqUpgrade&&now<s.hqUpgrade.completesAt?'hq':(['rig','rig2','fabricator','hangar','lab'] as const).find(k=>{const b=k==='hangar'?s.hangar:s[k];return b&&now<b.completesAt;});
 export function constructionSignature(s:FoundationState,now:number){const kind=activeKind(s,now);return !kind||!buildingLayout(s,'station')||s.landscape?.clearing?'':JSON.stringify([kind,(kind==='hq'?s.hqUpgrade:kind==='hangar'?s.hangar:s[kind])?.completesAt,buildingLayout(s,kind),s.stationLayout,s.decorations,s.landscape?.items.map(o=>o.id),FOUNDATION_BUILDINGS.map(k=>buildingLayout(s,k))]);}
 /** Reuse obstacle-clearing BFS and the existing rotated footprints. Only reachable work sites qualify. */
 export function constructionWork(s:FoundationState,now:number):BuilderWork|undefined{

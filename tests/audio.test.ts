@@ -82,7 +82,7 @@ test('page teardown closes playback and a normal player can resume with effects 
 test('every synthesized voice starts from silent initialization and ends at exact silence',async()=>{
  const h=harness();try{
   await ready(h.sound);for(const cue of ['tap','deploy','laser','impact','punch','scrap-deploy','destroy','win','resources','upgrade'] as Cue[]){h.ctx.currentTime++;h.sound.cue(cue);}
-  for(const voice of h.ctx.gains.slice(3)){
+  for(const voice of h.ctx.gains.slice(4)){
    assert.equal(voice.gain.beforeFirstEvent,0,'unity gain must never precede the future attack event');
    assert.equal(voice.gain.value,0,'release must finish at exact zero before stop/disconnect');
    assert.ok(voice.gain.ramps.includes(.0001),'exponential decay has a positive floor');
@@ -100,8 +100,8 @@ test('voice envelope clamps short attacks and schedules a zero tail before the s
 
 
 import {BUILDING_SOUNDS} from '../src/audio/score';
-test('building interactions have five distinct quiet original cues and obey mute/test policies',async()=>{
- assert.equal(new Set(Object.values(BUILDING_SOUNDS).map(p=>JSON.stringify(p))).size,5);
+test('building interactions have six distinct quiet original cues and obey mute/test policies',async()=>{
+ assert.equal(new Set(Object.values(BUILDING_SOUNDS).map(p=>JSON.stringify(p))).size,6);
  const h=harness();try{await ready(h.sound);for(const cue of Object.keys(BUILDING_SOUNDS) as (keyof typeof BUILDING_SOUNDS)[]){h.ctx.currentTime++;const before=h.ctx.sources.length;h.sound.cue(cue);assert.equal(h.ctx.sources.length-before,BUILDING_SOUNDS[cue].notes.length);h.sound.cue(cue);assert.equal(h.ctx.sources.length-before,BUILDING_SOUNDS[cue].notes.length);}
  h.sound.setMuted(true);const count=h.ctx.sources.length;for(const cue of Object.keys(BUILDING_SOUNDS) as Cue[])h.sound.cue(cue);assert.equal(h.ctx.sources.length,count);
  }finally{h.sound.dispose();}
@@ -131,3 +131,5 @@ test('accepted Scrap Bot deployment chirps once per request, varies pitch and ne
 });
 
 test('six minutes of HQ playback, repeated mode updates, mute and suspension never duplicate the loop or write test preferences',async()=>{const h=harness();try{await ready(h.sound);const count=h.ctx.sources.length;for(let t=0;t<=360;t++){h.ctx.currentTime=t;h.sound.setMode('hq');(h.sound as any).schedule();}assert.equal(h.ctx.sources.length,count);h.sound.visibility(true);assert.equal(h.ctx.state,'suspended');await h.sound.unlock();assert.equal(h.ctx.sources.length,count);h.sound.visibility(false);await ready(h.sound);assert.equal(h.ctx.sources.length,count);h.sound.setMuted(true);h.sound.setMode('raid');await (h.sound as any).activate('raid');assert.equal(h.ctx.sources.length,count);assert.equal(h.data.get(MUTE_KEY),'true');h.sound.setMuted(false);await ready(h.sound);assert.equal(h.created(),1);assert.ok(h.ctx.sources.length<=count+1);}finally{h.sound.dispose();assert.ok(h.ctx.sources.every(s=>s.stops===1));}});
+
+test('infiltration has its own audio bus, clean transitions, original cues, and shared mute/visibility policy',async()=>{const h=harness();try{await ready(h.sound);h.sound.setMode('infiltration');await (h.sound as any).activate('infiltration');assert.equal(h.ctx.gains[1].gain.value,0);assert.equal(h.ctx.gains[2].gain.value,0);assert.equal(h.ctx.gains[3].gain.value,2);for(const cue of ['hack','security-alert','extraction','building-lab'] as Cue[]){h.ctx.currentTime++;const count=h.ctx.sources.length;h.sound.cue(cue);assert.ok(h.ctx.sources.length>count);}h.sound.visibility(true);assert.equal(h.ctx.state,'suspended');h.sound.visibility(false);await ready(h.sound);h.sound.setMode('hq');await (h.sound as any).activate('hq');h.ctx.currentTime+=2;(h.sound as any).schedule();assert.equal(h.ctx.gains[3].gain.value,0);h.sound.setMuted(true);const count=h.ctx.sources.length;h.sound.cue('hack');assert.equal(h.ctx.sources.length,count);}finally{h.sound.dispose();}});

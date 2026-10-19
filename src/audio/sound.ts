@@ -13,8 +13,8 @@ import {voiceEnvelope} from './envelope';
 import {MusicSynth} from './musicSynth';
 /** Context creation/resume is exclusively initiated by a user gesture. */
 export class Soundscape {
- private ctx?:AudioContext;private master?:GainNode;private hq?:GainNode;private raid?:GainNode;
- private timer?:ReturnType<typeof setInterval>;private synth?:MusicSynth;private music?:RecordedMusic;private playingMode?:MusicMode;private hidden=false;private deploymentVoice=0;private fadeUntil={hq:0,raid:0};private mode:MusicMode='hq';
+ private ctx?:AudioContext;private master?:GainNode;private hq?:GainNode;private raid?:GainNode;private infiltration?:GainNode;
+ private timer?:ReturnType<typeof setInterval>;private synth?:MusicSynth;private music?:RecordedMusic;private playingMode?:MusicMode;private hidden=false;private deploymentVoice=0;private fadeUntil={hq:0,raid:0,infiltration:0};private mode:MusicMode='hq';
  private gainRamps=new Map<GainNode,{from:number;to:number;start:number;end:number}>();
  private listeners=new Set<()=>void>();private last=new Map<Cue,number>();private noise?:AudioBuffer;
  muted:boolean;private platform:SoundPlatform;
@@ -31,7 +31,7 @@ export class Soundscape {
  async unlock(){
   if(this.platform.silent||this.muted)return;
   try{
-   if(!this.ctx){this.ctx=this.platform.createContext();this.synth=new MusicSynth(this.ctx);this.master=this.ctx.createGain();this.master.gain.value=.22;this.master.connect(this.ctx.destination);this.hq=this.ctx.createGain();this.raid=this.ctx.createGain();this.hq.connect(this.master);this.raid.connect(this.master);this.hq.gain.value=0;this.raid.gain.value=0;this.music=new RecordedMusic(this.ctx,{hq:this.hq,raid:this.raid},this.platform.loadTrack??loadApprovedTrack);}
+   if(!this.ctx){this.ctx=this.platform.createContext();this.synth=new MusicSynth(this.ctx);this.master=this.ctx.createGain();this.master.gain.value=.22;this.master.connect(this.ctx.destination);this.hq=this.ctx.createGain();this.raid=this.ctx.createGain();this.infiltration=this.ctx.createGain();this.hq.connect(this.master);this.raid.connect(this.master);this.infiltration.connect(this.master);this.hq.gain.value=0;this.raid.gain.value=0;this.infiltration.gain.value=0;this.music=new RecordedMusic(this.ctx,{hq:this.hq,raid:this.raid,infiltration:this.infiltration},this.platform.loadTrack??loadApprovedTrack);}
    const ctx=this.ctx;await ctx.resume();
    if(this.ctx!==ctx||this.platform.silent||this.muted||this.hidden)return;
    if(!this.timer)this.timer=setInterval(()=>this.schedule(),100);void this.activate(this.mode);this.schedule();
@@ -40,7 +40,7 @@ export class Soundscape {
  private async activate(mode:MusicMode){
   const ctx=this.ctx,music=this.music;if(!ctx||!music||this.muted||this.hidden||ctx.state!=='running')return;
   try{await music.load(mode);if(this.ctx!==ctx||this.music!==music||this.muted||this.hidden||this.mode!==mode||ctx.state!=='running')return;
-   if(this.playingMode!==mode||!music.has(mode)){const previous=this.playingMode;music.start(mode);if(previous)this.fadeUntil[previous]=ctx.currentTime+1.1;this.ramp(this.hq!,mode==='hq'?MUSIC_GAIN:0,1.1);this.ramp(this.raid!,mode==='raid'?MUSIC_GAIN:0,1.1);this.playingMode=mode;}
+   if(this.playingMode!==mode||!music.has(mode)){const previous=this.playingMode;music.start(mode);if(previous)this.fadeUntil[previous]=ctx.currentTime+1.1;this.ramp(this.hq!,mode==='hq'?MUSIC_GAIN:0,1.1);this.ramp(this.raid!,mode==='raid'?MUSIC_GAIN:0,1.1);this.ramp(this.infiltration!,mode==='infiltration'?MUSIC_GAIN:0,1.1);this.playingMode=mode;}
    // HQ is needed first; warm the attack buffer after it becomes audible.
    if(mode==='hq')void music.load('raid').catch(()=>{});
   }catch{/* Missing/unsupported audio never blocks gameplay; a later gesture retries. */}
@@ -51,12 +51,13 @@ export class Soundscape {
  private note(...args:Parameters<MusicSynth['note']>){this.synth?.note(...args);}
  private schedule(){
   if(!this.ctx||!this.music||this.ctx.state!=='running'||this.platform.silent||this.hidden)return;
-  for(const mode of ['hq','raid'] as const)if(mode!==this.playingMode&&this.ctx.currentTime>=this.fadeUntil[mode])this.music.stop(mode);
+  for(const mode of ['hq','raid','infiltration'] as const)if(mode!==this.playingMode&&this.ctx.currentTime>=this.fadeUntil[mode])this.music.stop(mode);
  }
  cue=(cue:Cue)=>{
   if(!this.ctx||this.ctx.state!=='running'||this.platform.silent||this.muted)return;const t=this.ctx.currentTime;
   const gap=cue==='scrap-deploy'?0:cue.startsWith('building-')?.16:cue==='laser'||cue==='impact'||cue==='punch'?.09:cue==='destroy'?.12:.04;if(t-(this.last.get(cue)??-10)<gap)return;this.last.set(cue,t);
   const out=this.master!;
+  if(cue==='hack'){[76,83,88].forEach((n,i)=>this.note(n,t+i*.06,.14,.085,out,'sine',.008));return;}if(cue==='security-alert'){this.note(74,t,.15,.1,out,'triangle',.012);this.note(70,t+.18,.16,.08,out,'triangle',.012);return;}if(cue==='extraction'){[69,76,81,88].forEach((n,i)=>this.note(n,t+i*.08,.4,.11,out,'sine',.012));return;}
   if(cue in BUILDING_SOUNDS){const voice=BUILDING_SOUNDS[cue as keyof typeof BUILDING_SOUNDS];voice.notes.forEach((note,i)=>this.note(note,t+i*voice.gap,voice.duration,.1,out,voice.type,.012));return;}
   if(cue==='clear-tree'){[74,81,86].forEach((n,i)=>this.note(n,t+i*.065,.2,.055,out,'sine',.015));return;}
   if(cue==='clear-scrap'){[50,62,78].forEach((n,i)=>this.note(n,t+i*.07,.16,.065,out,'triangle',.01));return;}
@@ -78,7 +79,7 @@ export class Soundscape {
   const notes=cue==='win'?[62,66,69,74,78]:cue==='resources'?[81,86,90]:cue==='upgrade'?[57,62,66,74]:[];
   notes.forEach((n,i)=>this.note(n,t+i*.1,.65,.12,out,'sine',.008));
  };
- dispose(){if(this.timer)clearInterval(this.timer);this.timer=undefined;this.music?.dispose();void this.ctx?.close().catch(()=>{});this.music=undefined;this.playingMode=undefined;this.ctx=undefined;this.synth=undefined;this.fadeUntil={hq:0,raid:0};this.gainRamps.clear();this.master=undefined;this.hq=undefined;this.raid=undefined;this.noise=undefined;this.last.clear();}
+ dispose(){if(this.timer)clearInterval(this.timer);this.timer=undefined;this.music?.dispose();void this.ctx?.close().catch(()=>{});this.music=undefined;this.playingMode=undefined;this.ctx=undefined;this.synth=undefined;this.fadeUntil={hq:0,raid:0,infiltration:0};this.gainRamps.clear();this.master=undefined;this.hq=undefined;this.raid=undefined;this.infiltration=undefined;this.noise=undefined;this.last.clear();}
 }
 export const sound=new Soundscape();
 // Closing/navigating a preview stops all scheduled sound, including a pending unlock.
