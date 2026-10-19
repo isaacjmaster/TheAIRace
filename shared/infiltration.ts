@@ -5,7 +5,6 @@ export type Vec = [
     number,
     number
 ];
-export type Tool = 'probe' | 'jammer';
 export type Asset = {
     id: string;
     kind: 'hq' | 'gpu' | 'lab' | 'terminal';
@@ -39,7 +38,7 @@ export type TargetSnapshot = {
     defenses: Defense[];
     influence: number;
 };
-export const INFILTRATION = { stepMs: 100, operationMs: 180000, agentSpeed: 2.8, captureRadius: .65, jammerMs: 6000, jammerRange: 7, probeMs: 12000, cooldownMs: 7200000, awards: [25, 50] } as const;
+export const INFILTRATION = { stepMs: 100, operationMs: 180000, agentSpeed: 2.8, captureRadius: .65, cooldownMs: 7200000, awards: [25, 50] } as const;
 export const INFILTRATION_BOUNDS={minX:-12,maxX:12,minZ:-8,maxZ:8};
 export const DRONE_CLEARANCE=1.15;
 // Full rendered robot envelope, including its arms and mechanical feet.
@@ -57,8 +56,7 @@ export type DroneState = {
     segment: number;
     alert: number;
     lost: number;
-    mode: 'patrol' | 'warning' | 'pursuit' | 'jammed';
-    jammedUntil: number;
+    mode: 'patrol' | 'warning' | 'pursuit';
 };
 export type InfiltrationEvent = {
     at: number;
@@ -71,9 +69,7 @@ export type Operation = {
     version: 1;
     id: string;
     target: TargetSnapshot;
-    tool: Tool;
-    toolUsed: boolean;
-    probeUntil: number;
+    automationVersion?:1;
     createdAt: number;
     startedAt?: number;
     lastTick: number;
@@ -112,27 +108,17 @@ export type InfiltrationCommand = {
     action: 'deploy';
     position?:Vec;
 } | {
-    action: 'move';
-    position: Vec;
-} | {
-    action: 'hack';
-    assetId: string;
-} | {
-    action: 'tool';
-} | {
-    action: 'extract';
-} | {
     action: 'abandon';
 };
 const distance = (a: Vec, b: Vec) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 const event = (o: Operation, type: string, detail?: string) => { if (o.events.length < 256)
     o.events.push({ at: o.lastTick, type, detail }); };
-export function newOperation(id: string, targetId: string, tool: Tool, now: number): Operation { const target = INFILTRATION_TARGETS.find(t => t.id === targetId); if (!target)
-    throw new Error('Choose an available company.'); return operationFromSnapshot(id, target, tool, now); }
-export function operationFromSnapshot(id: string, target: TargetSnapshot, tool: Tool, now: number): Operation { return { version: 1, id, target: structuredClone(target), tool, toolUsed: false, probeUntil: 0, createdAt: now, lastTick: now, status: 'ready', orders: [], agent: { position: [...target.entry], path: [], mode: 'idle', hack: 0, yaw: 0 }, drones: target.defenses.map(d => ({ id: d.id, position: [...d.route[0]], segment: 1, alert: 0, lost: 0, mode: 'patrol', jammedUntil: 0 })), hacked: [], carried: { compute: 0, research: 0, intel: false }, events: [{ at: now, type: 'prepared' }] }; }
+export function newOperation(id: string, targetId: string, now: number): Operation { const target = INFILTRATION_TARGETS.find(t => t.id === targetId); if (!target)
+    throw new Error('Choose an available company.'); return operationFromSnapshot(id, target, now); }
+export function operationFromSnapshot(id: string, target: TargetSnapshot, now: number): Operation { return { version: 1, id, target: structuredClone(target), automationVersion:1, createdAt: now, lastTick: now, status: 'ready', orders: [], agent: { position: [...target.entry], path: [], mode: 'idle', hack: 0, yaw: 0 }, drones: target.defenses.map(d => ({ id: d.id, position: [...d.route[0]], segment: 1, alert: 0, lost: 0, mode: 'patrol' })), hacked: [], carried: { compute: 0, research: 0, intel: false }, events: [{ at: now, type: 'prepared' }] }; }
 export function infiltrationSolids(t:TargetSnapshot):NavRect[]{return [...t.assets.map(a=>({x:a.position[0],z:a.position[1],w:a.size[0],d:a.size[1]})),...(t.walls??[])];}
 export function navigable(t: TargetSnapshot, p: Vec) { if(t.navigationVersion===2)return pointClear(p,infiltrationSolids(t),INFILTRATION_BOUNDS,AGENT_CLEARANCE);return p.every(Number.isFinite) && Math.abs(p[0]) <= 11.5 && Math.abs(p[1]) <= 7.5 && !t.assets.some(a => Math.abs(p[0] - a.position[0]) < a.size[0] / 2 + .3 && Math.abs(p[1] - a.position[1]) < a.size[1] / 2 + .3); }
-export function validDeployment(t:TargetSnapshot,p:Vec){return p.every(Number.isFinite)&&Math.abs(p[0]-t.entry[0])<=1.2&&Math.abs(p[1]-t.entry[1])<=.55&&navigable(t,p)&&infiltrationPath(t,p,t.exit).length>0;}
+export function validDeployment(t:TargetSnapshot,p:Vec){return p.every(Number.isFinite)&&p[0]>=-10.5&&p[0]<=10.5&&p[1]>=5.8&&p[1]<=7.2&&navigable(t,p)&&infiltrationPath(t,p,t.exit).length>0;}
 /** Small bounded half-unit grid, deterministic and reusable by future target snapshots. */
 export function infiltrationPath(t:TargetSnapshot,from:Vec,to:Vec):Vec[]{return t.navigationVersion===2?findPath(from,to,infiltrationSolids(t),INFILTRATION_BOUNDS,AGENT_CLEARANCE):legacyInfiltrationPath(t,from,to);}
 function legacyInfiltrationPath(t: TargetSnapshot, from: Vec, to: Vec): Vec[] { if (!navigable(t, to))
@@ -165,7 +151,25 @@ function walk(p: Vec, path: Vec[], budget: number) { const old: [
         break;
     }
 } return distance(old, p); }
+/** Reuse saved snapshots and inventory reservations, without retaining retired tool effects. */
+function adoptAutomatic(o:Operation){
+ if(o.automationVersion===1)return;
+ const old=o as Operation&{tool?:unknown;toolUsed?:unknown;probeUntil?:unknown};delete old.tool;delete old.toolUsed;delete old.probeUntil;
+ for(const drone of o.drones)delete (drone as unknown as {jammedUntil?:unknown}).jammedUntil;
+ o.automationVersion=1;
+ if(o.status==='active'&&o.agent.mode!=='extracting'){const target=o.target.assets.find(a=>a.id===o.agent.target&&!o.hacked.includes(a.id));if(!(o.agent.mode==='hacking'&&target?.access&&distance(o.agent.position,target.access)<.6))chooseNextAsset(o);}
+}
+function returnHome(o:Operation){
+ o.agent.target=undefined;o.agent.hack=0;o.agent.mode='extracting';o.agent.path=infiltrationPath(o.target,o.agent.position,o.target.exit);event(o,'returning');
+}
+/** Only plan at arrival/target changes, never run path searches for every asset each frame. */
+export function chooseNextAsset(o:Operation){
+ const candidates=o.target.assets.filter(a=>a.access&&a.hackSeconds&&!o.hacked.includes(a.id)).sort((a,b)=>distance(o.agent.position,a.access!)-distance(o.agent.position,b.access!)||a.id.localeCompare(b.id));
+ for(const asset of candidates){const path=infiltrationPath(o.target,o.agent.position,asset.access!);if(path.length){o.agent.target=asset.id;o.agent.path=path;o.agent.hack=0;o.agent.mode='moving';event(o,'target',asset.id);return;}}
+ returnHome(o);
+}
 export function advanceOperation(o: Operation, now: number) {
+    if(o.status==='ready'||o.status==='active')adoptAutomatic(o);
     if (o.status !== 'active')
         return;
     const end = Math.min(now, o.startedAt! + INFILTRATION.operationMs);
@@ -191,22 +195,15 @@ export function advanceOperation(o: Operation, now: number) {
                         o.carried.research += asset.research;
                         o.carried.intel ||= !!asset.intel;
                         event(o, 'hacked', asset.id);
-                        a.target = undefined;
-                        a.hack = 0;
-                        a.mode = 'idle';
+                        chooseNextAsset(o);
                     }
                 }
             }
-            else
-                a.mode = 'idle';
+            else if(a.mode!=='extracting')chooseNextAsset(o);
         }
+        if(a.mode!=='extracting'&&(o.carried.compute>0||o.carried.research>0)&&o.drones.some(d=>{const defense=o.target.defenses.find(x=>x.id===d.id)!;return distance(d.position,a.position)<=defense.radius+.5;}))returnHome(o);
         for (const d of o.drones) {
             const cfg = o.target.defenses.find(x => x.id === d.id)!;
-            if (o.lastTick < d.jammedUntil) {
-                d.mode = 'jammed';
-                d.alert = 0;
-                continue;
-            }
             const near = distance(d.position, a.position) <= cfg.radius;
             if (near) {
                 d.alert = Math.min(cfg.warningSeconds, d.alert + dt);
@@ -253,65 +250,17 @@ export function advanceOperation(o: Operation, now: number) {
         finish(o, 'timeout');
     }
 }
-export function commandOperation(o: Operation, c: InfiltrationCommand, now: number) {
-    advanceOperation(o, now);
-    const record = () => { (o.orders ??= []).push({ at: now, intent: structuredClone(c) }); };
-    if ((o.orders?.length ?? 0) >= 256 && c.action !== 'extract' && c.action !== 'abandon')
-        throw new Error('Order limit reached. Extract or abandon this operation.');
-    if (c.action === 'deploy') {
-        if (o.status !== 'ready')
-            throw new Error('Agent already deployed.');
-        const deployment=c.position??o.target.entry;if(!validDeployment(o.target,deployment))throw new Error('Deploy inside the cyan staging zone.');
-        o.agent.position=[...deployment];
-        o.status = 'active';
-        o.startedAt = now;
-        o.lastTick = now;
-        event(o, 'deployed');
-        record();
-        return;
-    }
-    if (c.action === 'abandon') {
-        if (o.status === 'ready' || o.status === 'active') {
-            finish(o, 'abandoned');
-            record();
-        }
-        else
-            throw new Error('This operation has ended.');
-        return;
-    }
-    if (o.status !== 'active')
-        throw new Error('Deploy the agent first, or return to HQ.');
-    if (c.action === 'tool') {
-        if (o.toolUsed)
-            throw new Error('Tool already used.');
-        if (o.tool === 'probe') {
-            o.probeUntil = o.lastTick + INFILTRATION.probeMs;
-        }
-        else {
-            const nearest = [...o.drones].sort((a, b) => distance(a.position, o.agent.position) - distance(b.position, o.agent.position))[0];
-            if (!nearest || distance(nearest.position, o.agent.position) > INFILTRATION.jammerRange)
-                throw new Error('Move within jammer range of a drone.');
-            nearest.jammedUntil = o.lastTick + INFILTRATION.jammerMs;
-            nearest.mode = 'jammed';
-            nearest.alert = 0;
-        }
-        o.toolUsed = true;
-        event(o, 'tool', o.tool);
-        record();
-        return;
-    }
-    if (c.action === 'hack' && o.agent.target === c.assetId && (o.agent.mode === 'moving' || o.agent.mode === 'hacking')) return;
-    const asset = c.action === 'hack' ? o.target.assets.find(a => a.id === c.assetId && a.access) : undefined;
-    if (c.action === 'hack' && (!asset || o.hacked.includes(asset.id)))
-        throw new Error('Choose an unhacked technology asset.');
-    const to = c.action === 'extract' ? o.target.exit : c.action === 'move' ? c.position : asset!.access!;
-    const path = infiltrationPath(o.target, o.agent.position, to);
-    if (!path.length)
-        throw new Error('Choose reachable open ground.');
-    o.agent.path = path;
-    o.agent.target = asset?.id;
-    o.agent.hack = 0;
-    o.agent.mode = c.action === 'extract' ? 'extracting' : 'moving';
-    event(o, c.action, asset?.id ?? to.join(','));
-    record();
+export function commandOperation(o:Operation,c:InfiltrationCommand,now:number){
+ advanceOperation(o,now);
+ const record=()=>{(o.orders??=[]).push({at:now,intent:structuredClone(c)});};
+ if(c.action==='deploy'){
+  if(o.status!=='ready')throw Error('Scrap Bot already deployed.');
+  const position=c.position??o.target.entry;if(!validDeployment(o.target,position))throw Error('Deploy on clear ground along the campus entrance.');
+  o.agent.position=[...position];o.status='active';o.startedAt=now;o.lastTick=now;event(o,'deployed');chooseNextAsset(o);record();return;
+ }
+ if(c.action==='abandon'){
+  if(o.status!=='ready'&&o.status!=='active')throw Error('This operation has ended.');
+  finish(o,'abandoned');record();return;
+ }
+ throw Error('Scrap Bot handles hacking and returning automatically.');
 }

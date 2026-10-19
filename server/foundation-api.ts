@@ -90,8 +90,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   z.object({action:z.literal('move-wall'),id:z.string().uuid(),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('build-drone-station'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('infiltration-tutorial'),operationId:z.string().uuid(),result:z.enum(['complete','skipped'])}).strict(),
-  z.object({action:z.literal('infiltration-start'),targetId:z.enum(['lumen-labs','vector-works']),tool:z.enum(['probe','jammer'])}).strict(),
-  z.object({action:z.literal('infiltration-command'),operationId:z.string().uuid(),intent:z.discriminatedUnion('action',[z.object({action:z.literal('deploy'),position:z.tuple([z.number().finite(),z.number().finite()]).optional()}).strict(),z.object({action:z.literal('move'),position:z.tuple([z.number().finite(),z.number().finite()])}).strict(),z.object({action:z.literal('hack'),assetId:z.string().min(1).max(40)}).strict(),z.object({action:z.literal('tool')}).strict(),z.object({action:z.literal('extract')}).strict(),z.object({action:z.literal('abandon')}).strict()])}).strict(),
+  z.object({action:z.literal('infiltration-start'),targetId:z.enum(['lumen-labs','vector-works'])}).strict(),
+  z.object({action:z.literal('infiltration-command'),operationId:z.string().uuid(),intent:z.discriminatedUnion('action',[z.object({action:z.literal('deploy'),position:z.tuple([z.number().finite(),z.number().finite()]).optional()}).strict(),z.object({action:z.literal('abandon')}).strict()])}).strict(),
   z.object({action:z.literal('build-lab'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('collect-research')}).strict(),
   z.object({action:z.literal('buy-decoration'),kind:z.enum(['ornamental','cypress','flowers','planter']),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
@@ -122,7 +122,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
     if(c.action==='buy-wall')buyWall(state,c.position,c.orientation,input.requestId);
     else if(c.action==='move-wall')moveWall(state,c.id,c.position,c.orientation);
     else if(c.action==='build-drone-station')buildDroneStation(state,c.position,now,c.orientation);
-    else if(c.action==='infiltration-start'){startOwnedOperation(state,randomUUID(),c.targetId,c.tool,now);}
+    else if(c.action==='infiltration-start'){startOwnedOperation(state,randomUUID(),c.targetId,now);}
     else if(c.action==='infiltration-tutorial'){if(state.infiltration?.id!==c.operationId)throw new Error('This operation is no longer active.');state.infiltrationTutorial??=c.result;}
     else if(c.action==='infiltration-command'){if(state.infiltration?.id!==c.operationId)throw new Error('This operation is no longer active.');requireReservedAgent(state.infiltration);commandOperation(state.infiltration,c.intent,now);settleOwnedUnit(state);}
     else if(c.action==='build-lab')buildResearchLab(state,c.position,now,c.orientation);

@@ -1,11 +1,11 @@
 import type {FoundationState} from './foundation';
-import {newOperation,type Operation,type Tool} from './infiltration';
+import {newOperation,type Operation} from './infiltration';
 export const reservedAgent=(o:Operation|undefined)=>o?.unit?.status==='reserved'&&o.unit.reservationId===o.id?1:0;
-export function startOwnedOperation(s:FoundationState,id:string,target:string,tool:Tool,now:number){
+export function startOwnedOperation(s:FoundationState,id:string,target:string,now:number){
  if(s.botRaid&&!s.botRaid.settled)throw new Error('Finish your previous operation first.');
  if(s.infiltration&&['ready','active'].includes(s.infiltration.status))throw new Error('Resume your current infiltration.');
  if((s.bots??0)<1)throw new Error('No agents available. Train a Scrap Bot in your Bot Fabricator.');
- const o=newOperation(id,target,tool,now);s.bots=(s.bots??0)-1;o.unit={kind:'scrap',reservationId:o.id,status:'reserved'};s.infiltration=o;
+ const o=newOperation(id,target,now);s.bots=(s.bots??0)-1;o.unit={kind:'scrap',reservationId:o.id,status:'reserved'};s.infiltration=o;
 }
 /** Pre-ownership live missions never reserved a unit. Close them without retroactively charging inventory or banking unsupported loot. */
 export function ensureOwnedOperation(s:FoundationState,now:number){

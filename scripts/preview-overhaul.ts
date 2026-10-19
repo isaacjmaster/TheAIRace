@@ -14,7 +14,7 @@ app.get('/overhaul-preview/:scene',async(req,res)=>{try{
  const cookie=response.headers.get('set-cookie')!;const row=db.prepare('SELECT save_id FROM company_players WHERE id=?').get(data.company.playerId)!;
  const scene=req.params.scene,now=Date.now(),s=data.state;
  if(scene!=='fresh')Object.assign(s,{compute:900,builders:1,starterStation:'placed',stationLayout:{position:[3,5],orientation:0},bots:4,training:[],fabricator:{separateHangar:true,position:[6,-6],hangarPosition:[13,-6],orientation:0,startedAt:now-60000,completesAt:now-45000},hangar:{position:[13,-6],orientation:0,size:'expanded',startedAt:now-60000,completesAt:now-45000},rig:{position:[6,0],orientation:0,startedAt:now-60000,completesAt:now-45000,lastProducedAt:now,stored:15}});
- if(scene==='lumen'||scene==='vector'){startOwnedOperation(s,crypto.randomUUID(),scene==='lumen'?'lumen-labs':'vector-works','jammer',now);if(req.query.tutorial==='done')s.infiltrationTutorial='complete';}
+ if(scene==='lumen'||scene==='vector'){startOwnedOperation(s,crypto.randomUUID(),scene==='lumen'?'lumen-labs':'vector-works',now);if(req.query.tutorial==='done')s.infiltrationTutorial='complete';}
  if(scene==='stages'){const kind=String(req.query.building??'rig'),p=Number(req.query.progress??.1),timer={startedAt:now-p*120000,completesAt:now+(1-p)*120000};if(kind==='hq')s.hqUpgrade={id:crypto.randomUUID(),targetLevel:2,...timer};else if(kind==='lab')s.lab={position:[6,-12],orientation:0,stored:0,lastProducedAt:timer.completesAt,...timer};else if(kind==='droneStation')s.droneStation={position:[12,-12],orientation:0,...timer};else Object.assign(s[kind],timer);s.buildersBusy=p<1?1:0;}
  const step=0;
  db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(s),row.save_id as string);

@@ -133,3 +133,11 @@
 .build-tabs{overflow-x:auto;scrollbar-width:none}.foundation-dialog .build-tabs button{white-space:nowrap;font-size:11px;padding:9px 4px;min-width:max-content}@media(max-width:380px){.foundation-dialog .build-tabs button{font-size:10px}}
 
 @media(orientation:landscape) and (max-height:550px){.foundation-dialog:has(.cybersecurity-card){width:min(680px,calc(100% - 32px));padding:14px}.build-catalog:has(.cybersecurity-card){grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cybersecurity-card .build-card-image,.cybersecurity-card .build-card-image img{height:90px}.cybersecurity-card .build-card-copy{padding:8px 10px}}
+
+/* The catalog scrolls independently: category controls never shrink or leave the viewport. */
+.foundation-dialog:has(.build-catalog){height:min(720px,calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom)));min-height:0;overflow:hidden}
+.foundation-dialog:has(.build-catalog)>h2,.foundation-dialog .build-tabs{flex-shrink:0}
+.foundation-dialog .build-tabs{min-height:52px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;align-items:center}
+.foundation-dialog .build-tabs button{flex:1 0 auto;padding:9px 8px}
+.build-catalog{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;align-content:start;padding:0 2px 4px;grid-auto-rows:min-content}
+@media(orientation:landscape) and (max-height:550px){.foundation-dialog:has(.build-catalog){height:calc(100dvh - 32px);width:min(680px,100%);gap:8px;padding:12px}.build-catalog{grid-template-columns:repeat(2,minmax(0,1fr))}}
