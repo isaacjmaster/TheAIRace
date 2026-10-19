@@ -1,6 +1,18 @@
 import * as THREE from 'three';
 import {WorldKit,palette as c} from './world';
 
+type FounderIdleRig={left:THREE.Group;right:THREE.Group;head:THREE.Group};
+const founderIdleRigs=new WeakMap<THREE.Object3D,FounderIdleRig>();
+/** Brief typing bursts, with eased starts/stops and a long quiet seated interval. */
+export function animateFounderIdle(house:THREE.Object3D|undefined,time:number,reduced=false){
+ const rig=house&&founderIdleRigs.get(house);if(!rig)return;
+ const phase=((time%9)+9)%9,active=!reduced&&phase>=4&&phase<6;
+ const t=phase-4,envelope=active?Math.sin(Math.PI*Math.min(1,t/.3)/2)**2*Math.sin(Math.PI*Math.min(1,(2-t)/.3)/2)**2:0;
+ rig.left.rotation.x=envelope?-envelope*(.055+.07*Math.sin(t*22)):0;
+ rig.right.rotation.x=envelope?-envelope*(.055+.07*Math.sin(t*22+Math.PI)):0;
+ rig.head.rotation.x=envelope*.025;
+}
+
 /** A closed cottage with a flush front window: the founder is real interior geometry. */
 export function founderHQ(k:WorldKit,parent:THREE.Group,level:1|2=1):THREE.Group{
  if(level===2)return founderHQLevel2(k,parent);
@@ -77,10 +89,14 @@ export function pickFoundationBuilding(ray:THREE.Raycaster,hq:THREE.Object3D,rig
 function founderCharacter(k:WorldKit,house:THREE.Group){
  const founder=new THREE.Group();founder.name='Founder at laptop';founder.position.set(-.8,-.5,1.75);house.add(founder);
  k.box(founder,[.95,1.0,.65],[0,2.15,0],c.coral,.18);
- k.box(founder,[.85,.85,.75],[0,3.04,0],'#f3c399',.2);
- k.box(founder,[.91,.25,.8],[0,3.43,-.04],'#765649',.1);
- for(const x of [-.2,.2])k.box(founder,[.08,.1,.04],[x,3.08,.39],c.dark,.01);
- for(const x of [-.59,.59]){k.box(founder,[.23,.25,.8],[x,2.05,.35],c.coral);k.box(founder,[.22,.16,.25],[x,1.97,.8],'#f3c399');}
+ const head=new THREE.Group();head.name='founder-head';head.position.set(0,2.65,0);founder.add(head);
+ k.box(head,[.85,.85,.75],[0,.39,0],'#f3c399',.2);
+ k.box(head,[.91,.25,.8],[0,.78,-.04],'#765649',.1);
+ for(const x of [-.2,.2])k.box(head,[.08,.1,.04],[x,.43,.39],c.dark,.01);
+ const arms:THREE.Group[]=[];
+ for(const x of [-.59,.59]){const arm=new THREE.Group();arm.name=x<0?'founder-left-arm':'founder-right-arm';arm.position.set(x,2.28,.02);founder.add(arm);k.box(arm,[.23,.25,.8],[0,-.04,.33],c.coral);k.box(arm,[.22,.16,.25],[0,.02,.78],'#f3c399');arms.push(arm);}
+ // Grouped joints survive static house batching; thumbnails retain the seated pose.
+ founderIdleRigs.set(house,{left:arms[0],right:arms[1],head});
  return founder;
 }
 /** An attached office wing and taller main roof fit the original 9 x 8 gameplay lot. */

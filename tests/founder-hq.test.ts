@@ -14,6 +14,6 @@ test('founder is visible through the flush window from the HQ camera direction',
  const kit=new WorldKit(),hq=new THREE.Group();const house=founderHQ(kit,hq);hq.updateMatrixWorld(true);
  const founder=house.getObjectByName('Founder at laptop')!;const face=founder.localToWorld(new THREE.Vector3(0,3.15,.4));
  const direction=new THREE.Vector3(13,28,30).normalize();const ray=new THREE.Raycaster(face.clone().addScaledVector(direction,30),direction.clone().negate());
- const hit=ray.intersectObject(hq,true)[0];assert.ok(hit);assert.ok(hit.object.parent===founder,'roof and window frame must not hide the founder');kit.dispose();
+ const hit=ray.intersectObject(hq,true)[0];assert.ok(hit);assert.ok(founder.getObjectById(hit.object.id),'roof and window frame must not hide the founder');kit.dispose();
 });
 

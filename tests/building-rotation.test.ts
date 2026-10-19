@@ -18,7 +18,7 @@ import {WorldKit} from '../src/art/world';
 const epoch=1700000000000;
 test('all four placement orientations reserve a correctly rotated Fabricator/Hangar pair',()=>{
  for(const q of [0,1,2,3] as Orientation[]){const s=initialFoundation();buildFabricator(s,[16,-6],epoch,q);assert.equal(s.compute,50);assert.equal(s.buildersBusy,1);assert.equal(s.fabricator!.orientation,q);assert.equal(s.fabricator!.hangarOrientation,q);assert.deepEqual(s.fabricator!.hangarPosition,hangarPlacement([16,-6],q));assert.deepEqual(buildingFootprint(q),q%2?[3,4]:[4,3]);assert.ok(validFoundationPosition(s,s.fabricator!.hangarPosition,'rig',q));}
- const s=initialFoundation();assert.throws(()=>buildFabricator(s,[26,-6],epoch,0),/campus/);assert.equal(s.compute,100);assert.equal(s.fabricator,undefined);
+ const s=initialFoundation();assert.throws(()=>buildFabricator(s,[36,-6],epoch,0),/campus/);assert.equal(s.compute,100);assert.equal(s.fabricator,undefined);
 });
 test('rotation preserves GPU production and training; legacy orientations default to zero and moving retains orientation',()=>{
  const s=initialFoundation();s.compute=500;buildRig(s,[6,0],epoch);delete s.rig!.orientation;advanceFoundation(s,epoch+75000);buildFabricator(s,[16,-6],epoch+75000);advanceFoundation(s,epoch+90000);trainScrap(s,3,epoch+90000);

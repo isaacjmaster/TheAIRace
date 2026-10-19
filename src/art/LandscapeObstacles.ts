@@ -3,6 +3,9 @@ import {WorldKit,palette as c} from './world';
 import {obstacleSize,type LandscapeObstacle} from '../../shared/landscape';
 export function landscapeModel(k:WorldKit,o:LandscapeObstacle){const g=new THREE.Group();g.position.set(o.position[0],0,o.position[1]);
  if(o.kind==='tree'){k.tree(g,0,0,1.3);k.cylinder(g,1.15,.13,[0,0,0],'#95cfa9');}
+ else if(o.kind==='rock'){
+  for(let i=0;i<3;i++)k.boulder(g,[-.8+i*.75,i===1?.72:.5,i===1?-.25:.18],[i===1?.95:.75,i===1?.9:.65,.77],i===1?'#a6b1a9':'#bac2b4',o.variant*.55+i*.65);
+ }
  else{const v=o.variant;k.cylinder(g,1.15,.08,[0,.02,0],'#91aaa7');
  const plate=k.box(g,[1.8,.17,1.2],[-.15,.24,0],c.slate,.08);plate.rotation.set(.15, v*.7,.12);
  const panel=k.box(g,[1.15,.14,1.25],[.1,.56,-.12],c.cream,.06);panel.rotation.set(.3,-.45+v*.6,.16);

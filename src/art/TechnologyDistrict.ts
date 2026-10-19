@@ -1,3 +1,5 @@
+import {CampusLawn} from './CampusLawn';
+import {FOUNDATION_PLOT as P,FOUNDATION_PLOT_WIDTH as W,FOUNDATION_PLOT_DEPTH as D} from '../../shared/foundation-plot';
 import {districtBuilding} from './DistrictBuildings';
 import {DistrictTraffic} from './DistrictTraffic';
 import * as THREE from 'three';
@@ -9,16 +11,16 @@ export function districtEnabled(){return typeof location==='undefined'||new URLS
 const C={asphalt:'#536b73',concrete:'#e3dfcf',curb:'#f4efdd',grass:'#a3c78b',hedge:'#609b78',glass:'#7bbfc9',navy:'#345b70'};
 /** Scenery only. Solid details stay outside the authoritative play area. */
 export class TechnologyDistrict{
- readonly group=new THREE.Group();private k=new WorldKit('campus');private geometries=new Map<string,THREE.BoxGeometry>();private lots=new THREE.Group();private lotsKey='';private lotInstances?:THREE.InstancedMesh;private lotEdges?:THREE.LineSegments;private traffic:DistrictTraffic;readonly architectureCounts=new Map<string,number>();
+ readonly group=new THREE.Group();private k=new WorldKit('campus');private geometries=new Map<string,THREE.BoxGeometry>();private lots=new THREE.Group();private lotsKey='';private lotInstances?:THREE.InstancedMesh;private lotEdges?:THREE.LineSegments;private traffic:DistrictTraffic;private lawn?:CampusLawn;readonly architectureCounts=new Map<string,number>();
  constructor(readonly kind:'hq'|'raid'){
   this.group.name='technology-district-'+kind;this.lots.name='property-aprons';
-  const hq=kind==='hq',cx=hq?2:0,cz=hq?2.5:0,hx=hq?26:12.5,hz=hq?21.5:8.5;
+  const hq=kind==='hq',cx=hq?(P.minX+P.maxX)/2:0,cz=hq?(P.minZ+P.maxZ)/2:0,hx=hq?W/2:12.5,hz=hq?D/2:8.5;
   // The protected campus retains its original lawn. Everything beyond it is a
   // developed street-and-property network, rather than offices on a grass plane.
   this.block(this.group,[2000,.04,2000],[0,-.2,0],'#bac3bd');
-  this.block(this.group,[hx*2+3,.04,hz*2+3],[cx,-.14,cz],C.grass);
+  if(hq){this.lawn=new CampusLawn(hx*2+3,hz*2+3);this.lawn.mesh.position.set(cx,-.12,cz);}else this.block(this.group,[hx*2+3,.04,hz*2+3],[cx,-.14,cz],C.grass);
   const roadX=hx+5.2,roadZ=hz+5.2,step=15.5;
-  const axis=(half:number)=>{const n=Math.ceil(half*2/16);return [-half-step*2,-half-step,...Array.from({length:n+1},(_,i)=>-half+half*2*i/n),half+step,half+step*2];};
+  const axis=(half:number)=>{const n=hq?4:Math.ceil(half*2/16);return [-half-step*2,-half-step,...Array.from({length:n+1},(_,i)=>-half+half*2*i/n),half+step,half+step*2];};
   const xs=axis(roadX),zs=axis(roadZ),outerX=xs.at(-1)!,outerZ=zs.at(-1)!;
   for(const z of zs){if(Math.abs(z)>=roadZ-.01)this.street(cx,cz+z,outerX*2+25,false);else for(const sign of [-1,1])this.street(cx+sign*(roadX+outerX+25)/2,cz+z,outerX+25-roadX,false);}
   for(const x of xs){if(Math.abs(x)>=roadX-.01)this.street(cx+x,cz,outerZ*2+25,true);else for(const sign of [-1,1])this.street(cx+x,cz+sign*(roadZ+outerZ+25)/2,outerZ+25-roadZ,true);}
@@ -57,7 +59,7 @@ export class TechnologyDistrict{
   this.group.updateMatrixWorld(true);const nested:THREE.Mesh[]=[];this.group.traverse(o=>{if(o instanceof THREE.Mesh&&o.parent!==this.group)nested.push(o);});for(const mesh of nested)this.group.attach(mesh);
   this.k.batchStatic(this.group,'technology-district-'+kind);
   // Background offices receive the existing light but do not add a city-sized shadow pass.
-  this.group.traverse(o=>{if(o instanceof THREE.Mesh)o.castShadow=false;});this.group.add(this.lots);this.noPicking(this.group);
+  this.group.traverse(o=>{if(o instanceof THREE.Mesh)o.castShadow=false;});this.group.add(this.lots);if(this.lawn)this.group.add(this.lawn.mesh);this.noPicking(this.group);
   this.traffic=new DistrictTraffic(cx,cz,roadX,roadZ);this.group.add(this.traffic.group);
  }
  update(dt:number,width:number,height:number,reduced=false,hidden=false){this.traffic.update(dt,width,height,reduced,hidden);}
@@ -81,5 +83,5 @@ export class TechnologyDistrict{
  }
 
  private noPicking(parent:THREE.Object3D){parent.traverse(o=>{o.raycast=()=>{};o.userData.decorative=true;});}
- dispose(){this.traffic.dispose();this.lotInstances?.dispose();this.lotEdges?.geometry.dispose();(this.lotEdges?.material as THREE.Material|undefined)?.dispose();this.group.removeFromParent();for(const geo of this.geometries.values())geo.dispose();this.k.dispose();}
+ dispose(){this.lawn?.dispose();this.traffic.dispose();this.lotInstances?.dispose();this.lotEdges?.geometry.dispose();(this.lotEdges?.material as THREE.Material|undefined)?.dispose();this.group.removeFromParent();for(const geo of this.geometries.values())geo.dispose();this.k.dispose();}
 }

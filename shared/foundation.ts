@@ -1,3 +1,4 @@
+import {FOUNDATION_PLOT} from './foundation-plot';
 import {FOUNDER_HQ,founderHqLevel,gpuRigCapacity,type FounderHQUpgrade} from './founder-hq';
 import {advanceLandscape,landscapeRoute,type Landscape,obstacleSize} from './landscape';
 import {createStarterRaid} from '../raid/starter';
@@ -22,7 +23,7 @@ export type FoundationState = {founderHqLevel?:1|2;hqUpgrade?:FounderHQUpgrade;s
 export function initialFoundation(revision=0):FoundationState{return {version:1,revision,founderHqLevel:1,companyName:'Garage Intelligence',level:1,compute:STARTING_COMPUTE,capacity:COMPUTE_CAPACITY,builders:0,starterStation:'unplaced',raidRecord:{wins:[],completeHistory:true}};}
 export const hasBuilderStation=(s:FoundationState)=>s.starterStation!=='unplaced';
 export function establishBuilderStation(s:FoundationState,position:RigPosition,orientation:Orientation=0){if(hasBuilderStation(s))throw new Error('Builder Station — 1/1 Built');const reason=validFoundationPosition(s,position,'station',orientation);if(reason)throw new Error(reason);s.stationLayout={position:[...position],orientation};s.starterStation='placed';s.builders=1;s.buildersBusy=0;}
-export const RIG_BOUNDS={minX:-24,maxX:28,minZ:-19,maxZ:24};
+export const RIG_BOUNDS=FOUNDATION_PLOT;
 export function validRigPosition(position:RigPosition,orientation:Orientation=0):string|null{
  if(position.length!==2||!position.every(n=>Number.isFinite(n)&&Number.isInteger(n)))return 'Snap the rig to the grid.';
  const [x,z]=position,b=RIG_BOUNDS,[width,depth]=buildingFootprint(orientation);if(x-width/2<b.minX||x+width/2>b.maxX||z-depth/2<b.minZ||z+depth/2>b.maxZ)return 'Keep the rig inside the campus.';
@@ -95,7 +96,7 @@ function validateLayout(s:FoundationState,p:RigPosition,kind:RotatableBuilding,o
  const overlaps=(x:number,z:number,w:number,d:number,gap=0)=>Math.abs(a.x-x)<(a.w+w)/2+gap&&Math.abs(a.z-z)<(a.d+d)/2+gap;
  if(a.z+a.d/2>7.1&&a.z-a.d/2<10.9)return 'Keep the road clear.';
  for(const obstacle of OBSTACLES.filter(o=>o.kind==='rock'||!s.landscape&&o.kind==='tree'))if(overlaps(...obstacle.position,obstacle.width,obstacle.depth))return 'Choose open ground away from trees and rocks.';
- for(const o of s.landscape?.items||[]){const [w,d]=obstacleSize(o);if(overlaps(...o.position,w,d))return 'Clear the '+(o.kind==='tree'?'Tree':'Scrap Pile')+' before building here.';}
+ for(const o of s.landscape?.items||[]){const [w,d]=obstacleSize(o);if(overlaps(...o.position,w,d))return 'Clear the '+(o.kind==='tree'?'Tree':o.kind==='rock'?'Boulder':'Scrap Pile')+' before building here.';}
  for(const [x,z] of [[-16,7],[13,7],[-16,11],[25,11]])if(overlaps(x,z,1.4,1.4))return 'Leave space around the lights.';
  for(const other of FOUNDATION_BUILDINGS){if(other===kind||(pair&&other==='hangar'))continue;const layout=buildingLayout(s,other);if(!layout)continue;
  const reserved=!editing&&(other==='hq'||other==='station');const o=footprint(other,layout,reserved);

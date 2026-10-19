@@ -1,10 +1,11 @@
+import {FOUNDATION_PLOT as P} from './foundation-plot';
 import {FOUNDATION_BUILDINGS,buildingLayout,footprint,type FoundationState,type RigPosition} from './foundation';
 import {OBSTACLES} from './campus-layout';
-export const LANDSCAPE={initialCount:4,maxCount:8,regenerationMs:3*60*60*1000,workMs:6000,travelSpeed:8,rewards:{tree:2,scrap:3}} as const;
-export type LandscapeObstacle={id:string;kind:'tree'|'scrap';position:RigPosition;variant:number};
+export const LANDSCAPE={initialCount:28,maxCount:40,regenerationMs:3*60*60*1000,workMs:6000,travelSpeed:8,rewards:{tree:2,scrap:3,rock:4}} as const;
+export type LandscapeObstacle={id:string;kind:'tree'|'scrap'|'rock';position:RigPosition;variant:number};
 export type ClearingJob={id:string;obstacle:LandscapeObstacle;route:RigPosition[];startedAt:number;workAt:number;clearedAt:number;completesAt:number;rewarded:boolean};
-export type Landscape={version:1;epoch:string;sequence:number;nextSpawnAt:number;items:LandscapeObstacle[];clearing?:ClearingJob;pendingCompute:number;lastClear?:{id:string;kind:'tree'|'scrap';position:RigPosition;at:number;reward:number}};
-export const obstacleSize=(o:LandscapeObstacle):[number,number]=>o.kind==='tree'?[4,4]:[3,3];
+export type Landscape={version:1;epoch:string;sequence:number;nextSpawnAt:number;items:LandscapeObstacle[];clearing?:ClearingJob;pendingCompute:number;lastClear?:{id:string;kind:'tree'|'scrap'|'rock';position:RigPosition;at:number;reward:number}};
+export const obstacleSize=(o:LandscapeObstacle):[number,number]=>o.kind==='tree'?[4,4]:o.kind==='rock'?[4,3]:[3,3];
 const overlap=(a:{x:number;z:number;w:number;d:number},b:{x:number;z:number;w:number;d:number},gap=0)=>Math.abs(a.x-b.x)<(a.w+b.w)/2+gap&&Math.abs(a.z-b.z)<(a.d+b.d)/2+gap;
 function rect(o:LandscapeObstacle){const [w,d]=obstacleSize(o);return {x:o.position[0],z:o.position[1],w,d};}
 export function door(s:FoundationState,kind:typeof FOUNDATION_BUILDINGS[number]):RigPosition{
@@ -20,30 +21,35 @@ export function landscapeRoute(s:FoundationState,target:RigPosition,origin?:RigP
  const blocked=(x:number,z:number)=>solids.some(r=>overlap({x,z,w:clearance,d:clearance},r));
  const key=(p:number[])=>p.join(','),queue=[from],previous=new Map<string,string|null>([[key(from),null]]),end=key(to);
  if(blocked(...from as RigPosition)||blocked(...to as RigPosition))return [];
- for(let i=0;i<queue.length&&!previous.has(end);i++){const p=queue[i];for(const [dx,dz] of [[1,0],[0,1],[-1,0],[0,-1]]){const q=[p[0]+dx,p[1]+dz],k=key(q);if(q[0]<-23||q[0]>27||q[1]<-18||q[1]>23||previous.has(k)||blocked(...q as RigPosition))continue;previous.set(k,key(p));queue.push(q);}}
+ for(let i=0;i<queue.length&&!previous.has(end);i++){const p=queue[i];for(const [dx,dz] of [[1,0],[0,1],[-1,0],[0,-1]]){const q=[p[0]+dx,p[1]+dz],k=key(q);if(q[0]<P.minX+1||q[0]>P.maxX-1||q[1]<P.minZ+1||q[1]>P.maxZ-1||previous.has(k)||blocked(...q as RigPosition))continue;previous.set(k,key(p));queue.push(q);}}
  if(!previous.has(end))return [];const path:RigPosition[]=[];for(let k:string|null=end;k;k=previous.get(k)??null)path.unshift(k.split(',').map(Number) as RigPosition);
  return [...(origin?[]:[buildingLayout(s,'station')?.position??start]),start,...path,target];
 }
 export function validObstaclePosition(s:FoundationState,o:LandscapeObstacle){
- const a=rect(o);if(a.x-a.w/2<-23||a.x+a.w/2>27||a.z-a.d/2<-18||a.z+a.d/2>23||a.z+a.d/2>6.2&&a.z-a.d/2<11.8)return false;
+ const a=rect(o);if(a.x-a.w/2<P.minX+1||a.x+a.w/2>P.maxX-1||a.z-a.d/2<P.minZ+1||a.z+a.d/2>P.maxZ-1||a.z+a.d/2>6.2&&a.z-a.d/2<11.8)return false;
  for(const k of FOUNDATION_BUILDINGS){const l=buildingLayout(s,k);if(!l)continue;if(overlap(a,footprint(k,l,true),1))return false;const [x,z]=door(s,k);if(overlap(a,{x,z,w:3,d:3},1))return false;}
  for(const r of OBSTACLES.filter(o=>o.kind==='rock'))if(overlap(a,{x:r.position[0],z:r.position[1],w:r.width,d:r.depth},1))return false;
  for(const p of s.landscape?.items||[])if(overlap(a,rect(p),1))return false;
  for(const [x,z] of [[-16,7],[13,7],[-16,11],[25,11],[-18,-15],[23,-15],[-18,19],[22,20]])if(overlap(a,{x,z,w:3,d:2},.5))return false;
  if(s.landscape?.clearing?.route.some(([x,z])=>overlap(a,{x,z,w:1,d:1},.5)))return false;
  // Preserve the initial tutorial's building plots as well as access to every owned structure.
- for(const [x,z] of [[6,0],[12,0],[6,-6],[12,-6]])if(overlap(a,{x,z,w:4,d:3},1))return false;
+ for(const [x,z] of [[3,5],[6,0],[12,0],[6,-6],[12,-6]])if(overlap(a,{x,z,w:4,d:3},1))return false;
  const trial={...s,landscape:{...s.landscape!,items:[...(s.landscape?.items||[]),o]}};
  return FOUNDATION_BUILDINGS.filter(k=>buildingLayout(s,k)).every(k=>landscapeRoute(trial,door(s,k)).length>0);
 }
 function spawn(s:FoundationState,preferred?:{kind:LandscapeObstacle['kind'];position:RigPosition}){
  const l=s.landscape!;const n=++l.sequence;let seed=2166136261;for(const c of l.epoch)seed=Math.imul(seed^c.charCodeAt(0),16777619);seed=(seed+n*2654435761)>>>0;
  const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
- for(let i=0;i<160;i++){const o:LandscapeObstacle={id:l.epoch+':'+n,kind:preferred?.kind??(random()<.5?'tree':'scrap'),variant:n%3,position:i===0&&preferred?preferred.position:[Math.floor(random()*48)-22,Math.floor(random()*40)-17]};if(validObstaclePosition(s,o)){l.items.push(o);return;}}
+ for(let i=0;i<160;i++){const o:LandscapeObstacle={id:l.epoch+':'+n,kind:preferred?.kind??(['tree','tree','tree','tree','scrap','scrap','scrap','rock','rock'][Math.floor(random()*9)] as LandscapeObstacle['kind']),variant:n%3,position:i===0&&preferred?preferred.position:[Math.floor(random()*(P.maxX-P.minX-4))+P.minX+2,Math.floor(random()*(P.maxZ-P.minZ-4))+P.minZ+2]};if(validObstaclePosition(s,o)){l.items.push(o);return;}}
 }
 /** Additive, lazy JSON migration, called only inside the server save transaction. */
 export function ensureLandscape(s:FoundationState,now:number,epoch:string){if(s.landscape)return;s.landscape={version:1,epoch,sequence:0,nextSpawnAt:now+LANDSCAPE.regenerationMs,items:[],pendingCompute:0};
- for(const p of [{kind:'tree' as const,position:[-18,-9] as RigPosition},{kind:'tree' as const,position:[3,-14] as RigPosition},{kind:'scrap' as const,position:[18,-6] as RigPosition},{kind:'scrap' as const,position:[5,17] as RigPosition}])spawn(s,p);
+ // Keep the original first four landmarks, then spread cleanup work around the expanded territory.
+ const plan:{kind:LandscapeObstacle['kind'];position:RigPosition}[]=[{kind:'tree',position:[-18,-9]},{kind:'tree',position:[3,-14]},{kind:'scrap',position:[18,-6]},{kind:'scrap',position:[5,17]}];
+ for(const position of [[-29,-18],[-29,-4],[-27,21],[-12,-22],[13,-23],[29,-19],[30,23],[16,28],[-12,27],[-23,13]] as RigPosition[])plan.push({kind:'tree',position});
+ for(const position of [[-30,28],[-8,18],[25,-9],[31,14],[-24,-23],[11,21],[32,-1],[22,25]] as RigPosition[])plan.push({kind:'scrap',position});
+ for(const position of [[-31,0],[-21,27],[-4,-23],[23,-23],[33,27],[-12,-12]] as RigPosition[])plan.push({kind:'rock',position});
+ for(let i=0;i<LANDSCAPE.initialCount;i++)spawn(s,plan[i]);
 }
 export function advanceLandscape(s:FoundationState,now:number){const l=s.landscape;if(!l)return;
  const job=l.clearing;if(job&&now>=job.clearedAt&&!job.rewarded){l.items=l.items.filter(o=>o.id!==job.obstacle.id);job.rewarded=true;const reward=LANDSCAPE.rewards[job.obstacle.kind];l.pendingCompute+=reward;l.lastClear={id:job.id,kind:job.obstacle.kind,position:job.obstacle.position,at:job.clearedAt,reward};}
