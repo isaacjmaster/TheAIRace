@@ -1,0 +1,3 @@
+export function ResetConfirmation({busy,error,onCancel,onConfirm}:{busy:boolean;error:string;onCancel:()=>void;onConfirm:()=>void}){
+ return <><h2 id="foundation-dialog-title">Are you sure?</h2><div className="reset-icon-actions"><button className="reset-cancel" aria-label="Cancel" disabled={busy} onClick={onCancel}><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m9 9 14 14M23 9 9 23"/></svg></button><button className="reset-confirm" aria-label="Reset progress" disabled={busy} onClick={onConfirm}><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m7 17 6 6L26 9"/></svg></button></div>{busy&&<p className="reset-status" role="status">Resetting…</p>}{error&&<p className="reset-error" role="alert">{error}</p>}</>;
+}

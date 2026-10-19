@@ -1,12 +1,28 @@
-.company-opening{position:fixed;inset:0;z-index:110;overflow:hidden;background:#b8d5d6;touch-action:none}
-.company-opening.is-revealing{animation:company-reveal-base 3.6s ease both}
-.opening-mist{position:absolute;inset:-15%;background:radial-gradient(ellipse at 25% 42%,#d5e5df 8%,#c3dedc 36%,transparent 65%),radial-gradient(ellipse at 80% 60%,#dde9dc 3%,#b6d9db 40%,transparent 70%);will-change:opacity,transform}
-.is-revealing .opening-mist{animation:company-mist-parts 3.6s ease both}
-.opening-skip{position:absolute;right:calc(18px + env(safe-area-inset-right));top:calc(18px + env(safe-area-inset-top));min-height:44px;padding:10px 17px;color:#284e61;font-weight:800}
-@keyframes company-reveal-base{0%,12%{background:#b8d5d6}40%{background:#b8d5d688}100%{background:transparent}}
-@keyframes company-mist-parts{0%,10%{opacity:1;transform:scale(1)}55%{opacity:.58;transform:scale(1.18) translateY(-3%)}100%{opacity:0;transform:scale(1.45) translateY(-8%)}}
+.company-opening{position:fixed;inset:0;z-index:110;overflow:hidden;touch-action:none;isolation:isolate}
+.cloud-curtain{position:absolute;inset:0;pointer-events:none}
+.intro-cloud{position:absolute;max-width:none;object-fit:fill;user-select:none;-webkit-user-drag:none;will-change:transform;backface-visibility:hidden;--direction:-1;--flip:1}
+.cloud-right{--direction:1;--flip:-1;right:-9%}.cloud-left{left:-9%}
+.cloud-rear{width:100%;height:145%;top:-23%;z-index:1;--travel:109%}
+.cloud-front{width:90%;height:140%;top:-18%;z-index:2;--travel:112%}
+.cloud-front.cloud-right{top:-30%}.cloud-rear.cloud-right{top:-12%}
+.cloud-wisp{width:90%;height:162%;top:-30%;z-index:3;opacity:.4;--travel:120%}
+.intro-cloud{transform:translate3d(0,0,0) scaleX(var(--flip))}
+.is-revealing .cloud-rear{animation:cloud-bank-drift var(--cloud-duration) linear both}
+.is-revealing .cloud-front{animation:cloud-bank-part var(--cloud-duration) linear both}
+.is-revealing .cloud-wisp{animation:cloud-wisps-clear var(--cloud-duration) ease-in-out both}
+@keyframes cloud-bank-part{0%{transform:translate3d(0,0,0) scaleX(var(--flip))}16%{transform:translate3d(calc(var(--direction)*1.5%),-1%,0) scaleX(var(--flip))}96%,100%{transform:translate3d(calc(var(--direction)*var(--travel)),3%,0) scaleX(var(--flip))}}
+@keyframes cloud-bank-drift{0%{transform:translate3d(0,-1%,0) scaleX(var(--flip))}12%{transform:translate3d(calc(var(--direction)*1%),0,0) scaleX(var(--flip))}94%,100%{transform:translate3d(calc(var(--direction)*var(--travel)),-8%,0) scaleX(var(--flip))}}
+@keyframes cloud-wisps-clear{0%{opacity:.4;transform:translate3d(0,0,0) scaleX(var(--flip))}25%{opacity:.36;transform:translate3d(calc(var(--direction)*7%),-3%,0) scaleX(var(--flip))}85%{opacity:.28}100%{opacity:0;transform:translate3d(calc(var(--direction)*var(--travel)),6%,0) scaleX(var(--flip))}}
+.foundation-dialog.reset-confirmation{width:min(340px,calc(100vw - 32px));padding:30px 24px 26px;text-align:center;border-radius:26px;box-sizing:border-box}
+.foundation-dialog.reset-confirmation h2{font-size:clamp(25px,6vw,32px);font-weight:900;margin:0 0 24px}
+.reset-icon-actions{display:flex;justify-content:center;gap:20px}.reset-icon-actions button{width:92px;min-height:74px;border-radius:20px;display:grid;place-items:center;border:2px solid transparent;transition:transform .12s,filter .12s;padding:14px}
+.reset-icon-actions svg{width:36px;height:36px;fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.reset-icon-actions .reset-cancel{background:#e0e9e5;border-color:#bfd1cc;color:#4e6974;box-shadow:0 4px #a5bcb7}.reset-icon-actions .reset-confirm{background:linear-gradient(#d95e57,#b83b3f);border-color:#a93136;color:#fffaf0;box-shadow:0 4px #8d2a34}
+.reset-icon-actions button:hover:not(:disabled){filter:brightness(1.06)}.reset-icon-actions button:active:not(:disabled){transform:translateY(3px);box-shadow:none}.reset-icon-actions button:disabled{opacity:.5;cursor:wait}.reset-icon-actions button:focus-visible{outline:3px solid #2a9ec0;outline-offset:5px}
+.reset-status,.reset-error{font-size:13px;margin:18px 0 0}.reset-error{color:#a0343b;font-weight:700}
+@media(orientation:landscape) and (max-height:500px){.foundation-dialog.reset-confirmation{padding:22px}.foundation-dialog.reset-confirmation h2{margin-bottom:18px}.reset-icon-actions button{min-height:64px}}
 /* Keep HUD geometry stable, while removing hidden controls from touch, focus and accessibility. */
 .game-session[data-hud-company=false] .foundation-player,.game-session[data-hud-compute=false] .compute-hud:not(.research-hud),.game-session[data-hud-research=false] .research-hud,.game-session[data-hud-builders=false] .foundation-builder-box,.game-session[data-hud-build=false] .foundation-build,.game-session[data-hud-full=false] :is(.foundation-attack,.foundation-settings,.foundation-arrange,.foundation-leaderboard){visibility:hidden!important;pointer-events:none!important}
 .game-session[data-hud-company=true] .foundation-player,.game-session[data-hud-compute=true] .compute-hud:not(.research-hud),.game-session[data-hud-research=true] .research-hud,.game-session[data-hud-builders=true] .foundation-builder-box,.game-session[data-hud-build=true] .foundation-build,.game-session[data-hud-full=true] :is(.foundation-attack,.foundation-settings,.foundation-arrange,.foundation-leaderboard){animation:hud-discovery .35s ease both}
 @keyframes hud-discovery{from{opacity:0;filter:brightness(1.15)}to{opacity:1;filter:brightness(1)}}
-@media(prefers-reduced-motion:reduce){.company-opening,.company-opening *,.game-session :is(.foundation-player,.foundation-builder-box,.compute-hud,button){animation:none!important}.company-opening.is-revealing{background:transparent}.is-revealing .opening-mist{opacity:0}}
+@media(prefers-reduced-motion:reduce){.company-opening,.company-opening *,.game-session :is(.foundation-player,.foundation-builder-box,.compute-hud,button){animation:none!important}.company-opening{display:none}}

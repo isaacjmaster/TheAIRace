@@ -1,3 +1,4 @@
+import {CloudCurtain,cloudsAvailable,CLOUD_REVEAL_MS} from './CloudCurtain';
 import {useEffect,useRef,useState} from 'react';
 import type {AvaProgress} from '../../shared/ava';
 import './company-opening.css';
@@ -14,9 +15,9 @@ export function useCompanyOpening({ava,enabled,ready,companyKey,suppressed,claim
   claimed.current=companyKey;
   // Mark running before the response changes Ava's saved flag, avoiding a one-frame HUD flash.
   setPlaying(false);setRunning(companyKey);
-  void claimRef.current().then(ok=>{if(cancelled)return;if(!ok){setRunning(null);setBypassed(companyKey);return;}
-   setPlaying(true);const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-   timer=setTimeout(()=>setRunning(null),suppressed||reduced?0:3600);
+  void claimRef.current().then(async ok=>{if(cancelled)return;if(!ok){setRunning(null);setBypassed(companyKey);return;}
+   const artReady=await cloudsAvailable();if(cancelled)return;setPlaying(true);const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+   timer=setTimeout(()=>setRunning(null),suppressed||reduced||!artReady?0:CLOUD_REVEAL_MS);
   });
   return()=>{cancelled=true;clearTimeout(timer);};
  // Claim's saved flag changes during this effect; it must not cancel the reveal timer.
@@ -25,6 +26,4 @@ export function useCompanyOpening({ava,enabled,ready,companyKey,suppressed,claim
  useEffect(()=>{if(!running)return;const motion=matchMedia('(prefers-reduced-motion: reduce)'),finish=()=>setRunning(null),visibility=()=>{if(document.hidden)finish();};document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',finish);motion.addEventListener('change',finish);return()=>{document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',finish);motion.removeEventListener('change',finish);};},[running]);
  return {concealed:enabled&&ava?.status==='active'&&(pending&&bypassed!==companyKey||running===companyKey),animating:playing&&running===companyKey&&ava?.status==='active'&&!suppressed};
 }
-export function CompanyOpening({animating,busy,onSkip}:{animating:boolean;busy:boolean;onSkip:()=>void}){
- return <section className={`company-opening ${animating?'is-revealing':''}`} aria-label="Discovering your company"><div className="opening-mist" aria-hidden="true"/><button className="opening-skip glass" disabled={busy} onClick={onSkip}>Skip Tutorial</button></section>;
-}
+export const CompanyOpening=CloudCurtain;
