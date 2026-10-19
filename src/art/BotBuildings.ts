@@ -1,100 +1,110 @@
-import {registerScrapPose,animateScrapBot,turnScrapBot,SCRAP_BOT_VISUAL_SCALE,type BotLeg} from './ScrapBotMotion';
-import * as THREE from 'three';
-import {WorldKit,palette as c} from './world';
-/** Presentation only: shared silhouette, named limbs retained for existing animations. */
-export function scrapBotModel(k:WorldKit){
- const g=new THREE.Group();g.name='Scrap Bot';const rig=new THREE.Group(),core=new THREE.Group();rig.name='scrap-rig';core.name='body-core';rig.scale.setScalar(SCRAP_BOT_VISUAL_SCALE);g.add(rig);rig.add(core);const legs:BotLeg[]=[],arms:THREE.Group[]=[];
- for(const side of [-1,1]){
-  const leg=new THREE.Group();leg.name=side<0?'leg-left':'leg-right';rig.add(leg);
-  const upper=k.box(leg,[.13,1,.15],[0,0,0],c.dark,.025),lower=k.box(leg,[.15,1,.17],[0,0,0],c.cream,.025),knee=k.box(leg,[.19,.16,.19],[0,0,0],side<0?c.gold:c.slate,.04),foot=new THREE.Group();foot.name=side<0?'foot-left':'foot-right';leg.add(foot);
-  k.box(foot,[.26,.12,.36],[0,.06,.05],c.dark,.035);k.box(foot,[.23,.07,.13],[0,.12,.15],side<0?c.gold:c.cream,.025);k.box(foot,[.12,.025,.025],[0,.16,.21],c.cyan,.01,true);legs.push({group:leg,upper,lower,knee,foot,side});
-  const arm=new THREE.Group();arm.position.set(side*.33,.52,0);arm.name=side<0?'arm-left':'arm-right';core.add(arm);arms.push(arm);
-  k.box(arm,[.2,.19,.25],[0,.06,0],side<0?c.gold:c.cream,.045);k.box(arm,[.12,.23,.13],[0,-.13,0],c.dark,.025);k.box(arm,[.2,.17,.22],[0,-.26,.04],c.dark,.035);k.box(arm,[.045,.1,.03],[side*.06,-.27,.16],c.cyan,.01);
+import {CAMPUS_BOT_SCALE,hangarBay} from '../../shared/bot-presentation';
+import {registerScrapPose,animateScrapBot,turnScrapBot,SCRAP_BOT_VISUAL_SCALE,type BotLeg} from './ScrapBotMotion';
+import * as THREE from 'three';
+import {WorldKit,palette as c} from './world';
+/** Presentation only: shared silhouette, named limbs retained for existing animations. */
+export function scrapBotModel(k:WorldKit){
+ const g=new THREE.Group();g.name='Scrap Bot';const rig=new THREE.Group(),core=new THREE.Group();rig.name='scrap-rig';core.name='body-core';rig.scale.setScalar(SCRAP_BOT_VISUAL_SCALE);g.add(rig);rig.add(core);const legs:BotLeg[]=[],arms:THREE.Group[]=[];
+ for(const side of [-1,1]){
+  const leg=new THREE.Group();leg.name=side<0?'leg-left':'leg-right';rig.add(leg);
+  const upper=k.box(leg,[.13,1,.15],[0,0,0],c.dark,.025),lower=k.box(leg,[.15,1,.17],[0,0,0],c.cream,.025),knee=k.box(leg,[.19,.16,.19],[0,0,0],side<0?c.gold:c.slate,.04),foot=new THREE.Group();foot.name=side<0?'foot-left':'foot-right';leg.add(foot);
+  k.box(foot,[.26,.12,.36],[0,.06,.05],c.dark,.035);k.box(foot,[.23,.07,.13],[0,.12,.15],side<0?c.gold:c.cream,.025);k.box(foot,[.12,.025,.025],[0,.16,.21],c.cyan,.01,true);legs.push({group:leg,upper,lower,knee,foot,side});
+  const arm=new THREE.Group();arm.position.set(side*.33,.52,0);arm.name=side<0?'arm-left':'arm-right';core.add(arm);arms.push(arm);
+  k.box(arm,[.2,.19,.25],[0,.06,0],side<0?c.gold:c.cream,.045);k.box(arm,[.12,.23,.13],[0,-.13,0],c.dark,.025);k.box(arm,[.2,.17,.22],[0,-.26,.04],c.dark,.035);k.box(arm,[.045,.1,.03],[side*.06,-.27,.16],c.cyan,.01);
+ }
+ k.box(core,[.44,.35,.32],[0,.48,0],c.dark,.06);
+ k.box(core,[.38,.23,.09],[0,.52,.18],c.cream,.04);
+ k.box(core,[.12,.11,.025],[0,.53,.24],c.gold,.02);
+ k.box(core,[.56,.37,.42],[0,.86,0],c.cream,.075);
+ k.box(core,[.46,.24,.055],[0,.85,.22],c.dark,.055);
+ for(const x of [-.12,.12])k.box(core,[.065,.09,.028],[x,.87,.255],c.cyan,.025,true);
+ k.box(core,[.12,.07,.34],[.06,1.075,0],c.gold,.02);
+ for(const x of [-.3,.3]){const ear=k.cylinder(core,.095,.06,[x,.86,0],c.dark);ear.rotation.z=Math.PI/2;}
+  k.box(core,[.12,.025,.025],[0,.76,.26],c.slate,.01);k.box(core,[.2,.035,.04],[-.06,.63,.24],c.cyan,.01,true);k.box(core,[.05,.1,.05],[.25,1.05,-.08],c.slate,.015);k.box(core,[.075,.05,.075],[.25,1.105,-.08],c.gold,.02);k.batchStatic(core,'scrap-core');for(let i=0;i<arms.length;i++)k.batchStatic(arms[i],'scrap-arm-'+i);registerScrapPose(g,rig,core,legs,arms);return g;
+}
+export function fabricatorModel(k:WorldKit){
+ const g=new THREE.Group();g.name='Bot Fabricator';
+ k.box(g,[4,.24,3],[0,.16,0],c.dark,.12);k.box(g,[3.86,.16,2.88],[0,.36,0],c.cream,.1);
+ k.box(g,[2.35,.18,2.25],[0,.54,.08],c.dark,.12);
+ k.box(g,[2.02,.07,1.95],[0,.67,.08],c.cyan,.08,true);
+ k.box(g,[1.74,.09,1.65],[0,.75,.08],c.slate,.08);
+ k.cylinder(g,.58,.12,[0,.86,.08],c.dark);k.cylinder(g,.47,.05,[0,.95,.08],c.gold);
+ const bot=scrapBotModel(k);bot.scale.setScalar(CAMPUS_BOT_SCALE);bot.position.set(0,.99,.08);bot.name='assembly-bot';g.add(bot);
+ for(const side of [-1,1]){
+  k.box(g,[.65,2.35,1.25],[side*1.54,1.6,-.45],c.dark,.12);
+  k.box(g,[.68,1.45,.32],[side*1.54,2.1,-1],c.cream,.12);
+  k.box(g,[.5,.7,.18],[side*1.54,.97,.24],c.cream,.07);
+  k.box(g,[.09,.68,.035],[side*1.54,1,.35],c.cyan,.015,true);
+  const arm=new THREE.Group();arm.name=side<0?'fabrication-arm-left':'fabrication-arm-right';g.add(arm);
+  const upper=k.box(arm,[.15,1,.17],[0,0,0],c.slate,.03),lower=k.box(arm,[.12,1,.13],[0,0,0],c.dark,.025),tool=new THREE.Group();tool.name='assembly-gripper';arm.add(tool);k.box(tool,[.16,.14,.19],[0,0,0],c.gold,.025);for(const z of [-.105,.105])k.box(tool,[.035,.2,.045],[0,-.09,z],c.slate,.01);k.box(tool,[.03,.05,.08],[-side*.08,-.08,0],c.cyan,.01,true);
+  for(const z of [-1.16,1.16])k.box(g,[.3,.12,.24],[side*1.65,.49,z],c.dark,.04);
+ }
+ k.box(g,[3.9,.5,1.55],[0,2.98,-.44],c.cream,.16);
+ k.box(g,[2.45,.26,.12],[0,2.97,.39],c.dark,.05);
+ const lamp=k.box(g,[1.3,.08,.04],[0,3,.47],c.cyan,.02,true);lamp.name='production-light';
+ k.box(g,[2,.12,.85],[0,3.29,-.45],c.dark,.07);
+ for(let i=0;i<4;i++)k.box(g,[1.2,.03,.06],[0,3.37,-.72+i*.16],c.slate,.01);
+ k.box(g,[1.5,.07,.45],[0,2.69,-.2],c.gold,.03,true);
+ k.box(g,[.56,.5,.3],[1.5,.72,1],c.dark,.07);const screen=k.box(g,[.44,.25,.04],[1.5,.9,1.17],c.cyan,.03,true);screen.rotation.x=-.2;
+ const ramp=k.box(g,[1.3,.08,.65],[0,.54,1.05],c.slate,.025);ramp.rotation.x=.45;animateFabricator(g,0,0,false,true);return g;
+}
+export function hangarModel(k:WorldKit,bots:number,expanded=false){
+ const g=new THREE.Group();g.name='Bot Hangar';const shell=new THREE.Group();g.add(shell);shell.name='hangar-structure';if(expanded)shell.scale.set(1.4,1.08,1.4);
+ k.box(shell,[4,.22,3],[0,.15,0],c.dark,.12);k.box(shell,[3.88,.12,2.9],[0,.32,0],c.cream,.08);
+ // Open four-sided charging pavilion: no opaque rear wall or preferred facade.
+ for(const x of [-1.78,1.78])for(const z of [-1.22,1.22]){
+  k.box(shell,[.28,1.75,.28],[x,1.26,z],c.dark,.07);
+  k.box(shell,[.3,.62,.3],[x,.72,z],c.cream,.06);
+  k.box(shell,[.08,.65,.035],[x,1.42,z+Math.sign(z)*.15],c.cyan,.012,true);
+  k.box(shell,[.035,.65,.08],[x+Math.sign(x)*.15,1.42,z],c.cyan,.012,true);
+  k.box(shell,[.34,.12,.34],[x,2.18,z],c.gold,.035);
  }
- k.box(core,[.44,.35,.32],[0,.48,0],c.dark,.06);
- k.box(core,[.38,.23,.09],[0,.52,.18],c.cream,.04);
- k.box(core,[.12,.11,.025],[0,.53,.24],c.gold,.02);
- k.box(core,[.56,.37,.42],[0,.86,0],c.cream,.075);
- k.box(core,[.46,.24,.055],[0,.85,.22],c.dark,.055);
- for(const x of [-.12,.12])k.box(core,[.065,.09,.028],[x,.87,.255],c.cyan,.025,true);
- k.box(core,[.12,.07,.34],[.06,1.075,0],c.gold,.02);
- for(const x of [-.3,.3]){const ear=k.cylinder(core,.095,.06,[x,.86,0],c.dark);ear.rotation.z=Math.PI/2;}
-  k.box(core,[.12,.025,.025],[0,.76,.26],c.slate,.01);k.box(core,[.2,.035,.04],[-.06,.63,.24],c.cyan,.01,true);k.box(core,[.05,.1,.05],[.25,1.05,-.08],c.slate,.015);k.box(core,[.075,.05,.075],[.25,1.105,-.08],c.gold,.02);k.batchStatic(core,'scrap-core');for(let i=0;i<arms.length;i++)k.batchStatic(arms[i],'scrap-arm-'+i);registerScrapPose(g,rig,core,legs,arms);return g;
-}
-export function fabricatorModel(k:WorldKit){
- const g=new THREE.Group();g.name='Bot Fabricator';
- k.box(g,[4,.24,3],[0,.16,0],c.dark,.12);k.box(g,[3.86,.16,2.88],[0,.36,0],c.cream,.1);
- k.box(g,[2.35,.18,2.25],[0,.54,.08],c.dark,.12);
- k.box(g,[2.02,.07,1.95],[0,.67,.08],c.cyan,.08,true);
- k.box(g,[1.74,.09,1.65],[0,.75,.08],c.slate,.08);
- k.cylinder(g,.58,.12,[0,.86,.08],c.dark);k.cylinder(g,.47,.05,[0,.95,.08],c.gold);
- const bot=scrapBotModel(k);bot.position.set(0,.99,.08);bot.name='assembly-bot';g.add(bot);
- for(const side of [-1,1]){
-  k.box(g,[.65,2.35,1.25],[side*1.54,1.6,-.45],c.dark,.12);
-  k.box(g,[.68,1.45,.32],[side*1.54,2.1,-1],c.cream,.12);
-  k.box(g,[.5,.7,.18],[side*1.54,.97,.24],c.cream,.07);
-  k.box(g,[.09,.68,.035],[side*1.54,1,.35],c.cyan,.015,true);
-  const shoulder=k.cylinder(g,.22,.32,[side*1.13,2.34,-.2],c.gold);shoulder.rotation.z=Math.PI/2;
-  const arm=k.box(g,[.63,.18,.2],[side*.9,2.24,-.18],c.slate,.05);arm.rotation.z=side*.42;
-  k.box(g,[.15,.46,.18],[side*.65,1.98,-.18],c.dark,.03);
-  k.box(g,[.22,.16,.22],[side*.65,1.7,-.18],c.gold,.035);
-  for(const z of [-1.16,1.16])k.box(g,[.3,.12,.24],[side*1.65,.49,z],c.dark,.04);
+ // Segmented perimeter canopy leaves a generous central skylight for visible troops.
+ for(const z of [-1.17,1.17]){
+  const roof=k.box(shell,[3.8,.18,.62],[0,2.38,z],c.cream,.09);roof.rotation.x=Math.sign(z)*.12;
+  k.box(shell,[2.7,.14,.08],[0,2.19,z+Math.sign(z)*.29],c.dark,.035);
+  k.box(shell,[.95,.045,.03],[0,2.2,z+Math.sign(z)*.31],c.cyan,.01,true);
+  for(const x of [-.24,0,.24])k.box(shell,[.1,.055,.03],[x,2.21,z+Math.sign(z)*.31],c.gold,.01,true);
  }
- k.box(g,[3.9,.5,1.55],[0,2.98,-.44],c.cream,.16);
- k.box(g,[2.45,.26,.12],[0,2.97,.39],c.dark,.05);
- const lamp=k.box(g,[1.3,.08,.04],[0,3,.47],c.cyan,.02,true);lamp.name='production-light';
- k.box(g,[2,.12,.85],[0,3.29,-.45],c.dark,.07);
- for(let i=0;i<4;i++)k.box(g,[1.2,.03,.06],[0,3.37,-.72+i*.16],c.slate,.01);
- k.box(g,[1.5,.07,.45],[0,2.69,-.2],c.gold,.03,true);
- k.box(g,[.56,.5,.3],[1.5,.72,1],c.dark,.07);const screen=k.box(g,[.44,.25,.04],[1.5,.9,1.17],c.cyan,.03,true);screen.rotation.x=-.2;
- return g;
-}
-export function hangarModel(k:WorldKit,bots:number){
- const g=new THREE.Group();g.name='Bot Hangar';
- k.box(g,[4,.22,3],[0,.15,0],c.dark,.12);k.box(g,[3.88,.12,2.9],[0,.32,0],c.cream,.08);
- k.box(g,[3.7,1.9,.16],[0,1.35,-1.35],c.dark,.05);
- for(const x of [-1.83,1.83]){
-  k.box(g,[.3,1.65,2.7],[x,1.18,-.03],c.dark,.09);
-  k.box(g,[.32,1.1,.68],[x,1.1,1.02],c.cream,.07);
-  k.box(g,[.06,.64,.04],[x,1.2,1.39],c.cyan,.02,true);
+ for(const x of [-1.56,1.56]){
+  const roof=k.box(shell,[.65,.18,1.85],[x,2.38,0],c.slate,.075);roof.rotation.z=-Math.sign(x)*.12;
+  k.box(shell,[.08,.14,1.65],[x+Math.sign(x)*.31,2.19,0],c.dark,.025);
+  k.box(shell,[.03,.045,.8],[x+Math.sign(x)*.36,2.2,0],c.cyan,.01,true);
  }
- // Segmented barrel canopy over rear docking row; open apron keeps bots legible.
- for(const side of [-1,1]){
-  const shoulder=k.box(g,[.9,.2,1.55],[side*1.48,2.12,-.64],c.slate,.06);shoulder.rotation.z=-side*.65;
-  const roof=k.box(g,[1.22,.2,1.55],[side*.55,2.46,-.64],c.cream,.06);roof.rotation.z=-side*.12;
-  for(const z of [-1.37,-.65,.08]){const seam=k.box(g,[1.22,.035,.04],[side*.55,2.57,z],c.slate,.01);seam.rotation.z=-side*.12;}
- }
- k.box(g,[2.3,.2,.14],[0,2.29,.17],c.dark,.04);k.box(g,[.8,.045,.03],[0,2.3,.25],c.cyan,.01,true);
- k.box(g,[2.7,.08,.06],[0,1.8,-1.24],c.gold,.02,true);
  for(let i=0;i<10;i++){const x=-1.46+(i%5)*.73,z=i<5?-.65:.65;
-  k.box(g,[.62,.025,.91],[x,.405,z],c.slate,.04);k.box(g,[.46,.03,.06],[x,.43,z+.4],c.cyan,.01,true);
-  if(i<bots){const bot=scrapBotModel(k);bot.scale.setScalar(.7);bot.position.set(x,.44,z);bot.name='docked-bot-'+i;g.add(bot);}
+  k.box(shell,[.62,.025,.91],[x,.405,z],c.slate,.04);k.box(shell,[.46,.03,.06],[x,.43,z+.4],c.cyan,.01,true);
+  if(i<bots){const bot=scrapBotModel(k);bot.scale.setScalar(CAMPUS_BOT_SCALE);const bay=hangarBay(i,expanded);bot.position.set(...bay);bot.userData.bay=bay;bot.name='docked-bot-'+i;g.add(bot);}
  }
- k.box(g,[2.8,.08,.12],[0,.4,1.44],c.cyan,.02,true);
- // Docking equipment stays inside the original lot: charge rails, latch and status panel.
- for(const x of [-1.45,0,1.45]){k.box(g,[.1,.85,.12],[x,.95,-1.2],c.slate,.025);k.box(g,[.12,.08,.04],[x,1.4,-1.1],c.cyan,.01,true);}
- const sign=k.box(g,[.9,.22,.04],[0,2.28,.26],c.dark,.03);sign.name='hangar-status';
- for(let i=0;i<3;i++){const lamp=k.box(g,[.1,.06,.025],[-.22+i*.22,2.29,.3],c.cyan,.01,true);lamp.name='hangar-lamp-'+i;}
- k.box(g,[.38,.65,.25],[1.5,.75,1.12],c.dark,.04);k.box(g,[.26,.16,.03],[1.5,.94,1.26],c.gold,.02,true);return g;
-}
-
-/** Free permanent worker dock; fits entirely inside the already reserved work area. */
-export function builderStationModel(k:WorldKit){
- const g=new THREE.Group();g.name='Builder Station';
- k.box(g,[2.7,.18,1.8],[0,.12,0],c.dark,.13);k.box(g,[2.55,.1,1.7],[0,.26,0],c.cream,.1);
- k.box(g,[1.35,.03,1.1],[0,.33,.13],c.slate,.08);k.box(g,[1,.025,.08],[0,.36,.61],c.cyan,.02,true);
- k.box(g,[2.2,1.55,.2],[0,1.1,-.73],c.dark,.1);
- for(const side of [-1,1]){k.box(g,[.22,1.5,1.6],[side*1.14,1.1,0],c.slate,.06);k.box(g,[.24,.65,.3],[side*1.14,.66,.61],c.cream,.05);}
- const roof=k.box(g,[2.65,.24,1.3],[0,1.97,-.28],c.cream,.14);roof.rotation.x=-.12;
- k.box(g,[.6,.06,.3],[0,2.14,-.28],c.gold,.04);
- k.box(g,[1.15,.06,.04],[0,1.7,-.57],c.gold,.02,true);
- k.box(g,[.45,.64,.4],[-.83,.63,-.35],c.dark,.04);k.box(g,[.22,.12,.03],[-.83,.82,-.12],c.cyan,.02,true);
- for(const x of [.62,.82]){k.box(g,[.07,.4,.07],[x,1.15,-.59],c.slate,.02);k.box(g,[.16,.08,.08],[x,1.35,-.59],c.gold,.02);}
+ for(const z of [-1.44,1.44])k.box(shell,[2.8,.06,.08],[0,.4,z],c.cyan,.02,true);
+ for(const x of [-1.88,1.88]){
+  k.box(shell,[.06,.06,1.7],[x,.4,0],c.cyan,.015,true);
+  k.box(shell,[.22,.48,.42],[x,.64,0],c.dark,.04);
+  k.box(shell,[.025,.14,.26],[x+Math.sign(x)*.1,.76,0],c.gold,.02,true);
+ }
  return g;
 }
 
-/** Subtle bay-local motion: never crosses a neighbour's docking space. */
-export function animateDockedBot(bot:THREE.Object3D,slot:number,time:number,reduced=false,dt=1/60){
- const x=-1.46+(slot%5)*.73,z=slot<5?-.65:.65,phase=time*.8+slot*1.7;
- bot.position.set(x,.44,z);turnScrapBot(bot,reduced?0:Math.sin(phase*.65)*.16,dt,reduced);animateScrapBot(bot,dt,reduced,0,reduced?0:Math.sin(phase*1.3)*.009);
-}
+/** Free permanent worker dock; fits entirely inside the already reserved work area. */
+export function builderStationModel(k:WorldKit){
+ const g=new THREE.Group();g.name='Builder Station';
+ k.box(g,[2.7,.18,1.8],[0,.12,0],c.dark,.13);k.box(g,[2.55,.1,1.7],[0,.26,0],c.cream,.1);
+ k.box(g,[1.35,.03,1.1],[0,.33,.13],c.slate,.08);k.box(g,[1,.025,.08],[0,.36,.61],c.cyan,.02,true);
+ k.box(g,[2.2,1.55,.2],[0,1.1,-.73],c.dark,.1);
+ for(const side of [-1,1]){k.box(g,[.22,1.5,1.6],[side*1.14,1.1,0],c.slate,.06);k.box(g,[.24,.65,.3],[side*1.14,.66,.61],c.cream,.05);}
+ const roof=k.box(g,[2.65,.24,1.3],[0,1.97,-.28],c.cream,.14);roof.rotation.x=-.12;
+ k.box(g,[.6,.06,.3],[0,2.14,-.28],c.gold,.04);
+ k.box(g,[1.15,.06,.04],[0,1.7,-.57],c.gold,.02,true);
+ k.box(g,[.45,.64,.4],[-.83,.63,-.35],c.dark,.04);k.box(g,[.22,.12,.03],[-.83,.82,-.12],c.cyan,.02,true);
+ for(const x of [.62,.82]){k.box(g,[.07,.4,.07],[x,1.15,-.59],c.slate,.02);k.box(g,[.16,.08,.08],[x,1.35,-.59],c.gold,.02);}
+ return g;
+}
+
+/** Subtle bay-local motion: never crosses a neighbour's docking space. */
+export function animateDockedBot(bot:THREE.Object3D,slot:number,time:number,reduced=false,dt=1/60){
+ const bay=(bot.userData.bay as [number,number,number]|undefined)??hangarBay(slot),phase=time*.8+slot*1.7;
+ bot.position.set(...bay);turnScrapBot(bot,reduced?0:Math.sin(phase*.65)*.16,dt,reduced);animateScrapBot(bot,dt,reduced,0,reduced?0:Math.sin(phase*1.3)*.009);
+}
+
+const assemblyA=new THREE.Vector3(),assemblyB=new THREE.Vector3(),assemblyC=new THREE.Vector3(),assemblyD=new THREE.Vector3(),assemblyUp=new THREE.Vector3(0,1,0);
+function assemblyLink(mesh:THREE.Object3D,a:THREE.Vector3,b:THREE.Vector3){mesh.position.copy(a).add(b).multiplyScalar(.5);assemblyD.copy(b).sub(a);mesh.scale.y=assemblyD.length();mesh.quaternion.setFromUnitVectors(assemblyUp,assemblyD.normalize());}
+export function animateFabricator(g:THREE.Object3D|undefined,time:number,progress:number,active:boolean,reduced=false){if(!g)return;const bot=g.getObjectByName('assembly-bot');if(bot){bot.visible=active;const core=bot.getObjectByName('body-core');if(core){core.visible=progress>.25;for(const name of ['arm-left','arm-right']){const arm=core.getObjectByName(name);if(arm)arm.visible=progress>.62;}}}for(const side of [-1,1]){const arm=g.getObjectByName(side<0?'fabrication-arm-left':'fabrication-arm-right');if(!arm)continue;const swing=active&&!reduced?Math.sin(time*3+side)*.1:0;assemblyA.set(side*1.12,2.22,-.22);assemblyB.set(side*.77,1.93+swing,-.04);assemblyC.set(side*(active?.36:.68),active?1.49+swing:1.9,.12+(active?Math.cos(time*2+side)*.1:0));assemblyLink(arm.children[0],assemblyA,assemblyB);assemblyLink(arm.children[1],assemblyB,assemblyC);arm.children[2].position.copy(assemblyC);}const lamp=g.getObjectByName('production-light');if(lamp)lamp.visible=!active||reduced||Math.sin(time*5)>-.4;}
