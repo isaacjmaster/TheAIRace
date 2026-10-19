@@ -1,3 +1,4 @@
+import {TechnologyDistrict,districtEnabled} from '../src/art/TechnologyDistrict';
 import {punchExtension,punchWindup} from '../src/art/ScrapCombatMotion';
 import {animateScrapBot,turnScrapBot} from '../src/art/ScrapBotMotion';
 import { palette as colors, lightWorld, material, WorldKit } from '../src/art/world';
@@ -18,6 +19,7 @@ export class RaidScene {
   readonly scene = new THREE.Scene();
   readonly camera = new THREE.OrthographicCamera();
   private root = new THREE.Group();
+  private district?:TechnologyDistrict;
   private terrainKit = new WorldKit();
   private visuals = new Map<number, Visual>();
   private compound = new THREE.Group();
@@ -73,16 +75,8 @@ export class RaidScene {
     const mesh = new THREE.Mesh(this.geometry(key, () => new THREE.CylinderGeometry(radius, radius, height, sides)), this.mat(color, glow));
     mesh.position.set(...pos); mesh.castShadow = !glow; mesh.receiveShadow = true; parent.add(mesh); return mesh;
   }
-  private environment() {
-    this.terrainKit.terrain(this.scene,17,12);
-    // Defense compound sits within a continuous valley, with infrastructure beyond the drop zone.
-    this.box(this.root,[80,.08,2.6],[0,-.07,-12.3],'#182c41');
-    for(const z of [-10.9,-13.7])this.box(this.root,[80,.12,.18],[0,-.04,z],colors.slate);
-    for(const x of [-18,18])for(const z of [-9,0,8])this.terrainKit.tree(this.scene,x,z,1.3);
-    for(const x of [-11,11]){
-      this.box(this.root,[3,.35,1.5],[x,.04,-10.5],colors.dark);
-      this.box(this.root,[2.5,.06,.08],[x,.25,-9.72],colors.cyan,.01,true);
-    }
+  private environment(){if(!districtEnabled()){this.legacyEnvironment();return;}this.district=new TechnologyDistrict('raid');this.scene.add(this.district.group);this.deploymentEnvironment();this.batchStatic(this.root);}
+  private deploymentEnvironment(){
     // Wide lanes exactly match the shared deployment bounds.
     const d = MAP.deployment;
     const outerWidth = d.maxX - d.minX, outerDepth = d.maxY - d.minY;
@@ -109,6 +103,19 @@ export class RaidScene {
       this.cylinder(this.root, .15, .5, [x - .4, .22, z + .4], '#819eb7', 8);
       this.cylinder(this.root, .11, .08, [x - .4, .51, z + .4], colors.cyan, 8, true);
     }
+  }
+  /** Preserved pre-district scenery for visual comparison/reversion. */
+  private legacyEnvironment() {
+    this.terrainKit.terrain(this.scene,17,12);
+    // Defense compound sits within a continuous valley, with infrastructure beyond the drop zone.
+    this.box(this.root,[80,.08,2.6],[0,-.07,-12.3],'#182c41');
+    for(const z of [-10.9,-13.7])this.box(this.root,[80,.12,.18],[0,-.04,z],colors.slate);
+    for(const x of [-18,18])for(const z of [-9,0,8])this.terrainKit.tree(this.scene,x,z,1.3);
+    for(const x of [-11,11]){
+      this.box(this.root,[3,.35,1.5],[x,.04,-10.5],colors.dark);
+      this.box(this.root,[2.5,.06,.08],[x,.25,-9.72],colors.cyan,.01,true);
+    }
+    this.deploymentEnvironment();
     // Distant infrastructure and landscaping never occupy a deployable cell.
     for(let i=0;i<10;i++) {
       const x=-24+i*5;
@@ -348,6 +355,7 @@ export class RaidScene {
     const target = this.visuals.get(e.target); if (target) {target.lastHit = this.clock;target.lastDamage=this.clock;}
   }
   update(s: Raid, selected: Kind, dt: number) {
+    this.district?.update(dt,this.width,this.height,this.reduced,document.hidden);
     if (this.paused) return;
     this.clock += dt;
     if (s !== this.lastState) { this.clearBattle(); this.lastState = s; this.compoundEnvironment(s); this.walls(s.buildings); for (const b of s.buildings) this.visuals.set(b.id, this.building(b)); this.center.set(0, .2, 0); this.camera.position.set(7, 25, 32); this.camera.zoom = 1; this.camera.lookAt(this.center); this.camera.updateProjectionMatrix(); }
@@ -436,6 +444,7 @@ export class RaidScene {
     for (const b of this.beams.values()) this.root.remove(b.group); this.beams.clear(); this.seenEffects.clear();
   }
   dispose() {
+    this.district?.dispose();
     this.resizeObserver.disconnect(); this.clearBattle(); this.renderer.domElement.removeEventListener('webglcontextlost', this.contextLost);
     for (const g of this.geometries.values()) g.dispose(); for (const m of this.materials.values()) m.dispose();
     this.scene.traverse(node => { if(node instanceof THREE.InstancedMesh)node.dispose(); if (node instanceof THREE.DirectionalLight) node.shadow.dispose(); });

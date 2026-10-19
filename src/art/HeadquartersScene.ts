@@ -1,3 +1,4 @@
+import {TechnologyDistrict,districtEnabled} from './TechnologyDistrict';
 import {founderHqLevel} from '../../shared/founder-hq';
 import {lightCampus} from './CampusFinish';
 import {constructionSignature,constructionWork,builderReturn,type BuilderWork} from './builderWork';
@@ -18,7 +19,7 @@ import { lightWorld, palette as c, WorldKit } from './world';
 
 /** Reconstructs the original garage's objects in the raid's low-poly material language. */
 export class HeadquartersScene {
- private mapBoundary?:MapBoundary;
+ private district?:TechnologyDistrict;private mapBoundary?:MapBoundary;
  private landscapeKit?:WorldKit;private landscapeGroup?:THREE.Group;private landscapeKey='';private landscapeHits:THREE.Object3D[]=[];private landscapeItems:LandscapeObstacle[]=[];private cleanupJob?:ClearingJob;private cleanupNow=0;private cleanupEnd?:number;private lastCleanup?:string;
  private cleanupParticles:{group:THREE.Group;time:number}[]=[];private particleKit=new WorldKit('campus');
  private stationOwned=true;private workPlan?:BuilderWork;private builderRoute:RigPosition[]=[];private builderSegment=1;private workRoute=0;private workPause=0;private returning=false;private constructionKey='';
@@ -99,6 +100,11 @@ export class HeadquartersScene {
 
  }
  private buildEnvironment(){
+  if(this.minimal&&districtEnabled()){this.district=new TechnologyDistrict('hq');this.scene.add(this.district.group);return;}
+  this.buildLegacyEnvironment();
+ }
+ /** Preserved pre-district landscape; use ?landscape=legacy to compare/revert. */
+ private buildLegacyEnvironment(){
   const k=this.kit,s=this.scene;k.terrain(s,33,29,this.minimal?{minX:-31.5,maxX:35.5,minZ:-26,maxZ:31}:undefined);
   if(this.minimal){this.mapBoundary=new MapBoundary();s.add(this.mapBoundary.group);}
   // Low retaining walls, a continuous service road and planted border make this a miniature campus.
@@ -190,6 +196,7 @@ export class HeadquartersScene {
   this.previewMaterials.forEach(m=>m.dispose());this.previewMaterials=[];
  }
  syncLandmarks(state:FoundationState){
+  this.district?.syncLots(state);
   const level=founderHqLevel(state);if(this.minimal&&level!==this.founderLevel){this.founderHouse?.removeFromParent();this.founderHouse=founderHQ(this.kit,this.garage,level);this.founderLevel=level;this.renderer.domElement.dataset.founderHqLevel=String(level);if(this.landmarksSynced&&!this.reduced){this.hqReveal=.45;const fx=new THREE.Group();const layout=buildingLayout(state,'hq')!;fx.position.set(layout.position[0],1,layout.position[1]);for(let i=0;i<10;i++)this.particleKit.box(fx,[.13,.12,.13],[Math.sin(i*2.4)*3,1+i*.25,Math.cos(i*2.4)*2],i%2?c.gold:c.cyan,.025);this.scene.add(fx);this.cleanupParticles.push({group:fx,time:0});}}
   const hq=buildingLayout(state,'hq')!,station=buildingLayout(state,'station');this.stationOwned=!!station;this.builderHomeYaw=(station?.orientation??0)*Math.PI/2;const bot=this.builders[0];if(bot)bot.group.visible=!!station;if(this.stationGroup)this.stationGroup.visible=!!station;this.renderer.domElement.dataset.builders=String(state.builders);this.home.set(hq.position[0]+2,0,hq.position[1]+1);if(!this.landmarksSynced&&state.hqLayout)this.target.copy(this.home);this.landmarksSynced=true;
   this.garage.position.set(hq.position[0]+5,0,hq.position[1]+1);if(this.founderHouse)this.founderHouse.rotation.y=hq.orientation*Math.PI/2;
@@ -403,6 +410,6 @@ export class HeadquartersScene {
  zoom(factor:number){this.zoomTarget=THREE.MathUtils.clamp(this.zoomTarget*factor,this.minimal?.65:.8,this.minimal?2:1.65);}
  pan(dx:number,dy:number){const scale=(this.camera.right-this.camera.left)/Math.max(1,this.host.clientWidth)/this.camera.zoom;const right=new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld,0);const up=new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld,1);up.y=0;up.normalize();this.target.addScaledVector(right,-dx*scale).addScaledVector(up,dy*scale);this.target.y=0;if(this.minimal){this.target.x=THREE.MathUtils.clamp(this.target.x,-24,28);this.target.z=THREE.MathUtils.clamp(this.target.z,-19,24);return;}const flat=new THREE.Vector2(this.target.x-this.home.x,this.target.z-this.home.z);const limit=this.worldSpan*.28;if(flat.length()>limit)flat.setLength(limit);this.target.set(this.home.x+flat.x,0,this.home.z+flat.y);}
  reset(){this.target.copy(this.home);this.zoomTarget=1;}
- update(dt:number){if(this.paused)return;this.clock+=dt;const next=this.center.clone().lerp(this.target,this.reduced?1:Math.min(1,dt*10));this.camera.position.add(next.clone().sub(this.center));this.center.copy(next);this.camera.lookAt(this.center);this.camera.zoom=THREE.MathUtils.lerp(this.camera.zoom,this.zoomTarget,this.reduced?1:Math.min(1,dt*10));this.camera.updateProjectionMatrix();this.animateWorld(dt);this.renderer.render(this.scene,this.camera);this.renderer.domElement.dataset.drawCalls=String(this.renderer.info.render.calls);this.renderer.domElement.dataset.triangles=String(this.renderer.info.render.triangles);}
- dispose(){this.hqScaffold?.removeFromParent();this.mapBoundary?.dispose();this.landscapeKit?.dispose();this.particleKit.dispose();document.removeEventListener('visibilitychange',this.visibility);for(const w of this.walkers)w.group.removeFromParent();this.walkers=[];this.botKit?.dispose();this.clearRigPreview();this.rigKit?.dispose();this.rig2Kit?.dispose();this.clearPlacement();this.observer.disconnect();this.renderer.domElement.removeEventListener('webglcontextlost',this.lost);this.scene.traverse(o=>{if(o instanceof THREE.DirectionalLight)o.shadow.dispose();});this.kit.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
+ update(dt:number){if(this.paused)return;this.district?.update(dt,this.host.clientWidth,this.host.clientHeight,this.reduced,document.hidden);this.clock+=dt;const next=this.center.clone().lerp(this.target,this.reduced?1:Math.min(1,dt*10));this.camera.position.add(next.clone().sub(this.center));this.center.copy(next);this.camera.lookAt(this.center);this.camera.zoom=THREE.MathUtils.lerp(this.camera.zoom,this.zoomTarget,this.reduced?1:Math.min(1,dt*10));this.camera.updateProjectionMatrix();this.animateWorld(dt);this.renderer.render(this.scene,this.camera);this.renderer.domElement.dataset.drawCalls=String(this.renderer.info.render.calls);this.renderer.domElement.dataset.triangles=String(this.renderer.info.render.triangles);}
+ dispose(){this.district?.dispose();this.hqScaffold?.removeFromParent();this.mapBoundary?.dispose();this.landscapeKit?.dispose();this.particleKit.dispose();document.removeEventListener('visibilitychange',this.visibility);for(const w of this.walkers)w.group.removeFromParent();this.walkers=[];this.botKit?.dispose();this.clearRigPreview();this.rigKit?.dispose();this.rig2Kit?.dispose();this.clearPlacement();this.observer.disconnect();this.renderer.domElement.removeEventListener('webglcontextlost',this.lost);this.scene.traverse(o=>{if(o instanceof THREE.DirectionalLight)o.shadow.dispose();});this.kit.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
 }
