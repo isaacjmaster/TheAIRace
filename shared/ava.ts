@@ -41,9 +41,9 @@ export function avaLine(p:AvaProgress,s:FoundationState,now:number,panel:string|
  "Tap Build and choose a GPU Rig. It'll help us generate Compute.",
  "Choose the GPU Rig card under Resources. It generates Compute that we'll collect ourselves.",
  "Find some open ground. Drag or tap to position the rig, then Confirm. Pinch to zoom, or switch to Pan camera to look around.",
- "Nice! Our Builder Bot is on it. Its Builder Station is home between jobs. Construction takes 15 seconds—feel free to explore while we wait.",
+ "Nice! Our Builder Bot is on it. Feel free to explore while it builds.",
  "Look at that! Our first GPU Rig. Now we're producing Compute.",
- "Our rig produces 5 Compute per minute. When at least 1 is ready, tap the rig or its badge to collect it. The first takes about 12 seconds.",
+ "Our rig produces 5 Compute per minute. When Compute is ready, tap the rig or its badge to collect it.",
  "This is just the beginning.",
  "We'll build more technology, manufacture robots, and infiltrate rival AI networks to grow our company.",
  "Someday, this little headquarters could become something incredible. Let's get to work!"

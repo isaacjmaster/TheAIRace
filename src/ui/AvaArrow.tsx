@@ -6,9 +6,9 @@ export function AvaTargetArrow({target}:{target:string|null}){
  const arrow=useRef<HTMLDivElement>(null);
  useEffect(()=>{if(!target)return;let frame=0;
  const update=()=>{const node=arrow.current,element=document.querySelector<HTMLElement>(target);
- if(node){const rect=element?.getBoundingClientRect();const visible=!!element&&!!rect&&rect.width>0&&rect.height>0&&rect.bottom>0&&rect.top<innerHeight&&!element.closest('[inert]');node.hidden=!visible;
+ if(node){const rect=element?.getBoundingClientRect();const visible=!!element&&!!rect&&rect.width>0&&rect.height>0&&rect.right>0&&rect.left<innerWidth&&rect.bottom>0&&rect.top<innerHeight&&!element.closest('[inert]');node.hidden=!visible;
  if(visible&&rect){const below=rect.top<80;node.dataset.direction=below?'up':'down';node.style.left=Math.max(28,Math.min(innerWidth-28,rect.left+rect.width/2))+'px';node.style.top=(below?rect.bottom+8:rect.top-8)+'px';}}
  frame=requestAnimationFrame(update);};update();return()=>cancelAnimationFrame(frame);
  },[target]);
- return target?<div key={target} ref={arrow} className="ava-target-arrow" hidden aria-hidden="true"><AvaArrow/></div>:null;
+ return target?<div key={target} ref={arrow} data-target={target} className="ava-target-arrow" hidden aria-hidden="true"><AvaArrow/></div>:null;
 }

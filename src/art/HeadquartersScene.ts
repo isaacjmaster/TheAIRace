@@ -284,7 +284,7 @@ export class HeadquartersScene {
  buildingScreenPoint(id:FoundationBuilding){
   const extra=id==='droneStation'?this.droneStationGroup:id==='lab'?this.labGroup:id==='rig2'?this.rig2Group:id==='station'?this.stationGroup:id==='fabricator'?this.fabricatorGroup:id==='hangar'?this.hangarGroup:undefined;
   const point=extra?extra.position.clone().add(new THREE.Vector3(0,id==='droneStation'?2.8:5,0)):id==='rig'&&this.rigPosition?new THREE.Vector3(this.rigPosition[0],5.7,this.rigPosition[1]):new THREE.Vector3(-5,7,-1).add(this.garage.position);
-  const p=point.project(this.camera);return {x:(p.x+1)*this.host.clientWidth/2,y:(1-p.y)*this.host.clientHeight/2};
+  const p=point.project(this.camera);return {x:(p.x+1)*this.host.clientWidth/2,y:(1-p.y)*this.host.clientHeight/2,z:p.z};
  }
  pickDecoration(x:number,y:number){if(!this.setRay(x,y))return;const hit=this.decorations.hit(this.raycaster);if(!hit)return;const foreground=this.raycaster.intersectObjects([this.garage,this.rigGroup,this.rig2Group,this.labGroup,this.fabricatorGroup,this.hangarGroup,this.stationOwned?this.stationGroup:undefined].filter((g):g is THREE.Group=>!!g),true)[0];if(!foreground||hit.distance<foreground.distance)return hit.object.userData.decorationId as string;}
  decorationScreenPoint(id:string){const p=this.decorations.screenPosition(id)?.clone();if(!p)return;p.y+=3;const v=p.project(this.camera);return {x:(v.x+1)*this.host.clientWidth/2,y:(1-v.y)*this.host.clientHeight/2};}

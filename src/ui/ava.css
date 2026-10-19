@@ -35,7 +35,7 @@
 .ava-arrow{display:block;width:48px;height:64px;overflow:visible;filter:drop-shadow(0 3px 2px #65482155);animation:ava-arrow-hover 1.35s ease-in-out infinite}
 .ava-target-arrow{position:fixed;z-index:41;pointer-events:none;width:48px;height:64px;transform:translate(-50%,-100%)}
 .ava-target-arrow[data-direction="up"]{transform:translateX(-50%) rotate(180deg)}
-.ava-world-beacon{position:absolute;z-index:8;pointer-events:none;transform:translate(-50%,-100%)}
+.ava-world-beacon{position:fixed;z-index:8;pointer-events:none;transform:translate(-50%,-100%)}
 @keyframes ava-arrow-hover{0%,100%{translate:0 -5px}50%{translate:0 0}}
 /* Build dialogue follows Ava's head instead of the top-of-screen guidance slot. */
 .ava-stage.ava-beside-build{top:auto;bottom:235px;min-height:0;width:230px;max-width:calc(100% - 32px);left:max(12px,env(safe-area-inset-left));right:auto;margin:0;align-items:flex-end}
@@ -47,3 +47,8 @@
 @media(prefers-reduced-motion:reduce){.ava-arrow{animation:none}}
 /* Keep the Build gesture aimed at the same bottom-left HUD position on desktop. */
 @media(min-width:600px){.ava-stage.ava-beside-build .ava-character{width:220px;height:330px;bottom:-16px}.ava-stage.ava-beside-build{bottom:235px}}
+
+/* Waiting is an objective, never a blocking dialogue or a progression timer. */
+.ava-objective{position:fixed;z-index:38;left:max(12px,env(safe-area-inset-left));bottom:calc(max(14px,env(safe-area-inset-bottom)) + 128px);max-width:min(330px,calc(100vw - 24px));display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:14px;animation:ava-enter .2s ease-out;color:#244456;box-sizing:border-box}
+.ava-objective button{font:inherit;color:inherit;cursor:pointer;min-height:44px;border:0;background:none;touch-action:manipulation}.ava-reminder{text-align:left;flex:1;padding:3px}.ava-reminder strong{display:block;font-size:13px}.ava-reminder small{font-size:11px;color:#557b87}.ava-objective-skip{font-size:10px!important;text-decoration:underline;max-width:65px}
+@media(orientation:landscape) and (max-height:500px){.ava-objective{left:max(12px,env(safe-area-inset-left));bottom:calc(max(10px,env(safe-area-inset-bottom)) + 68px);max-width:300px}}
