@@ -1,3 +1,4 @@
+import {decorationFootprint,type Decoration} from './decoration-catalog';
 import {FOUNDATION_PLOT} from './foundation-plot';
 import {FOUNDER_HQ,founderHqLevel,gpuRigCapacity,type FounderHQUpgrade} from './founder-hq';
 import {advanceLandscape,landscapeRoute,type Landscape,obstacleSize} from './landscape';
@@ -19,7 +20,7 @@ export type BotRaid={id:string;simulation:Raid;lastTick:number;started:boolean;s
 export const FABRICATOR={cost:50,buildSeconds:15,maxCount:1} as const;
 export const HANGAR={cost:0,buildSeconds:15,maxCount:1} as const;
 export const SCRAP_BOT={cost:5,trainSeconds:5,housing:1,capacity:10} as const;
-export type FoundationState = {founderHqLevel?:1|2;hqUpgrade?:FounderHQUpgrade;starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
+export type FoundationState = {decorations?:Decoration[];founderHqLevel?:1|2;hqUpgrade?:FounderHQUpgrade;starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
 export function initialFoundation(revision=0):FoundationState{return {version:1,revision,founderHqLevel:1,companyName:'Garage Intelligence',level:1,compute:STARTING_COMPUTE,capacity:COMPUTE_CAPACITY,builders:0,starterStation:'unplaced',raidRecord:{wins:[],completeHistory:true}};}
 export const hasBuilderStation=(s:FoundationState)=>s.starterStation!=='unplaced';
 export function establishBuilderStation(s:FoundationState,position:RigPosition,orientation:Orientation=0){if(hasBuilderStation(s))throw new Error('Builder Station — 1/1 Built');const reason=validFoundationPosition(s,position,'station',orientation);if(reason)throw new Error(reason);s.stationLayout={position:[...position],orientation};s.starterStation='placed';s.builders=1;s.buildersBusy=0;}
@@ -98,6 +99,7 @@ function validateLayout(s:FoundationState,p:RigPosition,kind:RotatableBuilding,o
  for(const obstacle of OBSTACLES.filter(o=>o.kind==='rock'||!s.landscape&&o.kind==='tree'))if(overlaps(...obstacle.position,obstacle.width,obstacle.depth))return 'Choose open ground away from trees and rocks.';
  for(const o of s.landscape?.items||[]){const [w,d]=obstacleSize(o);if(overlaps(...o.position,w,d))return 'Clear the '+(o.kind==='tree'?'Tree':o.kind==='rock'?'Boulder':'Scrap Pile')+' before building here.';}
  for(const [x,z] of [[-16,7],[13,7],[-16,11],[25,11]])if(overlaps(x,z,1.4,1.4))return 'Leave space around the lights.';
+ for(const o of s.decorations||[]){const r=decorationFootprint(o);if(overlaps(r.x,r.z,r.w,r.d,.2))return 'Move the decoration before building here.';}
  for(const other of FOUNDATION_BUILDINGS){if(other===kind||(pair&&other==='hangar'))continue;const layout=buildingLayout(s,other);if(!layout)continue;
  const reserved=!editing&&(other==='hq'||other==='station');const o=footprint(other,layout,reserved);
  // Preserve the old protected worker area for purchases on untouched saves.

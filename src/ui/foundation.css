@@ -124,3 +124,7 @@
 
 /* The numeral uses the same coordinate system as its shield: no inherited line box. */
 .company-emblem .company-level-number{font-family:system-ui,sans-serif;font-size:27px;font-weight:900;fill:#f0ffff;paint-order:stroke;stroke:#143b5966;stroke-width:.6px}
+
+.rig-collect{display:flex;align-items:center;justify-content:center;gap:5px}.rig-compute-icon{width:27px;height:27px;flex:0 0 27px}.rig-compute-icon .compute-bolt{animation:none}.decoration-card .build-card-image,.decoration-card .build-card-image img{height:104px}.decoration-card .build-card-copy{padding:8px 10px}.decoration-card .build-card-stats{margin-top:8px}.decoration-info{position:absolute;z-index:20;left:50%;bottom:150px;transform:translateX(-50%);padding:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:85vw}.decoration-info small{display:block;font-size:11px}.decoration-remove{position:absolute;z-index:20;left:50%;bottom:calc(130px + env(safe-area-inset-bottom));transform:translateX(-50%);font-size:12px;padding:8px 12px;min-height:40px}@media(orientation:landscape) and (max-height:500px){.decoration-remove{left:24px;bottom:95px;transform:none}.decoration-info{bottom:100px}}
+
+.build-catalog:has(.decoration-card){grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.decoration-card .build-card-copy h3{font-size:14px;min-height:34px}.decoration-card .build-card-copy small{font-size:10px}

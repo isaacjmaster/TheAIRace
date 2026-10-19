@@ -1,3 +1,4 @@
+import {decorationFootprint} from './decoration-catalog';
 import {FOUNDATION_PLOT as P} from './foundation-plot';
 import {FOUNDATION_BUILDINGS,buildingLayout,footprint,type FoundationState,type RigPosition} from './foundation';
 import {OBSTACLES} from './campus-layout';
@@ -17,6 +18,7 @@ export function landscapeRoute(s:FoundationState,target:RigPosition,origin?:RigP
  const solids=FOUNDATION_BUILDINGS.map(k=>{const l=buildingLayout(s,k);return l?footprint(k,l):null;}).filter((r):r is NonNullable<typeof r>=>!!r);
  for(const o of OBSTACLES.filter(o=>o.kind==='rock'))solids.push({x:o.position[0],z:o.position[1],w:o.width,d:o.depth});
  for(const o of s.landscape?.items||[])solids.push(rect(o));
+ for(const o of s.decorations||[])solids.push(decorationFootprint(o));
  for(const [x,z] of [[-16,7],[13,7],[-16,11],[25,11]])solids.push({x,z,w:1.4,d:1.4});
  const blocked=(x:number,z:number)=>solids.some(r=>overlap({x,z,w:clearance,d:clearance},r));
  const key=(p:number[])=>p.join(','),queue=[from],previous=new Map<string,string|null>([[key(from),null]]),end=key(to);
@@ -29,6 +31,7 @@ export function validObstaclePosition(s:FoundationState,o:LandscapeObstacle){
  const a=rect(o);if(a.x-a.w/2<P.minX+1||a.x+a.w/2>P.maxX-1||a.z-a.d/2<P.minZ+1||a.z+a.d/2>P.maxZ-1||a.z+a.d/2>6.2&&a.z-a.d/2<11.8)return false;
  for(const k of FOUNDATION_BUILDINGS){const l=buildingLayout(s,k);if(!l)continue;if(overlap(a,footprint(k,l,true),1))return false;const [x,z]=door(s,k);if(overlap(a,{x,z,w:3,d:3},1))return false;}
  for(const r of OBSTACLES.filter(o=>o.kind==='rock'))if(overlap(a,{x:r.position[0],z:r.position[1],w:r.width,d:r.depth},1))return false;
+ for(const o of s.decorations||[])if(overlap(a,decorationFootprint(o),1))return false;
  for(const p of s.landscape?.items||[])if(overlap(a,rect(p),1))return false;
  for(const [x,z] of [[-16,7],[13,7],[-16,11],[25,11],[-18,-15],[23,-15],[-18,19],[22,20]])if(overlap(a,{x,z,w:3,d:2},.5))return false;
  if(s.landscape?.clearing?.route.some(([x,z])=>overlap(a,{x,z,w:1,d:1},.5)))return false;

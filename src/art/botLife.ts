@@ -1,3 +1,5 @@
+import {FOUNDATION_PLOT as P} from '../../shared/foundation-plot';
+import {decorationFootprint} from '../../shared/decoration-catalog';
 import {FOUNDATION_BUILDINGS,getHangar,buildingLayout,type FoundationState} from '../../shared/foundation';
 import {OBSTACLES} from '../../shared/campus-layout';
 export type WalkPoint=[number,number,number];
@@ -7,9 +9,11 @@ export function localPoint(position:number[],orientation:number,p:WalkPoint):Wal
 export function dockingRoute(s:FoundationState,slot:number):WalkPoint[]{
  const f=s.fabricator,h=getHangar(s);if(!f||!h)return [];const start=localPoint(f.position,f.orientation??0,[0,-.1,2.5]),end=localPoint(h.position,h.orientation??0,[0,-.1,2.5]);
  const blocked=(x:number,z:number)=>FOUNDATION_BUILDINGS.some(kind=>{const l=buildingLayout(s,kind);if(!l)return false;let [w,d]=kind==='hq'?[9,8]:kind==='station'?[2.7,1.8]:[4,3];if(l.orientation%2)[w,d]=[d,w];const offset=kind==='hq'?localPoint(l.position,l.orientation,[0,0,.6]):[...l.position];return Math.abs(x-offset[0])<w/2+.22&&Math.abs(z-offset[kind==='hq'?2:1])<d/2+.22;})||OBSTACLES.some(o=>(o.kind==='rock'||!s.landscape&&o.kind==='tree')&&Math.abs(x-o.position[0])<o.width/2+.15&&Math.abs(z-o.position[1])<o.depth/2+.15)||(s.landscape?.items||[]).some(o=>Math.abs(x-o.position[0])<(o.kind==='tree'?2:1.5)+.15&&Math.abs(z-o.position[1])<(o.kind==='tree'?2:1.5)+.15);
- if(blocked(Math.round(start[0]),Math.round(start[2]))||blocked(Math.round(end[0]),Math.round(end[2])))return [];
+ const decoratedBlocked=blocked;
+ const blockedWithDecorations=(x:number,z:number)=>decoratedBlocked(x,z)||(s.decorations||[]).some(o=>{const r=decorationFootprint(o);return Math.abs(x-r.x)<r.w/2+.22&&Math.abs(z-r.z)<r.d/2+.22;});
+ if(blockedWithDecorations(Math.round(start[0]),Math.round(start[2]))||blockedWithDecorations(Math.round(end[0]),Math.round(end[2])))return [];
  const key=(x:number,z:number)=>x+','+z,from=key(Math.round(start[0]),Math.round(start[2])),to=key(Math.round(end[0]),Math.round(end[2])),queue=[from],previous=new Map<string,string|null>([[from,null]]);
- for(let i=0;i<queue.length&&!previous.has(to);i++){const [x,z]=queue[i].split(',').map(Number);for(const [dx,dz] of [[1,0],[0,1],[-1,0],[0,-1]]){const a=x+dx,b=z+dz,k=key(a,b);if(a< -24||a>28||b< -19||b>24||previous.has(k)||blocked(a,b))continue;previous.set(k,queue[i]);queue.push(k);}}
+ for(let i=0;i<queue.length&&!previous.has(to);i++){const [x,z]=queue[i].split(',').map(Number);for(const [dx,dz] of [[1,0],[0,1],[-1,0],[0,-1]]){const a=x+dx,b=z+dz,k=key(a,b);if(a<P.minX+1||a>P.maxX-1||b<P.minZ+1||b>P.maxZ-1||previous.has(k)||blockedWithDecorations(a,b))continue;previous.set(k,queue[i]);queue.push(k);}}
  if(!previous.has(to))return [];
  const path:WalkPoint[]=[];for(let k:string|null=to;k;k=previous.get(k)??null){const [x,z]=k.split(',').map(Number);path.unshift([x,z>7.1&&z<10.9?.06:-.1,z]);}
  return [localPoint(f.position,f.orientation??0,[0,.99,.08]),start,...path,end,localPoint(h.position,h.orientation??0,bayPosition(slot))];

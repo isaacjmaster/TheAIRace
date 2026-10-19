@@ -1,0 +1,33 @@
+{
+  "name": "Small Campus, Big Dreams",
+  "mode": "hq",
+  "bpm": 96,
+  "bars": 16,
+  "sampleRate": 48000,
+  "channels": 2,
+  "frames": 1920000,
+  "seconds": 40.0,
+  "integratedLUFS": -18.000000000000004,
+  "samplePeakDbFS": -4.1855107952909165,
+  "truePeakDbTP": -4.1799834202598465,
+  "dc": [
+    -8.341803286665371e-07,
+    -6.597937686760899e-07
+  ],
+  "seamDelta": [
+    0.00134612128987446,
+    0.0009249618622274892
+  ],
+  "normalDelta99_9": [
+    0.06660615815467437,
+    0.05633646220337531
+  ],
+  "authoredNotes": 233,
+  "wavBytes": 7680044,
+  "aacBytes": 824568,
+  "revision": 3,
+  "sha256Wav": "aa9fc1f29160c00df2989c495f95efd62ec81e0ef5084c7c1c14015e0823119c",
+  "flac": "/audio/hq-campus-aa9fc1f29160.flac",
+  "wav": "/audio/hq-campus-aa9fc1f29160.wav",
+  "compressedBytes": 1977798
+}
