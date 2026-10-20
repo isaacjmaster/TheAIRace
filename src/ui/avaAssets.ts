@@ -1,5 +1,6 @@
 import {useEffect,useState} from 'react';
 import type {AvaPose as Pose} from '../../shared/ava';
+export const AVA_SPRITES={welcome:'/characters/ava/full-body-v1.webp',thinking:'/characters/ava/thinking-full-v1.webp',encourage:'/characters/ava/encourage-full-v1.webp',tablet:'/characters/ava/tablet-full-v1.webp'} as const;
 const cache=new Map<Pose,{src?:string;pending:Promise<string|null>}>();
 /** Keep one decoded, versioned portrait per pose for this app session. */
 export function preloadAvaPortrait(pose:Pose):Promise<string|null>{
@@ -7,7 +8,7 @@ export function preloadAvaPortrait(pose:Pose):Promise<string|null>{
  if(typeof Image==='undefined')return Promise.resolve(null);
  const record:{src?:string;pending:Promise<string|null>}={pending:Promise.resolve(null)};
  record.pending=(async()=>{let src:string|undefined;try{
-  const response=await fetch(pose==='welcome'?'/characters/ava/full-body-v1.webp':`/characters/ava/${pose}-v4.webp`,{cache:'force-cache',priority:pose==='welcome'?'high':'auto',signal:AbortSignal.timeout(12000)});
+  const response=await fetch(AVA_SPRITES[pose],{cache:'force-cache',priority:pose==='welcome'?'high':'auto',signal:AbortSignal.timeout(12000)});
   if(!response.ok)throw new Error('Portrait unavailable');
   // A local URL avoids a second network revalidation when React mounts the image.
   src=URL.createObjectURL(await response.blob());const image=new Image();image.decoding='async';image.src=src;await image.decode();record.src=src;return src;

@@ -28,7 +28,7 @@ export function AvaTutorial({progress,state,now,panel,placing,busy,error,onComma
  useLayoutEffect(()=>{if(panel!=='build'||collapsed)return;const root=document.querySelector<HTMLElement>('.foundation-app'),node=dialogue.current;if(!root||!node)return;const resize=()=>root.style.setProperty('--ava-catalog-height',node.getBoundingClientRect().height+'px');const observer=new ResizeObserver(resize);observer.observe(node);resize();return()=>{observer.disconnect();root.style.removeProperty('--ava-catalog-height');};},[panel,collapsed]);
  if(collapsed)return null;
  return <><AvaTargetArrow target={arrowTarget}/><aside ref={dialogue} data-pose={pose} className={`ava-dialogue ava-stage ava-new-design ${compact?'ava-compact':''} ${placing?'ava-placement-guide':''} ${naming?'ava-naming':''} ${showBuildPrompt?'ava-beside-build':''} ${interactive?'ava-guidance':''} ${panel==='build'?'ava-in-catalog':''} ${step===12?'ava-collection':''}`} aria-label="Ava, your AI cofounder">
- {!compact&&(portrait?<img className="ava-character" data-pose={pose} src={portrait} alt="Ava, your AI cofounder" width="640" height={pose==='welcome'?960:577}/>:<span className="ava-portrait-loading" aria-hidden="true">AVA</span>)}
+ {!compact&&(portrait?<img className="ava-character" data-pose={pose} src={portrait} alt="Ava, your AI cofounder" width="640" height="960"/>:<span className="ava-portrait-loading" aria-hidden="true">AVA</span>)}
  <div className="ava-copy"><div className="ava-heading"><strong>AVA <small>AI COFOUNDER</small></strong>{!namingOnly&&<button className="ava-skip" disabled={busy} onClick={()=>onCommand('skip')}>Skip Tutorial</button>}</div>
  <p aria-live="polite">{text}</p>
  {naming&&<UsernameForm company={company} onCompany={onCompany}/>}

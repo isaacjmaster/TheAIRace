@@ -1,0 +1,71 @@
+{
+  "thinking": {
+    "width": 640,
+    "height": 960,
+    "bytes": 81346,
+    "sourceBodyBounds": [
+      178,
+      33,
+      749,
+      1486
+    ],
+    "bodyBounds": [
+      90,
+      21,
+      451,
+      940
+    ],
+    "scale": 0.6327426015141087,
+    "offset": [
+      -23,
+      0
+    ],
+    "headCenterX": 308.56
+  },
+  "encourage": {
+    "width": 640,
+    "height": 960,
+    "bytes": 82940,
+    "sourceBodyBounds": [
+      172,
+      33,
+      849,
+      1502
+    ],
+    "bodyBounds": [
+      104,
+      22,
+      527,
+      941
+    ],
+    "scale": 0.625850918992512,
+    "offset": [
+      -4,
+      1
+    ],
+    "headCenterX": 308.93
+  },
+  "tablet": {
+    "width": 640,
+    "height": 960,
+    "bytes": 68680,
+    "sourceBodyBounds": [
+      248,
+      33,
+      763,
+      1496
+    ],
+    "bodyBounds": [
+      133,
+      22,
+      456,
+      940
+    ],
+    "scale": 0.6284176349965824,
+    "offset": [
+      -23,
+      1
+    ],
+    "headCenterX": 308.8
+  }
+}
