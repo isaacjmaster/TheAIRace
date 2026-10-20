@@ -1,0 +1,7058 @@
+{
+  "motif": [
+    "E4",
+    "A4",
+    "B4",
+    "C#5",
+    "G#4",
+    "B4",
+    "F#4"
+  ],
+  "score": {
+    "title": "First Light, Future Plans",
+    "bpm": 96,
+    "key": "A major",
+    "chords": [
+      [
+        45,
+        57,
+        61,
+        64,
+        71
+      ],
+      [
+        44,
+        56,
+        61,
+        64,
+        71
+      ],
+      [
+        42,
+        57,
+        61,
+        64,
+        68
+      ],
+      [
+        38,
+        57,
+        61,
+        64,
+        66
+      ],
+      [
+        40,
+        57,
+        61,
+        64,
+        71
+      ],
+      [
+        47,
+        57,
+        61,
+        62,
+        66
+      ],
+      [
+        38,
+        57,
+        61,
+        66,
+        69
+      ],
+      [
+        40,
+        56,
+        62,
+        66,
+        73
+      ],
+      [
+        45,
+        57,
+        61,
+        64,
+        71
+      ],
+      [
+        49,
+        56,
+        61,
+        64,
+        68
+      ],
+      [
+        42,
+        57,
+        61,
+        64,
+        68
+      ],
+      [
+        38,
+        57,
+        61,
+        64,
+        66
+      ],
+      [
+        45,
+        57,
+        61,
+        64,
+        71
+      ],
+      [
+        47,
+        57,
+        61,
+        62,
+        66
+      ],
+      [
+        38,
+        57,
+        61,
+        64,
+        69
+      ],
+      [
+        40,
+        56,
+        62,
+        66,
+        73
+      ],
+      [
+        38,
+        54,
+        57,
+        61,
+        64
+      ],
+      [
+        47,
+        54,
+        57,
+        62,
+        66
+      ],
+      [
+        42,
+        57,
+        61,
+        64,
+        68
+      ],
+      [
+        40,
+        56,
+        59,
+        62,
+        66
+      ],
+      [
+        38,
+        57,
+        61,
+        64,
+        66
+      ],
+      [
+        49,
+        56,
+        61,
+        64,
+        68
+      ],
+      [
+        47,
+        57,
+        61,
+        62,
+        66
+      ],
+      [
+        40,
+        56,
+        62,
+        66,
+        73
+      ],
+      [
+        45,
+        57,
+        61,
+        64,
+        71
+      ],
+      [
+        44,
+        56,
+        61,
+        64,
+        71
+      ],
+      [
+        42,
+        57,
+        61,
+        64,
+        68
+      ],
+      [
+        38,
+        57,
+        61,
+        64,
+        66
+      ],
+      [
+        45,
+        57,
+        61,
+        64,
+        71
+      ],
+      [
+        47,
+        57,
+        61,
+        62,
+        66
+      ],
+      [
+        40,
+        56,
+        62,
+        66,
+        73
+      ],
+      [
+        40,
+        56,
+        61,
+        64,
+        71
+      ]
+    ],
+    "melody": [
+      [
+        [
+          0,
+          "E4",
+          0.8
+        ],
+        [
+          1,
+          "A4",
+          0.5
+        ],
+        [
+          1.75,
+          "B4",
+          0.5
+        ],
+        [
+          2.5,
+          "C#5",
+          1.05
+        ]
+      ],
+      [
+        [
+          0.25,
+          "G#4",
+          0.7
+        ],
+        [
+          1.25,
+          "B4",
+          0.5
+        ],
+        [
+          2,
+          "F#4",
+          0.8
+        ],
+        [
+          3.25,
+          "E4",
+          0.5
+        ]
+      ],
+      [
+        [
+          0.25,
+          "C#5",
+          0.85
+        ],
+        [
+          1.5,
+          "B4",
+          0.5
+        ],
+        [
+          2.25,
+          "A4",
+          1.2
+        ]
+      ],
+      [
+        [
+          0.25,
+          "F#4",
+          0.6
+        ],
+        [
+          1.25,
+          "A4",
+          0.5
+        ],
+        [
+          2.25,
+          "E4",
+          1.2
+        ]
+      ],
+      [
+        [
+          0,
+          "E4",
+          0.8
+        ],
+        [
+          1,
+          "A4",
+          0.5
+        ],
+        [
+          1.75,
+          "B4",
+          0.5
+        ],
+        [
+          2.5,
+          "C#5",
+          0.65
+        ],
+        [
+          3.5,
+          "E5",
+          0.35
+        ]
+      ],
+      [
+        [
+          0.25,
+          "D5",
+          0.65
+        ],
+        [
+          1.25,
+          "C#5",
+          0.55
+        ],
+        [
+          2.25,
+          "A4",
+          0.7
+        ],
+        [
+          3.25,
+          "F#4",
+          0.4
+        ]
+      ],
+      [
+        [
+          0.25,
+          "G#4",
+          0.8
+        ],
+        [
+          1.5,
+          "F#4",
+          0.5
+        ],
+        [
+          2.5,
+          "E4",
+          0.9
+        ]
+      ],
+      [
+        [
+          0.25,
+          "B4",
+          0.55
+        ],
+        [
+          1.25,
+          "G#4",
+          0.6
+        ],
+        [
+          2.5,
+          "E4",
+          1.1
+        ]
+      ],
+      [
+        [
+          0,
+          "E4",
+          0.7
+        ],
+        [
+          0.875,
+          "A4",
+          0.5
+        ],
+        [
+          1.75,
+          "B4",
+          0.5
+        ],
+        [
+          2.5,
+          "C#5",
+          0.9
+        ]
+      ],
+      [
+        [
+          0.25,
+          "G#4",
+          0.65
+        ],
+        [
+          1.25,
+          "B4",
+          0.5
+        ],
+        [
+          2.25,
+          "E5",
+          0.6
+        ],
+        [
+          3.25,
+          "C#5",
+          0.45
+        ]
+      ],
+      [
+        [
+          0,
+          "A4",
+          0.6
+        ],
+        [
+          1,
+          "C#5",
+          0.55
+        ],
+        [
+          2,
+          "B4",
+          0.6
+        ],
+        [
+          3,
+          "G#4",
+          0.55
+        ]
+      ],
+      [
+        [
+          0.25,
+          "F#4",
+          0.65
+        ],
+        [
+          1.25,
+          "E4",
+          0.5
+        ],
+        [
+          2.25,
+          "D4",
+          1.15
+        ]
+      ],
+      [
+        [
+          0.25,
+          "E4",
+          0.55
+        ],
+        [
+          1,
+          "A4",
+          0.5
+        ],
+        [
+          1.75,
+          "C#5",
+          0.65
+        ],
+        [
+          2.75,
+          "B4",
+          0.8
+        ]
+      ],
+      [
+        [
+          0.25,
+          "D5",
+          0.65
+        ],
+        [
+          1.25,
+          "C#5",
+          0.45
+        ],
+        [
+          2,
+          "B4",
+          0.5
+        ],
+        [
+          3,
+          "F#4",
+          0.65
+        ]
+      ],
+      [
+        [
+          0.25,
+          "E5",
+          0.85
+        ],
+        [
+          1.5,
+          "C#5",
+          0.65
+        ],
+        [
+          2.75,
+          "A4",
+          0.65
+        ]
+      ],
+      [
+        [
+          0.25,
+          "B4",
+          0.65
+        ],
+        [
+          1.25,
+          "G#4",
+          0.6
+        ],
+        [
+          2.5,
+          "F#4",
+          0.95
+        ]
+      ],
+      [
+        [
+          0.25,
+          "F#4",
+          1.1
+        ],
+        [
+          1.75,
+          "A4",
+          0.55
+        ],
+        [
+          2.75,
+          "E5",
+          0.7
+        ]
+      ],
+      [
+        [
+          0.5,
+          "D5",
+          0.8
+        ],
+        [
+          1.75,
+          "B4",
+          0.5
+        ],
+        [
+          2.75,
+          "F#4",
+          0.7
+        ]
+      ],
+      [
+        [
+          0.25,
+          "C#5",
+          0.9
+        ],
+        [
+          1.5,
+          "A4",
+          0.65
+        ],
+        [
+          2.75,
+          "G#4",
+          0.8
+        ]
+      ],
+      [
+        [
+          0.25,
+          "B4",
+          0.7
+        ],
+        [
+          1.5,
+          "G#4",
+          0.6
+        ],
+        [
+          2.5,
+          "E4",
+          1.1
+        ]
+      ],
+      [
+        [
+          0,
+          "F#4",
+          0.65
+        ],
+        [
+          1,
+          "A4",
+          0.5
+        ],
+        [
+          2,
+          "C#5",
+          0.8
+        ],
+        [
+          3.25,
+          "E5",
+          0.4
+        ]
+      ],
+      [
+        [
+          0.5,
+          "D#5",
+          0.65
+        ],
+        [
+          1.5,
+          "C#5",
+          0.65
+        ],
+        [
+          2.75,
+          "G#4",
+          0.7
+        ]
+      ],
+      [
+        [
+          0.25,
+          "F#4",
+          0.65
+        ],
+        [
+          1.25,
+          "A4",
+          0.5
+        ],
+        [
+          2.25,
+          "B4",
+          1.1
+        ]
+      ],
+      [
+        [
+          0.25,
+          "G#4",
+          0.65
+        ],
+        [
+          1.25,
+          "F#4",
+          0.55
+        ],
+        [
+          2.5,
+          "E4",
+          1.0
+        ]
+      ],
+      [
+        [
+          0,
+          "E4",
+          0.8
+        ],
+        [
+          1,
+          "A4",
+          0.5
+        ],
+        [
+          1.75,
+          "B4",
+          0.5
+        ],
+        [
+          2.5,
+          "C#5",
+          1.05
+        ]
+      ],
+      [
+        [
+          0.25,
+          "G#4",
+          0.7
+        ],
+        [
+          1.25,
+          "B4",
+          0.5
+        ],
+        [
+          2,
+          "F#4",
+          0.8
+        ],
+        [
+          3.25,
+          "E4",
+          0.5
+        ]
+      ],
+      [
+        [
+          0.25,
+          "C#5",
+          0.75
+        ],
+        [
+          1.25,
+          "E5",
+          0.6
+        ],
+        [
+          2.25,
+          "B4",
+          0.6
+        ],
+        [
+          3.25,
+          "A4",
+          0.4
+        ]
+      ],
+      [
+        [
+          0.25,
+          "F#4",
+          0.8
+        ],
+        [
+          1.5,
+          "A4",
+          0.55
+        ],
+        [
+          2.75,
+          "C#5",
+          0.7
+        ]
+      ],
+      [
+        [
+          0,
+          "B4",
+          0.6
+        ],
+        [
+          0.875,
+          "C#5",
+          0.55
+        ],
+        [
+          1.75,
+          "E5",
+          0.75
+        ],
+        [
+          3,
+          "C#5",
+          0.6
+        ]
+      ],
+      [
+        [
+          0.25,
+          "D5",
+          0.6
+        ],
+        [
+          1.25,
+          "B4",
+          0.55
+        ],
+        [
+          2.25,
+          "A4",
+          0.75
+        ],
+        [
+          3.25,
+          "F#4",
+          0.4
+        ]
+      ],
+      [
+        [
+          0.25,
+          "G#4",
+          0.7
+        ],
+        [
+          1.25,
+          "B4",
+          0.55
+        ],
+        [
+          2.25,
+          "F#4",
+          0.7
+        ],
+        [
+          3.25,
+          "E4",
+          0.4
+        ]
+      ],
+      [
+        [
+          0.25,
+          "C#5",
+          0.7
+        ],
+        [
+          1.5,
+          "B4",
+          0.55
+        ],
+        [
+          2.75,
+          "G#4",
+          0.65
+        ]
+      ]
+    ]
+  },
+  "events": [
+    {
+      "stem": "piano",
+      "beat": 0.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 0.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 0.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 0.096,
+      "midi": 71,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 0.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 0.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 0.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 0,
+      "midi": 64,
+      "durationBeats": 0.8,
+      "instrument": "marimba",
+      "gain": 0.2461,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 1,
+      "midi": 69,
+      "durationBeats": 0.5,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 1.75,
+      "midi": 71,
+      "durationBeats": 0.5,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 2.5,
+      "midi": 73,
+      "durationBeats": 1.05,
+      "instrument": "marimba",
+      "gain": 0.2461,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 0,
+      "midi": 45,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 0,
+      "midi": 33,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 2.25,
+      "midi": 45,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 1.5,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 3.25,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 4.0,
+      "midi": 56,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 4.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 4.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 4.096,
+      "midi": 71,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 4.1,
+      "midi": 56,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 4.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 4.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 4.25,
+      "midi": 68,
+      "durationBeats": 0.7,
+      "instrument": "marimba",
+      "gain": 0.2461,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 5.25,
+      "midi": 71,
+      "durationBeats": 0.5,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 6,
+      "midi": 66,
+      "durationBeats": 0.8,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 7.25,
+      "midi": 64,
+      "durationBeats": 0.5,
+      "instrument": "marimba",
+      "gain": 0.2461,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 4,
+      "midi": 44,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 4,
+      "midi": 32,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 6.25,
+      "midi": 44,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 4.75,
+      "midi": 56,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 6.5,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 8.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 8.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 8.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 8.096,
+      "midi": 68,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 8.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 8.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 8.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 8.25,
+      "midi": 73,
+      "durationBeats": 0.85,
+      "instrument": "marimba",
+      "gain": 0.2461,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 9.5,
+      "midi": 71,
+      "durationBeats": 0.5,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 10.25,
+      "midi": 69,
+      "durationBeats": 1.2,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 8,
+      "midi": 42,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 8,
+      "midi": 30,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 10.25,
+      "midi": 42,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 9.5,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 11.25,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 12.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 12.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 12.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 12.096,
+      "midi": 66,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 12.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 12.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 12.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 12.25,
+      "midi": 66,
+      "durationBeats": 0.6,
+      "instrument": "marimba",
+      "gain": 0.2461,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 13.25,
+      "midi": 69,
+      "durationBeats": 0.5,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 14.25,
+      "midi": 64,
+      "durationBeats": 1.2,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 12,
+      "midi": 38,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 12,
+      "midi": 26,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 14.25,
+      "midi": 38,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 12.75,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 14.5,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "signals",
+      "beat": 14.75,
+      "midi": 73,
+      "durationBeats": 0.18,
+      "instrument": "signal",
+      "gain": 0.023,
+      "pan": 0.4
+    },
+    {
+      "stem": "signals",
+      "beat": 15.5,
+      "midi": 76,
+      "durationBeats": 0.18,
+      "instrument": "signal",
+      "gain": 0.023,
+      "pan": -0.4
+    },
+    {
+      "stem": "piano",
+      "beat": 16.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 16.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 16.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 16.096,
+      "midi": 71,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 16.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 16.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 16.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 16,
+      "midi": 64,
+      "durationBeats": 0.8,
+      "instrument": "marimba",
+      "gain": 0.2461,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 17,
+      "midi": 69,
+      "durationBeats": 0.5,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 17.75,
+      "midi": 71,
+      "durationBeats": 0.5,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 18.5,
+      "midi": 73,
+      "durationBeats": 0.65,
+      "instrument": "marimba",
+      "gain": 0.2461,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 19.5,
+      "midi": 76,
+      "durationBeats": 0.35,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 16,
+      "midi": 40,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 16,
+      "midi": 28,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 18.25,
+      "midi": 40,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 17.5,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 19.25,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 20.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 20.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 20.064,
+      "midi": 62,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 20.096,
+      "midi": 66,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 20.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 20.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 20.1,
+      "midi": 62,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 20.25,
+      "midi": 74,
+      "durationBeats": 0.65,
+      "instrument": "marimba",
+      "gain": 0.2461,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 21.25,
+      "midi": 73,
+      "durationBeats": 0.55,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 22.25,
+      "midi": 69,
+      "durationBeats": 0.7,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 23.25,
+      "midi": 66,
+      "durationBeats": 0.4,
+      "instrument": "marimba",
+      "gain": 0.2461,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 20,
+      "midi": 47,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 20,
+      "midi": 35,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 22.25,
+      "midi": 47,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 20.75,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 22.5,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 24.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 24.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 24.064,
+      "midi": 66,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 24.096,
+      "midi": 69,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 24.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 24.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 24.1,
+      "midi": 66,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 24.25,
+      "midi": 68,
+      "durationBeats": 0.8,
+      "instrument": "marimba",
+      "gain": 0.2461,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 25.5,
+      "midi": 66,
+      "durationBeats": 0.5,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 26.5,
+      "midi": 64,
+      "durationBeats": 0.9,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 24,
+      "midi": 38,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 24,
+      "midi": 26,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 26.25,
+      "midi": 38,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 25.5,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 27.25,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 28.0,
+      "midi": 56,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 28.032,
+      "midi": 62,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 28.064,
+      "midi": 66,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 28.096,
+      "midi": 73,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.06,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 28.1,
+      "midi": 56,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 28.1,
+      "midi": 62,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 28.1,
+      "midi": 66,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 28.25,
+      "midi": 71,
+      "durationBeats": 0.55,
+      "instrument": "marimba",
+      "gain": 0.2461,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 29.25,
+      "midi": 68,
+      "durationBeats": 0.6,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 30.5,
+      "midi": 64,
+      "durationBeats": 1.1,
+      "instrument": "marimba",
+      "gain": 0.23,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 28,
+      "midi": 40,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 28,
+      "midi": 28,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 30.25,
+      "midi": 40,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 28.75,
+      "midi": 56,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 30.5,
+      "midi": 62,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "signals",
+      "beat": 30.75,
+      "midi": 74,
+      "durationBeats": 0.18,
+      "instrument": "signal",
+      "gain": 0.023,
+      "pan": 0.4
+    },
+    {
+      "stem": "signals",
+      "beat": 31.5,
+      "midi": 78,
+      "durationBeats": 0.18,
+      "instrument": "signal",
+      "gain": 0.023,
+      "pan": -0.4
+    },
+    {
+      "stem": "piano",
+      "beat": 32.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 32.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 32.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 32.096,
+      "midi": 71,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 32.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 32.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 32.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 32,
+      "midi": 64,
+      "durationBeats": 0.7,
+      "instrument": "piano",
+      "gain": 0.26086600000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 32.875,
+      "midi": 69,
+      "durationBeats": 0.5,
+      "instrument": "piano",
+      "gain": 0.24380000000000002,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 33.75,
+      "midi": 71,
+      "durationBeats": 0.5,
+      "instrument": "piano",
+      "gain": 0.24380000000000002,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 34.5,
+      "midi": 73,
+      "durationBeats": 0.9,
+      "instrument": "piano",
+      "gain": 0.26086600000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 32,
+      "midi": 45,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 32,
+      "midi": 33,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 34.25,
+      "midi": 45,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 33.5,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 35.25,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 36.0,
+      "midi": 56,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 36.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 36.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 36.096,
+      "midi": 68,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 36.1,
+      "midi": 56,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 36.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 36.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 36.25,
+      "midi": 68,
+      "durationBeats": 0.65,
+      "instrument": "piano",
+      "gain": 0.26086600000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 37.25,
+      "midi": 71,
+      "durationBeats": 0.5,
+      "instrument": "piano",
+      "gain": 0.24380000000000002,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 38.25,
+      "midi": 76,
+      "durationBeats": 0.6,
+      "instrument": "piano",
+      "gain": 0.24380000000000002,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 39.25,
+      "midi": 73,
+      "durationBeats": 0.45,
+      "instrument": "piano",
+      "gain": 0.26086600000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 36,
+      "midi": 49,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 36,
+      "midi": 37,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 38.25,
+      "midi": 49,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 36.75,
+      "midi": 56,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 38.5,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 40.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 40.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 40.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 40.096,
+      "midi": 68,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 40.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 40.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 40.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 40,
+      "midi": 69,
+      "durationBeats": 0.6,
+      "instrument": "piano",
+      "gain": 0.26086600000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 41,
+      "midi": 73,
+      "durationBeats": 0.55,
+      "instrument": "piano",
+      "gain": 0.24380000000000002,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 42,
+      "midi": 71,
+      "durationBeats": 0.6,
+      "instrument": "piano",
+      "gain": 0.24380000000000002,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 43,
+      "midi": 68,
+      "durationBeats": 0.55,
+      "instrument": "piano",
+      "gain": 0.26086600000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 40,
+      "midi": 42,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 40,
+      "midi": 30,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 42.25,
+      "midi": 42,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 41.5,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 43.25,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 44.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 44.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 44.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 44.096,
+      "midi": 66,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 44.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 44.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 44.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 44.25,
+      "midi": 66,
+      "durationBeats": 0.65,
+      "instrument": "piano",
+      "gain": 0.26086600000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 45.25,
+      "midi": 64,
+      "durationBeats": 0.5,
+      "instrument": "piano",
+      "gain": 0.24380000000000002,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 46.25,
+      "midi": 62,
+      "durationBeats": 1.15,
+      "instrument": "piano",
+      "gain": 0.24380000000000002,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 44,
+      "midi": 38,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 44,
+      "midi": 26,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 46.25,
+      "midi": 38,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 44.75,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 46.5,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "signals",
+      "beat": 46.75,
+      "midi": 73,
+      "durationBeats": 0.18,
+      "instrument": "signal",
+      "gain": 0.023,
+      "pan": 0.4
+    },
+    {
+      "stem": "signals",
+      "beat": 47.5,
+      "midi": 76,
+      "durationBeats": 0.18,
+      "instrument": "signal",
+      "gain": 0.023,
+      "pan": -0.4
+    },
+    {
+      "stem": "piano",
+      "beat": 48.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 48.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 48.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 48.096,
+      "midi": 71,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 48.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 48.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 48.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 48.25,
+      "midi": 64,
+      "durationBeats": 0.55,
+      "instrument": "piano",
+      "gain": 0.26086600000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 49,
+      "midi": 69,
+      "durationBeats": 0.5,
+      "instrument": "piano",
+      "gain": 0.24380000000000002,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 49.75,
+      "midi": 73,
+      "durationBeats": 0.65,
+      "instrument": "piano",
+      "gain": 0.24380000000000002,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 50.75,
+      "midi": 71,
+      "durationBeats": 0.8,
+      "instrument": "piano",
+      "gain": 0.26086600000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 48,
+      "midi": 45,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 48,
+      "midi": 33,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 50.25,
+      "midi": 45,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 49.5,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 51.25,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 52.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 52.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 52.064,
+      "midi": 62,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 52.096,
+      "midi": 66,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 52.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 52.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 52.1,
+      "midi": 62,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 52.25,
+      "midi": 74,
+      "durationBeats": 0.65,
+      "instrument": "piano",
+      "gain": 0.26086600000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 53.25,
+      "midi": 73,
+      "durationBeats": 0.45,
+      "instrument": "piano",
+      "gain": 0.24380000000000002,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 54,
+      "midi": 71,
+      "durationBeats": 0.5,
+      "instrument": "piano",
+      "gain": 0.24380000000000002,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 55,
+      "midi": 66,
+      "durationBeats": 0.65,
+      "instrument": "piano",
+      "gain": 0.26086600000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 52,
+      "midi": 47,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 52,
+      "midi": 35,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 54.25,
+      "midi": 47,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 52.75,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 54.5,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 56.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 56.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 56.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 56.096,
+      "midi": 69,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 56.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 56.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 56.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 56.25,
+      "midi": 76,
+      "durationBeats": 0.85,
+      "instrument": "piano",
+      "gain": 0.26086600000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 57.5,
+      "midi": 73,
+      "durationBeats": 0.65,
+      "instrument": "piano",
+      "gain": 0.24380000000000002,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 58.75,
+      "midi": 69,
+      "durationBeats": 0.65,
+      "instrument": "piano",
+      "gain": 0.24380000000000002,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 56,
+      "midi": 38,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 56,
+      "midi": 26,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 58.25,
+      "midi": 38,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 57.5,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 59.25,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 60.0,
+      "midi": 56,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 60.032,
+      "midi": 62,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 60.064,
+      "midi": 66,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 60.096,
+      "midi": 73,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0636,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 60.1,
+      "midi": 56,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 60.1,
+      "midi": 62,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 60.1,
+      "midi": 66,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 60.25,
+      "midi": 71,
+      "durationBeats": 0.65,
+      "instrument": "piano",
+      "gain": 0.26086600000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 61.25,
+      "midi": 68,
+      "durationBeats": 0.6,
+      "instrument": "piano",
+      "gain": 0.24380000000000002,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 62.5,
+      "midi": 66,
+      "durationBeats": 0.95,
+      "instrument": "piano",
+      "gain": 0.24380000000000002,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 60,
+      "midi": 40,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 60,
+      "midi": 28,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 62.25,
+      "midi": 40,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 60.75,
+      "midi": 56,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 62.5,
+      "midi": 62,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "signals",
+      "beat": 62.75,
+      "midi": 74,
+      "durationBeats": 0.18,
+      "instrument": "signal",
+      "gain": 0.023,
+      "pan": 0.4
+    },
+    {
+      "stem": "signals",
+      "beat": 63.5,
+      "midi": 78,
+      "durationBeats": 0.18,
+      "instrument": "signal",
+      "gain": 0.023,
+      "pan": -0.4
+    },
+    {
+      "stem": "piano",
+      "beat": 64.0,
+      "midi": 54,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 64.032,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 64.064,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 64.096,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 64.1,
+      "midi": 54,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 64.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 64.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 64.25,
+      "midi": 66,
+      "durationBeats": 1.1,
+      "instrument": "harp",
+      "gain": 0.21164600000000003,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 65.75,
+      "midi": 69,
+      "durationBeats": 0.55,
+      "instrument": "harp",
+      "gain": 0.1978,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 66.75,
+      "midi": 76,
+      "durationBeats": 0.7,
+      "instrument": "harp",
+      "gain": 0.1978,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 64,
+      "midi": 38,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 64,
+      "midi": 26,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 66.25,
+      "midi": 38,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 65.5,
+      "midi": 54,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 67.25,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 68.0,
+      "midi": 54,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 68.032,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 68.064,
+      "midi": 62,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 68.096,
+      "midi": 66,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 68.1,
+      "midi": 54,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 68.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 68.1,
+      "midi": 62,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 68.5,
+      "midi": 74,
+      "durationBeats": 0.8,
+      "instrument": "harp",
+      "gain": 0.21164600000000003,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 69.75,
+      "midi": 71,
+      "durationBeats": 0.5,
+      "instrument": "harp",
+      "gain": 0.1978,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 70.75,
+      "midi": 66,
+      "durationBeats": 0.7,
+      "instrument": "harp",
+      "gain": 0.1978,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 68,
+      "midi": 47,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 68,
+      "midi": 35,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 70.25,
+      "midi": 47,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 68.75,
+      "midi": 54,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 70.5,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 72.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 72.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 72.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 72.096,
+      "midi": 68,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 72.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 72.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 72.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 72.25,
+      "midi": 73,
+      "durationBeats": 0.9,
+      "instrument": "harp",
+      "gain": 0.21164600000000003,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 73.5,
+      "midi": 69,
+      "durationBeats": 0.65,
+      "instrument": "harp",
+      "gain": 0.1978,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 74.75,
+      "midi": 68,
+      "durationBeats": 0.8,
+      "instrument": "harp",
+      "gain": 0.1978,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 72,
+      "midi": 42,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 72,
+      "midi": 30,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 74.25,
+      "midi": 42,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 73.5,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 75.25,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 76.0,
+      "midi": 56,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 76.032,
+      "midi": 59,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 76.064,
+      "midi": 62,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 76.096,
+      "midi": 66,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 76.1,
+      "midi": 56,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 76.1,
+      "midi": 59,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 76.1,
+      "midi": 62,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 76.25,
+      "midi": 71,
+      "durationBeats": 0.7,
+      "instrument": "harp",
+      "gain": 0.21164600000000003,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 77.5,
+      "midi": 68,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.1978,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 78.5,
+      "midi": 64,
+      "durationBeats": 1.1,
+      "instrument": "harp",
+      "gain": 0.1978,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 76,
+      "midi": 40,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 76,
+      "midi": 28,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 78.25,
+      "midi": 40,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 76.75,
+      "midi": 56,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 78.5,
+      "midi": 59,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "signals",
+      "beat": 78.75,
+      "midi": 71,
+      "durationBeats": 0.18,
+      "instrument": "signal",
+      "gain": 0.023,
+      "pan": 0.4
+    },
+    {
+      "stem": "signals",
+      "beat": 79.5,
+      "midi": 74,
+      "durationBeats": 0.18,
+      "instrument": "signal",
+      "gain": 0.023,
+      "pan": -0.4
+    },
+    {
+      "stem": "piano",
+      "beat": 80.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 80.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 80.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 80.096,
+      "midi": 66,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 80.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 80.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 80.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 80,
+      "midi": 66,
+      "durationBeats": 0.65,
+      "instrument": "harp",
+      "gain": 0.21164600000000003,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 81,
+      "midi": 69,
+      "durationBeats": 0.5,
+      "instrument": "harp",
+      "gain": 0.1978,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 82,
+      "midi": 73,
+      "durationBeats": 0.8,
+      "instrument": "harp",
+      "gain": 0.1978,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 83.25,
+      "midi": 76,
+      "durationBeats": 0.4,
+      "instrument": "harp",
+      "gain": 0.21164600000000003,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 80,
+      "midi": 38,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 80,
+      "midi": 26,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 82.25,
+      "midi": 38,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 81.5,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 83.25,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 84.0,
+      "midi": 56,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 84.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 84.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 84.096,
+      "midi": 68,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 84.1,
+      "midi": 56,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 84.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 84.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 84.5,
+      "midi": 75,
+      "durationBeats": 0.65,
+      "instrument": "harp",
+      "gain": 0.21164600000000003,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 85.5,
+      "midi": 73,
+      "durationBeats": 0.65,
+      "instrument": "harp",
+      "gain": 0.1978,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 86.75,
+      "midi": 68,
+      "durationBeats": 0.7,
+      "instrument": "harp",
+      "gain": 0.1978,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 84,
+      "midi": 49,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 84,
+      "midi": 37,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 86.25,
+      "midi": 49,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 84.75,
+      "midi": 56,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 86.5,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 88.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 88.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 88.064,
+      "midi": 62,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 88.096,
+      "midi": 66,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 88.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 88.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 88.1,
+      "midi": 62,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 88.25,
+      "midi": 66,
+      "durationBeats": 0.65,
+      "instrument": "harp",
+      "gain": 0.21164600000000003,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 89.25,
+      "midi": 69,
+      "durationBeats": 0.5,
+      "instrument": "harp",
+      "gain": 0.1978,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 90.25,
+      "midi": 71,
+      "durationBeats": 1.1,
+      "instrument": "harp",
+      "gain": 0.1978,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 88,
+      "midi": 47,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 88,
+      "midi": 35,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 90.25,
+      "midi": 47,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 89.5,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 91.25,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 92.0,
+      "midi": 56,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 92.032,
+      "midi": 62,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 92.064,
+      "midi": 66,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 92.096,
+      "midi": 73,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0516,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 92.1,
+      "midi": 56,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 92.1,
+      "midi": 62,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 92.1,
+      "midi": 66,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 92.25,
+      "midi": 68,
+      "durationBeats": 0.65,
+      "instrument": "harp",
+      "gain": 0.21164600000000003,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 93.25,
+      "midi": 66,
+      "durationBeats": 0.55,
+      "instrument": "harp",
+      "gain": 0.1978,
+      "pan": -0.14
+    },
+    {
+      "stem": "theme",
+      "beat": 94.5,
+      "midi": 64,
+      "durationBeats": 1.0,
+      "instrument": "harp",
+      "gain": 0.1978,
+      "pan": -0.14
+    },
+    {
+      "stem": "bass",
+      "beat": 92,
+      "midi": 40,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 92,
+      "midi": 28,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 94.25,
+      "midi": 40,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 92.75,
+      "midi": 56,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 94.5,
+      "midi": 62,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "signals",
+      "beat": 94.75,
+      "midi": 74,
+      "durationBeats": 0.18,
+      "instrument": "signal",
+      "gain": 0.023,
+      "pan": 0.4
+    },
+    {
+      "stem": "signals",
+      "beat": 95.5,
+      "midi": 78,
+      "durationBeats": 0.18,
+      "instrument": "signal",
+      "gain": 0.023,
+      "pan": -0.4
+    },
+    {
+      "stem": "piano",
+      "beat": 96.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 96.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 96.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 96.096,
+      "midi": 71,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 96.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 96.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 96.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 96,
+      "midi": 64,
+      "durationBeats": 0.8,
+      "instrument": "marimba",
+      "gain": 0.2657880000000001,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 96.022,
+      "midi": 52,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 97,
+      "midi": 69,
+      "durationBeats": 0.5,
+      "instrument": "marimba",
+      "gain": 0.24840000000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 97.022,
+      "midi": 57,
+      "durationBeats": 0.5,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 97.75,
+      "midi": 71,
+      "durationBeats": 0.5,
+      "instrument": "marimba",
+      "gain": 0.24840000000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 97.772,
+      "midi": 59,
+      "durationBeats": 0.5,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 98.5,
+      "midi": 73,
+      "durationBeats": 1.05,
+      "instrument": "marimba",
+      "gain": 0.2657880000000001,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 98.522,
+      "midi": 61,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "bass",
+      "beat": 96,
+      "midi": 45,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 96,
+      "midi": 33,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 98.25,
+      "midi": 45,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 97.5,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 99.25,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 100.0,
+      "midi": 56,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 100.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 100.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 100.096,
+      "midi": 71,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 100.1,
+      "midi": 56,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 100.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 100.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 100.25,
+      "midi": 68,
+      "durationBeats": 0.7,
+      "instrument": "marimba",
+      "gain": 0.2657880000000001,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 100.272,
+      "midi": 56,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 101.25,
+      "midi": 71,
+      "durationBeats": 0.5,
+      "instrument": "marimba",
+      "gain": 0.24840000000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 101.272,
+      "midi": 59,
+      "durationBeats": 0.5,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 102,
+      "midi": 66,
+      "durationBeats": 0.8,
+      "instrument": "marimba",
+      "gain": 0.24840000000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 102.022,
+      "midi": 54,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 103.25,
+      "midi": 64,
+      "durationBeats": 0.5,
+      "instrument": "marimba",
+      "gain": 0.2657880000000001,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 103.272,
+      "midi": 52,
+      "durationBeats": 0.5,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "bass",
+      "beat": 100,
+      "midi": 44,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 100,
+      "midi": 32,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 102.25,
+      "midi": 44,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 100.75,
+      "midi": 56,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 102.5,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 104.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 104.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 104.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 104.096,
+      "midi": 68,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 104.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 104.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 104.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 104.25,
+      "midi": 73,
+      "durationBeats": 0.75,
+      "instrument": "marimba",
+      "gain": 0.2657880000000001,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 104.272,
+      "midi": 61,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 105.25,
+      "midi": 76,
+      "durationBeats": 0.6,
+      "instrument": "marimba",
+      "gain": 0.24840000000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 105.272,
+      "midi": 64,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 106.25,
+      "midi": 71,
+      "durationBeats": 0.6,
+      "instrument": "marimba",
+      "gain": 0.24840000000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 106.272,
+      "midi": 59,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 107.25,
+      "midi": 69,
+      "durationBeats": 0.4,
+      "instrument": "marimba",
+      "gain": 0.2657880000000001,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 107.272,
+      "midi": 57,
+      "durationBeats": 0.4,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "bass",
+      "beat": 104,
+      "midi": 42,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 104,
+      "midi": 30,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 106.25,
+      "midi": 42,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 105.5,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 107.25,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 108.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 108.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 108.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 108.096,
+      "midi": 66,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 108.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 108.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 108.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 108.25,
+      "midi": 66,
+      "durationBeats": 0.8,
+      "instrument": "marimba",
+      "gain": 0.2657880000000001,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 108.272,
+      "midi": 54,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 109.5,
+      "midi": 69,
+      "durationBeats": 0.55,
+      "instrument": "marimba",
+      "gain": 0.24840000000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 109.522,
+      "midi": 57,
+      "durationBeats": 0.55,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 110.75,
+      "midi": 73,
+      "durationBeats": 0.7,
+      "instrument": "marimba",
+      "gain": 0.24840000000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 110.772,
+      "midi": 61,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "bass",
+      "beat": 108,
+      "midi": 38,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 108,
+      "midi": 26,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 110.25,
+      "midi": 38,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 108.75,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 110.5,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "signals",
+      "beat": 110.75,
+      "midi": 73,
+      "durationBeats": 0.18,
+      "instrument": "signal",
+      "gain": 0.023,
+      "pan": 0.4
+    },
+    {
+      "stem": "signals",
+      "beat": 111.5,
+      "midi": 76,
+      "durationBeats": 0.18,
+      "instrument": "signal",
+      "gain": 0.023,
+      "pan": -0.4
+    },
+    {
+      "stem": "piano",
+      "beat": 112.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 112.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 112.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 112.096,
+      "midi": 71,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 112.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 112.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 112.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 112,
+      "midi": 71,
+      "durationBeats": 0.6,
+      "instrument": "marimba",
+      "gain": 0.2657880000000001,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 112.022,
+      "midi": 59,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 112.875,
+      "midi": 73,
+      "durationBeats": 0.55,
+      "instrument": "marimba",
+      "gain": 0.24840000000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 112.897,
+      "midi": 61,
+      "durationBeats": 0.55,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 113.75,
+      "midi": 76,
+      "durationBeats": 0.75,
+      "instrument": "marimba",
+      "gain": 0.24840000000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 113.772,
+      "midi": 64,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 115,
+      "midi": 73,
+      "durationBeats": 0.6,
+      "instrument": "marimba",
+      "gain": 0.2657880000000001,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 115.022,
+      "midi": 61,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "bass",
+      "beat": 112,
+      "midi": 45,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 112,
+      "midi": 33,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 114.25,
+      "midi": 45,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 113.5,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 115.25,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 116.0,
+      "midi": 57,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 116.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 116.064,
+      "midi": 62,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 116.096,
+      "midi": 66,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 116.1,
+      "midi": 57,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 116.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 116.1,
+      "midi": 62,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 116.25,
+      "midi": 74,
+      "durationBeats": 0.6,
+      "instrument": "marimba",
+      "gain": 0.2657880000000001,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 116.272,
+      "midi": 62,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 117.25,
+      "midi": 71,
+      "durationBeats": 0.55,
+      "instrument": "marimba",
+      "gain": 0.24840000000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 117.272,
+      "midi": 59,
+      "durationBeats": 0.55,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 118.25,
+      "midi": 69,
+      "durationBeats": 0.75,
+      "instrument": "marimba",
+      "gain": 0.24840000000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 118.272,
+      "midi": 57,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 119.25,
+      "midi": 66,
+      "durationBeats": 0.4,
+      "instrument": "marimba",
+      "gain": 0.2657880000000001,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 119.272,
+      "midi": 54,
+      "durationBeats": 0.4,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "bass",
+      "beat": 116,
+      "midi": 47,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 116,
+      "midi": 35,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 118.25,
+      "midi": 47,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 116.75,
+      "midi": 57,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 118.5,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 120.0,
+      "midi": 56,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 120.032,
+      "midi": 62,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 120.064,
+      "midi": 66,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 120.096,
+      "midi": 73,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 120.1,
+      "midi": 56,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 120.1,
+      "midi": 62,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 120.1,
+      "midi": 66,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 120.25,
+      "midi": 68,
+      "durationBeats": 0.7,
+      "instrument": "marimba",
+      "gain": 0.2657880000000001,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 120.272,
+      "midi": 56,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 121.25,
+      "midi": 71,
+      "durationBeats": 0.55,
+      "instrument": "marimba",
+      "gain": 0.24840000000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 121.272,
+      "midi": 59,
+      "durationBeats": 0.55,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 122.25,
+      "midi": 66,
+      "durationBeats": 0.7,
+      "instrument": "marimba",
+      "gain": 0.24840000000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 122.272,
+      "midi": 54,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 123.25,
+      "midi": 64,
+      "durationBeats": 0.4,
+      "instrument": "marimba",
+      "gain": 0.2657880000000001,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 123.272,
+      "midi": 52,
+      "durationBeats": 0.4,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "bass",
+      "beat": 120,
+      "midi": 40,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 120,
+      "midi": 28,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 122.25,
+      "midi": 40,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 121.5,
+      "midi": 56,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 123.25,
+      "midi": 62,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "piano",
+      "beat": 124.0,
+      "midi": 56,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": -0.18
+    },
+    {
+      "stem": "piano",
+      "beat": 124.032,
+      "midi": 61,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": -0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 124.064,
+      "midi": 64,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": 0.06
+    },
+    {
+      "stem": "piano",
+      "beat": 124.096,
+      "midi": 71,
+      "durationBeats": 2.5,
+      "instrument": "piano",
+      "gain": 0.0648,
+      "pan": 0.18
+    },
+    {
+      "stem": "pad",
+      "beat": 124.1,
+      "midi": 56,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": -0.38
+    },
+    {
+      "stem": "pad",
+      "beat": 124.1,
+      "midi": 61,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.0
+    },
+    {
+      "stem": "pad",
+      "beat": 124.1,
+      "midi": 64,
+      "durationBeats": 3.5,
+      "instrument": "pad",
+      "gain": 0.021,
+      "pan": 0.38
+    },
+    {
+      "stem": "theme",
+      "beat": 124.25,
+      "midi": 73,
+      "durationBeats": 0.7,
+      "instrument": "marimba",
+      "gain": 0.2657880000000001,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 124.272,
+      "midi": 61,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 125.5,
+      "midi": 71,
+      "durationBeats": 0.55,
+      "instrument": "marimba",
+      "gain": 0.24840000000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 125.522,
+      "midi": 59,
+      "durationBeats": 0.55,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "theme",
+      "beat": 126.75,
+      "midi": 68,
+      "durationBeats": 0.65,
+      "instrument": "marimba",
+      "gain": 0.24840000000000004,
+      "pan": -0.14
+    },
+    {
+      "stem": "strings",
+      "beat": 126.772,
+      "midi": 56,
+      "durationBeats": 0.6,
+      "instrument": "harp",
+      "gain": 0.065,
+      "pan": 0.28
+    },
+    {
+      "stem": "bass",
+      "beat": 124,
+      "midi": 40,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 124,
+      "midi": 28,
+      "durationBeats": 1.0,
+      "instrument": "bass",
+      "gain": 0.045,
+      "pan": 0
+    },
+    {
+      "stem": "bass",
+      "beat": 126.25,
+      "midi": 40,
+      "durationBeats": 1.3,
+      "instrument": "cello",
+      "gain": 0.13,
+      "pan": 0
+    },
+    {
+      "stem": "strings",
+      "beat": 124.75,
+      "midi": 56,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": 0.28
+    },
+    {
+      "stem": "strings",
+      "beat": 126.5,
+      "midi": 61,
+      "durationBeats": 0.45,
+      "instrument": "harp",
+      "gain": 0.075,
+      "pan": -0.28
+    },
+    {
+      "stem": "signals",
+      "beat": 126.75,
+      "midi": 73,
+      "durationBeats": 0.18,
+      "instrument": "signal",
+      "gain": 0.023,
+      "pan": 0.4
+    },
+    {
+      "stem": "signals",
+      "beat": 127.5,
+      "midi": 76,
+      "durationBeats": 0.18,
+      "instrument": "signal",
+      "gain": 0.023,
+      "pan": -0.4
+    },
+    {
+      "stem": "percussion",
+      "beat": 0.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 1.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 2.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 3.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 1.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 3.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 4.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 5.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 6.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 7.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 5.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 7.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 8.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 9.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 10.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 11.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 9.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 11.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 12.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 13.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 14.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 15.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 13.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 15.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 16.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 17.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 18.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 19.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 17.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 19.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 20.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 21.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 22.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 23.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 21.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 23.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 24.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 25.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 26.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 27.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 25.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 27.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 28.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 29.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 30.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 31.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 29.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 31.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 32.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 33.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 34.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 35.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 33.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 35.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 36.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 37.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 38.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 39.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 37.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 39.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 40.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 41.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 42.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 43.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 41.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 43.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 44.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 45.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 46.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 47.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 45.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 47.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 48.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 49.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 50.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 51.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 49.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 51.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 52.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 53.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 54.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 55.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 53.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 55.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 56.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 57.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 58.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 59.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 57.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 59.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 60.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 61.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 62.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 63.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 61.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 63.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 96.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 97.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 98.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 99.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 97.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 99.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 100.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 101.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 102.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 103.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 101.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 103.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 104.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 105.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 106.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 107.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 105.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 107.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 108.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 109.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 110.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 111.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 109.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 111.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 112.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 113.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 114.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 115.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 113.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 115.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 116.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 117.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 118.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 119.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 117.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 119.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 120.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 121.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 122.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 123.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 121.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 123.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 124.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 125.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 126.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 127.5,
+      "midi": 42,
+      "durationBeats": 0.15,
+      "instrument": "percussion-hat",
+      "gain": 0.007,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 125.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    },
+    {
+      "stem": "percussion",
+      "beat": 127.012,
+      "midi": 37,
+      "durationBeats": 0.15,
+      "instrument": "percussion-rim",
+      "gain": 0.026,
+      "pan": 0
+    }
+  ]
+}

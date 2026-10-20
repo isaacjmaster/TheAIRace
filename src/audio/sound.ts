@@ -1,6 +1,7 @@
 import {INFILTRATION_CUES,type InfiltrationCue} from './infiltrationCues';
 import {RecordedMusic,type TrackLoader} from './RecordedMusic';
 import {loadApprovedTrack,MUSIC_GAIN} from './tracks';
+import {identityMusicRequested} from './identityTracks';
 import { BUILDING_SOUNDS, MUTE_KEY, readMuted, writeMuted, type Cue, type MusicMode } from './score';
 export type SoundPlatform={storage?:Pick<Storage,'getItem'|'setItem'>;createContext:()=>AudioContext;silent?:boolean;loadTrack?:TrackLoader};
 /** Explicit opt-in for agent previews; standard automation is silent automatically. */
@@ -43,7 +44,7 @@ export class Soundscape {
   try{await music.load(mode);if(this.ctx!==ctx||this.music!==music||this.muted||this.hidden||this.mode!==mode||ctx.state!=='running')return;
    if(this.playingMode!==mode||!music.has(mode)){const previous=this.playingMode;music.start(mode);if(previous)this.fadeUntil[previous]=ctx.currentTime+1.1;this.ramp(this.hq!,mode==='hq'?MUSIC_GAIN:0,1.1);this.ramp(this.raid!,mode==='raid'?MUSIC_GAIN:0,1.1);this.ramp(this.infiltration!,mode==='infiltration'?MUSIC_GAIN:0,1.1);this.playingMode=mode;}
    // HQ is needed first; warm the attack buffer after it becomes audible.
-   if(mode==='hq')void music.load('raid').catch(()=>{});
+   if(mode==='hq')void music.load(identityMusicRequested(typeof location==='undefined'?'':location.search)?'infiltration':'raid').catch(()=>{});
   }catch{/* Missing/unsupported audio never blocks gameplay; a later gesture retries. */}
  }
  setMuted(value:boolean){if(this.platform.silent)return;this.muted=value;writeMuted(this.platform.storage,value);if(this.master)this.ramp(this.master,value?0:.22,.1);if(!value)void this.unlock();for(const listener of this.listeners)listener();}

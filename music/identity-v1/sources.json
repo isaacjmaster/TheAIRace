@@ -1,0 +1,126 @@
+{
+  "repository": "https://github.com/sgossner/VSCO-2-CE",
+  "commit": "440300901dfe9275fd84e0b7763af1f8443ae62e",
+  "license": "CC0-1.0",
+  "files": [
+    {
+      "path": "Strings/Harp/KSHarp_D4_mf.wav",
+      "local": "KSHarp_D4_mf.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Harp/KSHarp_D4_mf.wav",
+      "bytes": 1921690,
+      "sha256": "ebfde8aab4411019e37e3426f4dd88d6a52a38c2d0261d7f10ec63d8ff584dc7"
+    },
+    {
+      "path": "Strings/Harp/KSHarp_F4_mf.wav",
+      "local": "KSHarp_F4_mf.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Harp/KSHarp_F4_mf.wav",
+      "bytes": 1913498,
+      "sha256": "db27ebbb37334c10e06f2ae63f4d9ff555e4d11704fcc6f0bcf503863867e577"
+    },
+    {
+      "path": "Strings/Harp/KSHarp_A4_mf.wav",
+      "local": "KSHarp_A4_mf.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Harp/KSHarp_A4_mf.wav",
+      "bytes": 2143618,
+      "sha256": "3665f3975cad4a33f46784aa4f896f4b4319ba2b7831e892d975bc38c9f09f23"
+    },
+    {
+      "path": "Strings/Harp/KSHarp_C5_mf.wav",
+      "local": "KSHarp_C5_mf.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Harp/KSHarp_C5_mf.wav",
+      "bytes": 1237142,
+      "sha256": "7c8b862f6fd3f1442ed87537af976d84bda8c05a5b4900e8907d570b5202a517"
+    },
+    {
+      "path": "Strings/Harp/KSHarp_E5_mf.wav",
+      "local": "KSHarp_E5_mf.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Harp/KSHarp_E5_mf.wav",
+      "bytes": 1171586,
+      "sha256": "95dd9ddb0bd15bee7687906e00f25aafcaa43020cc9501f0e8b6cabf0e9a53ec"
+    },
+    {
+      "path": "Strings/Cello Section/pizzT/pizzT_A2_v1_RR1.wav",
+      "local": "pizzT_A2_v1_RR1.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Cello%20Section/pizzT/pizzT_A2_v1_RR1.wav",
+      "bytes": 763418,
+      "sha256": "3ef328e9c07e58797bb65831edef89b1fc946013a736826b6e380776c91b1f83"
+    },
+    {
+      "path": "Strings/Cello Section/pizzT/pizzT_A2_v1_RR2.wav",
+      "local": "pizzT_A2_v1_RR2.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Cello%20Section/pizzT/pizzT_A2_v1_RR2.wav",
+      "bytes": 714926,
+      "sha256": "819d73e9b58d28c3d3888ed566fa9802b3cb6bf5cdd314931ddeafa529ba1408"
+    },
+    {
+      "path": "Strings/Cello Section/pizzT/pizzT_C3_v1_RR1.wav",
+      "local": "pizzT_C3_v1_RR1.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Cello%20Section/pizzT/pizzT_C3_v1_RR1.wav",
+      "bytes": 704396,
+      "sha256": "63353870ad00cebe9882b96abcceae12480d37b78b62ded6228fb638871e8a81"
+    },
+    {
+      "path": "Strings/Cello Section/pizzT/pizzT_C3_v1_RR2.wav",
+      "local": "pizzT_C3_v1_RR2.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Cello%20Section/pizzT/pizzT_C3_v1_RR2.wav",
+      "bytes": 668192,
+      "sha256": "87abaf14ffe66902002c378a504147861102b67af5f562bb5594835c3d647c33"
+    },
+    {
+      "path": "Strings/Cello Section/pizzT/pizzT_E3_v1_RR1.wav",
+      "local": "pizzT_E3_v1_RR1.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Cello%20Section/pizzT/pizzT_E3_v1_RR1.wav",
+      "bytes": 512792,
+      "sha256": "f0ef78c07d2468a5f762aae1bb23806e0439f5372d872b68fa8967943808f1da"
+    },
+    {
+      "path": "Strings/Cello Section/pizzT/pizzT_E3_v1_RR2.wav",
+      "local": "pizzT_E3_v1_RR2.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Cello%20Section/pizzT/pizzT_E3_v1_RR2.wav",
+      "bytes": 550814,
+      "sha256": "816d282efedc9dcdd67374e2ae7c92433f4dba379150962995e1ed4496eb1fcb"
+    },
+    {
+      "path": "Strings/Solo Violin/Pizz/LLVln_Pizz_A3_p_RR1.wav",
+      "local": "LLVln_Pizz_A3_p_RR1.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Solo%20Violin/Pizz/LLVln_Pizz_A3_p_RR1.wav",
+      "bytes": 252226,
+      "sha256": "9a7cc4d7c6c848e6302f1a35e499781240ccf66c5acf72779f0da03b91bf73e9"
+    },
+    {
+      "path": "Strings/Solo Violin/Pizz/LLVln_Pizz_A3_p_RR2.wav",
+      "local": "LLVln_Pizz_A3_p_RR2.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Solo%20Violin/Pizz/LLVln_Pizz_A3_p_RR2.wav",
+      "bytes": 236542,
+      "sha256": "2ebc13ead350e7e70704d3c93a77d2931fa60754afc2e33ce623d0c6aa8ed9aa"
+    },
+    {
+      "path": "Strings/Solo Violin/Pizz/LLVln_Pizz_C4_p_RR1.wav",
+      "local": "LLVln_Pizz_C4_p_RR1.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Solo%20Violin/Pizz/LLVln_Pizz_C4_p_RR1.wav",
+      "bytes": 202686,
+      "sha256": "95b9db0c0dafdabac63e18618b7d98b31ae41cdacf9e9a703850211113b6754a"
+    },
+    {
+      "path": "Strings/Solo Violin/Pizz/LLVln_Pizz_C4_p_RR2.wav",
+      "local": "LLVln_Pizz_C4_p_RR2.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Solo%20Violin/Pizz/LLVln_Pizz_C4_p_RR2.wav",
+      "bytes": 180622,
+      "sha256": "975d64141752349499780e6509729d95c5718a3021bf4a4ba1b22c31ce3e3480"
+    },
+    {
+      "path": "Strings/Solo Violin/Pizz/LLVln_Pizz_E4_p_RR1.wav",
+      "local": "LLVln_Pizz_E4_p_RR1.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Solo%20Violin/Pizz/LLVln_Pizz_E4_p_RR1.wav",
+      "bytes": 219786,
+      "sha256": "090cc6a411d0e37c4c524b54cd81f268d96f9ad58cd542f26f06dd824a35b7cd"
+    },
+    {
+      "path": "Strings/Solo Violin/Pizz/LLVln_Pizz_E4_p_RR2.wav",
+      "local": "LLVln_Pizz_E4_p_RR2.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Strings/Solo%20Violin/Pizz/LLVln_Pizz_E4_p_RR2.wav",
+      "bytes": 244910,
+      "sha256": "ea8fa4d781ecaf2f6d79a4d477b90d3dbb0b57cc57db9af6492dc7d39dbe1d6a"
+    }
+  ]
+}

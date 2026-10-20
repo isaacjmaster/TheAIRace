@@ -1,0 +1,128 @@
+[
+  {
+    "title": "First Light, Future Plans",
+    "mode": "hq",
+    "status": "fully-arranged candidate; not human-listening approved",
+    "bpm": 96,
+    "key": "A major",
+    "bars": 32,
+    "seconds": 80.0,
+    "frames": 2624000,
+    "sampleRate": 32000,
+    "channels": 2,
+    "lufs": -20.0,
+    "truePeakDbTP": -4.328516108434,
+    "dc": [
+      5.543933991914863e-07,
+      4.434743503573096e-07
+    ],
+    "seamDelta": [
+      0.00015361653776463022,
+      0.00031120515349081224
+    ],
+    "normalDelta99_9": [
+      0.12312475047452583,
+      0.09879470254566125
+    ],
+    "rms": 0.07591743399911008,
+    "flacBytes": 3340516,
+    "sha256Wav": "d1028d8bda6fffc035fcfc2d088518e01a41e875e62ea35449cd53de456dd1f9",
+    "stems": {
+      "theme": {
+        "rms": 0.020782519746735367,
+        "peak": 0.14042267203330994
+      },
+      "piano": {
+        "rms": 0.007226279901771148,
+        "peak": 0.08315090090036392
+      },
+      "strings": {
+        "rms": 0.008217527224605366,
+        "peak": 0.06829406321048737
+      },
+      "bass": {
+        "rms": 0.016297200019910158,
+        "peak": 0.09958060085773468
+      },
+      "pad": {
+        "rms": 0.0058873314925113876,
+        "peak": 0.02522757463157177
+      },
+      "percussion": {
+        "rms": 0.0005976558671421383,
+        "peak": 0.021878059953451157
+      },
+      "signals": {
+        "rms": 0.0014573350733998918,
+        "peak": 0.01964244432747364
+      }
+    },
+    "loopFrames": 2560000,
+    "encodedSeconds": 82.0,
+    "loopStart": 1,
+    "loopEnd": 81.0
+  },
+  {
+    "title": "A Clever Way In",
+    "mode": "infiltration",
+    "status": "fully-arranged candidate; not human-listening approved",
+    "bpm": 120,
+    "key": "F-sharp minor",
+    "bars": 32,
+    "seconds": 64.0,
+    "frames": 2112000,
+    "sampleRate": 32000,
+    "channels": 2,
+    "lufs": -20.0,
+    "truePeakDbTP": -7.974572986184144,
+    "dc": [
+      -6.147822427595244e-08,
+      -5.9898573393569394e-09
+    ],
+    "seamDelta": [
+      0.0002576576778558874,
+      0.000408032701550487
+    ],
+    "normalDelta99_9": [
+      0.030170443087924503,
+      0.029359534167450855
+    ],
+    "rms": 0.07768602046347922,
+    "flacBytes": 3039660,
+    "sha256Wav": "b8974f3cb383e2e69a3b33a09e205537bfbcdbb32f8e34299c7a92e2fba1f725",
+    "stems": {
+      "theme": {
+        "rms": 0.04201938793152192,
+        "peak": 0.14835427701473236
+      },
+      "piano": {
+        "rms": 0.006280023076930573,
+        "peak": 0.040944699198007584
+      },
+      "strings": {
+        "rms": 0.013958610473005291,
+        "peak": 0.13094764947891235
+      },
+      "bass": {
+        "rms": 0.021356061742895494,
+        "peak": 0.10444169491529465
+      },
+      "pad": {
+        "rms": 0.0036116040489744504,
+        "peak": 0.021254241466522217
+      },
+      "percussion": {
+        "rms": 0.010865556522127182,
+        "peak": 0.07365669310092926
+      },
+      "signals": {
+        "rms": 0.002411154872192374,
+        "peak": 0.029867542907595634
+      }
+    },
+    "loopFrames": 2048000,
+    "encodedSeconds": 66.0,
+    "loopStart": 1,
+    "loopEnd": 65.0
+  }
+]
