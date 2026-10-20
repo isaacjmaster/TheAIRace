@@ -1,0 +1,1 @@
+export function RetreatIcon(){return <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M18 5h9v22h-9M21 16H4m6-6-6 6 6 6" fill="none" stroke="currentColor" strokeWidth="2.7" strokeLinecap="round" strokeLinejoin="round"/></svg>;}

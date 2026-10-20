@@ -1,3 +1,4 @@
+import {advanceSquad,commandSquad,type SquadState} from './squad-infiltration';
 import {findPath,pointClear,nearestOpen,segmentClear,type NavRect} from './navigation';
 import {rivalSecurityWalls,type SecurityBarrier} from './security-walls';
 /** Deterministic heist simulation. Inputs are intentions; paths, clocks and loot are server-owned. */
@@ -7,7 +8,7 @@ export type Vec = [
 ];
 export type Asset = {
     id: string;
-    kind: 'hq' | 'gpu' | 'lab' | 'terminal';
+    kind: 'hq' | 'gpu' | 'lab' | 'terminal' | 'station';
     name: string;
     position: Vec;
     size: Vec;
@@ -27,6 +28,7 @@ export type Defense = {
 };
 export type TargetSnapshot = {
     version: 1;
+    hqLevel?:2;
     navigationVersion?:2;
     walls?:SecurityBarrier[];
     id: string;
@@ -50,6 +52,7 @@ for(const target of INFILTRATION_TARGETS){target.navigationVersion=2;target.entr
 export const opponentUsername=(id:string)=>id==='vector-works'?'GridFox':'NovaByte';
 export type DroneState = {
     lastShotAt?:number;
+    targetAgentId?:string;shotPosition?:Vec;
     id: string;
     path?:Vec[];
     pathKey?:string;
@@ -66,6 +69,7 @@ export type InfiltrationEvent = {
     detail?: string;
 };
 export type Operation = {
+    squad?:SquadState;
     unit?:{kind:'scrap';reservationId:string;status:'reserved'|'returned'|'lost'};
     ownershipRequired?:boolean;
     version: 1;
@@ -82,7 +86,7 @@ export type Operation = {
         health?:number;
         position: Vec;
         path: Vec[];
-        mode: 'idle' | 'moving' | 'hacking' | 'extracting';
+        mode: 'idle' | 'moving' | 'hacking' | 'breaching' | 'extracting';
         target?: string;
         hack: number;
         yaw: number;
@@ -178,6 +182,7 @@ export function chooseNextAsset(o:Operation){
  returnHome(o);
 }
 export function advanceOperation(o: Operation, now: number) {
+    if(o.squad){advanceSquad(o,now);return;}
     if(o.status==='ready'||o.status==='active')adoptAutomatic(o);
     if (o.status !== 'active')
         return;
@@ -273,6 +278,7 @@ export function advanceOperation(o: Operation, now: number) {
     }
 }
 export function commandOperation(o:Operation,c:InfiltrationCommand,now:number){
+ if(o.squad){commandSquad(o,c,now);return;}
  advanceOperation(o,now);
  const record=()=>{(o.orders??=[]).push({at:now,intent:structuredClone(c)});};
  if(c.action==='deploy'){

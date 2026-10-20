@@ -1,0 +1,8 @@
+import {useEffect,useRef,useState} from 'react';
+import {RetreatIcon} from './RetreatIcon';
+/** The search presentation is separate from the server's matching provider and mission receipt. */
+export function InfiltrationSearch({available,active,onSearch,onResume,onClose,onCancelFound}:{available:number;active:boolean;onSearch:()=>Promise<boolean|undefined>;onResume:()=>void;onClose:()=>void;onCancelFound:()=>void}){
+ const mounted=useRef(true),started=useRef(false),[failed,setFailed]=useState(false);
+ useEffect(()=>{mounted.current=true;if(active){onResume();return;}if(available<1)return;const timer=setTimeout(()=>{if(started.current)return;started.current=true;void onSearch().then(ok=>{if(!mounted.current){if(ok)onCancelFound();return;}if(ok)onResume();else setFailed(true);});},2400);return()=>{mounted.current=false;clearTimeout(timer);};},[]);
+ return <section className="infiltration-search" aria-label="Searching for opponent"><button className="mission-retreat search-cancel" aria-label="Cancel search" onClick={onClose}><RetreatIcon/></button>{available<1?<div className="search-empty"><h2>No agents available</h2><p>Train a Cipher Bot in your Bot Fabricator.</p><button className="primary" onClick={onClose}>Return to HQ</button></div>:<><div className="search-scanner" aria-hidden="true"><div className="scan-orbit"/><div className="scan-grid"/><i/><i/><i/><span>⌁</span></div><h2>{failed?'Connection interrupted':'Searching'}</h2>{failed&&<button className="search-retry" onClick={()=>{setFailed(false);void onSearch().then(ok=>{if(ok&&mounted.current)onResume();else if(ok)onCancelFound();else setFailed(true);});}}>Retry</button>}</>}</section>;
+}

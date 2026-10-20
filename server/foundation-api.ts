@@ -1,7 +1,9 @@
+import {newSquadOperation} from '../shared/squad-infiltration';
+import type {Operation} from '../shared/infiltration';
 import {buyWall,moveWall,buildDroneStation} from '../shared/cybersecurity';
 import {infiltrationStore,releaseReserve} from './infiltration';
 import {commandOperation} from '../shared/infiltration';
-import {startOwnedOperation,requireReservedAgent,settleOwnedUnit} from '../shared/infiltration-army';
+import {startOwnedOperation,commandOwnedOperation,settleOwnedUnit} from '../shared/infiltration-army';
 import {buildResearchLab,collectResearch} from '../shared/research';
 import {purchaseDecoration,moveDecoration,removeDecoration} from '../shared/decorations';
 import {companyXPStore} from './company-xp';
@@ -16,7 +18,7 @@ import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { upgradeFounderHQ,establishBuilderStation,moveBuilding,rotateBuilding,buildFabricator,buildHangar,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
 /** Separate table and cookie: foundation resets never touch any previous game save. */
-export function registerFoundation(app:express.Express,db:DatabaseSync,options:{legacyRaids?:boolean;cookieName?:string;legacyPaths?:string[];clock?:()=>number}={}){
+export function registerFoundation(app:express.Express,db:DatabaseSync,options:{legacyRaids?:boolean;cookieName?:string;legacyPaths?:string[];clock?:()=>number;operationFactory?:(id:string,target:string,now:number)=>Operation}={}){
  db.exec('CREATE TABLE IF NOT EXISTS foundation_saves(id TEXT PRIMARY KEY,state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS foundation_actions(session TEXT,id TEXT,payload TEXT,amount INTEGER,PRIMARY KEY(session,id))');
  db.exec('CREATE TABLE IF NOT EXISTS foundation_ava(session TEXT PRIMARY KEY,progress TEXT NOT NULL)');
  const readAva=(id:string):AvaProgress=>{const row=db.prepare('SELECT progress FROM foundation_ava WHERE session=?').get(id);return row?JSON.parse(row.progress as string):legacyAva();};
@@ -90,6 +92,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   z.object({action:z.literal('move-wall'),id:z.string().uuid(),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('build-drone-station'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('infiltration-tutorial'),operationId:z.string().uuid(),result:z.enum(['complete','skipped'])}).strict(),
+  z.object({action:z.literal('infiltration-search')}).strict(),
   z.object({action:z.literal('infiltration-start'),targetId:z.enum(['lumen-labs','vector-works'])}).strict(),
   z.object({action:z.literal('infiltration-command'),operationId:z.string().uuid(),intent:z.discriminatedUnion('action',[z.object({action:z.literal('deploy'),position:z.tuple([z.number().finite(),z.number().finite()]).optional()}).strict(),z.object({action:z.literal('abandon')}).strict()])}).strict(),
   z.object({action:z.literal('build-lab'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
@@ -122,9 +125,10 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
     if(c.action==='buy-wall')buyWall(state,c.position,c.orientation,input.requestId);
     else if(c.action==='move-wall')moveWall(state,c.id,c.position,c.orientation);
     else if(c.action==='build-drone-station')buildDroneStation(state,c.position,now,c.orientation);
-    else if(c.action==='infiltration-start'){startOwnedOperation(state,randomUUID(),c.targetId,now);}
+    else if(c.action==='infiltration-start'){startOwnedOperation(state,randomUUID(),c.targetId,now,options.operationFactory??newSquadOperation);}
+    else if(c.action==='infiltration-search'){const operationId=randomUUID(),targetId=parseInt(operationId.slice(0,8),16)%2?'lumen-labs':'vector-works';startOwnedOperation(state,operationId,targetId,now,options.operationFactory??newSquadOperation);}
     else if(c.action==='infiltration-tutorial'){if(state.infiltration?.id!==c.operationId)throw new Error('This operation is no longer active.');state.infiltrationTutorial??=c.result;}
-    else if(c.action==='infiltration-command'){if(state.infiltration?.id!==c.operationId)throw new Error('This operation is no longer active.');requireReservedAgent(state.infiltration);commandOperation(state.infiltration,c.intent,now);settleOwnedUnit(state);}
+    else if(c.action==='infiltration-command'){if(state.infiltration?.id!==c.operationId)throw new Error('This operation is no longer active.');commandOwnedOperation(state,c.intent,now);}
     else if(c.action==='build-lab')buildResearchLab(state,c.position,now,c.orientation);
     else if(c.action==='collect-research')collectResearch(state,now);
     else if(c.action==='buy-decoration')purchaseDecoration(state,c.kind,c.position,c.orientation,input.requestId);

@@ -1,3 +1,4 @@
+import {newOperation} from '../shared/infiltration';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
@@ -19,7 +20,7 @@ async function fixture(path = ':memory:', initialTime = Date.now()) {
     let now = initialTime;
     const app = express();
     app.use(express.json());
-    registerFoundation(app, db, { clock: () => now });
+    registerFoundation(app, db, { clock: () => now,operationFactory:newOperation });
     const server = app.listen(0, '127.0.0.1');
     await new Promise<void>(r => server.once('listening', r));
     const url = `http://127.0.0.1:${(server.address() as {
