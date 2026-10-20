@@ -20,6 +20,8 @@ export function InfiltrationView({operation,stock,serverTime,busy,error,onComman
  const pointers=useRef(new Map<number,{x:number;y:number;startX:number;startY:number;moved:boolean}>()),pinch=useRef(0),deploying=useRef(false),lastEvent=useRef(operation.events.length);
  const ready=operation.status==='ready',live=operation.status==='active',done=!ready&&!live,asset=operation.target.assets.find(a=>a.id===operation.agent.target),result=operation.settlement;
  const count=deploymentCount(stock,operation);
+ const hacking=live&&(operation.squad?operation.squad.agents.some(a=>a.state==='active'&&a.mode==='hacking'):operation.agent.mode==='hacking');
+ useEffect(()=>{if(!hacking)return;const pulse=()=>{if(!document.hidden)sound.cue('cipher-hacking');};pulse();const timer=setInterval(pulse,650);return()=>clearInterval(timer);},[hacking,operation.id]);
  useEffect(()=>{if(done)setQuit(false);},[done]);
  lesson.current=!tutorial&&ready?introStep:null;
  useEffect(()=>{setIntroStep(0);setSelected(false);setNotice('');lastEvent.current=operation.events.length;},[operation.id]);
@@ -32,9 +34,9 @@ export function InfiltrationView({operation,stock,serverTime,busy,error,onComman
  }catch{setFailed(true);}return()=>{cancelAnimationFrame(frame);scene?.dispose();view.current=null;};},[operation.id]);
  useEffect(()=>{view.current?.setLesson(lesson.current);view.current?.resize();},[introStep,tutorial,operation.status]);
  useEffect(()=>{view.current?.setDeploymentActive(selected&&count>0);},[selected,count]);
- useEffect(()=>{view.current?.sync(operation,serverTime);for(const e of operation.events.slice(lastEvent.current)){if(e.type==='breached')sound.cue('clear-scrap');if(e.type==='hacked')sound.cue('hack');if(e.type==='detected')sound.cue('security-alert');if(e.type==='extracted')sound.cue('extraction');}lastEvent.current=operation.events.length;},[operation,serverTime]);
+ useEffect(()=>{view.current?.sync(operation,serverTime);for(const e of operation.events.slice(lastEvent.current)){if(e.type==='laser'&&live&&e.at>=serverTime-1500)sound.cue('drone-laser');if(e.type==='breached')sound.cue('clear-scrap');if(e.type==='hacked')sound.cue('hack');if(e.type==='detected')sound.cue('security-alert');if(e.type==='extracted')sound.cue('extraction');}lastEvent.current=operation.events.length;},[operation,serverTime]);
  async function retreat(){if(busy||retreating.current)return;retreating.current=true;try{if(await onCommand({action:'abandon'})){setQuit(false);onReturn();}}finally{retreating.current=false;}}
- async function deploy(position?:Vec){if(busy||deploying.current||!tutorial||(!ready&&!(live&&operation.squad))||!selected||count<1)return;if(position&&!validDeployment(operation.target,position)){setNotice('Choose a highlighted perimeter tile.');return;}deploying.current=true;setNotice('');try{if(await onCommand({action:'deploy',...(position?{position}:{})}))sound.cue('deploy');}finally{deploying.current=false;}}
+ async function deploy(position?:Vec){if(busy||deploying.current||!tutorial||(!ready&&!(live&&operation.squad))||!selected||count<1)return;if(position&&!validDeployment(operation.target,position)){setNotice('Deploy on the outer lawn.');return;}deploying.current=true;setNotice('');try{if(await onCommand({action:'deploy',...(position?{position}:{})}))sound.cue('cipher-deploy');}finally{deploying.current=false;}}
  return <section className="infiltration-view simple-mission" aria-label="Infiltration operation">
   <header className="operation-header encounter-header"><h2><UsernameLabel username={opponentUsername(operation.target.id)}/></h2></header><button className="mission-retreat" aria-label="Retreat" disabled={busy} onClick={()=>{if(done)onReturn();else if(ready)void retreat();else setQuit(true);}}><RetreatIcon/></button>
   <div className="operation-canvas" ref={host} onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,moved:false});pinch.current=0;if(pointers.current.size>1)for(const p of pointers.current.values())p.moved=true;}}

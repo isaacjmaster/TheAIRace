@@ -28,6 +28,7 @@ export type Defense = {
 };
 export type TargetSnapshot = {
     version: 1;
+    arena?:'campus-v2';
     hqLevel?:2;
     navigationVersion?:2;
     walls?:SecurityBarrier[];
@@ -42,6 +43,8 @@ export type TargetSnapshot = {
 };
 export const INFILTRATION = { stepMs: 100, operationMs: 180000, agentSpeed: 2.8, agentHealth:100, laserDamage:20, laserIntervalMs:1250, captureRadius: .65, cooldownMs: 7200000, awards: [25, 50] } as const;
 export const INFILTRATION_BOUNDS={minX:-14,maxX:14,minZ:-10,maxZ:10};
+export const CAMPUS_ARENA={bounds:{minX:-21,maxX:21,minZ:-17,maxZ:17},compound:[13.5,10] as Vec,outer:[20,16] as Vec};
+export const targetBounds=(t:TargetSnapshot)=>t.arena==='campus-v2'?CAMPUS_ARENA.bounds:INFILTRATION_BOUNDS;
 export const DRONE_CLEARANCE=1.15;
 // Full rendered robot envelope, including its arms and mechanical feet.
 export const AGENT_CLEARANCE=.65;
@@ -125,15 +128,15 @@ export function newOperation(id: string, targetId: string, now: number): Operati
     throw new Error('Choose an available company.'); return operationFromSnapshot(id, target, now); }
 export function operationFromSnapshot(id: string, target: TargetSnapshot, now: number): Operation { return { version: 1, id, target: structuredClone(target), automationVersion:1, defenseVersion:2, createdAt: now, lastTick: now, status: 'ready', orders: [], agent: { health:INFILTRATION.agentHealth, position: [...target.entry], path: [], mode: 'idle', hack: 0, yaw: 0 }, drones: target.defenses.map(d => ({ id: d.id, position: [...d.route[0]], segment: 1, alert: 0, lost: 0, mode: 'patrol' })), hacked: [], carried: { compute: 0, research: 0, intel: false }, events: [{ at: now, type: 'prepared' }] }; }
 export function infiltrationSolids(t:TargetSnapshot):NavRect[]{return [...t.assets.map(a=>({x:a.position[0],z:a.position[1],w:a.size[0],d:a.size[1]})),...(t.walls??[])];}
-export function navigable(t: TargetSnapshot, p: Vec) { if(t.navigationVersion===2)return pointClear(p,infiltrationSolids(t),INFILTRATION_BOUNDS,AGENT_CLEARANCE);return p.every(Number.isFinite) && Math.abs(p[0]) <= 11.5 && Math.abs(p[1]) <= 7.5 && !t.assets.some(a => Math.abs(p[0] - a.position[0]) < a.size[0] / 2 + .3 && Math.abs(p[1] - a.position[1]) < a.size[1] / 2 + .3); }
-/** The same perimeter predicate drives server validation and the rendered drop tiles. */
-export function deploymentGround(t:TargetSnapshot,p:Vec){return p.every(Number.isFinite)&&Math.abs(p[0])<=13.2&&Math.abs(p[1])<=9.2&&(Math.abs(p[0])>=11.8||Math.abs(p[1])>=8.3||p[1]>=5.8&&Math.abs(p[0])<=10.5&&p[1]<=7.2)&&navigable(t,p);}
+export function navigable(t: TargetSnapshot, p: Vec) { if(t.navigationVersion===2)return pointClear(p,infiltrationSolids(t),targetBounds(t),AGENT_CLEARANCE);return p.every(Number.isFinite) && Math.abs(p[0]) <= 11.5 && Math.abs(p[1]) <= 7.5 && !t.assets.some(a => Math.abs(p[0] - a.position[0]) < a.size[0] / 2 + .3 && Math.abs(p[1] - a.position[1]) < a.size[1] / 2 + .3); }
+/** The same perimeter predicate drives server validation and the continuous deployment lawn. */
+export function deploymentGround(t:TargetSnapshot,p:Vec){if(t.arena==='campus-v2')return p.every(Number.isFinite)&&Math.abs(p[0])<=CAMPUS_ARENA.outer[0]&&Math.abs(p[1])<=CAMPUS_ARENA.outer[1]&&(Math.abs(p[0])>=14.2||p[1]<=-10.4||p[1]>=7.4)&&navigable(t,p);return p.every(Number.isFinite)&&Math.abs(p[0])<=13.2&&Math.abs(p[1])<=9.2&&(Math.abs(p[0])>=11.8||Math.abs(p[1])>=8.3||p[1]>=5.8&&Math.abs(p[0])<=10.5&&p[1]<=7.2)&&navigable(t,p);}
 export function validDeployment(t:TargetSnapshot,p:Vec){return deploymentGround(t,p)&&infiltrationPath(t,p,t.exit).length>0;}
 /** Reservation is already removed from stock; count it only until it is deployed. */
 export function deploymentCount(stock:number,o:Operation){return Math.max(0,stock)+(o.status==='ready'&&o.unit?.status==='reserved'?1:0);}
 
 /** Small bounded half-unit grid, deterministic and reusable by future target snapshots. */
-export function infiltrationPath(t:TargetSnapshot,from:Vec,to:Vec):Vec[]{return t.navigationVersion===2?findPath(from,to,infiltrationSolids(t),INFILTRATION_BOUNDS,AGENT_CLEARANCE):legacyInfiltrationPath(t,from,to);}
+export function infiltrationPath(t:TargetSnapshot,from:Vec,to:Vec):Vec[]{return t.navigationVersion===2?findPath(from,to,infiltrationSolids(t),targetBounds(t),AGENT_CLEARANCE):legacyInfiltrationPath(t,from,to);}
 function legacyInfiltrationPath(t: TargetSnapshot, from: Vec, to: Vec): Vec[] { if (!navigable(t, to))
     return []; const snap = (p: Vec) => p.map(v => Math.round(v * 2)) as Vec, start = snap(from), end = snap(to), key = (p: Vec) => p.join(','), queue: Vec[] = [start], prev = new Map<string, string | null>([[key(start), null]]); for (let i = 0; i < queue.length && !prev.has(key(end)); i++)
     for (const [dx, dz] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {

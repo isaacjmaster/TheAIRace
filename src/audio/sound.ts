@@ -1,3 +1,4 @@
+import {INFILTRATION_CUES,type InfiltrationCue} from './infiltrationCues';
 import {RecordedMusic,type TrackLoader} from './RecordedMusic';
 import {loadApprovedTrack,MUSIC_GAIN} from './tracks';
 import { BUILDING_SOUNDS, MUTE_KEY, readMuted, writeMuted, type Cue, type MusicMode } from './score';
@@ -16,7 +17,7 @@ export class Soundscape {
  private ctx?:AudioContext;private master?:GainNode;private hq?:GainNode;private raid?:GainNode;private infiltration?:GainNode;
  private timer?:ReturnType<typeof setInterval>;private synth?:MusicSynth;private music?:RecordedMusic;private playingMode?:MusicMode;private hidden=false;private fadeUntil={hq:0,raid:0,infiltration:0};private mode:MusicMode='hq';
  private gainRamps=new Map<GainNode,{from:number;to:number;start:number;end:number}>();
- private listeners=new Set<()=>void>();private last=new Map<Cue,number>();private noise?:AudioBuffer;
+ private listeners=new Set<()=>void>();private last=new Map<Cue,number>();private noise?:AudioBuffer;private cipherVoice=0;
  muted:boolean;private platform:SoundPlatform;
  constructor(platform=browserPlatform()){this.platform=platform;this.muted=!!platform.silent||readMuted(platform.storage);}
  subscribe=(listener:()=>void)=>{this.listeners.add(listener);return()=>{this.listeners.delete(listener);};};
@@ -54,9 +55,10 @@ export class Soundscape {
   for(const mode of ['hq','raid','infiltration'] as const)if(mode!==this.playingMode&&this.ctx.currentTime>=this.fadeUntil[mode])this.music.stop(mode);
  }
  cue=(cue:Cue)=>{
-  if(!this.ctx||this.ctx.state!=='running'||this.platform.silent||this.muted)return;const t=this.ctx.currentTime;
-  const gap=cue.startsWith('building-')?.16:cue==='laser'||cue==='impact'?.09:cue==='destroy'?.12:.04;if(t-(this.last.get(cue)??-10)<gap)return;this.last.set(cue,t);
+  if(!this.ctx||this.ctx.state!=='running'||this.platform.silent||this.muted||this.hidden)return;const t=this.ctx.currentTime;
+  const gap=cue==='cipher-hacking'?.55:cue==='drone-laser'?.14:cue.startsWith('building-')?.16:cue==='laser'||cue==='impact'?.09:cue==='destroy'?.12:.04;if(t-(this.last.get(cue)??-10)<gap)return;this.last.set(cue,t);
   const out=this.master!;
+  if(cue in INFILTRATION_CUES){const variation=cue==='cipher-deploy'?[-.5,0,.5,0][this.cipherVoice++%4]:0;for(const voice of INFILTRATION_CUES[cue as InfiltrationCue])this.note(voice.note+variation,t+voice.at,voice.duration,voice.gain,out,voice.type,.004,voice.end+variation);return;}
   if(cue==='hack'){[76,83,88].forEach((n,i)=>this.note(n,t+i*.06,.14,.085,out,'sine',.008));return;}if(cue==='security-alert'){this.note(74,t,.15,.1,out,'triangle',.012);this.note(70,t+.18,.16,.08,out,'triangle',.012);return;}if(cue==='extraction'){[69,76,81,88].forEach((n,i)=>this.note(n,t+i*.08,.4,.11,out,'sine',.012));return;}
   if(cue in BUILDING_SOUNDS){const voice=BUILDING_SOUNDS[cue as keyof typeof BUILDING_SOUNDS];voice.notes.forEach((note,i)=>this.note(note,t+i*voice.gap,voice.duration,.1,out,voice.type,.012));return;}
   if(cue==='clear-tree'){[74,81,86].forEach((n,i)=>this.note(n,t+i*.065,.2,.055,out,'sine',.015));return;}
