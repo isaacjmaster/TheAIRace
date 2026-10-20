@@ -1,4 +1,6 @@
-# Soundtrack candidate verification — 20 October 2026
+# Soundtrack verification — 20 October 2026
+
+Release update: the owner approved both tracks after listening and authorized full deployment. The original edition is now the default; `?music=current` retains the previous music for comparison. The checks below document the original candidate verification and still apply to the unchanged recordings. The complete 389-test suite, build and isolated production smoke passed again after changing the default.
 
 - `npm test`: **389 passed, 0 failed**. Includes existing audio unlock, mute preference, mode transitions, suspension, source cleanup and resume tests; new coverage for opt-in loading, codec fallback, cancellation, asset integrity, preserved originals, arrangement metadata and guarded-loop resume.
 - `npm run build`: passed. Existing large Three.js chunk warning remains; no new runtime dependencies.
@@ -15,8 +17,8 @@ Build and start `node --import tsx scripts/preview-music-identity.ts` (local por
 
 For human listening open `/music-review.html` normally, tap a track, use **Hear loop join**, and compare with **Current HQ / Current Infiltration**. The opt-in game link retains normal saved mute behavior. Do not use the silent automation URL for a listening review.
 
-## Not verified / approval still required
+## Independent verification limits
 
 No physical iPhone, installed PWA, human 15–30-minute repeated listening session or professional audio-engineer mastering review was performed. Windows WebKit lacks `OfflineAudioContext` in this installation; its layout checks pass but its audio codec/loop behavior was not verified. The supplied YouTube reference could not be opened and was not heard. These are fully arranged original sampled-instrument prototypes for listening review, not a claim of finished professional soundtrack quality.
 
-Publishing the preview does **not** replace the normal soundtrack. After listening approval, make a separate small default-selection change while retaining the old assets for rollback.
+The owner subsequently approved the tracks after listening. The default-selection change retains all previous assets for rollback; saved audio preferences and progression remain unchanged.

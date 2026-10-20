@@ -1,4 +1,4 @@
-/** Original sampled-instrument candidates. Guards are excluded from the musical loop. */
+/** Approved original sampled soundtrack. Guards are excluded from the musical loop. */
 export const IDENTITY_TRACKS={
   "hq": {
     "seconds": 80.0,
@@ -25,4 +25,5 @@ export const IDENTITY_TRACKS={
     "compressedBytes": 3039660
   }
 } as const;
-export const identityMusicRequested=(search:string)=>new URLSearchParams(search).get('music')==='identity-v1';
+/** Approved soundtrack is the default; retain an explicit legacy comparison/rollback URL. */
+export const identityMusicRequested=(search:string)=>new URLSearchParams(search).get('music')!=='current';

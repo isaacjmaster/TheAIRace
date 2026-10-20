@@ -1,6 +1,6 @@
-# Original musical identity — listening candidates v1
+# Original musical identity — approved release v1
 
-Status: fully arranged sampled-instrument prototypes, awaiting musical listening approval. The normal game keeps its existing soundtrack. `/music-review.html` provides level-matched A/B playback and loop-join controls; `/?music=identity-v1` opts into these tracks for that URL only. No saved preference or company data changes. `/?music=current` restores the current edition. Do not promote these to the default without approval.
+Status: approved by the owner after listening on 20 October 2026; these original tracks are now the game default. `/music-review.html` provides level-matched A/B playback and loop-join controls; `/?music=identity-v1` explicitly selects the new default. No saved preference or company data changes. `/?music=current` selects the previous edition for comparison/rollback.
 
 ## Composition
 
@@ -38,4 +38,4 @@ The existing AudioContext, music buses, fades, resume offsets, mute preference, 
 
 ## Validation and limits
 
-See `VERIFICATION.md` for results. Automated offline rendering verifies exact consecutive periods, codec equivalence, seam amplitude and SFX mix headroom. This cannot establish musical enjoyment, convincing timbre or professional mastering. A human 15–30-minute listening session, physical iPhone Safari/PWA check and potentially a musician's articulation/mixing pass remain necessary before default replacement. For a higher production ceiling, import the MIDI/score into a DAW with richer round-robin/multivelocity orchestral libraries, retain the original motif, and remix/re-master with a composer/audio engineer.
+See `VERIFICATION.md` for results. Automated offline rendering verifies exact consecutive periods, codec equivalence, seam amplitude and SFX mix headroom. This cannot establish musical enjoyment, convincing timbre or professional mastering. A human 15–30-minute listening session, physical iPhone Safari/PWA check and potentially a musician's articulation/mixing pass remain useful follow-up quality checks; owner approval has been received. For a higher production ceiling, import the MIDI/score into a DAW with richer round-robin/multivelocity orchestral libraries, retain the original motif, and remix/re-master with a composer/audio engineer.
