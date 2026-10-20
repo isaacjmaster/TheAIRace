@@ -1,0 +1,4305 @@
+{
+  "title": "Small Ideas, Bright Futures",
+  "bpm": 108,
+  "key": "D major",
+  "bars": 32,
+  "form": [
+    {
+      "bars": [
+        1,
+        8
+      ],
+      "name": "Welcome / signature",
+      "texture": "Exposed lead with keys; rhythm enters gradually"
+    },
+    {
+      "bars": [
+        9,
+        16
+      ],
+      "name": "Productive afternoon",
+      "texture": "Warmer bass groove, changed phrase endings"
+    },
+    {
+      "bars": [
+        17,
+        24
+      ],
+      "name": "New idea",
+      "texture": "Contrasting answer, thinner drums, keys respond"
+    },
+    {
+      "bars": [
+        25,
+        32
+      ],
+      "name": "Bright return",
+      "texture": "Signature returns, then layers leave room for the loop"
+    }
+  ],
+  "events": [
+    {
+      "stem": "lead",
+      "beat": 0,
+      "midi": 66,
+      "length": 0.5,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 0.75,
+      "midi": 69,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 1.5,
+      "midi": 71,
+      "length": 0.65,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 2.5,
+      "midi": 76,
+      "length": 0.45,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 3.25,
+      "midi": 74,
+      "length": 0.5,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 0.03,
+      "midi": 54,
+      "length": 1.25,
+      "gain": 0.025
+    },
+    {
+      "stem": "keys",
+      "beat": 0.041999999999999996,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.025
+    },
+    {
+      "stem": "keys",
+      "beat": 0.054,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.025
+    },
+    {
+      "stem": "keys",
+      "beat": 0.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 4.25,
+      "midi": 73,
+      "length": 0.55,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 5,
+      "midi": 71,
+      "length": 0.45,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 5.75,
+      "midi": 69,
+      "length": 0.8,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 7,
+      "midi": 66,
+      "length": 0.55,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "keys",
+      "beat": 4.03,
+      "midi": 54,
+      "length": 1.25,
+      "gain": 0.025
+    },
+    {
+      "stem": "keys",
+      "beat": 4.042,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.025
+    },
+    {
+      "stem": "keys",
+      "beat": 4.054,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.025
+    },
+    {
+      "stem": "keys",
+      "beat": 4.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.025
+    },
+    {
+      "stem": "lead",
+      "beat": 8,
+      "midi": 67,
+      "length": 0.45,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 8.75,
+      "midi": 71,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 9.5,
+      "midi": 74,
+      "length": 0.55,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 10.5,
+      "midi": 76,
+      "length": 0.45,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 11.25,
+      "midi": 74,
+      "length": 0.5,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 8.03,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 10.5,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 8.042,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 10.509,
+      "midi": 62,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 8.053999999999998,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 10.518,
+      "midi": 64,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 8.065999999999999,
+      "midi": 67,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 10.527,
+      "midi": 67,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "pad",
+      "beat": 8.1,
+      "midi": 62,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "pad",
+      "beat": 8.1,
+      "midi": 64,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "bass",
+      "beat": 8,
+      "midi": 43,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 10.25,
+      "midi": 50,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 8,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 10.25,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.07
+    },
+    {
+      "stem": "drums",
+      "beat": 9.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 11.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 8.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 10.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 11.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 12.25,
+      "midi": 73,
+      "length": 0.55,
+      "gain": 0.185744
+    },
+    {
+      "stem": "lead",
+      "beat": 13,
+      "midi": 71,
+      "length": 0.4,
+      "gain": 0.157168
+    },
+    {
+      "stem": "lead",
+      "beat": 13.75,
+      "midi": 69,
+      "length": 0.65,
+      "gain": 0.175028
+    },
+    {
+      "stem": "lead",
+      "beat": 14.75,
+      "midi": 64,
+      "length": 0.4,
+      "gain": 0.16788399999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 15.5,
+      "midi": 69,
+      "length": 0.25,
+      "gain": 0.157168
+    },
+    {
+      "stem": "keys",
+      "beat": 12.03,
+      "midi": 55,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 12.042,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 12.053999999999998,
+      "midi": 61,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 12.065999999999999,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "pad",
+      "beat": 12.1,
+      "midi": 59,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "pad",
+      "beat": 12.1,
+      "midi": 61,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "bass",
+      "beat": 12,
+      "midi": 45,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 14.25,
+      "midi": 45,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "bass",
+      "beat": 15.5,
+      "midi": 49,
+      "length": 0.28,
+      "gain": 0.055
+    },
+    {
+      "stem": "drums",
+      "beat": 12,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 13.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 13.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 15.08,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 16,
+      "midi": 66,
+      "length": 0.5,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 16.75,
+      "midi": 69,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 17.5,
+      "midi": 71,
+      "length": 0.6,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 18.5,
+      "midi": 76,
+      "length": 0.4,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 19.25,
+      "midi": 78,
+      "length": 0.5,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 16.03,
+      "midi": 54,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 18.5,
+      "midi": 54,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 16.042,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 18.509,
+      "midi": 57,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 16.054000000000002,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 18.518,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 16.066000000000003,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 18.527,
+      "midi": 62,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "bass",
+      "beat": 16,
+      "midi": 38,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 18.25,
+      "midi": 45,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 16,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 18.25,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.07
+    },
+    {
+      "stem": "drums",
+      "beat": 17.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 19.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 16.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 18.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 19.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 20.25,
+      "midi": 76,
+      "length": 0.55,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 21,
+      "midi": 74,
+      "length": 0.4,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 21.75,
+      "midi": 71,
+      "length": 0.65,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 22.75,
+      "midi": 69,
+      "length": 0.4,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 23.5,
+      "midi": 66,
+      "length": 0.25,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 20.03,
+      "midi": 55,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 22.5,
+      "midi": 55,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 20.042,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 22.509,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 20.054000000000002,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 22.518,
+      "midi": 62,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 20.066000000000003,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 22.527,
+      "midi": 64,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "bass",
+      "beat": 20,
+      "midi": 43,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 22.25,
+      "midi": 43,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 20,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 21.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 23.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 21.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 23.08,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 24,
+      "midi": 67,
+      "length": 0.5,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 24.75,
+      "midi": 71,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 25.5,
+      "midi": 69,
+      "length": 0.55,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 26.5,
+      "midi": 64,
+      "length": 0.4,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 27.25,
+      "midi": 66,
+      "length": 0.4,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 24.03,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 26.5,
+      "midi": 57,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 24.042,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 26.509,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 24.054000000000002,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 26.518,
+      "midi": 62,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 24.066000000000003,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 26.527,
+      "midi": 64,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "pad",
+      "beat": 24.1,
+      "midi": 59,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "pad",
+      "beat": 24.1,
+      "midi": 62,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "bass",
+      "beat": 24,
+      "midi": 45,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 26.25,
+      "midi": 52,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 24,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 26.25,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.07
+    },
+    {
+      "stem": "drums",
+      "beat": 25.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 27.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 24.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 26.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 27.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 28.25,
+      "midi": 64,
+      "length": 0.45,
+      "gain": 0.185744
+    },
+    {
+      "stem": "lead",
+      "beat": 29,
+      "midi": 73,
+      "length": 0.5,
+      "gain": 0.157168
+    },
+    {
+      "stem": "lead",
+      "beat": 30,
+      "midi": 74,
+      "length": 1.25,
+      "gain": 0.175028
+    },
+    {
+      "stem": "keys",
+      "beat": 28.03,
+      "midi": 54,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 28.042,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 28.054000000000002,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 28.066000000000003,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "bass",
+      "beat": 28,
+      "midi": 38,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 30.25,
+      "midi": 38,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "bass",
+      "beat": 31.5,
+      "midi": 49,
+      "length": 0.28,
+      "gain": 0.055
+    },
+    {
+      "stem": "drums",
+      "beat": 28,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 29.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 29.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 31.08,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 32,
+      "midi": 66,
+      "length": 0.45,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 32.75,
+      "midi": 69,
+      "length": 0.3,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 33.5,
+      "midi": 71,
+      "length": 0.55,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 34.5,
+      "midi": 76,
+      "length": 0.4,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 35.25,
+      "midi": 74,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 35.75,
+      "midi": 69,
+      "length": 0.16,
+      "gain": 0.15200000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 32.03,
+      "midi": 54,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 34.5,
+      "midi": 54,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 32.042,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 34.509,
+      "midi": 57,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 32.054,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 34.518,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 32.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 34.527,
+      "midi": 64,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "pad",
+      "beat": 32.1,
+      "midi": 57,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "pad",
+      "beat": 32.1,
+      "midi": 59,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "bass",
+      "beat": 32,
+      "midi": 38,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 34.25,
+      "midi": 45,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 32,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 34.25,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.07
+    },
+    {
+      "stem": "drums",
+      "beat": 33.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 35.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 32.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 34.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 35.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 36.25,
+      "midi": 73,
+      "length": 0.5,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 37,
+      "midi": 76,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 37.75,
+      "midi": 74,
+      "length": 0.75,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 39,
+      "midi": 71,
+      "length": 0.55,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "keys",
+      "beat": 36.03,
+      "midi": 55,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 38.5,
+      "midi": 55,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 36.042,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 38.509,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 36.054,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 38.518,
+      "midi": 62,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 36.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 38.527,
+      "midi": 64,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "pad",
+      "beat": 36.1,
+      "midi": 59,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "pad",
+      "beat": 36.1,
+      "midi": 62,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "bass",
+      "beat": 36,
+      "midi": 38,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 38.25,
+      "midi": 38,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 36,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 37.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 39.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 37.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 39.08,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 40,
+      "midi": 67,
+      "length": 0.4,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 40.75,
+      "midi": 71,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 41.5,
+      "midi": 74,
+      "length": 0.5,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 42.5,
+      "midi": 78,
+      "length": 0.4,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 43.25,
+      "midi": 76,
+      "length": 0.5,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 40.03,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 42.5,
+      "midi": 57,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 40.042,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 42.509,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 40.054,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 42.518,
+      "midi": 62,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 40.066,
+      "midi": 66,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 42.527,
+      "midi": 66,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "pad",
+      "beat": 40.1,
+      "midi": 59,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "pad",
+      "beat": 40.1,
+      "midi": 62,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "bass",
+      "beat": 40,
+      "midi": 43,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 42.25,
+      "midi": 50,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 40,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 42.25,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.07
+    },
+    {
+      "stem": "drums",
+      "beat": 41.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 43.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 40.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 42.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 43.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 44.25,
+      "midi": 74,
+      "length": 0.5,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 45,
+      "midi": 73,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 45.75,
+      "midi": 69,
+      "length": 0.65,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 47,
+      "midi": 76,
+      "length": 0.5,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "keys",
+      "beat": 44.03,
+      "midi": 55,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 44.042,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 44.054,
+      "midi": 61,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 44.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "bass",
+      "beat": 44,
+      "midi": 45,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 46.25,
+      "midi": 45,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "bass",
+      "beat": 47.5,
+      "midi": 49,
+      "length": 0.28,
+      "gain": 0.055
+    },
+    {
+      "stem": "drums",
+      "beat": 44,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 45.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 45.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 47.08,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 48,
+      "midi": 78,
+      "length": 0.6,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 49,
+      "midi": 76,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 49.75,
+      "midi": 74,
+      "length": 0.7,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 51,
+      "midi": 71,
+      "length": 0.6,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "keys",
+      "beat": 48.03,
+      "midi": 55,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 50.5,
+      "midi": 55,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 48.042,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 50.509,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 48.054,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 50.518,
+      "midi": 62,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 48.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 50.527,
+      "midi": 64,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "pad",
+      "beat": 48.1,
+      "midi": 59,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "pad",
+      "beat": 48.1,
+      "midi": 62,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "bass",
+      "beat": 48,
+      "midi": 43,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 50.25,
+      "midi": 50,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 48,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 50.25,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.07
+    },
+    {
+      "stem": "drums",
+      "beat": 49.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 51.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 48.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 50.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 51.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 52.25,
+      "midi": 69,
+      "length": 0.45,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 53,
+      "midi": 66,
+      "length": 0.4,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 53.75,
+      "midi": 69,
+      "length": 0.6,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 54.75,
+      "midi": 71,
+      "length": 0.4,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 55.5,
+      "midi": 74,
+      "length": 0.25,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 52.03,
+      "midi": 54,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 54.5,
+      "midi": 54,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 52.042,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 54.509,
+      "midi": 57,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 52.054,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 54.518,
+      "midi": 62,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 52.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 54.527,
+      "midi": 64,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "pad",
+      "beat": 52.1,
+      "midi": 57,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "pad",
+      "beat": 52.1,
+      "midi": 62,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "bass",
+      "beat": 52,
+      "midi": 42,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 54.25,
+      "midi": 42,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 52,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 53.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 55.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 53.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 55.08,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 56,
+      "midi": 76,
+      "length": 0.6,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 57,
+      "midi": 74,
+      "length": 0.4,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 57.75,
+      "midi": 73,
+      "length": 0.65,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 59,
+      "midi": 69,
+      "length": 0.5,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "keys",
+      "beat": 56.03,
+      "midi": 55,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 58.5,
+      "midi": 55,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 56.042,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 58.509,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 56.054,
+      "midi": 61,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 58.518,
+      "midi": 61,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 56.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 58.527,
+      "midi": 64,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "bass",
+      "beat": 56,
+      "midi": 45,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 58.25,
+      "midi": 52,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 56,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 58.25,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.07
+    },
+    {
+      "stem": "drums",
+      "beat": 57.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 59.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 56.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 58.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 59.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 60.25,
+      "midi": 66,
+      "length": 0.45,
+      "gain": 0.185744
+    },
+    {
+      "stem": "lead",
+      "beat": 61,
+      "midi": 64,
+      "length": 0.4,
+      "gain": 0.157168
+    },
+    {
+      "stem": "lead",
+      "beat": 62,
+      "midi": 62,
+      "length": 1.1,
+      "gain": 0.175028
+    },
+    {
+      "stem": "keys",
+      "beat": 60.03,
+      "midi": 54,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 60.042,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 60.054,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 60.066,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "bass",
+      "beat": 60,
+      "midi": 38,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 62.25,
+      "midi": 38,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "bass",
+      "beat": 63.5,
+      "midi": 45,
+      "length": 0.28,
+      "gain": 0.055
+    },
+    {
+      "stem": "drums",
+      "beat": 60,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 61.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 61.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 63.08,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 64,
+      "midi": 67,
+      "length": 0.55,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 65,
+      "midi": 69,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 65.75,
+      "midi": 71,
+      "length": 0.55,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 66.75,
+      "midi": 74,
+      "length": 0.75,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "keys",
+      "beat": 64.03,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 66.5,
+      "midi": 57,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 64.042,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 66.509,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 64.054,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 66.518,
+      "midi": 62,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 64.066,
+      "midi": 66,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 66.527,
+      "midi": 66,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "bass",
+      "beat": 64,
+      "midi": 43,
+      "length": 1.12,
+      "gain": 0.075
+    },
+    {
+      "stem": "bass",
+      "beat": 66.25,
+      "midi": 50,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "lead",
+      "beat": 68.25,
+      "midi": 76,
+      "length": 0.5,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 69,
+      "midi": 73,
+      "length": 0.4,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 69.75,
+      "midi": 71,
+      "length": 0.55,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 71,
+      "midi": 69,
+      "length": 0.65,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "keys",
+      "beat": 68.03,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 70.5,
+      "midi": 57,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 68.042,
+      "midi": 61,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 70.509,
+      "midi": 61,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 68.054,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 70.518,
+      "midi": 64,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 68.066,
+      "midi": 66,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 70.527,
+      "midi": 66,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "bass",
+      "beat": 68,
+      "midi": 45,
+      "length": 1.12,
+      "gain": 0.075
+    },
+    {
+      "stem": "bass",
+      "beat": 70.25,
+      "midi": 45,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "lead",
+      "beat": 72,
+      "midi": 78,
+      "length": 0.55,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 73,
+      "midi": 76,
+      "length": 0.4,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 73.75,
+      "midi": 74,
+      "length": 0.55,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 74.75,
+      "midi": 69,
+      "length": 0.4,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 75.5,
+      "midi": 66,
+      "length": 0.25,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 72.03,
+      "midi": 54,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 74.5,
+      "midi": 54,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 72.042,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 74.509,
+      "midi": 57,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 72.054,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 74.518,
+      "midi": 62,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 72.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 74.527,
+      "midi": 64,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "bass",
+      "beat": 72,
+      "midi": 42,
+      "length": 1.12,
+      "gain": 0.075
+    },
+    {
+      "stem": "bass",
+      "beat": 74.25,
+      "midi": 49,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 72,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 74.25,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.07
+    },
+    {
+      "stem": "drums",
+      "beat": 73.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 75.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "lead",
+      "beat": 76.25,
+      "midi": 67,
+      "length": 0.5,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 77,
+      "midi": 71,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 77.75,
+      "midi": 74,
+      "length": 0.55,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 78.75,
+      "midi": 76,
+      "length": 0.4,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 79.5,
+      "midi": 71,
+      "length": 0.25,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 76.03,
+      "midi": 55,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 76.042,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 76.054,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 76.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "bass",
+      "beat": 76,
+      "midi": 43,
+      "length": 1.12,
+      "gain": 0.075
+    },
+    {
+      "stem": "bass",
+      "beat": 78.25,
+      "midi": 43,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "bass",
+      "beat": 79.5,
+      "midi": 49,
+      "length": 0.28,
+      "gain": 0.055
+    },
+    {
+      "stem": "drums",
+      "beat": 76,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 77.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "lead",
+      "beat": 80,
+      "midi": 68,
+      "length": 0.5,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 80.75,
+      "midi": 71,
+      "length": 0.4,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 81.5,
+      "midi": 76,
+      "length": 0.6,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 82.5,
+      "midi": 78,
+      "length": 0.4,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 83.25,
+      "midi": 76,
+      "length": 0.45,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 80.03,
+      "midi": 56,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 82.5,
+      "midi": 56,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 80.042,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 82.509,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 80.054,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 82.518,
+      "midi": 62,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 80.066,
+      "midi": 66,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 82.527,
+      "midi": 66,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "pad",
+      "beat": 80.1,
+      "midi": 59,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "pad",
+      "beat": 80.1,
+      "midi": 62,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "bass",
+      "beat": 80,
+      "midi": 40,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 82.25,
+      "midi": 47,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 80,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 82.25,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.07
+    },
+    {
+      "stem": "drums",
+      "beat": 81.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 83.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 80.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 82.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 83.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 84.25,
+      "midi": 73,
+      "length": 0.55,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 85,
+      "midi": 76,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 85.75,
+      "midi": 74,
+      "length": 0.55,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 86.75,
+      "midi": 71,
+      "length": 0.4,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 87.5,
+      "midi": 69,
+      "length": 0.25,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 84.03,
+      "midi": 55,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 86.5,
+      "midi": 55,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 84.042,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 86.509,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 84.054,
+      "midi": 61,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 86.518,
+      "midi": 61,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 84.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 86.527,
+      "midi": 64,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "pad",
+      "beat": 84.1,
+      "midi": 59,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "pad",
+      "beat": 84.1,
+      "midi": 61,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "bass",
+      "beat": 84,
+      "midi": 45,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 86.25,
+      "midi": 45,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 84,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 85.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 87.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 85.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 87.08,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 88,
+      "midi": 66,
+      "length": 0.5,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 88.75,
+      "midi": 69,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 89.5,
+      "midi": 74,
+      "length": 0.6,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 90.5,
+      "midi": 73,
+      "length": 0.4,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 91.25,
+      "midi": 71,
+      "length": 0.5,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 88.03,
+      "midi": 54,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 90.5,
+      "midi": 54,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 88.042,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 90.509,
+      "midi": 57,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 88.054,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 90.518,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 88.066,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 90.527,
+      "midi": 62,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "bass",
+      "beat": 88,
+      "midi": 38,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 90.25,
+      "midi": 45,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 88,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 90.25,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.07
+    },
+    {
+      "stem": "drums",
+      "beat": 89.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 91.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 88.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 90.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 91.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 92.25,
+      "midi": 73,
+      "length": 0.5,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 93,
+      "midi": 76,
+      "length": 0.45,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 94,
+      "midi": 69,
+      "length": 0.7,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 95.25,
+      "midi": 64,
+      "length": 0.4,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "keys",
+      "beat": 92.03,
+      "midi": 55,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 92.042,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 92.054,
+      "midi": 61,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 92.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "bass",
+      "beat": 92,
+      "midi": 45,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 94.25,
+      "midi": 45,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "bass",
+      "beat": 95.5,
+      "midi": 49,
+      "length": 0.28,
+      "gain": 0.055
+    },
+    {
+      "stem": "drums",
+      "beat": 92,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 93.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 93.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 95.08,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 96,
+      "midi": 66,
+      "length": 0.5,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 96.75,
+      "midi": 69,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 97.5,
+      "midi": 71,
+      "length": 0.65,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 98.5,
+      "midi": 76,
+      "length": 0.45,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 99.25,
+      "midi": 74,
+      "length": 0.5,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 96.03,
+      "midi": 54,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 98.5,
+      "midi": 54,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 96.042,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 98.509,
+      "midi": 57,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 96.054,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 98.518,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 96.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 98.527,
+      "midi": 64,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "pad",
+      "beat": 96.1,
+      "midi": 57,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "pad",
+      "beat": 96.1,
+      "midi": 59,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "bass",
+      "beat": 96,
+      "midi": 38,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 98.25,
+      "midi": 45,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 96,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 98.25,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.07
+    },
+    {
+      "stem": "drums",
+      "beat": 97.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 99.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 96.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 98.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 99.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 100.25,
+      "midi": 73,
+      "length": 0.55,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 101,
+      "midi": 71,
+      "length": 0.45,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 101.75,
+      "midi": 69,
+      "length": 0.8,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 103,
+      "midi": 66,
+      "length": 0.55,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "keys",
+      "beat": 100.03,
+      "midi": 54,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 102.5,
+      "midi": 54,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 100.042,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 102.509,
+      "midi": 57,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 100.054,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 102.518,
+      "midi": 62,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 100.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 102.527,
+      "midi": 64,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "pad",
+      "beat": 100.1,
+      "midi": 57,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "pad",
+      "beat": 100.1,
+      "midi": 62,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "bass",
+      "beat": 100,
+      "midi": 45,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 102.25,
+      "midi": 45,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 100,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 101.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 103.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 101.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 103.08,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 104,
+      "midi": 67,
+      "length": 0.45,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 104.75,
+      "midi": 71,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 105.5,
+      "midi": 74,
+      "length": 0.55,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 106.5,
+      "midi": 76,
+      "length": 0.45,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 107.25,
+      "midi": 74,
+      "length": 0.5,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 104.03,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 106.5,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 104.042,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 106.509,
+      "midi": 62,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 104.054,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 106.518,
+      "midi": 64,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 104.066,
+      "midi": 67,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 106.527,
+      "midi": 67,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "pad",
+      "beat": 104.1,
+      "midi": 62,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "pad",
+      "beat": 104.1,
+      "midi": 64,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "bass",
+      "beat": 104,
+      "midi": 43,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 106.25,
+      "midi": 50,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 104,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 106.25,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.07
+    },
+    {
+      "stem": "drums",
+      "beat": 105.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 107.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 104.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 106.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 107.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 108.25,
+      "midi": 73,
+      "length": 0.55,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 109,
+      "midi": 71,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 109.75,
+      "midi": 69,
+      "length": 0.65,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 110.75,
+      "midi": 73,
+      "length": 0.4,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 111.5,
+      "midi": 76,
+      "length": 0.25,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 108.03,
+      "midi": 55,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 108.042,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 108.054,
+      "midi": 61,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 108.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "bass",
+      "beat": 108,
+      "midi": 45,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 110.25,
+      "midi": 45,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "bass",
+      "beat": 111.5,
+      "midi": 49,
+      "length": 0.28,
+      "gain": 0.055
+    },
+    {
+      "stem": "drums",
+      "beat": 108,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 109.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 109.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 111.08,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 112,
+      "midi": 78,
+      "length": 0.65,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 113,
+      "midi": 76,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 113.75,
+      "midi": 74,
+      "length": 0.6,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 114.75,
+      "midi": 71,
+      "length": 0.4,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 115.5,
+      "midi": 69,
+      "length": 0.25,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 112.03,
+      "midi": 54,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 114.5,
+      "midi": 54,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 112.042,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 114.509,
+      "midi": 57,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 112.054,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 114.518,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 112.066,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 114.527,
+      "midi": 62,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "pad",
+      "beat": 112.1,
+      "midi": 57,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "pad",
+      "beat": 112.1,
+      "midi": 59,
+      "length": 3.1,
+      "gain": 0.008
+    },
+    {
+      "stem": "bass",
+      "beat": 112,
+      "midi": 38,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 114.25,
+      "midi": 45,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 112,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 114.25,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.07
+    },
+    {
+      "stem": "drums",
+      "beat": 113.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 115.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 112.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 114.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 115.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 116.25,
+      "midi": 71,
+      "length": 0.45,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 117,
+      "midi": 74,
+      "length": 0.4,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 117.75,
+      "midi": 69,
+      "length": 0.6,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 118.75,
+      "midi": 66,
+      "length": 0.6,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "keys",
+      "beat": 116.03,
+      "midi": 55,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 118.5,
+      "midi": 55,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 116.042,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 118.509,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 116.054,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 118.518,
+      "midi": 62,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 116.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 118.527,
+      "midi": 64,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "bass",
+      "beat": 116,
+      "midi": 43,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 118.25,
+      "midi": 43,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 116,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.14
+    },
+    {
+      "stem": "drums",
+      "beat": 117.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 119.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 117.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 119.08,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 120,
+      "midi": 67,
+      "length": 0.5,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 120.75,
+      "midi": 71,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 121.5,
+      "midi": 69,
+      "length": 0.55,
+      "gain": 0.1862
+    },
+    {
+      "stem": "lead",
+      "beat": 122.5,
+      "midi": 76,
+      "length": 0.4,
+      "gain": 0.17859999999999998
+    },
+    {
+      "stem": "lead",
+      "beat": 123.25,
+      "midi": 73,
+      "length": 0.4,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "keys",
+      "beat": 120.03,
+      "midi": 55,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 122.5,
+      "midi": 55,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 120.042,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 122.509,
+      "midi": 59,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 120.054,
+      "midi": 61,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 122.518,
+      "midi": 61,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "keys",
+      "beat": 120.066,
+      "midi": 64,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 122.527,
+      "midi": 64,
+      "length": 0.65,
+      "gain": 0.022
+    },
+    {
+      "stem": "bass",
+      "beat": 120,
+      "midi": 45,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 122.25,
+      "midi": 52,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 120,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.1
+    },
+    {
+      "stem": "drums",
+      "beat": 121.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 123.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    },
+    {
+      "stem": "drums",
+      "beat": 120.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 122.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "drums",
+      "beat": 123.58,
+      "midi": 42,
+      "length": 0.15,
+      "gain": 0.035
+    },
+    {
+      "stem": "lead",
+      "beat": 124.25,
+      "midi": 66,
+      "length": 0.45,
+      "gain": 0.1976
+    },
+    {
+      "stem": "lead",
+      "beat": 125,
+      "midi": 69,
+      "length": 0.35,
+      "gain": 0.16720000000000002
+    },
+    {
+      "stem": "lead",
+      "beat": 126,
+      "midi": 74,
+      "length": 1.05,
+      "gain": 0.1862
+    },
+    {
+      "stem": "keys",
+      "beat": 124.03,
+      "midi": 54,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 124.042,
+      "midi": 57,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 124.054,
+      "midi": 59,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "keys",
+      "beat": 124.066,
+      "midi": 62,
+      "length": 1.25,
+      "gain": 0.038
+    },
+    {
+      "stem": "bass",
+      "beat": 124,
+      "midi": 38,
+      "length": 1.12,
+      "gain": 0.105
+    },
+    {
+      "stem": "bass",
+      "beat": 126.25,
+      "midi": 38,
+      "length": 0.62,
+      "gain": 0.075
+    },
+    {
+      "stem": "bass",
+      "beat": 127.5,
+      "midi": 49,
+      "length": 0.28,
+      "gain": 0.055
+    },
+    {
+      "stem": "drums",
+      "beat": 124,
+      "midi": 36,
+      "length": 0.15,
+      "gain": 0.1
+    },
+    {
+      "stem": "drums",
+      "beat": 125.015,
+      "midi": 38,
+      "length": 0.15,
+      "gain": 0.075
+    }
+  ]
+}

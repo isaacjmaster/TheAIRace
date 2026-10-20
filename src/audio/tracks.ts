@@ -1,5 +1,5 @@
 import type {MusicMode} from './score';
-import {IDENTITY_TRACKS,identityMusicRequested} from './identityTracks';
+import {identityTrack,identityMusicRequested} from './identityTracks';
 import {defineMusicLoop} from './RecordedMusic';
 /** Approved lossless masters. PCM fallback protects browsers with missing FLAC decoders. */
 export const APPROVED_TRACKS={
@@ -25,7 +25,7 @@ export const APPROVED_TRACKS={
 export const MUSIC_GAIN=2; // Through the unchanged .22 master: quiet .44 playback gain.
 export async function loadApprovedTrack(ctx:AudioContext,mode:MusicMode,signal:AbortSignal,edition=identityMusicRequested(typeof location==='undefined'?'':location.search)){
  if(edition&&mode!=='raid'){
-  const track=IDENTITY_TRACKS[mode];let last:unknown;
+  const track=identityTrack(mode,typeof location==='undefined'?'':location.search);let last:unknown;
   for(const url of [track.flac,track.wav]){try{const response=await fetch(url,{signal,cache:'force-cache'});if(!response.ok)throw Error('Candidate music unavailable');const buffer=await ctx.decodeAudioData(await response.arrayBuffer());if(signal.aborted)throw Error('Music canceled');if(Math.abs(buffer.duration-track.encodedSeconds)>2/ctx.sampleRate)throw Error('Incomplete candidate decode');return defineMusicLoop(buffer,track.loopStart,track.loopEnd);}catch(e){last=e;if(signal.aborted)throw e;}}
   throw last;
  }

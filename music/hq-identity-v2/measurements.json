@@ -1,0 +1,30 @@
+[
+  {
+    "name": "hq",
+    "status": "full original score; owner requested direct release; musical quality not independently auditioned",
+    "bpm": 108,
+    "key": "D major",
+    "bars": 32,
+    "seconds": 71.11,
+    "loopStart": 1,
+    "loopEnd": 72.11,
+    "encodedSeconds": 73.11,
+    "sampleRate": 32000,
+    "frames": 2275520,
+    "lufs": -20.654513855917923,
+    "truePeakDbTP": -9.811773574938275,
+    "seamDelta": [
+      1.2308920983398748e-05,
+      1.1558858178173327e-05
+    ],
+    "normalDelta99_9": [
+      0.037501279728944896,
+      0.035221148908506625
+    ],
+    "rms": 0.06926641461555566,
+    "sha256Pcm": "c8f8582f99242a3cbe9244992552cda508e66a9153fdbaf34b352b567f6067fa",
+    "sha256Wav": "53978baa8fbd993ac71335e84e581a86462458b66cf759488e635bb030306e52",
+    "flacBytes": 2448010,
+    "aacBytes": 1442235
+  }
+]
