@@ -26,7 +26,7 @@ export function animateScrapBot(bot:THREE.Object3D,dt:number,reduced=false,attac
   }else{p.target.set(leg.side*.17,0,0).applyMatrix4(p.rig.matrixWorld);foot.anchor.x+=(p.target.x-foot.anchor.x)*(1-Math.exp(-dt*10));foot.anchor.z+=(p.target.z-foot.anchor.z)*(1-Math.exp(-dt*10));foot.anchor.y+=(p.position.y-foot.anchor.y)*(1-Math.exp(-dt*24));if(reduced){p.target.set(leg.side*.17,0,0).applyMatrix4(p.rig.matrixWorld);foot.anchor.copy(p.target);foot.swing=false;}}
   leg.foot.position.copy(foot.anchor).applyMatrix4(p.inverse);leg.foot.rotation.x=foot.swing&&moving&&!reduced?Math.sin((q-stance)/(1-stance)*Math.PI)*-.1:0;solveLeg(p,leg);foot.phase=q;
  }
- const swing=Math.sin(phase*Math.PI*2)*.22*p.activity;for(let i=0;i<2;i++){const arm=p.arms[i],target=reduced?0:attack>0?-(i===1?1.15:.8)*attack:(i===0?-swing:swing);arm.rotation.x+=(target-arm.rotation.x)*(1-Math.exp(-dt*22));}
+ const swing=Math.sin(phase*Math.PI*2)*.22*p.activity;for(let i=0;i<2;i++){const arm=p.arms[i],target=bot.userData.cipherAiming&&i===1?-1.9:reduced?0:attack>0?-(i===1?1.15:.8)*attack:(i===0?-swing:swing);arm.rotation.x+=(target-arm.rotation.x)*(1-Math.exp(-dt*22));}
  bot.userData.walkPhase=phase;bot.userData.walkActivity=p.activity;
 }
 /** Copy the settled delivery pose into its existing authoritative Hangar representation. */

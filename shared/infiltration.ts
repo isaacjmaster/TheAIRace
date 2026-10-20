@@ -54,7 +54,7 @@ export const INFILTRATION_TARGETS: TargetSnapshot[] = [{ version: 1, id: 'lumen-
 for(const target of INFILTRATION_TARGETS){target.navigationVersion=2;target.entry=[-8,6.5];target.exit=[-10.5,6.5];target.walls=rivalSecurityWalls(target.id==='vector-works');for(const defense of target.defenses)defense.route=defense.route.map(p=>nearestOpen(p,infiltrationSolids(target),INFILTRATION_BOUNDS,DRONE_CLEARANCE,.5)??p);}
 export const opponentUsername=(id:string)=>id==='vector-works'?'GridFox':'NovaByte';
 export type DroneState = {
-    lastShotAt?:number;
+    lastShotAt?:number;health?:number;acquiredAt?:number;
     targetAgentId?:string;shotPosition?:Vec;
     id: string;
     path?:Vec[];
@@ -64,7 +64,7 @@ export type DroneState = {
     segment: number;
     alert: number;
     lost: number;
-    mode: 'patrol' | 'warning' | 'pursuit';
+    mode: 'patrol' | 'warning' | 'pursuit' | 'attacking' | 'disabled';
 };
 export type InfiltrationEvent = {
     at: number;
@@ -89,7 +89,7 @@ export type Operation = {
         health?:number;
         position: Vec;
         path: Vec[];
-        mode: 'idle' | 'moving' | 'hacking' | 'breaching' | 'extracting';
+        mode: 'idle' | 'moving' | 'hacking' | 'breaching' | 'extracting' | 'attacking';
         target?: string;
         hack: number;
         yaw: number;

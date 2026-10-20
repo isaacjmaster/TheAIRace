@@ -12,18 +12,18 @@ const C={asphalt:'#536b73',concrete:'#e3dfcf',curb:'#f4efdd',grass:'#a3c78b',hed
 /** Scenery only. Solid details stay outside the authoritative play area. */
 export class TechnologyDistrict{
  readonly group=new THREE.Group();private k=new WorldKit('campus');private geometries=new Map<string,THREE.BoxGeometry>();private lots=new THREE.Group();private lotsKey='';private lotInstances?:THREE.InstancedMesh;private lotEdges?:THREE.LineSegments;private traffic:DistrictTraffic;private lawn?:CampusLawn;readonly architectureCounts=new Map<string,number>();
- constructor(readonly kind:'hq'|'raid'){
+ constructor(readonly kind:'hq'|'raid',campus?:{halfX:number;halfZ:number}){
   this.group.name='technology-district-'+kind;this.lots.name='property-aprons';
-  const hq=kind==='hq',cx=hq?(P.minX+P.maxX)/2:0,cz=hq?(P.minZ+P.maxZ)/2:0,hx=hq?W/2:12.5,hz=hq?D/2:8.5;
+  const hq=kind==='hq',cx=hq?(P.minX+P.maxX)/2:0,cz=hq?(P.minZ+P.maxZ)/2:0,hx=campus?.halfX??(hq?W/2:12.5),hz=campus?.halfZ??(hq?D/2:8.5);
   // The protected campus retains its original lawn. Everything beyond it is a
   // developed street-and-property network, rather than offices on a grass plane.
-  this.block(this.group,[2000,.04,2000],[0,-.2,0],'#bac3bd');
-  if(hq){this.lawn=new CampusLawn(hx*2+3,hz*2+3);this.lawn.mesh.position.set(cx,-.12,cz);}else this.block(this.group,[hx*2+3,.04,hz*2+3],[cx,-.14,cz],C.grass);
+  this.block(this.group,[2000,.04,2000],[0,-.2,0],campus?C.grass:'#bac3bd');
+  if(campus){this.lawn=new CampusLawn(220,220);this.lawn.mesh.position.set(0,-.17,0);}else if(hq){this.lawn=new CampusLawn(hx*2+3,hz*2+3);this.lawn.mesh.position.set(cx,-.12,cz);}else this.block(this.group,[hx*2+3,.04,hz*2+3],[cx,-.14,cz],C.grass);
   const roadX=hx+5.2,roadZ=hz+5.2,step=15.5;
-  const axis=(half:number)=>{const n=hq?4:Math.ceil(half*2/16);return [-half-step*2,-half-step,...Array.from({length:n+1},(_,i)=>-half+half*2*i/n),half+step,half+step*2];};
+  const axis=(half:number)=>{const n=hq?4:Math.ceil(half*2/16);return [...(campus?[]:[-half-step*2]),-half-step,...Array.from({length:n+1},(_,i)=>-half+half*2*i/n),half+step,...(campus?[]:[half+step*2])];};
   const xs=axis(roadX),zs=axis(roadZ),outerX=xs.at(-1)!,outerZ=zs.at(-1)!;
-  for(const z of zs){if(Math.abs(z)>=roadZ-.01)this.street(cx,cz+z,outerX*2+25,false);else for(const sign of [-1,1])this.street(cx+sign*(roadX+outerX+25)/2,cz+z,outerX+25-roadX,false);}
-  for(const x of xs){if(Math.abs(x)>=roadX-.01)this.street(cx+x,cz,outerZ*2+25,true);else for(const sign of [-1,1])this.street(cx+x,cz+sign*(roadZ+outerZ+25)/2,outerZ+25-roadZ,true);}
+  for(const z of zs){if(Math.abs(z)>=roadZ-.01)this.street(cx,cz+z,outerX*2+(campus?4.2:25),false);else for(const sign of [-1,1])this.street(cx+sign*(roadX+outerX+(campus?2.1:25))/2,cz+z,outerX+(campus?2.1:25)-roadX,false);}
+  for(const x of xs){if(Math.abs(x)>=roadX-.01)this.street(cx+x,cz,outerZ*2+(campus?4.2:25),true);else for(const sign of [-1,1])this.street(cx+x,cz+sign*(roadZ+outerZ+(campus?2.1:25))/2,outerZ+(campus?2.1:25)-roadZ,true);}
   // Intersections continue into adjacent blocks in both directions.
   for(const x of xs)for(const z of zs){if(Math.abs(x)<roadX-.01&&Math.abs(z)<roadZ-.01)continue;if(Math.abs(x)>outerX-1||Math.abs(z)>outerZ-1)continue;this.crossing(cx+x,cz+z-2.8,false,4.2);this.crossing(cx+x+2.8,cz+z,true,4.2);}
   for(let ix=0;ix<xs.length-1;ix++)for(let iz=0;iz<zs.length-1;iz++){

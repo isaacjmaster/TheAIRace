@@ -63,3 +63,5 @@
 .encounter-header h2{text-align:center;width:100%}
 
 .encounter-header .username-label{justify-content:center}
+
+.world-unit-health progress::-webkit-progress-value{background:#ee9677}.world-unit-health progress::-moz-progress-bar{background:#ee9677}
