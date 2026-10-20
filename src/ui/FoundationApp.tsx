@@ -1,3 +1,4 @@
+import {builderBusyAt} from '../../shared/foundation';
 import {ResetConfirmation} from './ResetConfirmation';
 import {CompanyOpening,useCompanyOpening} from './CompanyOpening';
 import {onboardingHud} from './onboardingPresentation';
@@ -54,7 +55,7 @@ export function App(){
  const identity=useRef<string|null>(null),loading=useRef<Promise<FoundationState>|null>(null);
  function receiveCompany(c:CompanyIdentity){if(identity.current&&identity.current!==c.playerId){setIdentityChanged(true);return false;}identity.current=c.playerId;if(c.serverTime<profileTime.current)return true;profileTime.current=c.serverTime;setCompany(c);return true;}
  const identityHeaders=()=>({'Content-Type':'application/json',...(identity.current?{'X-Company-ID':identity.current}:{})});
- const [state,setState]=useState<FoundationState|null>(null),[phase,setPhase]=useState<'splash'|'menu'|'game'>(recoveryLaunch?'menu':'splash'),[panel,setPanel]=useState<'settings'|'reset'|'attack'|'build'|'fabricator'|'hangar'|'raid'|'leaderboard'|'infiltration'|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[worldKey,setWorldKey]=useState(0);
+ const [savedState,setState]=useState<FoundationState|null>(null),[phase,setPhase]=useState<'splash'|'menu'|'game'>(recoveryLaunch?'menu':'splash'),[panel,setPanel]=useState<'settings'|'reset'|'attack'|'build'|'fabricator'|'hangar'|'raid'|'leaderboard'|'infiltration'|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[worldKey,setWorldKey]=useState(0);
  const [readyWorld,setReadyWorld]=useState(-1),[recoveredEntry,setRecoveredEntry]=useState(false);
  const [companyXP,setCompanyXP]=useState<CompanyXP|null>(null);
  function receiveXP(p:CompanyXP){setCompanyXP(old=>old&&old.total>p.total?old:p);}
@@ -68,6 +69,7 @@ export function App(){
  useEffect(()=>{const timer=setInterval(()=>{const a=serverAnchor.current;if(a.server)setCompetitionNow(a.server+performance.now()-a.monotonic);},1000);return()=>clearInterval(timer);},[]);
  const [editMode,setEditMode]=useState(false);
  const [placing,setPlacing]=useState<Placeable|null>(null),[collected,setCollected]=useState<{id:number;amount:number}|null>(null),[now,setNow]=useState(Date.now());
+ const state=savedState?{...savedState,buildersBusy:builderBusyAt(savedState,now)}:null;
  const offset=useRef(0),pending=useRef<{key:string;body:Record<string,unknown>}|null>(null);
  const muted=useSyncExternalStore(sound.subscribe,sound.getSnapshot),gate=useRef(false),dialog=useRef<HTMLDivElement>(null),lastFocus=useRef<HTMLElement|null>(null);
  async function load(){try{const next=await (loading.current??=api(undefined,receiveAva,receiveCompany,undefined,receiveCompetition,receiveXP,setInfiltrationCooldowns));setState(old=>!old||next.revision>=old.revision?next:old);setError('');setStartupProblem(null);if(enterRecovered.current){enterRecovered.current=false;setRecoveredEntry(true);setPanel(null);setPhase('game');}}catch(e){const problem=(e as {code?:string}).code||'CONNECTION_ERROR';setStartupProblem(problem);setError(problem==='CONNECTION_ERROR'?'Could not connect to the game. Please retry when your connection is available. Your saved progress has not been replaced.':(e as Error).message);}finally{loading.current=null;}}
@@ -117,7 +119,7 @@ export function App(){
   const key='airace-hq-upgrade-notice:'+company.playerId;try{if(sessionStorage.getItem(key)===state.hqUpgrade.id)return;sessionStorage.setItem(key,state.hqUpgrade.id);}catch{}
   setHqNotice(true);sound.cue('upgrade');const t=setTimeout(()=>setHqNotice(false),6500);return()=>clearTimeout(t);
  },[phase,state?.founderHqLevel,state?.hqUpgrade?.id,company?.playerId]);
- const avaFocus=avaActive&&!namingInvite?(stationLesson&&ava!.builderStep===3?'station':ava!.step===3||ava!.step===4?'hq':ava!.step===10?'rig':ava!.step===11||ava!.step===12?'rig':null):null;
+ const avaFocus=avaActive&&!namingInvite?(stationLesson&&ava!.builderStep===3?'station':ava!.step===3||ava!.step===4?'hq':ava!.step===10?'rig':ava!.step===11||ava!.step===12&&Math.floor(state?.rig?.stored??0)>=1?'rig':null):null;
  return <div ref={gameSurface} className={`race-app foundation-app ${phase!=='game'?'in-menu':''} ${avaActive&&!stationLesson&&ava!.step>=5&&ava!.step<=6?'ava-focus-compute':''} ${avaActive&&ava!.step>=7&&ava!.step<=9?'ava-focus-build':''}`} onPointerDownCapture={()=>void sound.unlock()} onClickCapture={e=>{if((e.target as HTMLElement).closest('button'))void sound.unlock().then(()=>sound.cue('tap'));}}>
  {phase==='splash'&&<section className="studio-splash" aria-label="Master Studios" role="status"><div className="studio-mark"><h1>MASTER<span>STUDIOS</span></h1></div></section>}
  {phase!=='game'&&<><main className="race-menu ava-title-screen" aria-label="The AI Race main menu" inert={phase==='splash'||!!profile||confirmNew}><h1 className="menu-title" aria-label="The AI Race"><AIRaceWordmark/></h1><TitleArtwork active={phase==='menu'&&!profile&&!confirmNew}/><div className="menu-copy"><button className="primary play-button" disabled={!state} onClick={()=>{void sound.unlock();setPhase('game');setPanel(state?.infiltration&&['ready','active'].includes(state.infiltration.status)?'infiltration':state?.botRaid&&!state.botRaid.settled?'raid':null);}}>PLAY <span>↗</span></button>{!state&&!error&&<p role="status">Opening your HQ…</p>}{error&&<div className="connection-error" role="alert"><p>{error}</p><button onClick={()=>void load()}>{sessionProblem?'Try loading again':'Retry connection'}</button>{sessionProblem&&<button onClick={()=>{setConfirmNew(true);}}>Start a separate company</button>}</div>}</div></main><button className="audio-toggle glass" aria-label={muted?'Unmute sound':'Mute sound'} aria-pressed={muted} onClick={()=>sound.setMuted(!muted)}>{muted?'♪̸':'♫'}</button></>}

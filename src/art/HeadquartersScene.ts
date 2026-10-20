@@ -1,6 +1,6 @@
 import {ConstructionVisuals} from './ConstructionVisuals';
 import {droneStationModel} from './DroneStation';
-import {campusSecurityWalls} from '../../shared/landscape';
+import {landscapeRoute,routePosition,campusSecurityWalls} from '../../shared/landscape';
 import {SecurityWalls,securityWallModel} from './SecurityWalls';
 import {HQSecurityPatrol} from './SecurityDrone';
 import {RESEARCH} from '../../shared/research';
@@ -35,6 +35,7 @@ export class HeadquartersScene {
  private decorations=new DecorationModels();private decorationPreviewId?:string;
  private district?:TechnologyDistrict;private mapBoundary?:MapBoundary;
  private landscapeKit?:WorldKit;private landscapeGroup?:THREE.Group;private landscapeKey='';private landscapeHits:THREE.Object3D[]=[];private landscapeItems:LandscapeObstacle[]=[];private cleanupJob?:ClearingJob;private cleanupNow=0;private cleanupEnd?:number;private lastCleanup?:string;
+ private cleanupRoute:RigPosition[]=[];private cleanupReturnRoute:RigPosition[]=[];
  private cleanupParticles:{group:THREE.Group;time:number}[]=[];private particleKit=new WorldKit('campus');
  private stationOwned=true;private workPlan?:BuilderWork;private builderRoute:RigPosition[]=[];private builderSegment=1;private workRoute=0;private workPause=0;private returning=false;private constructionKey='';
  private landmarksSynced=false;private builderHomeYaw=0;
@@ -62,7 +63,7 @@ export class HeadquartersScene {
  private reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  private lost=(e:Event)=>{e.preventDefault();this.paused=true;this.onError();};
  constructor(private host:HTMLDivElement,level:number,training:number,private campus:CampusState,private onError:()=>void,private minimal=false){
-  this.renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});const sun=lightWorld(this.renderer,this.scene);lightCampus(this.renderer,this.scene,sun);
+  this.renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});const sun=lightWorld(this.renderer,this.scene);lightCampus(this.renderer,this.scene,sun);if(this.minimal)this.scene.fog=null;this.renderer.domElement.dataset.hqFog=this.scene.fog?'distance':'none';
   this.renderer.localClippingEnabled=true;this.renderer.domElement.setAttribute('role','img');this.renderer.domElement.setAttribute('aria-label',`3D headquarters level ${campus.hq}. ${level===0?'Founder HQ, with a founder working at a laptop through the window and a Builder Bot nearby.':level===1?'A furnished workstation, chair, lamp and plants.':'GPU workbench, server racks and upgraded lighting.'} Drag to pan and pinch to zoom.`);
   this.renderer.domElement.dataset.stage=String(level);host.appendChild(this.renderer.domElement);this.renderer.domElement.addEventListener('webglcontextlost',this.lost);
   document.addEventListener('visibilitychange',this.visibility);this.buildEnvironment();this.build(Math.min(2,level),training);this.buildCampus(campus);this.buildObstacles(campus);this.buildBots(campus);if(this.minimal){this.stationGroup=builderStationModel(this.kit);this.kit.grounding(this.stationGroup,3.7,2.8);this.stationGroup.position.set(BUILDER_STATION_POSITION[0],0,BUILDER_STATION_POSITION[1]);this.scene.add(this.stationGroup);this.home.set(-3,0,0);this.worldSpan=36;}this.center.copy(this.home);this.target.copy(this.home);const offset=new THREE.Vector3(this.minimal?13:7,this.minimal?28:23,30);if(this.minimal){const extended=boundaryView(offset);offset.copy(extended.offset);if(this.scene.fog instanceof THREE.Fog){this.scene.fog.near+=extended.fogShift;this.scene.fog.far+=extended.fogShift;}}this.camera.position.copy(this.home).add(offset);this.camera.lookAt(this.center);
@@ -306,7 +307,13 @@ export class HeadquartersScene {
  clearRigPreview(){if(this.hiddenWall){this.hiddenWall=undefined;this.wallKey='';if(this.lastBotState)this.syncLab(this.lastBotState,this.lastSecurityNow);}if(this.decorationPreviewId)this.decorations.show(this.decorationPreviewId,true);this.decorationPreviewId=undefined;for(const kind of ['hq','station','rig','rig2','fabricator','hangar','lab','droneStation'] as const){const group=this.layoutGroup(kind);if(group)group.visible=kind!=='station'||this.stationOwned;}this.layoutPreviewKind=undefined;this.rigPreview?.removeFromParent();this.rigPreviewKit?.dispose();this.rigPreviewMaterial?.dispose();this.rigPreview=undefined;this.rigPreviewKit=undefined;this.rigPreviewMaterial=undefined;if(this.rigGrid){this.rigGrid.removeFromParent();this.rigGrid.geometry.dispose();const m=this.rigGrid.material;(Array.isArray(m)?m:[m]).forEach(item=>item.dispose());this.rigGrid=undefined;}}
  animateClear(obstacleId:string){const group=this.obstacles.get(obstacleId);if(!group)return;this.obstacleHits=this.obstacleHits.filter(o=>o.userData.obstacleId!==obstacleId);this.clearing.push({group,time:0});this.obstacles.delete(obstacleId);}
  syncLandscape(state:FoundationState,now:number){
-  this.cleanupJob=state.landscape?.clearing;this.cleanupNow=now;const items=state.landscape?.items||[],key=JSON.stringify(items);
+  const next=state.landscape?.clearing;const job=next&&!(now>=next.clearedAt&&constructionSignature(state,now))?next:undefined;
+  if(job&&job.id!==this.cleanupJob?.id){const bot=this.builders[0],from:RigPosition=bot?[bot.group.position.x,bot.group.position.z]:job.route[0];const restoring=!this.cleanupJob&&!this.workPlan&&!this.returning&&now>job.startedAt+500;
+   this.cleanupRoute=restoring?job.route:landscapeRoute(state,job.route.at(-1)!,from,1.1);
+   const station=buildingLayout(state,'station');if(!this.cleanupRoute.length&&station&&Math.hypot(from[0]-station.position[0],from[1]-station.position[1])<3)this.cleanupRoute=[from,...job.route.slice(1)];
+   this.cleanupReturnRoute=job.returnRoute??[...job.route].reverse();this.returning=false;this.workPause=0;
+  }
+  this.cleanupJob=job;this.cleanupNow=now;const items=state.landscape?.items||[],key=JSON.stringify(items);
   if(key!==this.landscapeKey){this.landscapeKey=key;this.landscapeGroup?.removeFromParent();this.landscapeKit?.dispose();this.landscapeKit=new WorldKit('campus');this.landscapeGroup=new THREE.Group();this.scene.add(this.landscapeGroup);this.landscapeHits=[];this.landscapeItems=items;
    for(const o of items){const model=landscapeModel(this.landscapeKit,o);this.landscapeGroup.add(model.group);this.landscapeHits.push(model.hit);}}
   const last=state.landscape?.lastClear;if(last&&this.lastCleanup&&last.id!==this.lastCleanup&&now-last.at<6000&&!this.reduced){const g=new THREE.Group();g.position.set(last.position[0],.5,last.position[1]);for(let i=0;i<10;i++){const p=this.particleKit.box(g,[.12,.1,.15],[Math.sin(i*2.4)*.8,.3+i*.1,Math.cos(i*2.4)*.8],last.kind==='tree'?'#75bd83':last.kind==='rock'?'#a6b1a9':i%3===0?c.gold:c.slate,.02);p.rotation.y=i;}this.scene.add(g);this.cleanupParticles.push({group:g,time:0});}this.lastCleanup=last?.id||'none';
@@ -316,23 +323,26 @@ export class HeadquartersScene {
  obstacleScreenPoint(id:string){const o=this.landscapeItems.find(o=>o.id===id)||this.cleanupJob?.obstacle;if(!o)return;const p=new THREE.Vector3(o.position[0],o.kind==='tree'?4.5:2,o.position[1]).project(this.camera);return {x:(p.x+1)*this.host.clientWidth/2,y:(1-p.y)*this.host.clientHeight/2};}
  private animateCleanup(dt:number){
   for(const item of this.cleanupParticles){item.time+=dt;item.group.position.y+=dt*1.8;item.group.scale.setScalar(Math.max(0,1-item.time/1.1));item.group.rotation.y+=dt;if(item.time>=1.1)item.group.removeFromParent();}this.cleanupParticles=this.cleanupParticles.filter(p=>p.time<1.1);
-  const j=this.cleanupJob,bot=this.builders[0];if(!j||!bot){this.renderer.domElement.dataset.builderPhase='idle';if(this.cleanupEnd){bot?.group.position.copy(bot.to);this.cleanupEnd=undefined;}return false;}
+  const j=this.cleanupJob,bot=this.builders[0];if(!j||!bot){this.renderer.domElement.dataset.builderPhase='idle';this.cleanupEnd=undefined;return false;}
   this.cleanupEnd=j.completesAt;this.cleanupNow+=dt*1000;const now=this.cleanupNow,returning=now>=j.clearedAt,working=now>=j.workAt&&!returning;
   const phase=working?'clearing':returning?'returning':'traveling';this.renderer.domElement.dataset.builderPhase=phase;
-  let progress=working?1:returning?1-(now-j.clearedAt)/(j.completesAt-j.clearedAt):(now-j.startedAt)/(j.workAt-j.startedAt);progress=Math.max(0,Math.min(1,progress));
-  const distances=j.route.map((p,i)=>i?Math.hypot(p[0]-j.route[i-1][0],p[1]-j.route[i-1][1]):0),total=distances.reduce((a,b)=>a+b,0);let distance=progress*total,index=1;while(index<distances.length-1&&distance>distances[index])distance-=distances[index++];
-  const a=j.route[index-1],b=j.route[index];if(a&&b){const t=distances[index]?distance/distances[index]:0;bot.group.position.set(a[0]+(b[0]-a[0])*t,.12,a[1]+(b[1]-a[1])*t);if(!working)bot.group.rotation.y=Math.atan2((b[0]-a[0])*(returning?-1:1),(b[1]-a[1])*(returning?-1:1));}
+  const route=returning?this.cleanupReturnRoute:this.cleanupRoute;
+  if(!route.length){bot.spark.visible=false;this.renderer.domElement.dataset.builderPhase='waiting-for-access';return true;}
+  const progress=working?1:returning?(now-j.clearedAt)/Math.max(1,j.completesAt-j.clearedAt):(now-j.startedAt)/Math.max(1,j.workAt-j.startedAt);
+  const next=routePosition(route,progress),dx=next[0]-bot.group.position.x,dz=next[1]-bot.group.position.z;
+  if(!working&&Math.hypot(dx,dz)>.001)turnScrapBot(bot.group,Math.atan2(dx,dz),dt,this.reduced);
+  bot.group.position.set(next[0],.12,next[1]);
   if(working)bot.group.rotation.y=Math.atan2(j.obstacle.position[0]-bot.group.position.x,j.obstacle.position[1]-bot.group.position.z);bot.group.rotation.z=working&&!this.reduced?Math.sin(this.lifeClock*12)*.07:0;bot.spark.visible=working&&!this.reduced&&Math.sin(this.lifeClock*18)>0;
   this.renderer.domElement.dataset.builderPosition=bot.group.position.x.toFixed(1)+','+bot.group.position.z.toFixed(1);return true;
  }
  private syncConstruction(state:FoundationState,now:number){
   const bot=this.builders[0];if(!bot)return;const signature=constructionSignature(state,now);if(signature&&signature===this.constructionKey)return;const plan=signature?constructionWork(state,now):undefined;
-  if(plan){if(plan.key!==this.constructionKey){this.constructionKey=plan.key;this.workPlan=plan;this.workRoute=0;this.workPause=0;this.returning=false;this.builderRoute=plan.routes[0]||[];this.builderSegment=1;const first=this.builderRoute[0];if(first)bot.group.position.set(first[0],.12,first[1]);}}
+  if(plan){if(plan.key!==this.constructionKey){this.constructionKey=plan.key;this.workPlan=plan;this.workRoute=0;this.workPause=0;this.returning=false;const from:RigPosition=[bot.group.position.x,bot.group.position.z];this.builderRoute=plan.positions.length?landscapeRoute(state,plan.positions[0],from,1.1):[];const home=buildingLayout(state,'station');if(!this.builderRoute.length&&home&&Math.hypot(from[0]-home.position[0],from[1]-home.position[1])<3)this.builderRoute=[from,...(plan.routes[0]?.slice(1)||[])];this.builderSegment=1;}}
   else if(this.workPlan){this.workPlan=undefined;this.constructionKey='';this.returning=true;this.workPause=0;this.builderRoute=builderReturn(state,[bot.group.position.x,bot.group.position.z]);this.builderSegment=1;}
   else if(!this.returning&&!state.landscape?.clearing){const home=buildingLayout(state,'station');if(home)bot.group.position.set(home.position[0],.12,home.position[1]);}
  }
  private animateConstruction(dt:number){
-  const bot=this.builders[0];if(!bot||!this.stationOwned)return false;if(!this.workPlan&&!this.returning)return false;if(this.workPlan&&!this.workPlan.positions.length){bot.spark.visible=false;this.renderer.domElement.dataset.builderPhase='waiting-for-access';return true;}
+  const bot=this.builders[0];if(!bot||!this.stationOwned)return false;if(!this.workPlan&&!this.returning)return false;if(this.workPlan&&(!this.workPlan.positions.length||!this.builderRoute.length)){bot.spark.visible=false;this.renderer.domElement.dataset.builderPhase='waiting-for-access';return true;}
   const g=bot.group,tool=g.getObjectByName('builder-tool');let moving=false,travel=dt*6;
   if(this.workPause>0)this.workPause-=dt;else while(travel>0&&this.builderSegment<this.builderRoute.length){const next=this.builderRoute[this.builderSegment],dx=next[0]-g.position.x,dz=next[1]-g.position.z,d=Math.hypot(dx,dz);moving=true;turnScrapBot(g,Math.atan2(dx,dz),dt,this.reduced);if(d<=travel){g.position.set(next[0],.12,next[1]);travel-=d;this.builderSegment++;}else{g.position.x+=dx/d*travel;g.position.z+=dz/d*travel;travel=0;}}
   const working=!!this.workPlan&&!moving&&(this.workPause>0||this.builderSegment>=this.builderRoute.length);

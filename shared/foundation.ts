@@ -7,7 +7,7 @@ import {advanceResearch,type ResearchLab} from './research';
 import {decorationFootprint,type Decoration} from './decoration-catalog';
 import {FOUNDATION_PLOT} from './foundation-plot';
 import {FOUNDER_HQ,founderHqLevel,gpuRigCapacity,type FounderHQUpgrade} from './founder-hq';
-import {advanceLandscape,landscapeRoute,type Landscape,obstacleSize} from './landscape';
+import {advanceLandscape,clearingActive,landscapeRoute,type Landscape,obstacleSize} from './landscape';
 import {createStarterRaid} from '../raid/starter';
 import {deploy,tick,finish,STEP,destruction,type Raid,type Point} from '../raid/engine';
 import {OBSTACLES} from './campus-layout';
@@ -47,13 +47,18 @@ export function advanceFoundation(s:FoundationState,now=Date.now()){
  const rigs=[s.rig,s.rig2].filter((r):r is GpuRig=>!!r),jobs=[...rigs,s.fabricator,getHangar(s),s.lab,s.droneStation].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
  const clearing=!!s.landscape?.clearing;advanceLandscape(s,now);
  if(s.hqUpgrade&&now>=s.hqUpgrade.completesAt)s.founderHqLevel=2;
- if(jobs.length||clearing||s.hqUpgrade)s.buildersBusy=jobs.filter(b=>now<b.completesAt).length+Number(!!s.landscape?.clearing)+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt);
+ if(jobs.length||clearing||s.hqUpgrade)s.buildersBusy=jobs.filter(b=>now<b.completesAt).length+Number(clearingActive(s,now))+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt);
  if(s.training){const completed=s.training.filter(t=>t<=now).length;s.bots=(s.bots||0)+completed;s.training=s.training.filter(t=>t>now);}
  ensureOwnedOperation(s,now);if(s.infiltration)advanceOperation(s.infiltration,now);settleOwnedUnit(s);
  advanceResearch(s,now);advanceBotRaid(s,now);
  for(const r of rigs){const cursor=Math.max(r.lastProducedAt,r.completesAt);if(now>cursor){r.stored=Math.min(GPU_RIG.storage,r.stored+(now-cursor)*GPU_RIG.perMinute/60000);r.lastProducedAt=now;}}
 
  return s;
+}
+/** Same timestamp-based availability for server actions and the between-poll HUD. */
+export function builderBusyAt(s:FoundationState,now:number){
+ const jobs=[s.rig,s.rig2,s.fabricator,getHangar(s),s.lab,s.droneStation].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
+ return jobs.length||s.landscape?.clearing||s.hqUpgrade?jobs.filter(b=>now<b.completesAt).length+Number(clearingActive(s,now))+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt):s.buildersBusy??0;
 }
 export function buildRig(s:FoundationState,position:RigPosition,now=Date.now(),orientation:Orientation=0){
  advanceFoundation(s,now);const owned=Number(!!s.rig)+Number(!!s.rig2);if(owned>=gpuRigCapacity(s))throw new Error(owned>=2?'GPU Rig — 2/2 Built':'Upgrade Founder HQ to Level 2 for another GPU Rig.');
@@ -126,7 +131,7 @@ function validateLayout(s:FoundationState,p:RigPosition,kind:RotatableBuilding,o
 export function validFoundationPosition(s:FoundationState,p:RigPosition,kind:RotatableBuilding,orientation:Orientation=0,placingPair=false){return validateLayout(s,p,kind,orientation,placingPair,false);}
 export function validLayoutPosition(s:FoundationState,p:RigPosition,kind:RotatableBuilding,orientation:Orientation=0){return validateLayout(s,p,kind,orientation,false,true);}
 export function moveBuilding(s:FoundationState,kind:RotatableBuilding,position:RigPosition,orientation:Orientation,now=Date.now()){
- advanceFoundation(s,now);if(s.landscape?.clearing)throw new Error('Wait for your Builder Bot to return before rearranging buildings.');if(!buildingLayout(s,kind))throw new Error('Build this structure first.');if(!buildingReady(s,kind,now))throw new Error('Wait for this building to finish construction.');
+ advanceFoundation(s,now);if(clearingActive(s,now))throw new Error('Wait for your Builder Bot to finish clearing before rearranging buildings.');if(!buildingLayout(s,kind))throw new Error('Build this structure first.');if(!buildingReady(s,kind,now))throw new Error('Wait for this building to finish construction.');
  const reason=validLayoutPosition(s,position,kind,orientation);if(reason)throw new Error(reason);
  if(kind==='droneStation'&&!canPatrol({...s,droneStation:{...s.droneStation!,position,orientation}}))throw Error('Leave a wide route for the Security Drone.');
  const layout:BuildingLayout={position:[...position],orientation};

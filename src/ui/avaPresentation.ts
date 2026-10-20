@@ -1,4 +1,7 @@
 import {builderLesson,type AvaProgress} from '../../shared/ava';
+import type {FoundationState} from '../../shared/foundation';
+export const avaComputeReady=(s:FoundationState)=>Math.floor((s.rig?.stored??0)+1e-9)>=1;
+export const avaWaiting=(step:number,s:FoundationState)=>step===10||step===12&&!avaComputeReady(s);
 /** Presentation targets never mutate authoritative onboarding progress. */
 export function avaHudTarget(p:AvaProgress){
  if(builderLesson(p))return null;

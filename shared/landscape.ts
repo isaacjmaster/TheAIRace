@@ -2,11 +2,19 @@ import {findPath} from './navigation';
 import {ownedSecurityWalls} from './security-catalog';
 import {decorationFootprint} from './decoration-catalog';
 import {FOUNDATION_PLOT as P} from './foundation-plot';
-import {FOUNDATION_BUILDINGS,buildingLayout,footprint,type FoundationState,type RigPosition} from './foundation';
+import {advanceFoundation,FOUNDATION_BUILDINGS,buildingLayout,footprint,type FoundationState,type RigPosition} from './foundation';
 import {OBSTACLES} from './campus-layout';
-export const LANDSCAPE={initialCount:28,maxCount:40,regenerationMs:3*60*60*1000,workByKind:{tree:15000,rock:15000,scrap:30000},travelSpeed:8,rewards:{tree:2,scrap:3,rock:4}} as const;
+export const LANDSCAPE={initialCount:28,maxCount:40,regenerationMs:3*60*60*1000,workByKind:{tree:15000,rock:15000,scrap:15000},travelSpeed:8,rewards:{tree:2,scrap:3,rock:4}} as const;
 export type LandscapeObstacle={id:string;kind:'tree'|'scrap'|'rock';position:RigPosition;variant:number};
-export type ClearingJob={id:string;obstacle:LandscapeObstacle;route:RigPosition[];startedAt:number;workAt:number;clearedAt:number;completesAt:number;rewarded:boolean};
+export type ClearingJob={id:string;obstacle:LandscapeObstacle;route:RigPosition[];returnRoute?:RigPosition[];startedAt:number;workAt:number;clearedAt:number;completesAt:number;rewarded:boolean};
+/** Return travel is presentation, not an active assignment. Existing deadlines stay intact. */
+export const clearingActive=(s:FoundationState,now:number)=>!!s.landscape?.clearing&&now<s.landscape.clearing.clearedAt;
+export function routePosition(route:RigPosition[],progress:number):RigPosition{
+ const distances=route.map((p,i)=>i?Math.hypot(p[0]-route[i-1][0],p[1]-route[i-1][1]):0);let distance=Math.max(0,Math.min(1,progress))*distances.reduce((a,b)=>a+b,0);
+ for(let i=1;i<route.length;i++){if(distance<=distances[i]||i===route.length-1){const t=distances[i]?distance/distances[i]:0;return [route[i-1][0]+(route[i][0]-route[i-1][0])*t,route[i-1][1]+(route[i][1]-route[i-1][1])*t];}distance-=distances[i];}
+ return route[0]??[0,0];
+}
+export function clearingPosition(j:ClearingJob,now:number):RigPosition{return now<j.clearedAt?routePosition(j.route,now<j.workAt?(now-j.startedAt)/Math.max(1,j.workAt-j.startedAt):1):routePosition(j.returnRoute??[...j.route].reverse(),(now-j.clearedAt)/Math.max(1,j.completesAt-j.clearedAt));}
 export type Landscape={version:1;epoch:string;sequence:number;nextSpawnAt:number;items:LandscapeObstacle[];clearing?:ClearingJob;pendingCompute:number;lastClear?:{id:string;kind:'tree'|'scrap'|'rock';position:RigPosition;at:number;reward:number}};
 export const obstacleSize=(o:LandscapeObstacle):[number,number]=>o.kind==='tree'?[4,4]:o.kind==='rock'?[4,3]:[3,3];
 const overlap=(a:{x:number;z:number;w:number;d:number},b:{x:number;z:number;w:number;d:number},gap=0)=>Math.abs(a.x-b.x)<(a.w+b.w)/2+gap&&Math.abs(a.z-b.z)<(a.d+b.d)/2+gap;
@@ -62,9 +70,12 @@ export function advanceLandscape(s:FoundationState,now:number){const l=s.landsca
  const paid=Math.min(l.pendingCompute,Math.max(0,s.capacity-s.compute));s.compute+=paid;l.pendingCompute-=paid;
  if(now>=l.nextSpawnAt){if(l.items.length<LANDSCAPE.maxCount)spawn(s);l.nextSpawnAt=now+LANDSCAPE.regenerationMs;}
 }
-export function clearObstacle(s:FoundationState,id:string,now:number){if(s.builders<1)throw new Error('Place your free Builder Station first.');const l=s.landscape;if(!l)throw new Error('Reload your landscape first.');if(s.buildersBusy||l.clearing)throw new Error('Your Builder Bot is busy.');const o=l.items.find(o=>o.id===id);if(!o)throw new Error('This obstacle was already cleared.');const [w,d]=obstacleSize(o);
+export function clearObstacle(s:FoundationState,id:string,now:number){advanceFoundation(s,now);if(s.builders<1)throw new Error('Place your free Builder Station first.');const l=s.landscape;if(!l)throw new Error('Reload your landscape first.');if(s.buildersBusy||clearingActive(s,now))throw new Error('Your Builder Bot is busy.');const o=l.items.find(o=>o.id===id);if(!o)throw new Error('This obstacle was already cleared.');const [w,d]=obstacleSize(o);
  const targets:RigPosition[]=[[o.position[0],o.position[1]+d/2+1],[o.position[0]+w/2+1,o.position[1]],[o.position[0],o.position[1]-d/2-1],[o.position[0]-w/2-1,o.position[1]]];
- const route=targets.map(t=>landscapeRoute(s,t)).filter(p=>p.length).sort((a,b)=>a.length-b.length)[0];if(!route)throw new Error('The Builder Bot needs a clear route to this obstacle.');
+ const origin=l.clearing?clearingPosition(l.clearing,now):undefined;
+ const route=targets.map(t=>landscapeRoute(s,t,origin,1.1)).filter(p=>p.length).sort((a,b)=>a.length-b.length)[0]??(origin?targets.map(t=>landscapeRoute(s,t,undefined,1.1)).filter(p=>p.length).sort((a,b)=>a.length-b.length)[0]:undefined);if(!route)throw new Error('The Builder Bot needs a clear route to this obstacle.');
  const travel=Math.max(600,route.reduce((d,p,i)=>i?d+Math.hypot(p[0]-route[i-1][0],p[1]-route[i-1][1]):d,0)/LANDSCAPE.travelSpeed*1000);
- l.clearing={id:o.id,obstacle:structuredClone(o),route,startedAt:now,workAt:now+travel,clearedAt:now+travel+LANDSCAPE.workByKind[o.kind],completesAt:now+travel*2+LANDSCAPE.workByKind[o.kind],rewarded:false};s.buildersBusy=1;
+ const back=landscapeRoute(s,door(s,'station'),route.at(-1),1.1),returnRoute=back.length?[...back,buildingLayout(s,'station')!.position]:[...route].reverse();
+ const returnMs=Math.max(600,returnRoute.reduce((d,p,i)=>i?d+Math.hypot(p[0]-returnRoute[i-1][0],p[1]-returnRoute[i-1][1]):d,0)/LANDSCAPE.travelSpeed*1000);
+ l.clearing={id:o.id,obstacle:structuredClone(o),route,returnRoute,startedAt:now,workAt:now+travel,clearedAt:now+travel+LANDSCAPE.workByKind[o.kind],completesAt:now+travel+returnMs+LANDSCAPE.workByKind[o.kind],rewarded:false};s.buildersBusy=1;
 }

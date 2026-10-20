@@ -58,6 +58,7 @@ export function avaLine(p:AvaProgress,s:FoundationState,now:number,panel:string|
  }
  if(p.step===12&&s.compute>=s.capacity)return "Our Compute storage is full. Spend some Compute before collecting, or skip for now and replay from Settings.";
  if(p.step===12&&s.rig&&now<s.rig.completesAt)return lines[10];
+ if(p.step===12&&Math.floor((s.rig?.stored??0)+1e-9)>=1)return 'Compute is ready! Tap the blue chip or GPU Rig to collect it.';
  return lines[p.step]||lines[15];
 }
 

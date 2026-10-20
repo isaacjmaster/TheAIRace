@@ -141,3 +141,8 @@
 .foundation-dialog .build-tabs button{flex:1 0 auto;padding:9px 8px}
 .build-catalog{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;align-content:start;padding:0 2px 4px;grid-auto-rows:min-content}
 @media(orientation:landscape) and (max-height:550px){.foundation-dialog:has(.build-catalog){height:calc(100dvh - 32px);width:min(680px,100%);gap:8px;padding:12px}.build-catalog{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.foundation-app .rig-collect.compute-ready{background:none;border:0;outline:0;border-radius:0;box-shadow:none;padding:6px;min-width:48px;min-height:48px;animation:compute-ready-float 2.8s ease-in-out infinite}
+.foundation-app .rig-collect.compute-ready .rig-compute-icon{width:40px;height:40px;flex-basis:40px;filter:drop-shadow(0 2px 2px #173d5770)}
+.foundation-app .rig-collect.compute-ready:focus-visible{outline:3px solid #ffdb68;outline-offset:3px;border-radius:10px}
+@keyframes compute-ready-float{50%{transform:translateY(-4px)}}
+@media(prefers-reduced-motion:reduce){.foundation-app .rig-collect.compute-ready{animation:none}}

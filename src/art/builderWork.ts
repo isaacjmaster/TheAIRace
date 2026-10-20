@@ -1,11 +1,11 @@
 import {founderHQWorkSites,buildingLayout,footprint,FOUNDATION_BUILDINGS,type FoundationState,type RigPosition} from '../../shared/foundation';
-import {landscapeRoute,door} from '../../shared/landscape';
+import {clearingActive,landscapeRoute,door} from '../../shared/landscape';
 export type BuilderWork={key:string;center:RigPosition;positions:RigPosition[];routes:RigPosition[][]};
 const activeKind=(s:FoundationState,now:number)=>s.hqUpgrade&&now<s.hqUpgrade.completesAt?'hq':(['rig','rig2','fabricator','hangar','lab','droneStation'] as const).find(k=>{const b=k==='hangar'?s.hangar:s[k];return b&&now<b.completesAt;});
-export function constructionSignature(s:FoundationState,now:number){const kind=activeKind(s,now);return !kind||!buildingLayout(s,'station')||s.landscape?.clearing?'':JSON.stringify([kind,(kind==='hq'?s.hqUpgrade:kind==='hangar'?s.hangar:s[kind])?.completesAt,buildingLayout(s,kind),s.stationLayout,s.walls,s.decorations,s.landscape?.items.map(o=>o.id),FOUNDATION_BUILDINGS.map(k=>buildingLayout(s,k))]);}
+export function constructionSignature(s:FoundationState,now:number){const kind=activeKind(s,now);return !kind||!buildingLayout(s,'station')||clearingActive(s,now)?'':JSON.stringify([kind,(kind==='hq'?s.hqUpgrade:kind==='hangar'?s.hangar:s[kind])?.completesAt,buildingLayout(s,kind),s.stationLayout,s.walls,s.decorations,s.landscape?.items.map(o=>o.id),FOUNDATION_BUILDINGS.map(k=>buildingLayout(s,k))]);}
 /** Reuse clearance-aware obstacle routing and the existing rotated footprints. Only reachable work sites qualify. */
 export function constructionWork(s:FoundationState,now:number):BuilderWork|undefined{
- if(!buildingLayout(s,'station')||s.landscape?.clearing)return;
+ if(!buildingLayout(s,'station')||clearingActive(s,now))return;
  const kind=activeKind(s,now);if(!kind)return;
  const layout=buildingLayout(s,kind)!,a=footprint(kind,layout),candidates:RigPosition[]=[[Math.round(a.x),Math.ceil(a.z+a.d/2+1)],[Math.ceil(a.x+a.w/2+1),Math.round(a.z)],[Math.round(a.x),Math.floor(a.z-a.d/2-1)],[Math.floor(a.x-a.w/2-1),Math.round(a.z)]];
  const positions=kind==='hq'?founderHQWorkSites(s):candidates.filter(p=>landscapeRoute(s,p,undefined,1.1).length);if(!positions.length)return {key:constructionSignature(s,now),center:layout.position,positions:[],routes:[]};

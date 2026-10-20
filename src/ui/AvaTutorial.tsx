@@ -1,7 +1,7 @@
 import type {CompanyIdentity} from '../../shared/identity';
 import {UsernameForm} from './Username';
 import {useEffect,useState} from 'react';
-import {avaHudTarget,avaReadTime} from './avaPresentation';
+import {avaHudTarget,avaReadTime,avaWaiting} from './avaPresentation';
 import {builderLesson,avaLine,avaPose,type AvaProgress,type AvaCommand} from '../../shared/ava';
 import type {FoundationState} from '../../shared/foundation';
 import './ava.css';
@@ -16,15 +16,13 @@ export function AvaTutorial({progress,state,now,panel,placing,busy,error,onComma
  const pose=showBuildPrompt?'build':avaPose(step);
  const arrowTarget=namingOnly?null:showBuildPrompt?'.foundation-build':stationInteractive&&panel==='build'?'.ava-build-target':avaHudTarget(progress)??(panel==='build'&&step>=7&&step<=9?'.ava-build-target':null);
  const text=naming?"What should we call you, Founder?":step===2&&company.username?`Welcome to the AI race, ${company.username}.`:avaLine(progress,state,now,panel,placing);
- const waiting=!namingOnly&&!stationLesson&&(step===10||step===12);
+ const waiting=!namingOnly&&!stationLesson&&avaWaiting(step,state);
  const waitKey=waiting?`${company.playerId}:${step}:${progress.revision}:${state.rig?.startedAt}`:'';
  const [dismissed,setDismissed]=useState(()=>{try{return sessionStorage.getItem('ava-wait-dismissed')||'';}catch{return '';}});
  const dismiss=()=>{setDismissed(waitKey);try{sessionStorage.setItem('ava-wait-dismissed',waitKey);}catch{/* Guidance still works without browser storage. */}};
  const collapsed=waiting&&dismissed===waitKey&&!error;
  useEffect(()=>{if(!waiting||collapsed)return;const timer=setTimeout(dismiss,avaReadTime(text));return()=>clearTimeout(timer);},[waitKey,text,collapsed]);
- const ready=Math.floor((state.rig?.stored||0)+1e-9)>0;
- const objective=step===10?'GPU Rig under construction':state.compute>=state.capacity?'Spend Compute to make storage space':ready?'Compute ready — tap the GPU Rig':'Waiting for first Compute';
- if(collapsed)return <aside className="ava-objective glass" aria-label="Tutorial objective"><button className="ava-reminder" onClick={()=>{setDismissed('');try{sessionStorage.removeItem('ava-wait-dismissed');}catch{}}}><strong>{objective}</strong><small>Ask Ava</small></button><button className="ava-objective-skip" disabled={busy} onClick={()=>onCommand('skip')}>Skip Tutorial</button></aside>;
+ if(collapsed)return null;
  return <><AvaTargetArrow target={arrowTarget}/><aside className={`ava-dialogue ava-stage ${naming?'ava-naming':''} ${showBuildPrompt?'ava-beside-build':''} ${interactive?'ava-guidance':''} ${panel==='build'?'ava-in-catalog':''} ${step===12?'ava-collection':''}`} aria-label="Ava, your AI cofounder">
  <img key={pose} className="ava-character" data-pose={pose} src={`/characters/ava/${pose}-v2.png`} alt={pose==='build'?'Ava points down toward the Build button':pose==='point'?'Ava points encouragingly as she explains':'Ava welcomes you with an open hand'} width="256" height="384"/>
  <div className="ava-copy"><div className="ava-heading"><strong>AVA <small>AI COFOUNDER</small></strong>{!namingOnly&&<button className="ava-skip" disabled={busy} onClick={()=>onCommand('skip')}>Skip Tutorial</button>}</div>
