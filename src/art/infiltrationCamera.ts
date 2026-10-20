@@ -16,6 +16,6 @@ export function infiltrationZoomLimits(width:number,height:number,reserved:{righ
  for(const x of [-1,1])for(const y of [-1,1]){ray.setFromCamera(new THREE.Vector2(x,y),c);const p=ray.ray.intersectPlane(plane,new THREE.Vector3());if(p)extent=Math.max(extent,Math.abs(p.x),Math.abs(p.z));}
  // Close view: twelve units across the short dimension. Far view: every visible
  // ground corner remains inside the shared 220-unit lawn, including maximum pan.
- const min=Math.min(.5,12/Math.min(widthAtFit,heightAtFit)),max=Math.min(.95,88/extent);
+ const min=Math.min(.5,12/Math.min(widthAtFit,heightAtFit)),max=Math.min(.83,76/extent);
  return{min,max:Math.max(min,max),default:Math.max(min,Math.min(.62,max*.88))};
 }

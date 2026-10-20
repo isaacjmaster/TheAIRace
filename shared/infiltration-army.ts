@@ -5,11 +5,11 @@ export function startOwnedOperation(s:FoundationState,id:string,target:string,no
  if(s.botRaid&&!s.botRaid.settled)throw new Error('Finish your previous operation first.');
  if(s.infiltration&&['ready','active'].includes(s.infiltration.status))throw new Error('Resume your current infiltration.');
  if((s.bots??0)<1)throw new Error('No agents available. Train a Cipher Bot in your Bot Fabricator.');
- const o=factory(id,target,now);if(!o.squad){s.bots=(s.bots??0)-1;o.unit={kind:'scrap',reservationId:o.id,status:'reserved'};}s.infiltration=o;
+ const o=factory(id,target,now);if(!o.squad){s.bots=(s.bots??0)-1;o.unit={kind:'scrap',reservationId:o.id,status:'reserved'};}if(o.squad)o.squad.undeployed=Math.max(0,s.bots??0);s.infiltration=o;
 }
 /** Pre-ownership live missions never reserved a unit. Close them without retroactively charging inventory or banking unsupported loot. */
 export function ensureOwnedOperation(s:FoundationState,now:number){
- const o=s.infiltration;if(!o||o.squad||!['ready','active'].includes(o.status)||reservedAgent(o))return;
+ const o=s.infiltration;if(o?.squad){if(['ready','active'].includes(o.status)&&o.squad.undeployed===undefined)o.squad.undeployed=Math.max(0,s.bots??0);return;}if(!o||!['ready','active'].includes(o.status)||reservedAgent(o))return;
  o.status='abandoned';o.finishedAt=now;o.lastTick=now;o.agent.path=[];o.agent.mode='idle';o.carried={compute:0,research:0,intel:false};o.ownershipRequired=true;o.events.push({at:now,type:'agent-ownership-required'});
 }
 export function settleOwnedUnit(s:FoundationState){

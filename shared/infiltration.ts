@@ -133,7 +133,7 @@ export function navigable(t: TargetSnapshot, p: Vec) { if(t.navigationVersion===
 export function deploymentGround(t:TargetSnapshot,p:Vec){if(t.arena==='campus-v2')return p.every(Number.isFinite)&&Math.abs(p[0])<=CAMPUS_ARENA.outer[0]&&Math.abs(p[1])<=CAMPUS_ARENA.outer[1]&&(Math.abs(p[0])>=14.2||p[1]<=-10.4||p[1]>=7.4)&&navigable(t,p);return p.every(Number.isFinite)&&Math.abs(p[0])<=13.2&&Math.abs(p[1])<=9.2&&(Math.abs(p[0])>=11.8||Math.abs(p[1])>=8.3||p[1]>=5.8&&Math.abs(p[0])<=10.5&&p[1]<=7.2)&&navigable(t,p);}
 export function validDeployment(t:TargetSnapshot,p:Vec){return deploymentGround(t,p)&&infiltrationPath(t,p,t.exit).length>0;}
 /** Reservation is already removed from stock; count it only until it is deployed. */
-export function deploymentCount(stock:number,o:Operation){return Math.max(0,stock)+(o.status==='ready'&&o.unit?.status==='reserved'?1:0);}
+export function deploymentCount(stock:number,o:Operation){return o.squad?.undeployed!==undefined?Math.max(0,Math.min(stock,o.squad.undeployed)):Math.max(0,stock)+(o.status==='ready'&&o.unit?.status==='reserved'?1:0);}
 
 /** Small bounded half-unit grid, deterministic and reusable by future target snapshots. */
 export function infiltrationPath(t:TargetSnapshot,from:Vec,to:Vec):Vec[]{return t.navigationVersion===2?findPath(from,to,infiltrationSolids(t),targetBounds(t),AGENT_CLEARANCE):legacyInfiltrationPath(t,from,to);}

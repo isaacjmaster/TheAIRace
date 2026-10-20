@@ -63,7 +63,7 @@ export function advanceTactical(o:Operation,now:number){if(o.status!=='active')r
   }
   for(const asset of o.target.assets.filter(a=>a.hackSeconds&&!o.hacked.includes(a.id))){const workers=squad.agents.filter(a=>a.state==='active'&&a.mode==='hacking'&&a.target===asset.id&&!a.droneTarget);if(!workers.length)continue;const rate=TACTICAL_BALANCE.hackContributions.slice(0,workers.length).reduce((a,b)=>a+b,0);squad.progress[asset.id]=Math.min(asset.hackSeconds!,(squad.progress[asset.id]??0)+dt*rate);if(squad.progress[asset.id]+1e-6>=asset.hackSeconds!){squad.progress[asset.id]=asset.hackSeconds!;o.hacked.push(asset.id);o.carried.compute+=asset.compute;o.carried.research+=asset.research;o.carried.intel||=!!asset.intel;emit(o,'hacked',asset.id);for(const a of workers){a.target=undefined;a.mode='idle';a.nextPlanAt=o.lastTick;}}}
   if(o.target.assets.filter(a=>a.hackSeconds).every(a=>o.hacked.includes(a.id))){end(o,'extracted');break;}
-  drones(o,dt);if(squad.agents.length&&squad.agents.every(a=>a.state!=='active'))end(o,'caught');
+  drones(o,dt);if((squad.undeployed??0)===0&&squad.agents.length&&squad.agents.every(a=>a.state!=='active'))end(o,'caught');
  }
  o.agent=squad.agents[0]??o.agent;if(o.status==='active'&&now>=o.startedAt!+INFILTRATION.operationMs){o.lastTick=o.startedAt!+INFILTRATION.operationMs;end(o,'timeout');}
 }
