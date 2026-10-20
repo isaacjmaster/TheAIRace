@@ -22,7 +22,8 @@ export function AvaTutorial({progress,state,now,panel,placing,busy,error,onComma
  const dismiss=()=>{setDismissed(waitKey);try{sessionStorage.setItem('ava-wait-dismissed',waitKey);}catch{/* Guidance still works without browser storage. */}};
  const collapsed=waiting&&dismissed===waitKey&&!error;
  useEffect(()=>{if(!waiting||collapsed)return;const timer=setTimeout(dismiss,avaReadTime(text));return()=>clearTimeout(timer);},[waitKey,text,collapsed]);
- const compact=panel==='build'||!!placing;
+ // Large foreground art steps aside for the actions it is teaching.
+ const compact=panel==='build'||!!placing||showBuildPrompt||step===12;
  const portrait=useAvaPortrait(pose,!compact&&!collapsed),dialogue=useRef<HTMLElement>(null);
  useLayoutEffect(()=>{if(panel!=='build'||collapsed)return;const root=document.querySelector<HTMLElement>('.foundation-app'),node=dialogue.current;if(!root||!node)return;const resize=()=>root.style.setProperty('--ava-catalog-height',node.getBoundingClientRect().height+'px');const observer=new ResizeObserver(resize);observer.observe(node);resize();return()=>{observer.disconnect();root.style.removeProperty('--ava-catalog-height');};},[panel,collapsed]);
  if(collapsed)return null;

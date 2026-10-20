@@ -15,14 +15,14 @@ test('new/reset reveals are claimed once without advancing Ava or changing compa
 });
 test('one HUD policy progressively introduces relevant controls, with no hidden-target resource arrows',()=>{
  const p={...newAva(),opening:'shown' as const};
- assert.ok(Object.values(onboardingHud(p,true)).every(v=>!v));assert.ok(Object.values(onboardingHud(p)).every(v=>!v));
+ assert.ok(Object.values(onboardingHud(p,true)).every(v=>!v));assert.equal(onboardingHud(p).company,false);assert.equal(onboardingHud(p).previewCompany,true);
  assert.equal(onboardingHud({...p,step:3}).company,true);assert.equal(onboardingHud({...p,step:3}).build,false);
  const builder=onboardingHud({...p,step:5,builderStep:1});assert.equal(builder.build,true);assert.equal(builder.builders,true);assert.equal(builder.compute,false);
- const compute=onboardingHud({...p,step:5,builderStep:4});assert.equal(compute.compute,true);assert.equal(compute.research,false);
+ const compute=onboardingHud({...p,step:5,builderStep:4});assert.equal(compute.compute,true);assert.equal(compute.research,false);assert.equal(compute.build,true);assert.equal(compute.builders,true);
  const research=onboardingHud({...p,step:6,builderStep:4});assert.equal(research.research,true);assert.equal(research.compute,true);
  for(const step of [7,10,11,12,15]){const h=onboardingHud({...p,step});assert.equal(h.build,true);assert.equal(h.compute,true);assert.equal(h.full,false);}
- for(const status of ['complete','skipped','legacy']as const)assert.ok(Object.values(onboardingHud({...p,status})).every(Boolean));
- assert.ok(Object.values(onboardingHud({...p,opening:undefined})).every(Boolean));
+ for(const status of ['complete','skipped','legacy']as const)assert.ok(Object.entries(onboardingHud({...p,status})).filter(([k])=>k!=='previewCompany').every(([,v])=>v));
+ assert.equal(onboardingHud({...p,opening:undefined}).previewCompany,true);assert.equal(onboardingHud({...p,opening:undefined}).full,false);
 });
 test('opening claim survives reload and recovery, while intentional reset starts a new reveal generation',async()=>{
  const db=new DatabaseSync(':memory:'),app=express();app.use(express.json());registerFoundation(app,db);const server=app.listen(0,'127.0.0.1');await new Promise<void>(r=>server.once('listening',r));const base=`http://127.0.0.1:${(server.address() as {port:number}).port}/api/foundation`;
@@ -37,4 +37,11 @@ test('opening claim survives reload and recovery, while intentional reset starts
   const reset=await post('/reset',{confirm:'RESET FOUNDATION',revision:recovered.state.revision},restoredHeaders);assert.equal(reset.data.state.generation,1);assert.equal(reset.data.ava.opening,'pending');assert.equal(reset.data.ava.step,0);
   const old=await fetch(base+'/ava',{method:'POST',headers:restoredHeaders,body:JSON.stringify(claim)});assert.equal(old.status,409);const pending=await(await fetch(base,{headers:restoredHeaders})).json();assert.equal(pending.ava.opening,'pending');assert.equal(pending.state.compute,100);
  }finally{await new Promise<void>(r=>server.close(()=>r()));db.close();}
+});
+
+test('introduced HUD controls stay revealed through builder and resource explanations',()=>{
+ const p={...newAva(),opening:'shown' as const};
+ const stages=[{...p,step:3},{...p,step:5,builderStep:0},{...p,step:5,builderStep:1},{...p,step:5,builderStep:3},{...p,step:5,builderStep:4},{...p,step:6,builderStep:4},{...p,step:7,builderStep:4},{...p,step:12,builderStep:4},{...p,step:16,status:'complete' as const}];
+ for(const key of ['company','compute','research','build','builders','full'] as const){let introduced=false;for(const stage of stages){const visible=onboardingHud(stage)[key];if(introduced)assert.equal(visible,true,key);introduced ||=visible;}}
+ assert.equal(onboardingHud(p).previewCompany,true);assert.equal(onboardingHud({...p,step:3}).previewCompany,false);assert.equal(onboardingHud(p,true).previewCompany,false);
 });

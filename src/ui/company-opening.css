@@ -20,3 +20,11 @@
 .game-session[data-hud-company=true] .foundation-player,.game-session[data-hud-compute=true] .compute-hud:not(.research-hud),.game-session[data-hud-research=true] .research-hud,.game-session[data-hud-builders=true] .foundation-builder-box,.game-session[data-hud-build=true] .foundation-build,.game-session[data-hud-full=true] :is(.foundation-attack,.foundation-settings,.foundation-arrange,.foundation-leaderboard){animation:hud-discovery .35s ease both}
 @keyframes hud-discovery{from{opacity:0;filter:brightness(1.15)}to{opacity:1;filter:brightness(1)}}
 @media(prefers-reduced-motion:reduce){.company-opening,.company-opening *,.game-session :is(.foundation-player,.foundation-builder-box,.compute-hud,button){animation:none!important}.company-opening{display:none}}
+
+/* Preview only the mounted Company HUD; other unintroduced controls stay hidden. */
+.game-session[data-hud-company-preview=true] .foundation-player{visibility:visible!important;opacity:.3;pointer-events:none!important;animation:none}
+.foundation-player{transition:opacity .25s ease}
+@media(prefers-reduced-motion:reduce){.foundation-player{transition:none}}
+
+/* A stable tutorial slot keeps the introduced Build action clear of foreground Ava. */
+.game-session[data-hud-full=false] .foundation-build{left:auto;right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom))}
