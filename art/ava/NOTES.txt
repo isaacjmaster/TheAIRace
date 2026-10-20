@@ -1,0 +1,18 @@
+AVA APPROVED CHARACTER REDESIGN
+
+Canonical source: canonical-sheet.png (unaltered owner-provided reference).
+Creation: built-in image_gen, with this sheet and the matching new sprite as identity references. Exact prompt set: prompts.json.
+
+High-resolution transparent PNG masters: welcome, tablet, encourage, thinking and full-body.
+Live portraits: public/characters/ava/{welcome,tablet,encourage,thinking}-v4.webp.
+The game uses waist-up portraits so the hood, eyes and gestures stay readable beside dialogue. Full-body master is available for future art use; no new 3D system was introduced.
+
+Delivery: 640 x 577 RGBA WebP, quality 90, 49-67 KB per pose. Alpha is preserved. Only welcome preloads for early active onboarding; other poses load when needed. Existing decoded-blob cache prevents duplicate downloads and holds the previous pose until the next one is ready.
+Rebuild with: python scripts/optimize-ava.py (Pillow).
+Validate with: python scripts/verify-ava-art.py.
+
+Old Ava portraits were removed from public delivery. Unused old title/icon artwork is archived in legacy/; active campus-v2 app icons and the current 3D title scene are unchanged.
+
+Presentation mapping only: welcoming guidance, tablet for Compute/Research, thumbs-up for milestones, thinking for progression concepts. Dialogue, saved onboarding, mission exclusion, tutorial arrows, economy and all authoritative gameplay remain unchanged. Compact Build/placement guidance still hides portraits.
+
+Screenshots and isolated browser evidence are in data/ava-redesign-media. Browser checks use silent testAudio=off sessions and close every context. Physical iPhone/PWA device testing was not performed.

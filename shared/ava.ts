@@ -62,5 +62,11 @@ export function avaLine(p:AvaProgress,s:FoundationState,now:number,panel:string|
  return lines[p.step]||lines[15];
 }
 
-/** Presentation only: explanations point; greetings, waiting and encouragement welcome. */
-export function avaPose(step:number):'welcome'|'point'{return step>=3&&step<=12&&step!==10?'point':'welcome';}
+/** Presentation only; pose selection never changes onboarding progression or dialogue. */
+export type AvaPose='welcome'|'tablet'|'encourage'|'thinking';
+export function avaPose(step:number):AvaPose{
+ if(step===4)return 'thinking';
+ if(step===5||step===6||step===12)return 'tablet';
+ if(step===10||step===11||step===13||step===15)return 'encourage';
+ return 'welcome';
+}

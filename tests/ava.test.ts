@@ -84,7 +84,9 @@ test('foundation Ava API preserves legacy saves, persists progress, ignores stal
 
 test('Ava gesture follows dialogue without changing tutorial or company state',()=>{
  const s=initialFoundation(),p=newAva(),before=JSON.stringify({s,p});
- for(const step of [0,1,2,10,13,14,15])assert.equal(avaPose(step),'welcome');
- for(const step of [3,4,5,6,7,8,9,11,12])assert.equal(avaPose(step),'point');
+ for(const step of [0,1,2,3,7,8,9,14])assert.equal(avaPose(step),'welcome');
+ for(const step of [5,6,12])assert.equal(avaPose(step),'tablet');
+ for(const step of [10,11,13,15])assert.equal(avaPose(step),'encourage');
+ assert.equal(avaPose(4),'thinking');
  assert.equal(JSON.stringify({s,p}),before);
 });

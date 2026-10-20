@@ -1,3 +1,5 @@
+> Historical artwork: the previous Ava design is archived in `art/ava/legacy/` and is no longer shipped. The current game uses the approved portraits in `public/characters/ava/`, the existing 3D campus title scene, and campus-v2 app icons.
+
 # Ava icon and cinematic title screen
 
 ## Assets and scope

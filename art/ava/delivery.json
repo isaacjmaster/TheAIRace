@@ -1,0 +1,22 @@
+{
+  "welcome": {
+    "width": 640,
+    "height": 577,
+    "bytes": 67478
+  },
+  "tablet": {
+    "width": 640,
+    "height": 577,
+    "bytes": 51030
+  },
+  "encourage": {
+    "width": 640,
+    "height": 577,
+    "bytes": 62026
+  },
+  "thinking": {
+    "width": 640,
+    "height": 577,
+    "bytes": 49098
+  }
+}

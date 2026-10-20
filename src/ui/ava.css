@@ -62,3 +62,12 @@
 
 /* Leave the station artwork clear: its cue occupies a small tutorial-only gap. */
 .ava-build-target[data-building="station"]{margin-top:76px}
+/* Approved compact Ava portraits sit beside their bubble with their full silhouette visible. */
+.ava-new-design.ava-stage{min-height:0}
+.ava-new-design.ava-stage:not(.ava-compact) .ava-copy{margin-left:170px}
+.ava-new-design.ava-stage .ava-character{position:absolute;left:0;top:auto;bottom:0;width:158px;height:190px;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 3px 2px #24475a20)}
+.ava-new-design.ava-stage.ava-beside-build{width:min(520px,calc(100% - 24px));left:max(12px,env(safe-area-inset-left));bottom:235px}
+.ava-new-design.ava-beside-build .ava-copy::before{left:-10px;right:auto;top:52px;bottom:auto;transform:rotate(45deg)}
+@media(min-width:600px){.ava-new-design.ava-stage:not(.ava-compact){width:580px}.ava-new-design.ava-stage:not(.ava-compact) .ava-copy{margin-left:214px}.ava-new-design.ava-stage .ava-character{width:200px;height:220px}.ava-new-design.ava-stage.ava-beside-build{width:580px}}
+@media(max-width:350px){.ava-new-design.ava-stage:not(.ava-compact) .ava-copy{margin-left:128px}.ava-new-design.ava-stage .ava-character{width:118px;height:160px}}
+@media(orientation:landscape) and (max-height:500px){.ava-new-design.ava-stage:not(.ava-compact){width:420px;left:12px;bottom:80px}.ava-new-design.ava-stage:not(.ava-compact) .ava-copy{margin-left:152px}.ava-new-design.ava-stage .ava-character{width:140px;height:170px}.ava-new-design.ava-stage.ava-beside-build{top:90px;bottom:auto}}
