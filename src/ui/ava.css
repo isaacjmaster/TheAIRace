@@ -59,3 +59,6 @@
 .ava-stage.ava-placement-guide{left:auto;right:max(12px,env(safe-area-inset-right));top:calc(max(8px,env(safe-area-inset-top)) + 112px);bottom:auto;width:min(310px,calc(100% - 24px));margin:0;align-items:flex-start}
 .ava-portrait-loading{position:fixed;left:24px;bottom:32px;padding:12px;border-radius:50%;background:#d8f6ef;color:#37677a;font-weight:900;letter-spacing:2px}
 @media(orientation:landscape) and (max-height:500px){.ava-stage.ava-in-catalog{left:12px;right:auto;top:12px;width:260px;max-height:calc(100dvh - 24px);overflow:auto}.foundation-backdrop:has(.ava-build-target){padding-top:16px;padding-left:300px}.ava-stage.ava-placement-guide{top:12px;width:270px}}
+
+/* Leave the station artwork clear: its cue occupies a small tutorial-only gap. */
+.ava-build-target[data-building="station"]{margin-top:76px}
