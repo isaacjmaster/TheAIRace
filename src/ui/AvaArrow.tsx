@@ -6,9 +6,29 @@ export function AvaTargetArrow({target}:{target:string|null}){
  const arrow=useRef<HTMLDivElement>(null);
  useEffect(()=>{if(!target)return;let frame=0;
  const update=()=>{const node=arrow.current,element=document.querySelector<HTMLElement>(target);
- if(node){let rect=element?.getBoundingClientRect();const catalog=element?.closest('.build-catalog')?.getBoundingClientRect();if(rect&&catalog)rect=new DOMRect(rect.left,Math.max(rect.top,catalog.top),rect.width,Math.max(0,Math.min(rect.bottom,catalog.bottom)-Math.max(rect.top,catalog.top)));const visible=!!element&&getComputedStyle(element).visibility!=='hidden'&&!!rect&&rect.width>0&&rect.height>0&&rect.right>0&&rect.left<innerWidth&&rect.bottom>0&&rect.top<innerHeight&&!element.closest('[inert]');node.hidden=!visible;
- if(visible&&rect){const station=!!element?.closest('[data-building="station"]'),inside=target.includes('.build-card-image')&&!station,below=!inside&&(rect.top<80||target==='.research-hud > svg');if(station&&catalog&&rect.top-77<catalog.top){node.hidden=true;}node.dataset.direction=below?'up':'down';node.style.left=Math.max(28,Math.min(innerWidth-28,rect.left+rect.width/2))+'px';node.style.top=(inside?rect.top+Math.min(rect.height*.75,75):below?rect.bottom+8:rect.top-8)+'px';}}
- frame=requestAnimationFrame(update);};update();return()=>cancelAnimationFrame(frame);
+ if(node){
+ const rect=element?.getBoundingClientRect(),catalog=element?.closest('.build-catalog'),isCard=!!element?.matches('.build-card');
+ let visible=!!element&&getComputedStyle(element).visibility!=='hidden'&&!!rect&&rect.width>0&&rect.height>0&&rect.right>0&&rect.left<innerWidth&&rect.bottom>0&&rect.top<innerHeight&&!element.closest('[inert]');
+ if(visible&&rect){
+ const below=!isCard&&(rect.top<80||target==='.research-hud > svg');
+ const x=Math.max(28,Math.min(innerWidth-28,rect.left+rect.width/2)),y=below?rect.bottom+8:rect.top-8;
+ if(isCard&&catalog){
+ // The entire arrow must fit in the visible catalog gutter, clear of tabs and card content.
+ const bounds=catalog.getBoundingClientRect(),tabs=catalog.parentElement?.querySelector('.build-tabs')?.getBoundingClientRect();
+ const clipTop=Math.max(0,bounds.top,tabs?.bottom??0),clipBottom=Math.min(innerHeight,bounds.bottom);
+ const height=parseFloat(getComputedStyle(node).height);
+ visible=y-height-6>=clipTop&&y<=clipBottom&&rect.top<clipBottom&&rect.left>=0&&rect.right<=innerWidth;
+ }
+ node.dataset.direction=below?'up':'down';node.style.left=x+'px';node.style.top=y+'px';
+ }
+ node.hidden=!visible;
+ }
+
+ };
+ const tick=()=>{update();frame=requestAnimationFrame(tick);};tick();
+ // Scroll events update immediately too, including WebKit's asynchronous overflow scrolling.
+ document.addEventListener('scroll',update,true);window.addEventListener('resize',update);
+ return()=>{cancelAnimationFrame(frame);document.removeEventListener('scroll',update,true);window.removeEventListener('resize',update);};
  },[target]);
  return target?<div key={target} ref={arrow} data-target={target} className="ava-target-arrow" hidden aria-hidden="true"><AvaArrow/></div>:null;
 }

@@ -8,12 +8,12 @@
 .ava-continue{border:1px solid #74bebf;border-radius:10px;background:#b4eee5;color:#244456;min-height:44px;padding:8px 12px;font-size:12px;font-weight:800;display:flex;gap:12px;align-items:center;margin-left:auto}.ava-wait{display:block;color:#557b87;font-size:10px;line-height:1.4}.ava-error{display:block;font-size:11px;color:#943f42}.ava-error button{background:none;color:inherit;min-height:44px}
 .ava-guidance{top:calc(max(12px,env(safe-area-inset-top)) + 112px);bottom:auto;min-height:186px;align-items:flex-start}.ava-guidance .ava-character{width:124px;height:186px;top:0;bottom:auto}.ava-guidance .ava-copy{margin-left:124px;padding:10px 12px}.ava-guidance p{font-size:12px;margin-bottom:6px}.ava-in-catalog{top:max(8px,env(safe-area-inset-top))}
 .ava-collection{top:auto;bottom:calc(max(14px,env(safe-area-inset-bottom)) + 140px);align-items:flex-end}.ava-collection .ava-character{top:auto;bottom:-4px}
-.foundation-backdrop:has(.ava-build-target){padding-top:calc(max(8px,env(safe-area-inset-top)) + 236px)}
+.foundation-backdrop:has(.build-catalog[data-tutorial=true]){padding-top:calc(max(8px,env(safe-area-inset-top)) + 236px)}
 @keyframes ava-enter{from{opacity:0}to{opacity:1}}
 @keyframes ava-pose-enter{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
 @media(min-width:600px){.ava-dialogue{left:max(18px,env(safe-area-inset-left));right:auto;width:520px}.ava-character{width:180px;height:270px}.ava-dialogue{min-height:270px}.ava-copy{margin-left:160px}.ava-guidance{min-height:210px}.ava-guidance .ava-character{width:140px;height:210px}.ava-guidance .ava-copy{margin-left:124px}}
 @media(max-width:350px){.ava-character{width:118px;height:177px}.ava-dialogue{min-height:177px}.ava-copy{margin-left:114px;padding:10px}.ava-dialogue p{font-size:12px}.ava-guidance .ava-character{width:96px;height:144px}.ava-guidance .ava-copy{margin-left:94px;padding:8px 10px}.ava-guidance p{font-size:11px}.ava-heading small{display:none}.ava-skip{font-size:8px}}
-@media(orientation:landscape) and (max-height:500px){.ava-dialogue{left:12px;right:auto;bottom:80px;width:390px;min-height:190px}.ava-character{width:126px;height:189px}.ava-copy{margin-left:110px}.ava-guidance{top:80px;bottom:auto;min-height:150px}.ava-guidance .ava-character{width:100px;height:150px}.ava-guidance .ava-copy{margin-left:86px}.ava-in-catalog{left:12px;top:12px;width:270px}.foundation-backdrop:has(.ava-build-target){padding-top:16px;padding-left:300px}}
+@media(orientation:landscape) and (max-height:500px){.ava-dialogue{left:12px;right:auto;bottom:80px;width:390px;min-height:190px}.ava-character{width:126px;height:189px}.ava-copy{margin-left:110px}.ava-guidance{top:80px;bottom:auto;min-height:150px}.ava-guidance .ava-character{width:100px;height:150px}.ava-guidance .ava-copy{margin-left:86px}.ava-in-catalog{left:12px;top:12px;width:270px}.foundation-backdrop:has(.build-catalog[data-tutorial=true]){padding-top:16px;padding-left:300px}}
 @media(prefers-reduced-motion:reduce){.ava-dialogue,.ava-character{animation:none}}
 
 /* Anchor the cutout to the viewport so her lower body continues past its edge. */
@@ -55,25 +55,26 @@
 /* Catalog and placement guidance leave cards and confirmation controls unobscured. */
 .ava-stage.ava-compact{min-height:0}.ava-stage.ava-compact .ava-copy{margin-left:0}.ava-compact .ava-copy::before{display:none}
 .ava-stage.ava-in-catalog{position:fixed;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));bottom:auto;width:auto;max-width:520px;margin:auto;align-items:flex-start}
-.foundation-backdrop:has(.ava-build-target){padding-top:calc(max(8px,env(safe-area-inset-top)) + var(--ava-catalog-height,180px) + 20px)}
+.foundation-backdrop:has(.build-catalog[data-tutorial=true]){padding-top:calc(max(8px,env(safe-area-inset-top)) + var(--ava-catalog-height,180px) + 20px)}
 .ava-stage.ava-placement-guide{left:auto;right:max(12px,env(safe-area-inset-right));top:calc(max(8px,env(safe-area-inset-top)) + 112px);bottom:auto;width:min(310px,calc(100% - 24px));margin:0;align-items:flex-start}
 .ava-portrait-loading{position:fixed;left:24px;bottom:32px;padding:12px;border-radius:50%;background:#d8f6ef;color:#37677a;font-weight:900;letter-spacing:2px}
-@media(orientation:landscape) and (max-height:500px){.ava-stage.ava-in-catalog{left:12px;right:auto;top:12px;width:260px;max-height:calc(100dvh - 24px);overflow:auto}.foundation-backdrop:has(.ava-build-target){padding-top:16px;padding-left:300px}.ava-stage.ava-placement-guide{top:12px;width:270px}}
+@media(orientation:landscape) and (max-height:500px){.ava-stage.ava-in-catalog{left:12px;right:auto;top:12px;width:260px;max-height:calc(100dvh - 24px);overflow:auto}.foundation-backdrop:has(.build-catalog[data-tutorial=true]){padding-top:16px;padding-left:300px}.ava-stage.ava-placement-guide{top:12px;width:270px}}
 
-/* Leave the station artwork clear: its cue occupies a small tutorial-only gap. */
-.ava-build-target[data-building="station"]{margin-top:76px}
-/* Foreground conversation composition: the portrait continues below the viewport. */
-.ava-new-design.ava-stage:not(.ava-compact){--ava-portrait-width:clamp(240px,72vw,360px);--ava-bubble-left:calc(var(--ava-portrait-width)*.72 - 12px);position:fixed;left:calc(env(safe-area-inset-left) + var(--ava-bubble-left));right:auto;top:auto;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 112px);width:min(440px,calc(100vw - var(--ava-bubble-left) - env(safe-area-inset-left) - max(12px,env(safe-area-inset-right))));max-width:none;min-height:0;margin:0;align-items:flex-end}
+/* Every highlighted card reserves the same unobstructed cue space. */
+.ava-build-target{margin-top:84px}
+/* Approved full-character art: preserve proportions and crop only the lower legs. */
+.ava-new-design.ava-stage:not(.ava-compact){--ava-portrait-width:clamp(190px,62vw,285px);--ava-bubble-left:calc(var(--ava-portrait-width)*.70);position:fixed;left:calc(env(safe-area-inset-left) + var(--ava-bubble-left));right:auto;top:auto;bottom:calc(max(12px,env(safe-area-inset-bottom)) + var(--ava-portrait-width)*.78);width:min(440px,calc(100vw - var(--ava-bubble-left) - env(safe-area-inset-left) - max(12px,env(safe-area-inset-right))));max-width:none;min-height:0;margin:0;align-items:flex-end}
 .ava-new-design.ava-stage:not(.ava-compact) .ava-copy{margin-left:0}
-.ava-new-design.ava-stage .ava-character{position:fixed;left:calc(env(safe-area-inset-left) - 22px);top:auto;bottom:-18px;width:var(--ava-portrait-width);height:auto;max-width:none;object-fit:contain;object-position:center bottom;pointer-events:none;filter:drop-shadow(0 4px 3px #24475a25)}
+.ava-new-design.ava-stage .ava-character{position:fixed;left:env(safe-area-inset-left);top:auto;bottom:0;width:var(--ava-portrait-width);height:auto;max-width:none;object-fit:contain;object-position:center bottom;pointer-events:none;filter:drop-shadow(0 4px 3px #24475a25)}
+.ava-new-design.ava-stage .ava-character[data-pose=welcome]{translate:0 15%}
 .ava-new-design:not(.ava-compact) .ava-copy::before{left:-10px;right:auto;top:auto;bottom:20px;transform:rotate(45deg)}
-/* Action prompts retain the compact, unobstructed tutorial layout. */
 .ava-new-design.ava-stage.ava-compact.ava-beside-build{left:max(12px,env(safe-area-inset-left));right:auto;top:auto;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 205px);width:min(310px,calc(100% - 24px));min-height:0;margin:0}
 .ava-new-design.ava-stage.ava-compact.ava-collection{left:50%;right:auto;top:auto;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 140px);transform:translateX(-50%);width:min(390px,calc(100% - 24px));min-height:0}
-@media(min-width:900px){.ava-new-design.ava-stage:not(.ava-compact){--ava-portrait-width:clamp(340px,32vw,480px);--ava-bubble-left:calc(var(--ava-portrait-width)*.72);bottom:clamp(120px,16vh,190px)}.ava-new-design.ava-stage .ava-character{bottom:-24px}}
-@media(orientation:landscape) and (max-height:500px){.ava-new-design.ava-stage:not(.ava-compact){--ava-portrait-width:clamp(230px,56vh,300px);--ava-bubble-left:calc(var(--ava-portrait-width)*.72 - 12px);bottom:clamp(62px,18vh,90px);width:min(380px,calc(100vw - var(--ava-bubble-left) - env(safe-area-inset-left) - max(12px,env(safe-area-inset-right))))}.ava-new-design.ava-stage .ava-character{bottom:-16px}.ava-new-design.ava-stage.ava-compact.ava-beside-build{top:12px;bottom:auto;left:calc(max(12px,env(safe-area-inset-left)) + 130px);width:min(350px,calc(100% - 166px))}.ava-new-design.ava-stage.ava-compact.ava-collection{left:auto;right:max(12px,env(safe-area-inset-right));transform:none;bottom:20px;width:min(360px,calc(100% - 160px))}}
+/* Existing expression portraits are close-ups; match their head scale to the full figure. */
+.ava-new-design.ava-stage .ava-character:not([data-pose=welcome]){width:calc(var(--ava-portrait-width)*.62);bottom:0}
+@media(min-width:900px){.ava-new-design.ava-stage:not(.ava-compact){--ava-portrait-width:clamp(280px,24vw,370px);bottom:calc(var(--ava-portrait-width)*.83)}}
+@media(orientation:landscape) and (max-height:500px){.ava-new-design.ava-stage:not(.ava-compact){--ava-portrait-width:clamp(150px,55dvh,230px);--ava-bubble-left:calc(var(--ava-portrait-width)*.76);bottom:clamp(55px,20dvh,90px);width:min(380px,calc(100vw - var(--ava-bubble-left) - env(safe-area-inset-left) - max(12px,env(safe-area-inset-right))))}.ava-new-design.ava-stage.ava-compact.ava-beside-build{top:12px;bottom:auto;left:calc(max(12px,env(safe-area-inset-left)) + 130px);width:min(350px,calc(100% - 166px))}.ava-new-design.ava-stage.ava-compact.ava-collection{left:auto;right:max(12px,env(safe-area-inset-right));transform:none;bottom:20px;width:min(360px,calc(100% - 160px))}.ava-new-design.ava-stage.ava-naming:not(.ava-compact){bottom:max(12px,env(safe-area-inset-bottom))}}
 
-/* Normalize the approved close-up poses to the welcome portrait's face scale. */
-.ava-new-design.ava-stage .ava-character[data-pose=tablet],.ava-new-design.ava-stage .ava-character[data-pose=thinking]{width:calc(var(--ava-portrait-width)*.86)}
-.ava-new-design.ava-stage .ava-character[data-pose=encourage]{width:calc(var(--ava-portrait-width)*.92)}
-@media(orientation:landscape) and (max-height:500px){.ava-new-design.ava-stage.ava-naming:not(.ava-compact){bottom:max(12px,env(safe-area-inset-bottom))}}
+.ava-new-design.ava-stage:not(.ava-compact):not([data-pose=welcome]){bottom:calc(max(12px,env(safe-area-inset-bottom)) + var(--ava-portrait-width)*.20)}
+
+@media(orientation:landscape) and (max-height:500px){.ava-new-design.ava-stage:not(.ava-compact)[data-pose=welcome]{--ava-bubble-left:var(--ava-portrait-width)}}

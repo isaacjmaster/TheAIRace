@@ -15,3 +15,8 @@ for pose in ("welcome", "tablet", "encourage", "thinking"):
         metadata[pose] = {"width": image.width, "height": image.height, "bytes": target.stat().st_size}
     print(f"{pose}: {source.stat().st_size:,} -> {target.stat().st_size:,} bytes")
 (root / "art/ava/delivery.json").write_text(json.dumps(metadata, indent=2) + "\n")
+
+# Reuse the approved full-body master without generation, stretching or character edits.
+with Image.open(root / "art/ava/full-body-master.png") as image:
+    image.thumbnail((640, 960), Image.Resampling.LANCZOS)
+    image.save(output / "full-body-v1.webp", quality=90, method=6, exact=True)

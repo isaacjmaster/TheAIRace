@@ -14,7 +14,7 @@ export function AvaTutorial({progress,state,now,panel,placing,busy,error,onComma
  const interactive=stationInteractive||step>=7&&step<=10||step===12;
  const showBuildPrompt=stationInteractive&&panel!=='build'&&placing!=='station'||step>=7&&step<=9&&!state.rig&&!state.buildersBusy&&state.compute>=50&&panel!=='build'&&placing!=='build';
  const pose=stationLesson?(progress.builderStep===3?'encourage':'welcome'):avaPose(step);
- const arrowTarget=namingOnly?null:showBuildPrompt?'.foundation-build':stationInteractive&&panel==='build'?'.ava-build-target .build-card-image':avaHudTarget(progress)??(panel==='build'&&step>=7&&step<=9?'.ava-build-target .build-card-image':null);
+ const arrowTarget=namingOnly?null:showBuildPrompt?'.foundation-build':stationInteractive&&panel==='build'?'.ava-build-target':avaHudTarget(progress)??(panel==='build'&&step>=7&&step<=9?'.ava-build-target':null);
  const text=naming?"What should we call you, Founder?":step===2&&company.username?`Welcome to the AI race, ${company.username}.`:avaLine(progress,state,now,panel,placing);
  const waiting=!namingOnly&&!stationLesson&&avaWaiting(step,state);
  const waitKey=waiting?`${company.playerId}:${step}:${progress.revision}:${state.rig?.startedAt}`:'';
@@ -27,8 +27,8 @@ export function AvaTutorial({progress,state,now,panel,placing,busy,error,onComma
  const portrait=useAvaPortrait(pose,!compact&&!collapsed),dialogue=useRef<HTMLElement>(null);
  useLayoutEffect(()=>{if(panel!=='build'||collapsed)return;const root=document.querySelector<HTMLElement>('.foundation-app'),node=dialogue.current;if(!root||!node)return;const resize=()=>root.style.setProperty('--ava-catalog-height',node.getBoundingClientRect().height+'px');const observer=new ResizeObserver(resize);observer.observe(node);resize();return()=>{observer.disconnect();root.style.removeProperty('--ava-catalog-height');};},[panel,collapsed]);
  if(collapsed)return null;
- return <><AvaTargetArrow target={arrowTarget}/><aside ref={dialogue} className={`ava-dialogue ava-stage ava-new-design ${compact?'ava-compact':''} ${placing?'ava-placement-guide':''} ${naming?'ava-naming':''} ${showBuildPrompt?'ava-beside-build':''} ${interactive?'ava-guidance':''} ${panel==='build'?'ava-in-catalog':''} ${step===12?'ava-collection':''}`} aria-label="Ava, your AI cofounder">
- {!compact&&(portrait?<img className="ava-character" data-pose={pose} src={portrait} alt="Ava, your AI cofounder" width="640" height="577"/>:<span className="ava-portrait-loading" aria-hidden="true">AVA</span>)}
+ return <><AvaTargetArrow target={arrowTarget}/><aside ref={dialogue} data-pose={pose} className={`ava-dialogue ava-stage ava-new-design ${compact?'ava-compact':''} ${placing?'ava-placement-guide':''} ${naming?'ava-naming':''} ${showBuildPrompt?'ava-beside-build':''} ${interactive?'ava-guidance':''} ${panel==='build'?'ava-in-catalog':''} ${step===12?'ava-collection':''}`} aria-label="Ava, your AI cofounder">
+ {!compact&&(portrait?<img className="ava-character" data-pose={pose} src={portrait} alt="Ava, your AI cofounder" width="640" height={pose==='welcome'?960:577}/>:<span className="ava-portrait-loading" aria-hidden="true">AVA</span>)}
  <div className="ava-copy"><div className="ava-heading"><strong>AVA <small>AI COFOUNDER</small></strong>{!namingOnly&&<button className="ava-skip" disabled={busy} onClick={()=>onCommand('skip')}>Skip Tutorial</button>}</div>
  <p aria-live="polite">{text}</p>
  {naming&&<UsernameForm company={company} onCompany={onCompany}/>}
