@@ -40,3 +40,13 @@
 @media(orientation:portrait) and (max-height:650px){.simple-mission .infiltration-ava>img{width:80px;height:120px}.simple-mission .infiltration-ava .ava-copy{padding:10px}.simple-mission .infiltration-ava p{font-size:12px;line-height:1.35}.simple-mission .infiltration-ava .ava-continue{font-size:14px;padding:8px;min-height:40px}}
 
 .simple-mission{--mission-safe-right:env(safe-area-inset-right,0px)}
+/* Cipher deployment: select a unit, then tap the highlighted perimeter. */
+.simple-mission .operation-header{width:min(280px,calc(100% - 24px));padding:8px 12px}
+.operation-header .username-label{font-size:23px;letter-spacing:-.5px;display:inline-flex;align-items:baseline;gap:3px}.operation-header .username-hash{font-size:14px;color:#82909a;font-weight:600}
+.simple-mission .troop-tray{width:auto;padding:0;background:none;border:0;box-shadow:none;backdrop-filter:none}
+.operation-controls .cipher-deploy{position:relative;display:grid;place-items:center;width:82px;height:82px;min-height:82px;border:3px solid #fff4cd;border-radius:50%;padding:8px;background:linear-gradient(#a0eddf,#42afa9);box-shadow:0 5px #28546a,0 8px 14px #244b6326;color:#fffdf0}
+.cipher-deploy>svg{width:48px;height:58px}.cipher-deploy .troop-count{position:absolute;right:-25px;bottom:0;min-width:43px;padding:4px 8px;border:2px solid #fff4cd;border-radius:12px;background:#234c64;font-size:20px;line-height:1.1;font-weight:900}
+.operation-controls .cipher-deploy[aria-pressed=true]{outline:3px solid #45dfcf;outline-offset:4px;background:linear-gradient(#d3fff0,#6bddc8)}
+.operation-controls .cipher-deploy:disabled{opacity:.72;cursor:default}.cipher-deploy:focus-visible{outline:3px solid #8065c2;outline-offset:5px}.troop-tray>small{position:absolute;left:0;bottom:100px;width:190px;padding:8px;border-radius:10px;background:#fffbed;font-size:12px;color:#36586c}
+.operation-livehud .agent-integrity{accent-color:#e6a45e;height:4px}
+@media(orientation:landscape) and (max-height:550px){.operation-controls .cipher-deploy{width:65px;height:65px;min-height:65px;padding:5px}.cipher-deploy>svg{width:39px;height:47px}.cipher-deploy .troop-count{font-size:17px;right:-22px;min-width:36px}.simple-mission .troop-tray{width:auto}.operation-header .username-label{font-size:20px}}

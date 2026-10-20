@@ -4,23 +4,23 @@ import * as THREE from 'three';
 import {WorldKit,palette as c} from './world';
 /** Presentation only: shared silhouette, named limbs retained for existing animations. */
 export function scrapBotModel(k:WorldKit){
- const g=new THREE.Group();g.name='Scrap Bot';const rig=new THREE.Group(),core=new THREE.Group();rig.name='scrap-rig';core.name='body-core';rig.scale.setScalar(SCRAP_BOT_VISUAL_SCALE);g.add(rig);rig.add(core);const legs:BotLeg[]=[],arms:THREE.Group[]=[];
+ const g=new THREE.Group();g.name='Cipher Bot';const rig=new THREE.Group(),core=new THREE.Group();rig.name='scrap-rig';core.name='body-core';rig.scale.setScalar(SCRAP_BOT_VISUAL_SCALE);g.add(rig);rig.add(core);const legs:BotLeg[]=[],arms:THREE.Group[]=[];
  for(const side of [-1,1]){
   const leg=new THREE.Group();leg.name=side<0?'leg-left':'leg-right';rig.add(leg);
   const upper=k.box(leg,[.13,1,.15],[0,0,0],c.dark,.025),lower=k.box(leg,[.15,1,.17],[0,0,0],c.cream,.025),knee=k.box(leg,[.19,.16,.19],[0,0,0],side<0?c.gold:c.slate,.04),foot=new THREE.Group();foot.name=side<0?'foot-left':'foot-right';leg.add(foot);
   k.box(foot,[.26,.12,.36],[0,.06,.05],c.dark,.035);k.box(foot,[.23,.07,.13],[0,.12,.15],side<0?c.gold:c.cream,.025);k.box(foot,[.12,.025,.025],[0,.16,.21],c.cyan,.01,true);legs.push({group:leg,upper,lower,knee,foot,side});
   const arm=new THREE.Group();arm.position.set(side*.33,.52,0);arm.name=side<0?'arm-left':'arm-right';core.add(arm);arms.push(arm);
-  k.box(arm,[.2,.19,.25],[0,.06,0],side<0?c.gold:c.cream,.045);k.box(arm,[.12,.23,.13],[0,-.13,0],c.dark,.025);k.box(arm,[.2,.17,.22],[0,-.26,.04],c.dark,.035);k.box(arm,[.045,.1,.03],[side*.06,-.27,.16],c.cyan,.01);
+  k.box(arm,[.2,.19,.25],[0,.06,0],c.cream,.045);k.box(arm,[.12,.23,.13],[0,-.13,0],c.dark,.025);k.box(arm,[.2,.17,.22],[0,-.26,.04],c.dark,.035);k.box(arm,[.045,.1,.03],[side*.06,-.27,.16],c.cyan,.01);
  }
  k.box(core,[.44,.35,.32],[0,.48,0],c.dark,.06);
  k.box(core,[.38,.23,.09],[0,.52,.18],c.cream,.04);
- k.box(core,[.12,.11,.025],[0,.53,.24],c.gold,.02);
- k.box(core,[.56,.37,.42],[0,.86,0],c.cream,.075);
+ k.box(core,[.12,.11,.025],[0,.53,.24],c.cyan,.02,true);
+ k.box(core,[.56,.37,.42],[0,.86,0],c.dark,.075);
  k.box(core,[.46,.24,.055],[0,.85,.22],c.dark,.055);
- for(const x of [-.12,.12])k.box(core,[.065,.09,.028],[x,.87,.255],c.cyan,.025,true);
- k.box(core,[.12,.07,.34],[.06,1.075,0],c.gold,.02);
+ k.box(core,[.32,.055,.028],[0,.87,.255],c.cyan,.015,true); k.box(core,[.3,.27,.09],[0,.52,-.21],c.slate,.03);for(const x of [-.08,0,.08])k.box(core,[.025,.16,.025],[x,.53,-.27],c.cyan,.01,true);
+ k.box(core,[.12,.07,.34],[0,1.075,0],c.slate,.02);
  for(const x of [-.3,.3]){const ear=k.cylinder(core,.095,.06,[x,.86,0],c.dark);ear.rotation.z=Math.PI/2;}
-  k.box(core,[.12,.025,.025],[0,.76,.26],c.slate,.01);k.box(core,[.2,.035,.04],[-.06,.63,.24],c.cyan,.01,true);k.box(core,[.05,.1,.05],[.25,1.05,-.08],c.slate,.015);k.box(core,[.075,.05,.075],[.25,1.105,-.08],c.gold,.02);k.batchStatic(core,'scrap-core');for(let i=0;i<arms.length;i++)k.batchStatic(arms[i],'scrap-arm-'+i);registerScrapPose(g,rig,core,legs,arms);return g;
+  k.box(core,[.12,.025,.025],[0,.76,.26],c.slate,.01);k.box(core,[.2,.035,.04],[-.06,.63,.24],c.cyan,.01,true);k.box(core,[.05,.1,.05],[.25,1.05,-.08],c.slate,.015);k.box(core,[.075,.05,.075],[.25,1.105,-.08],c.cyan,.02,true);k.batchStatic(core,'scrap-core');for(let i=0;i<arms.length;i++)k.batchStatic(arms[i],'scrap-arm-'+i);registerScrapPose(g,rig,core,legs,arms);return g;
 }
 export function fabricatorModel(k:WorldKit){
  const g=new THREE.Group();g.name='Bot Fabricator';

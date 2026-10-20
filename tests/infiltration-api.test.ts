@@ -38,20 +38,20 @@ async function fixture(path = ':memory:', initialTime = Date.now()) {
     } return { id }; }
     return { db, get, fresh, post, command, read, save, battle, time: () => now, setTime: (n: number) => now = n, close: () => new Promise<void>(r => server.close(() => { db.close(); r(); })) };
 }
-async function operation(f:Awaited<ReturnType<typeof fixture>>,p:Player,targetId='lumen-labs'){const r=await f.command(p,{action:'infiltration-start',targetId});assert.equal(r.status,200);const id=r.data.state.infiltration.id;assert.equal((await f.command(p,{action:'infiltration-command',operationId:id,intent:{action:'deploy'}})).status,200);f.setTime(f.time()+12000);assert.ok((await f.get(p)).data.state.infiltration.carried.compute>0);f.setTime(f.time()+12000);return{id,result:(await f.get(p)).data};}
+async function operation(f:Awaited<ReturnType<typeof fixture>>,p:Player,targetId='lumen-labs'){const r=await f.command(p,{action:'infiltration-start',targetId});assert.equal(r.status,200);const id=r.data.state.infiltration.id;assert.equal((await f.command(p,{action:'infiltration-command',operationId:id,intent:{action:'deploy'}})).status,200);f.setTime(f.time()+12000);assert.ok((await f.get(p)).data.state.infiltration.carried.compute>0);f.setTime(f.time()+168000);return{id,result:(await f.get(p)).data};}
 
 test('server settles extraction atomically once, preserves identity/old progression, and uses independent persistent cooldowns', async () => { const f = await fixture(); try {
     const p = await f.fresh();
     const old = f.read(p);
     let { id, result } = await operation(f, p);
-    assert.equal(result.state.compute, old.compute + 20);
+    assert.equal(result.state.compute, old.compute + 30);
     assert.equal(result.state.infiltration.settlement.influence, 25);
     assert.equal(result.competition.total, 25);
     assert.equal(result.company.playerId, p.id);
     const expiry = result.state.infiltration.settlement.eligibleAt;
     const outcomes = await Promise.all([f.get(p), f.get(p), f.command(p, { action: 'infiltration-command', operationId: id, intent: { action: 'extract' } })]);
     assert.equal(outcomes[2].status, 400);
-    assert.equal(f.read(p).compute, 120);
+    assert.equal(f.read(p).compute, 130);
     assert.equal(f.db.prepare('SELECT COUNT(*) n FROM infiltration_results').get()!.n, 1);
     result = (await operation(f, p)).result;
     assert.equal(result.competition.total, 25);
@@ -142,12 +142,12 @@ test('full resource storage retains validated loot in reserve and releases it on
     f.save(p, s);
     const { result } = await operation(f, p);
     assert.equal(result.state.compute, 1000);
-    assert.equal(result.state.infiltrationReserve.compute, 20);
+    assert.equal(result.state.infiltrationReserve.compute, 30);
     const next = f.read(p);
     next.compute -= 50;
     f.save(p, next);
     await Promise.all([f.get(p), f.get(p)]);
-    assert.equal(f.read(p).compute, 970);
+    assert.equal(f.read(p).compute, 980);
     assert.equal(f.read(p).infiltrationReserve!.compute, 0);
 }
 finally {
@@ -159,14 +159,14 @@ test('settlement and cooldown writes roll back together on a storage failure', a
     const id = r.data.state.infiltration.id;
     await f.command(p, { action: 'infiltration-command', operationId: id, intent: { action: 'deploy' } });
     f.setTime(f.time() + 12000);
-    f.setTime(f.time() + 12000);
+    f.setTime(f.time() + 168000);
     f.db.exec("CREATE TRIGGER reject_infiltration BEFORE INSERT ON infiltration_results BEGIN SELECT RAISE(ABORT,'test interruption'); END");
     assert.equal((await f.get(p)).status, 503);
     assert.equal(f.read(p).compute, 100);
     assert.equal(f.read(p).infiltration!.status, 'active');assert.equal(f.read(p).bots,0);assert.equal(f.read(p).infiltration!.unit!.status,'reserved');
     assert.equal(f.db.prepare('SELECT COUNT(*) n FROM infiltration_cooldowns').get()!.n, 0);
     f.db.exec('DROP TRIGGER reject_infiltration');
-    assert.equal((await f.get(p)).data.state.compute, 120);
+    assert.equal((await f.get(p)).data.state.compute, 130);
 }
 finally {
     await f.close();
@@ -207,7 +207,7 @@ test('closing and reopening during a hack preserves the operation, but unextract
     f.setTime(time + 86400000);
     r = (await f.get(p)).data;
     assert.equal(r.state.infiltration.status, 'extracted');
-    assert.equal(r.state.compute, 120);
+    assert.equal(r.state.compute, 130);
     assert.equal(r.competition.total, 25);
 }
 finally {
@@ -222,17 +222,17 @@ test('Research extraction, independent companies and stale result replay retain 
     assert.equal((await f.command(p, { action: 'infiltration-command', operationId: id, intent: { action: 'tool' } })).status, 400);
     f.setTime(t + 16000);
     assert.equal((await f.get(p)).data.state.infiltration.carried.research, 12);
-    f.setTime(t + 30000);
+    f.setTime(t + 180000);
     const r = (await f.get(p)).data;
-    assert.equal(r.state.research, 12);
-    assert.equal(r.state.infiltration.settlement.research, 12);
+    assert.equal(r.state.research, 20);
+    assert.equal(r.state.infiltration.settlement.research, 20);
     assert.equal(r.competition.total, 25);
     assert.equal((await f.get(other)).data.competition.total, 0);
     assert.equal((await operation(f, other)).result.competition.total, 25);
     f.setTime(r.state.infiltration.settlement.eligibleAt + 1);
     assert.equal((await f.command(p, { action: 'infiltration-command', operationId: id, intent: { action: 'extract' } })).status, 400);
     assert.equal((await f.get(p)).data.competition.total, 25);
-    assert.equal(f.read(p).research, 12);
+    assert.equal(f.read(p).research, 20);
 }
 finally {
     await f.close();
@@ -247,7 +247,7 @@ assert.equal((await f.command(p,{action:'train',count:9})).status,200);const nex
 
 test('deployment is zone validated, reservations are company-scoped and repeated commands cannot duplicate a unit',async()=>{const f=await fixture();try{const p=await f.fresh(),other=await f.fresh();const r=await f.command(p,{action:'infiltration-start',targetId:'lumen-labs'}),id=r.data.state.infiltration.id;assert.equal(f.read(p).bots,0);assert.equal((await f.command(other,{action:'infiltration-command',operationId:id,intent:{action:'deploy'}})).status,400);for(const position of [[0,-3],[1000,1000],[-10.8,0]])assert.equal((await f.command(p,{action:'infiltration-command',operationId:id,intent:{action:'deploy',position}})).status,400);assert.equal(f.read(p).infiltration!.status,'ready');const key=randomUUID(),cmd={action:'infiltration-command',operationId:id,intent:{action:'deploy',position:[-8,6.5]}};const replies=await Promise.all([f.command(p,cmd,key),f.command(p,cmd,key)]);assert.ok(replies.every(r=>r.status===200));assert.equal((await f.command(p,cmd)).status,400);assert.equal(f.read(p).bots,0);assert.equal(f.read(p).infiltration!.events.filter(e=>e.type==='deployed').length,1);assert.equal((await f.command(p,{action:'infiltration-command',operationId:id,intent:{action:'abandon'}})).status,200);assert.equal(f.read(p).infiltration!.unit!.status,'lost');assert.equal(f.read(p).bots,0);await f.get(p);assert.equal(f.read(p).bots,0);assert.equal(f.read(other).bots,1);}finally{await f.close();}});
 
-test('extraction returns its real agent once; timeout/interception lose it without banking unextracted loot',async()=>{const f=await fixture();try{const p=await f.fresh();const won=await operation(f,p);assert.equal(won.result.state.bots,1);assert.equal(won.result.state.infiltration.unit.status,'returned');await Promise.all([f.get(p),f.get(p)]);assert.equal(f.read(p).bots,1);for(const outcome of ['timeout','caught']){const r=await f.command(p,{action:'infiltration-start',targetId:'lumen-labs'}),id=r.data.state.infiltration.id;await f.command(p,{action:'infiltration-command',operationId:id,intent:{action:'deploy'}});if(outcome==='caught'){const s=f.read(p);s.infiltration!.agent.position=[0,2];s.infiltration!.agent.path=[];f.save(p,s);}else{const s=f.read(p);s.infiltration!.agent.path=[];s.infiltration!.agent.target=undefined;s.infiltration!.agent.mode='extracting';s.infiltration!.drones=[];f.save(p,s);}f.setTime(f.time()+(outcome==='timeout'?181000:30000));const done=(await f.get(p)).data;assert.equal(done.state.infiltration.status,outcome);assert.equal(done.state.infiltration.unit.status,'lost');assert.equal(done.state.bots,0);assert.equal(done.state.compute,120);const s=f.read(p);s.bots=1;f.save(p,s);}}finally{await f.close();}});
+test('extraction returns its real agent once; timeout/interception lose it without banking unextracted loot',async()=>{const f=await fixture();try{const p=await f.fresh();const won=await operation(f,p);assert.equal(won.result.state.bots,1);assert.equal(won.result.state.infiltration.unit.status,'returned');await Promise.all([f.get(p),f.get(p)]);assert.equal(f.read(p).bots,1);for(const outcome of ['timeout','caught']){const r=await f.command(p,{action:'infiltration-start',targetId:'lumen-labs'}),id=r.data.state.infiltration.id;await f.command(p,{action:'infiltration-command',operationId:id,intent:{action:'deploy'}});if(outcome==='caught'){const s=f.read(p);s.infiltration!.agent.position=[0,2];s.infiltration!.agent.path=[];s.infiltration!.agent.target=undefined;s.infiltration!.agent.mode='extracting';s.infiltration!.target.defenses[0].route=[[0,2],[0,2]];s.infiltration!.target.defenses[0].warningSeconds=0;s.infiltration!.drones[0].position=[0,2];s.infiltration!.drones[0].path=[];f.save(p,s);}else{const s=f.read(p);s.infiltration!.agent.path=[];s.infiltration!.agent.target=undefined;s.infiltration!.agent.mode='extracting';s.infiltration!.drones=[];f.save(p,s);}f.setTime(f.time()+(outcome==='timeout'?181000:30000));const done=(await f.get(p)).data;assert.equal(done.state.infiltration.status,outcome);assert.equal(done.state.infiltration.unit.status,'lost');assert.equal(done.state.bots,0);assert.equal(done.state.compute,130);const s=f.read(p);s.bots=1;f.save(p,s);}}finally{await f.close();}});
 
 test('legacy unbacked operations cancel without charging inventory, even after expiry; tutorial choice persists',async()=>{const f=await fixture();try{const {newOperation}=await import('../shared/infiltration');const p=await f.fresh(0),s=f.read(p);s.infiltration=newOperation(randomUUID(),'lumen-labs',f.time());f.save(p,s);let r=(await f.get(p)).data;assert.equal(r.state.infiltration.status,'abandoned');assert.equal(r.state.infiltration.ownershipRequired,true);assert.equal(r.state.bots??0,0);assert.equal(r.state.compute,100);const other=await f.fresh(2),old=f.read(other);old.infiltration=newOperation(randomUUID(),'vector-works',f.time());f.save(other,old);r=(await f.get(other)).data;assert.equal(r.state.bots,2);assert.equal(r.state.infiltration.status,'abandoned');assert.equal((await f.get(other)).data.state.bots,2);r=(await f.command(other,{action:'infiltration-start',targetId:'vector-works'})).data;assert.equal(r.state.bots,1);const id=r.state.infiltration.id;assert.equal((await f.command(other,{action:'infiltration-tutorial',operationId:id,result:'skipped'})).status,200);assert.equal((await f.get(other)).data.state.infiltrationTutorial,'skipped');await f.command(other,{action:'infiltration-command',operationId:id,intent:{action:'abandon'}});r=(await f.command(other,{action:'infiltration-start',targetId:'lumen-labs'})).data;assert.equal(r.state.infiltrationTutorial,'skipped');assert.equal(r.state.bots,1);}finally{await f.close();}});
 

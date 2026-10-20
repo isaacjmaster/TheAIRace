@@ -1,6 +1,7 @@
 import {lightCampus} from './CampusFinish';
 import {CampusLawn} from './CampusLawn';
-import {validDeployment} from '../../shared/infiltration';
+import {segmentClear} from '../../shared/navigation';
+import {AGENT_CLEARANCE,INFILTRATION_BOUNDS,infiltrationSolids,deploymentGround,validDeployment} from '../../shared/infiltration';
 import {SecurityWalls} from './SecurityWalls';
 import * as THREE from 'three';
 import { WorldKit, lightWorld, palette as C } from './world';
@@ -21,12 +22,14 @@ export class InfiltrationScene {
     private k = new WorldKit('campus');
     private walls?:SecurityWalls;
     private district:InfiltrationDistrict;private lawn:CampusLawn;
+    private deploymentActive=false;private zoneMaterial=new THREE.MeshBasicMaterial({color:0x40daca,transparent:true,opacity:.28,side:THREE.DoubleSide,depthWrite:false});private displayAgent=new THREE.Vector3();private desiredAgent=new THREE.Vector3();private laserDirection=new THREE.Vector3();private up=new THREE.Vector3(0,1,0);private solids:ReturnType<typeof infiltrationSolids>;private displayReady=false;
     private deployment=new THREE.Group();private preview:THREE.Group;private previewMaterials:THREE.Material[]=[];private deploymentPosition:Vec;private deploymentValid=true;private lesson:0|1|2|null=null;private lessonRing:THREE.Mesh;private labLessonRing:THREE.Mesh;
     private agent = scrapBotModel(this.k);
     private drones = new Map<string, {
         model: THREE.Group;
         scan: THREE.Mesh;
         alert: THREE.Mesh;
+        laser:THREE.Mesh;
     }>();
     private buildings = new Map<string, THREE.Group>();
     private op: Operation;
@@ -45,18 +48,18 @@ export class InfiltrationScene {
     private hackRing: THREE.Mesh;
     private reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     constructor(private host: HTMLElement, o: Operation,private options:{preview?:boolean}={}) {
-        this.op = structuredClone(o);this.deploymentPosition=[...o.target.entry];this.district=new InfiltrationDistrict(o.target.id==='vector-works');
+        this.op = structuredClone(o);this.solids=infiltrationSolids(o.target);this.deploymentPosition=[...o.target.entry];this.district=new InfiltrationDistrict(o.target.id==='vector-works');
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
-        const sun=lightWorld(this.renderer,this.scene);lightCampus(this.renderer,this.scene,sun);this.scene.background=new THREE.Color('#b5eafa');this.scene.fog=new THREE.Fog('#b5eafa',48,90);
+        const sun=lightWorld(this.renderer,this.scene);lightCampus(this.renderer,this.scene,sun);this.scene.background=new THREE.Color('#b5eafa');this.scene.fog=new THREE.Fog('#b5eafa',55,85);
         this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
         this.renderer.domElement.setAttribute('aria-label', 'Rival company campus');
         this.host.append(this.renderer.domElement);
         this.scene.add(this.district.group);if(o.target.walls){this.walls=new SecurityWalls(o.target.walls);this.scene.add(this.walls.group);}
-        this.k.box(this.scene,[25,.12,17],[0,-.08,0],'#d7d9b8');this.lawn=new CampusLawn(24.7,16.7);this.lawn.mesh.position.y=.015;this.scene.add(this.lawn.mesh);
-        for (const x of [-12, 12])
-            this.k.box(this.scene, [.12, .22, 16], [x, .12, 0], C.cream);
-        for (const z of [-8, 8])
-            this.k.box(this.scene, [24, .22, .12], [0, .12, z], C.cream);
+        this.k.box(this.scene,[28.7,.12,20.7],[0,-.08,0],'#d7d9b8');this.lawn=new CampusLawn(28.5,20.5);this.lawn.mesh.position.y=.015;this.scene.add(this.lawn.mesh);
+        for (const x of [-14, 14])
+            this.k.box(this.scene, [.12, .22, 20], [x, .12, 0], C.cream);
+        for (const z of [-10, 10])
+            this.k.box(this.scene, [28, .22, .12], [0, .12, z], C.cream);
         for (const a of o.target.assets) {
             let g: THREE.Group;
             if (a.kind === 'hq') {
@@ -80,8 +83,11 @@ export class InfiltrationScene {
             this.scene.add(g);
             this.buildings.set(a.id, g);
         }
-        const zone=new THREE.Mesh(new THREE.PlaneGeometry(21,1.4),new THREE.MeshBasicMaterial({color:C.cyan,transparent:true,opacity:.10,side:THREE.DoubleSide,depthWrite:false}));zone.rotation.x=-Math.PI/2;zone.position.y=.14;this.deployment.add(zone);
-        this.deployment.position.set(0,0,6.5);this.scene.add(this.deployment);
+        // Rounded drop tiles use the exact same safe perimeter predicate as commands.
+        const tileGeometry=new THREE.PlaneGeometry(.62,.62),tiles:THREE.Matrix4[]=[];
+        for(let x=-13;x<=13;x+=.75)for(let z=-9;z<=9;z+=.75)if(deploymentGround(o.target,[x,z]))tiles.push(new THREE.Matrix4().makeRotationX(-Math.PI/2).setPosition(x,.15,z));
+        const outline=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints([[-13.3,-9.3],[13.3,-9.3],[13.3,9.3],[-13.3,9.3]].map(([x,z])=>new THREE.Vector3(x,.16,z))),new THREE.LineBasicMaterial({color:C.cyan,transparent:true,opacity:.7}));outline.name='deployment-outline';outline.raycast=()=>{};this.deployment.add(outline);
+        const zone=new THREE.InstancedMesh(tileGeometry,this.zoneMaterial,tiles.length);tiles.forEach((matrix,i)=>zone.setMatrixAt(i,matrix));zone.raycast=()=>{};this.deployment.add(zone);this.scene.add(this.deployment);
         this.preview=this.agent.clone(true);const clones=new Map<THREE.Material,THREE.Material>();this.preview.traverse(n=>{if(n instanceof THREE.Mesh){const clone=(m:THREE.Material)=>{if(!clones.has(m)){const c=m.clone();c.transparent=true;c.opacity=.5;c.depthWrite=false;clones.set(m,c);this.previewMaterials.push(c);}return clones.get(m)!;};n.material=Array.isArray(n.material)?n.material.map(clone):clone(n.material);n.castShadow=false;}});this.preview.scale.setScalar(1.05);this.scene.add(this.preview);
         this.lessonRing=new THREE.Mesh(new THREE.RingGeometry(1.1,1.25,32),new THREE.MeshBasicMaterial({color:C.gold,side:THREE.DoubleSide,transparent:true,opacity:.9,depthWrite:false}));this.lessonRing.rotation.x=-Math.PI/2;this.scene.add(this.lessonRing);this.labLessonRing=this.lessonRing.clone();this.scene.add(this.labLessonRing);
 
@@ -94,7 +100,9 @@ export class InfiltrationScene {
             alert.position.y = 3.6;
             model.scale.setScalar(1.15);
             this.scene.add(model, scan, alert);
-            this.drones.set(d.id, { model, scan, alert });
+            const geometry=new THREE.CylinderGeometry(.055,.055,1,6);
+            const laser=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({color:'#ff785b',transparent:true,opacity:.95}));laser.frustumCulled=false;this.scene.add(laser);
+            this.drones.set(d.id, { model, scan, alert, laser });
         }
         this.beamGeometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(6),3));this.beam=new THREE.Line(this.beamGeometry,new THREE.LineBasicMaterial({color:C.cyan,transparent:true,opacity:.8}));this.beam.frustumCulled=false;this.scene.add(this.beam);
         this.pathLine = new THREE.Line(this.pathGeometry, new THREE.LineBasicMaterial({ color: C.cyan, transparent: true, opacity: .6 }));
@@ -116,6 +124,7 @@ export class InfiltrationScene {
         const ava=!this.options.preview&&this.lesson!==null?parent?.querySelector('.infiltration-ava')?.getBoundingClientRect():undefined;
         if(ava){if(w>h&&host.right-ava.right>210){reserved.left=Math.max(reserved.left,ava.right-host.left+16);reserved.top=12;reserved.bottom=12;}else reserved.bottom=Math.max(reserved.bottom,host.bottom-ava.top+14);}
         frameInfiltration(this.camera,w,h,reserved,this.center,this.span);this.renderer.domElement.dataset.cameraInsets=JSON.stringify(reserved);}
+    setDeploymentActive(active:boolean){this.deploymentActive=active;}
     setDeployment(position:Vec){this.deploymentPosition=[...position];this.deploymentValid=validDeployment(this.op.target,position);return this.deploymentValid;}
     setLesson(step:0|1|2|null){this.lesson=step;}
     pan(dx:number,dy:number){const scale=(this.camera.right-this.camera.left)/Math.max(1,this.host.clientWidth);const right=new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld,0),up=new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld,1);up.y=0;up.normalize();this.center.addScaledVector(right,-dx*scale).addScaledVector(up,dy*scale);this.center.y=0;this.center.x=THREE.MathUtils.clamp(this.center.x,-7,7);this.center.z=THREE.MathUtils.clamp(this.center.z,-5,5);this.resize();}
@@ -125,12 +134,17 @@ export class InfiltrationScene {
         const point=drone?drone.position.clone().add(new THREE.Vector3(0,.24,0)):new THREE.Vector3(position[0],asset?3.2:.3,position[1]);point.project(this.camera);return{x:(point.x+1)*this.host.clientWidth/2,y:(1-point.y)*this.host.clientHeight/2,z:point.z};}
     groundPosition(x:number,y:number):Vec|undefined{const r=this.renderer.domElement.getBoundingClientRect();this.ray.setFromCamera(new THREE.Vector2((x-r.left)/r.width*2-1,1-(y-r.top)/r.height*2),this.camera);const p=this.ray.ray.intersectPlane(this.plane,new THREE.Vector3());return p?[Math.round(p.x*2)/2,Math.round(p.z*2)/2]:undefined;}
     update(dt: number) { if (document.hidden)
-        return; this.clock += dt; const o = this.op; advanceOperation(o, this.server + Math.min(1100, performance.now() - this.anchor)); const a = o.agent; this.agent.visible = o.status !== 'ready';this.deployment.visible=o.status==='ready';this.preview.visible=o.status==='ready';this.preview.position.set(this.deploymentPosition[0],.13,this.deploymentPosition[1]);this.preview.rotation.y=.5;for(const m of this.previewMaterials)if(m instanceof THREE.MeshStandardMaterial)m.color.set(this.deploymentValid?'#6adbd4':'#e98062');this.lessonRing.visible=this.lesson!==null;this.labLessonRing.visible=this.lesson===1;(this.lessonRing.material as THREE.MeshBasicMaterial).color.set(this.lesson===0?C.cyan:this.lesson===1?C.purple:C.gold);const highlight=this.lesson===0?o.target.entry:this.lesson===1?(o.target.assets.find(a=>a.kind==='gpu')?.position??o.target.entry):(o.drones[0]?.position??o.target.entry);this.lessonRing.position.set(highlight[0],.19,highlight[1]);this.lessonRing.scale.setScalar((this.lesson===1?2:1)*(this.reduced?1:1+Math.sin(this.clock*3)*.06));const lab=o.target.assets.find(a=>a.kind==='lab');if(lab){this.labLessonRing.position.set(lab.position[0],.19,lab.position[1]);this.labLessonRing.scale.copy(this.lessonRing.scale);} this.agent.position.set(a.position[0], .13, a.position[1]); turnScrapBot(this.agent, a.yaw, dt, this.reduced); animateScrapBot(this.agent, dt, this.reduced, 0, a.mode === 'idle' ? .015 * Math.sin(this.clock * 2) : 0); this.hackRing.visible = a.mode === 'hacking';this.beam.visible=a.mode==='hacking';if(this.beam.visible){const target=o.target.assets.find(v=>v.id===a.target)!;const positions=this.beamGeometry.attributes.position as THREE.BufferAttribute;positions.setXYZ(0,a.position[0],1.15,a.position[1]);positions.setXYZ(1,target.position[0],1.65,target.position[1]);positions.needsUpdate=true;(this.beam.material as THREE.LineBasicMaterial).opacity=this.reduced?.7:.55+Math.sin(this.clock*7)*.2;} this.hackRing.position.set(a.position[0], .13, a.position[1]); this.hackRing.scale.setScalar(this.reduced ? 1 : 1 + Math.sin(this.clock * 5) * .05); for (const d of o.drones) {
+        return; this.clock += dt; const o = this.op; advanceOperation(o, this.server + Math.min(1100, performance.now() - this.anchor)); const a = o.agent; this.agent.visible = o.status !== 'ready';this.deployment.visible=o.status==='ready';this.preview.visible=o.status==='ready'&&this.deploymentActive;this.zoneMaterial.opacity=this.deploymentActive?.45:.12;this.preview.position.set(this.deploymentPosition[0],.13,this.deploymentPosition[1]);this.preview.rotation.y=.5;for(const m of this.previewMaterials)if(m instanceof THREE.MeshStandardMaterial)m.color.set(this.deploymentValid?'#6adbd4':'#e98062');this.lessonRing.visible=this.lesson!==null;this.labLessonRing.visible=this.lesson===1;(this.lessonRing.material as THREE.MeshBasicMaterial).color.set(this.lesson===0?C.cyan:this.lesson===1?C.purple:C.gold);const highlight=this.lesson===0?o.target.entry:this.lesson===1?(o.target.assets.find(a=>a.kind==='gpu')?.position??o.target.entry):(o.drones[0]?.position??o.target.entry);this.lessonRing.position.set(highlight[0],.19,highlight[1]);this.lessonRing.scale.setScalar((this.lesson===1?2:1)*(this.reduced?1:1+Math.sin(this.clock*3)*.06));const lab=o.target.assets.find(a=>a.kind==='lab');if(lab){this.labLessonRing.position.set(lab.position[0],.19,lab.position[1]);this.labLessonRing.scale.copy(this.lessonRing.scale);} const desired=this.desiredAgent.set(a.position[0],.13,a.position[1]);
+        if(!this.displayReady||this.displayAgent.distanceTo(desired)>2||!segmentClear([this.displayAgent.x,this.displayAgent.z],a.position,this.solids,INFILTRATION_BOUNDS,AGENT_CLEARANCE)){this.displayAgent.copy(desired);this.displayReady=true;}
+        else this.displayAgent.lerp(desired,1-Math.exp(-dt*18));
+        this.agent.position.copy(this.displayAgent); turnScrapBot(this.agent, a.yaw, dt, this.reduced); animateScrapBot(this.agent, dt, this.reduced, a.mode==='hacking'?.55:0, a.mode === 'idle' ? .015 * Math.sin(this.clock * 2) : 0); this.hackRing.visible = a.mode === 'hacking';this.beam.visible=a.mode==='hacking';if(this.beam.visible){const target=o.target.assets.find(v=>v.id===a.target)!;const positions=this.beamGeometry.attributes.position as THREE.BufferAttribute;positions.setXYZ(0,this.agent.position.x,1.0,this.agent.position.z);positions.setXYZ(1,target.position[0],1.65,target.position[1]);positions.needsUpdate=true;(this.beam.material as THREE.LineBasicMaterial).opacity=this.reduced?.7:.55+Math.sin(this.clock*7)*.2;} this.hackRing.position.set(a.position[0], .13, a.position[1]); this.hackRing.scale.setScalar(this.reduced ? 1 : 1 + Math.sin(this.clock * 5) * .05); for (const d of o.drones) {
         const v = this.drones.get(d.id)!;
         v.model.position.set(d.position[0], 2.6, d.position[1]);
         animateSecurityDrone(v.model, this.clock, this.reduced);if(d.yaw!==undefined){const delta=Math.atan2(Math.sin(d.yaw-v.model.rotation.y),Math.cos(d.yaw-v.model.rotation.y));v.model.rotation.y+=delta*(this.reduced?1:1-Math.exp(-dt*12));}
         v.scan.position.set(d.position[0], .12, d.position[1]);
         (v.scan.material as THREE.MeshBasicMaterial).color.set(d.mode === 'patrol' ? C.cyan : C.coral);
+        v.laser.visible=o.status==='active'&&d.lastShotAt!==undefined&&o.lastTick-d.lastShotAt<250;
+        if(v.laser.visible){this.laserDirection.set(this.agent.position.x-v.model.position.x,.85-(v.model.position.y-.25),this.agent.position.z-v.model.position.z);v.laser.scale.y=this.laserDirection.length();v.laser.quaternion.setFromUnitVectors(this.up,this.laserDirection.normalize());v.laser.position.set((v.model.position.x+this.agent.position.x)/2,(v.model.position.y+.6)/2,(v.model.position.z+this.agent.position.z)/2);}
         v.alert.visible = d.mode === 'warning' || d.mode === 'pursuit';
         v.alert.position.set(d.position[0], 3.5, d.position[1]);
     } if(this.lesson===2&&o.drones[0]){const highlighted=this.drones.get(o.drones[0].id);if(highlighted)this.lessonRing.position.copy(highlighted.model.position);} for (const [id, g] of this.buildings) {
@@ -140,9 +154,10 @@ export class InfiltrationScene {
             animateResearchLab(g, this.clock, true, this.reduced);
         if (id === 'hq')
             animateFounderIdle(g, this.clock, this.reduced);
-    } this.renderer.render(this.scene, this.camera); this.renderer.domElement.dataset.lessonTarget=this.lesson===null?'':this.lesson===0?'entry':this.lesson===1?'gpu':'drone';if(this.lesson!==null)this.renderer.domElement.dataset.lessonScreen=JSON.stringify(this.labelPoint(this.lesson===0?'entry':this.lesson===1?'gpu':'drone')); this.renderer.domElement.dataset.cameraSpan=String(this.span);this.renderer.domElement.dataset.cameraCenter=this.center.x+','+this.center.z;this.renderer.domElement.dataset.deployment=this.deploymentPosition.join(',');this.renderer.domElement.dataset.drawCalls = String(this.renderer.info.render.calls); this.renderer.domElement.dataset.triangles = String(this.renderer.info.render.triangles); }
-    dispose() { for(const m of this.previewMaterials)m.dispose();this.lessonRing.removeFromParent();this.labLessonRing.removeFromParent();this.lessonRing.geometry.dispose();(this.lessonRing.material as THREE.Material).dispose();this.deployment.traverse(n=>{if(n instanceof THREE.Mesh&&n.geometry.type==='PlaneGeometry'){n.geometry.dispose();(n.material as THREE.Material).dispose();}});this.walls?.dispose();this.observer.disconnect(); this.scene.traverse(o => { if (o instanceof THREE.DirectionalLight)
+    } this.renderer.render(this.scene, this.camera); this.renderer.domElement.dataset.agentPosition=this.agent.position.x+','+this.agent.position.z;this.renderer.domElement.dataset.agentMode=a.mode;this.renderer.domElement.dataset.walkActivity=String(this.agent.userData.walkActivity??0);this.renderer.domElement.dataset.laserActive=String([...this.drones.values()].some(d=>d.laser.visible));this.renderer.domElement.dataset.lessonTarget=this.lesson===null?'':this.lesson===0?'entry':this.lesson===1?'gpu':'drone';if(this.lesson!==null)this.renderer.domElement.dataset.lessonScreen=JSON.stringify(this.labelPoint(this.lesson===0?'entry':this.lesson===1?'gpu':'drone')); this.renderer.domElement.dataset.cameraSpan=String(this.span);this.renderer.domElement.dataset.cameraCenter=this.center.x+','+this.center.z;this.renderer.domElement.dataset.deployment=this.deploymentPosition.join(',');this.renderer.domElement.dataset.drawCalls = String(this.renderer.info.render.calls); this.renderer.domElement.dataset.triangles = String(this.renderer.info.render.triangles); }
+    dispose() { for(const m of this.previewMaterials)m.dispose();this.lessonRing.removeFromParent();this.labLessonRing.removeFromParent();this.lessonRing.geometry.dispose();(this.lessonRing.material as THREE.Material).dispose();this.deployment.traverse(n=>{if(n instanceof THREE.Line){n.geometry.dispose();(n.material as THREE.Material).dispose();}if(n instanceof THREE.InstancedMesh)n.dispose();if(n instanceof THREE.Mesh&&n.geometry.type==='PlaneGeometry'){n.geometry.dispose();(n.material as THREE.Material).dispose();}});this.walls?.dispose();this.observer.disconnect(); this.scene.traverse(o => { if (o instanceof THREE.DirectionalLight)
         o.shadow.dispose(); }); for (const v of this.drones.values()) {
+        v.laser.geometry.dispose();(v.laser.material as THREE.Material).dispose();
         v.scan.geometry.dispose();
         (v.scan.material as THREE.Material).dispose();
         v.alert.geometry.dispose();

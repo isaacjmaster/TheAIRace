@@ -1,4 +1,4 @@
-import {findPath,pointClear,nearestOpen,type NavRect} from './navigation';
+import {findPath,pointClear,nearestOpen,segmentClear,type NavRect} from './navigation';
 import {rivalSecurityWalls,type SecurityBarrier} from './security-walls';
 /** Deterministic heist simulation. Inputs are intentions; paths, clocks and loot are server-owned. */
 export type Vec = [
@@ -38,8 +38,8 @@ export type TargetSnapshot = {
     defenses: Defense[];
     influence: number;
 };
-export const INFILTRATION = { stepMs: 100, operationMs: 180000, agentSpeed: 2.8, captureRadius: .65, cooldownMs: 7200000, awards: [25, 50] } as const;
-export const INFILTRATION_BOUNDS={minX:-12,maxX:12,minZ:-8,maxZ:8};
+export const INFILTRATION = { stepMs: 100, operationMs: 180000, agentSpeed: 2.8, agentHealth:100, laserDamage:20, laserIntervalMs:1250, captureRadius: .65, cooldownMs: 7200000, awards: [25, 50] } as const;
+export const INFILTRATION_BOUNDS={minX:-14,maxX:14,minZ:-10,maxZ:10};
 export const DRONE_CLEARANCE=1.15;
 // Full rendered robot envelope, including its arms and mechanical feet.
 export const AGENT_CLEARANCE=.65;
@@ -47,7 +47,9 @@ const common: Asset[] = [{ id: 'hq', kind: 'hq', name: 'Founder HQ', position: [
 export const INFILTRATION_TARGETS: TargetSnapshot[] = [{ version: 1, id: 'lumen-labs', name: 'Lumen Labs', difficulty: 'Startup', entry: [-10, 6], exit: [-10, 6], assets: common, defenses: [{ id: 'sentinel-1', route: [[0, 2], [4, 4], [8, 3], [8, -1]], radius: 3.1, patrolSpeed: 1.1, pursuitSpeed: 2, warningSeconds: 2.2 }], influence: 25 }, { version: 1, id: 'vector-works', name: 'Vector Works', difficulty: 'Established', entry: [-10, 6], exit: [-10, 6], assets: common.map(a => ({ ...a, position: a.id === 'gpu' ? [-6, -1] : a.id === 'lab' ? [6, -1] : a.id === 'terminal' ? [7, -6] : a.position, access: a.id === 'gpu' ? [-6, 1.2] : a.id === 'lab' ? [6, 1.3] : a.id === 'terminal' ? [7, -4.5] : a.access, hackSeconds: a.hackSeconds ? a.hackSeconds + 1 : undefined, compute: a.compute * 2, research: a.research * 2 })), defenses: [{ id: 'sentinel-1', route: [[-4, 3], [1, 4], [5, 3], [1, 2]], radius: 3.3, patrolSpeed: 1.2, pursuitSpeed: 2.2, warningSeconds: 2 }, { id: 'sentinel-2', route: [[6, 4], [9, 1], [9, -5], [5, -6]], radius: 3.2, patrolSpeed: 1.1, pursuitSpeed: 2.1, warningSeconds: 2 }], influence: 50 }];
 // New operations capture the compound layout. Already saved snapshots are not rewritten.
 for(const target of INFILTRATION_TARGETS){target.navigationVersion=2;target.entry=[-8,6.5];target.exit=[-10.5,6.5];target.walls=rivalSecurityWalls(target.id==='vector-works');for(const defense of target.defenses)defense.route=defense.route.map(p=>nearestOpen(p,infiltrationSolids(target),INFILTRATION_BOUNDS,DRONE_CLEARANCE,.5)??p);}
+export const opponentUsername=(id:string)=>id==='vector-works'?'GridFox':'NovaByte';
 export type DroneState = {
+    lastShotAt?:number;
     id: string;
     path?:Vec[];
     pathKey?:string;
@@ -70,12 +72,14 @@ export type Operation = {
     id: string;
     target: TargetSnapshot;
     automationVersion?:1;
+    defenseVersion?:2;
     createdAt: number;
     startedAt?: number;
     lastTick: number;
     finishedAt?: number;
     status: 'ready' | 'active' | 'extracted' | 'caught' | 'abandoned' | 'timeout';
     agent: {
+        health?:number;
         position: Vec;
         path: Vec[];
         mode: 'idle' | 'moving' | 'hacking' | 'extracting';
@@ -115,10 +119,15 @@ const event = (o: Operation, type: string, detail?: string) => { if (o.events.le
     o.events.push({ at: o.lastTick, type, detail }); };
 export function newOperation(id: string, targetId: string, now: number): Operation { const target = INFILTRATION_TARGETS.find(t => t.id === targetId); if (!target)
     throw new Error('Choose an available company.'); return operationFromSnapshot(id, target, now); }
-export function operationFromSnapshot(id: string, target: TargetSnapshot, now: number): Operation { return { version: 1, id, target: structuredClone(target), automationVersion:1, createdAt: now, lastTick: now, status: 'ready', orders: [], agent: { position: [...target.entry], path: [], mode: 'idle', hack: 0, yaw: 0 }, drones: target.defenses.map(d => ({ id: d.id, position: [...d.route[0]], segment: 1, alert: 0, lost: 0, mode: 'patrol' })), hacked: [], carried: { compute: 0, research: 0, intel: false }, events: [{ at: now, type: 'prepared' }] }; }
+export function operationFromSnapshot(id: string, target: TargetSnapshot, now: number): Operation { return { version: 1, id, target: structuredClone(target), automationVersion:1, defenseVersion:2, createdAt: now, lastTick: now, status: 'ready', orders: [], agent: { health:INFILTRATION.agentHealth, position: [...target.entry], path: [], mode: 'idle', hack: 0, yaw: 0 }, drones: target.defenses.map(d => ({ id: d.id, position: [...d.route[0]], segment: 1, alert: 0, lost: 0, mode: 'patrol' })), hacked: [], carried: { compute: 0, research: 0, intel: false }, events: [{ at: now, type: 'prepared' }] }; }
 export function infiltrationSolids(t:TargetSnapshot):NavRect[]{return [...t.assets.map(a=>({x:a.position[0],z:a.position[1],w:a.size[0],d:a.size[1]})),...(t.walls??[])];}
 export function navigable(t: TargetSnapshot, p: Vec) { if(t.navigationVersion===2)return pointClear(p,infiltrationSolids(t),INFILTRATION_BOUNDS,AGENT_CLEARANCE);return p.every(Number.isFinite) && Math.abs(p[0]) <= 11.5 && Math.abs(p[1]) <= 7.5 && !t.assets.some(a => Math.abs(p[0] - a.position[0]) < a.size[0] / 2 + .3 && Math.abs(p[1] - a.position[1]) < a.size[1] / 2 + .3); }
-export function validDeployment(t:TargetSnapshot,p:Vec){return p.every(Number.isFinite)&&p[0]>=-10.5&&p[0]<=10.5&&p[1]>=5.8&&p[1]<=7.2&&navigable(t,p)&&infiltrationPath(t,p,t.exit).length>0;}
+/** The same perimeter predicate drives server validation and the rendered drop tiles. */
+export function deploymentGround(t:TargetSnapshot,p:Vec){return p.every(Number.isFinite)&&Math.abs(p[0])<=13.2&&Math.abs(p[1])<=9.2&&(Math.abs(p[0])>=11.8||Math.abs(p[1])>=8.3||p[1]>=5.8&&Math.abs(p[0])<=10.5&&p[1]<=7.2)&&navigable(t,p);}
+export function validDeployment(t:TargetSnapshot,p:Vec){return deploymentGround(t,p)&&infiltrationPath(t,p,t.exit).length>0;}
+/** Reservation is already removed from stock; count it only until it is deployed. */
+export function deploymentCount(stock:number,o:Operation){return Math.max(0,stock)+(o.status==='ready'&&o.unit?.status==='reserved'?1:0);}
+
 /** Small bounded half-unit grid, deterministic and reusable by future target snapshots. */
 export function infiltrationPath(t:TargetSnapshot,from:Vec,to:Vec):Vec[]{return t.navigationVersion===2?findPath(from,to,infiltrationSolids(t),INFILTRATION_BOUNDS,AGENT_CLEARANCE):legacyInfiltrationPath(t,from,to);}
 function legacyInfiltrationPath(t: TargetSnapshot, from: Vec, to: Vec): Vec[] { if (!navigable(t, to))
@@ -188,6 +197,7 @@ export function advanceOperation(o: Operation, now: number) {
                 const asset = o.target.assets.find(x => x.id === a.target)!;
                 if (asset.access && distance(a.position, asset.access) < .6) {
                     a.mode = 'hacking';
+                    a.yaw=Math.atan2(asset.position[0]-a.position[0],asset.position[1]-a.position[1]);
                     a.hack += dt;
                     if (a.hack + 1e-6 >= asset.hackSeconds!) {
                         o.hacked.push(asset.id);
@@ -201,10 +211,22 @@ export function advanceOperation(o: Operation, now: number) {
             }
             else if(a.mode!=='extracting')chooseNextAsset(o);
         }
-        if(a.mode!=='extracting'&&(o.carried.compute>0||o.carried.research>0)&&o.drones.some(d=>{const defense=o.target.defenses.find(x=>x.id===d.id)!;return distance(d.position,a.position)<=defense.radius+.5;}))returnHome(o);
+        if(o.defenseVersion!==2&&a.mode!=='extracting'&&(o.carried.compute>0||o.carried.research>0)&&o.drones.some(d=>{const defense=o.target.defenses.find(x=>x.id===d.id)!;return distance(d.position,a.position)<=defense.radius+.5;}))returnHome(o);
         for (const d of o.drones) {
             const cfg = o.target.defenses.find(x => x.id === d.id)!;
-            const near = distance(d.position, a.position) <= cfg.radius;
+            const near = distance(d.position, a.position) <= cfg.radius && (o.defenseVersion!==2||segmentClear(d.position,a.position,infiltrationSolids(o.target),INFILTRATION_BOUNDS,0));
+            if(o.defenseVersion===2){
+                // Patrol continues; defenses fire across clear sight lines instead of chasing.
+                d.alert=near?Math.min(cfg.warningSeconds,d.alert+dt):0;
+                const old=d.mode;d.mode=near?(d.alert>=cfg.warningSeconds?'pursuit':'warning'):'patrol';
+                if(d.mode==='warning'&&old==='patrol')event(o,'detected',d.id);
+                const solids=infiltrationSolids(o.target),goal=cfg.route[d.segment];
+                if(d.pathKey!==String(d.segment)||!d.path?.length){d.path=findPath(d.position,goal,solids,INFILTRATION_BOUNDS,DRONE_CLEARANCE);d.pathKey=String(d.segment);}
+                const before:Vec=[...d.position];walk(d.position,d.path??[],cfg.patrolSpeed*dt);if(distance(before,d.position)>.001)d.yaw=Math.atan2(d.position[0]-before[0],d.position[1]-before[1]);
+                if(distance(d.position,goal)<.05){d.segment=(d.segment+1)%cfg.route.length;d.pathKey=undefined;}
+                if(near&&distance(d.position,a.position)<=cfg.radius&&segmentClear(d.position,a.position,solids,INFILTRATION_BOUNDS,0)&&d.alert>=cfg.warningSeconds&&o.lastTick-(d.lastShotAt??-Infinity)>=INFILTRATION.laserIntervalMs){d.lastShotAt=o.lastTick;o.agent.health=Math.max(0,(o.agent.health??INFILTRATION.agentHealth)-INFILTRATION.laserDamage);event(o,'laser',d.id);if(!o.agent.health){finish(o,'caught');break;}}
+                continue;
+            }
             if (near) {
                 d.alert = Math.min(cfg.warningSeconds, d.alert + dt);
                 d.lost = 0;
@@ -254,13 +276,13 @@ export function commandOperation(o:Operation,c:InfiltrationCommand,now:number){
  advanceOperation(o,now);
  const record=()=>{(o.orders??=[]).push({at:now,intent:structuredClone(c)});};
  if(c.action==='deploy'){
-  if(o.status!=='ready')throw Error('Scrap Bot already deployed.');
-  const position=c.position??o.target.entry;if(!validDeployment(o.target,position))throw Error('Deploy on clear ground along the campus entrance.');
+  if(o.status!=='ready')throw Error('Cipher Bot already deployed.');
+  const position=c.position??o.target.entry;if(!validDeployment(o.target,position))throw Error('Deploy on clear ground along the highlighted campus perimeter.');
   o.agent.position=[...position];o.status='active';o.startedAt=now;o.lastTick=now;event(o,'deployed');chooseNextAsset(o);record();return;
  }
  if(c.action==='abandon'){
   if(o.status!=='ready'&&o.status!=='active')throw Error('This operation has ended.');
   finish(o,'abandoned');record();return;
  }
- throw Error('Scrap Bot handles hacking and returning automatically.');
+ throw Error('Cipher Bot handles hacking and returning automatically.');
 }
