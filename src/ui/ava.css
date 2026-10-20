@@ -52,3 +52,10 @@
 .ava-objective{position:fixed;z-index:38;left:max(12px,env(safe-area-inset-left));bottom:calc(max(14px,env(safe-area-inset-bottom)) + 128px);max-width:min(330px,calc(100vw - 24px));display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:14px;animation:ava-enter .2s ease-out;color:#244456;box-sizing:border-box}
 .ava-objective button{font:inherit;color:inherit;cursor:pointer;min-height:44px;border:0;background:none;touch-action:manipulation}.ava-reminder{text-align:left;flex:1;padding:3px}.ava-reminder strong{display:block;font-size:13px}.ava-reminder small{font-size:11px;color:#557b87}.ava-objective-skip{font-size:10px!important;text-decoration:underline;max-width:65px}
 @media(orientation:landscape) and (max-height:500px){.ava-objective{left:max(12px,env(safe-area-inset-left));bottom:calc(max(10px,env(safe-area-inset-bottom)) + 68px);max-width:300px}}
+/* Catalog and placement guidance leave cards and confirmation controls unobscured. */
+.ava-stage.ava-compact{min-height:0}.ava-stage.ava-compact .ava-copy{margin-left:0}.ava-compact .ava-copy::before{display:none}
+.ava-stage.ava-in-catalog{position:fixed;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));bottom:auto;width:auto;max-width:520px;margin:auto;align-items:flex-start}
+.foundation-backdrop:has(.ava-build-target){padding-top:calc(max(8px,env(safe-area-inset-top)) + var(--ava-catalog-height,180px) + 20px)}
+.ava-stage.ava-placement-guide{left:auto;right:max(12px,env(safe-area-inset-right));top:calc(max(8px,env(safe-area-inset-top)) + 112px);bottom:auto;width:min(310px,calc(100% - 24px));margin:0;align-items:flex-start}
+.ava-portrait-loading{position:fixed;left:24px;bottom:32px;padding:12px;border-radius:50%;background:#d8f6ef;color:#37677a;font-weight:900;letter-spacing:2px}
+@media(orientation:landscape) and (max-height:500px){.ava-stage.ava-in-catalog{left:12px;right:auto;top:12px;width:260px;max-height:calc(100dvh - 24px);overflow:auto}.foundation-backdrop:has(.ava-build-target){padding-top:16px;padding-left:300px}.ava-stage.ava-placement-guide{top:12px;width:270px}}

@@ -73,3 +73,4 @@
 .operation-controls .cipher-deploy[aria-pressed=true]{background:linear-gradient(145deg,#215269,#3ba89d);outline:2px solid #4fe8d1;outline-offset:3px}
 .operation-controls .cipher-deploy:disabled{opacity:.7;filter:saturate(.65)}.troop-tray>small{bottom:130px}
 @media(orientation:landscape) and (max-height:550px){.operation-controls .cipher-deploy{width:68px;height:91px;min-height:91px;border-radius:13px}.cipher-deploy .troop-count{font-size:16px;min-width:32px;right:3px;bottom:3px}.troop-tray>small{bottom:104px}}
+.encounter-header .npc-base-name{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(21px,5.1vw,34px);font-weight:950;letter-spacing:.3px;color:#173d57;text-shadow:0 2px #effffc,0 3px 9px #d6fcff;border-bottom:2px solid #d6b36766;padding-bottom:5px}

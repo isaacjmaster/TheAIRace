@@ -146,3 +146,9 @@
 .foundation-app .rig-collect.compute-ready:focus-visible{outline:3px solid #ffdb68;outline-offset:3px;border-radius:10px}
 @keyframes compute-ready-float{50%{transform:translateY(-4px)}}
 @media(prefers-reduced-motion:reduce){.foundation-app .rig-collect.compute-ready{animation:none}}
+/* Small, shared task deadlines anchored to the working structure or obstacle. */
+.task-countdown{display:flex;align-items:center;flex-direction:column;gap:4px;padding:6px 8px;min-width:48px;border-radius:10px;color:#244456;pointer-events:none}
+.task-countdown strong{font-size:17px;line-height:1.1;font-variant-numeric:tabular-nums}
+.task-countdown progress{display:block;width:48px;height:4px;accent-color:#28bec3}
+.obstacle-label{width:154px!important;min-width:0!important;padding:14px!important;gap:10px!important;text-align:center}
+.obstacle-label strong{font-size:18px}.obstacle-label .obstacle-duration{font-size:17px;font-weight:700;margin:8px 0 10px}.obstacle-label button{width:100%;min-height:44px;font-size:13px;font-weight:900}

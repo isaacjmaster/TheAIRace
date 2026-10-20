@@ -53,3 +53,4 @@
 .influence-score svg{position:absolute;width:40px;height:43px;right:-17px;top:50%;transform:translateY(-50%) rotate(5deg);filter:drop-shadow(0 2px 1px #4d50383d);z-index:2}
 .leaderboard footer{min-height:43px;margin-top:7px}
 @media(max-width:380px){.leaderboard{padding:12px 10px}.leaderboard h2{font-size:20px}.leaderboard header{gap:7px}.leaderboard-rows li,.leaderboard footer{gap:6px;padding-left:5px;padding-right:19px}.leaderboard-rows strong,.leaderboard footer strong{font-size:12px}.rank-medal:has(.ranking-insignia),.ranking-insignia{width:38px;height:33px}.influence-score{min-width:71px;padding-left:7px;padding-right:25px}.leaderboard-rows b,.leaderboard footer b{font-size:16px}.influence-score svg{width:36px;height:39px;right:-16px}}
+.rank-wide .rank-numeral{font-size:12px;font-variant-numeric:tabular-nums}
