@@ -2,10 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {IDENTITY_TRACKS,SUPPLIED_V1_TRACKS,identityTrack} from '../src/audio/identityTracks';
+import {SUPPLIED_V2_TRACKS,SUPPLIED_V1_TRACKS,identityTrack} from '../src/audio/identityTracks';
 test('current HQ is the selected Twoson recording with preserved source and fallback exports',()=>{
- const t=IDENTITY_TRACKS.hq,s=JSON.parse(readFileSync('music/supplied-v2/hq-measurements.json','utf8'));
- assert.equal(identityTrack('hq',''),t);assert.equal(identityTrack('hq','?music=supplied-v1'),SUPPLIED_V1_TRACKS.hq);
+ const t=SUPPLIED_V2_TRACKS.hq,s=JSON.parse(readFileSync('music/supplied-v2/hq-measurements.json','utf8'));
+ assert.equal(identityTrack('hq','?music=supplied-v2'),t);assert.equal(identityTrack('hq','?music=supplied-v1'),SUPPLIED_V1_TRACKS.hq);
  assert.match(s.sourceFilename,/Earthbound Music Twoson/);
  const hash=(p:string)=>createHash('sha256').update(readFileSync(p)).digest('hex');
  assert.equal(hash('music/supplied-v2/source/hq.mp3'),s.sourceSha256);

@@ -1,9 +1,10 @@
+import {craftCampusTarget} from './infiltration-bases';
 import {TACTICAL_BALANCE,advanceTactical,planTactical} from './tactical-infiltration';
 import {findPath,segmentClear,nearestOpen,pointClear} from './navigation';
 import {INFILTRATION,targetBounds,AGENT_CLEARANCE,DRONE_CLEARANCE,newOperation,infiltrationPath,infiltrationSolids,validDeployment,type Operation,type Vec,type InfiltrationCommand} from './infiltration';
 export const SQUAD_BALANCE={health:42,laserDamage:18,laserIntervalMs:750,hackWorkMultiplier:2.5,maxHackers:3,endGraceMs:3000,wallHealth:72,breachDps:18,breachDetour:6} as const;
-export type SquadAgent=Operation['agent']&{id:string;state:'active'|'extracted'|'lost';unitStatus:'reserved'|'returned'|'lost';work:number;nextPlanAt?:number;wallTarget?:string;droneTarget?:string;lockedUntil?:number;lastShotAt?:number;shotPosition?:Vec;cargo:{compute:number;research:number;intel:boolean}};
-export type SquadState={version:1;undeployed?:number;rules?:'tactical-v1';agents:SquadAgent[];progress:Record<string,number>;wallDamage:Record<string,number>;breachedWalls:string[];idleSince?:number};
+export type SquadAgent=Operation['agent']&{id:string;state:'active'|'extracted'|'lost';unitStatus:'reserved'|'returned'|'lost';work:number;blockedSince?:number;nextPlanAt?:number;wallTarget?:string;droneTarget?:string;lockedUntil?:number;lastShotAt?:number;shotPosition?:Vec;cargo:{compute:number;research:number;intel:boolean}};
+export type SquadState={version:1;balanceVersion?:2;undeployed?:number;rules?:'tactical-v1';agents:SquadAgent[];progress:Record<string,number>;wallDamage:Record<string,number>;breachedWalls:string[];idleSince?:number};
 /** New missions use captured layouts; older active operation snapshots are never rewritten. */
 export function newSquadOperation(id:string,targetId:string,now:number,spacious=true):Operation{
  const o=newOperation(id,targetId,now);o.squad={version:1,agents:[],progress:{},wallDamage:{},breachedWalls:[]};
@@ -18,9 +19,10 @@ export function newSquadOperation(id:string,targetId:string,now:number,spacious=
  for(const wall of o.target.walls){wall.x*=1.2;wall.z*=1.2;if(wall.w>wall.d)wall.w*=1.2;else wall.d*=1.2;}
  for(const defense of o.target.defenses)defense.route=defense.route.map(p=>p.map(v=>v*1.2) as Vec);
  }
+ if(spacious)o.target=craftCampusTarget(targetId);
  const solids=infiltrationSolids(o.target);
  for(const defense of o.target.defenses){defense.radius+=.6;defense.warningSeconds=0;defense.route=defense.route.map(p=>nearestOpen(p,solids,targetBounds(o.target),DRONE_CLEARANCE,.5)??p);}
- if(spacious){o.squad.rules='tactical-v1';for(const a of o.target.assets)if(a.hackSeconds)a.hackSeconds=a.kind==='gpu'?TACTICAL_BALANCE.hackSeconds.gpu:a.kind==='lab'?TACTICAL_BALANCE.hackSeconds.lab:TACTICAL_BALANCE.hackSeconds.core;for(const d of o.target.defenses){d.radius=TACTICAL_BALANCE.droneDetection;d.warningSeconds=TACTICAL_BALANCE.droneWarmupMs/1000;}}
+ if(spacious){o.squad.balanceVersion=2;o.squad.rules='tactical-v1';for(const a of o.target.assets)if(a.hackSeconds)a.hackSeconds=a.kind==='gpu'?TACTICAL_BALANCE.hackSeconds.gpu:a.kind==='lab'?TACTICAL_BALANCE.hackSeconds.lab:TACTICAL_BALANCE.hackSeconds.core;for(const d of o.target.defenses){d.radius=TACTICAL_BALANCE.droneDetection;d.warningSeconds=TACTICAL_BALANCE.droneWarmupMs/1000;}}
  o.drones=o.target.defenses.map(d=>({id:d.id,position:[...d.route[0]],segment:1,alert:0,lost:0,mode:'patrol'}));if(spacious)for(const d of o.drones)d.health=TACTICAL_BALANCE.droneHealth;return o;
 }
 export function squadTarget(o:Operation){return o.squad?{...o.target,walls:o.target.walls?.filter(w=>!o.squad!.breachedWalls.includes(w.id))}:o.target;}

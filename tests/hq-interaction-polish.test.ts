@@ -7,7 +7,7 @@ import{avaComputeReady,avaWaiting}from'../src/ui/avaPresentation';import{newAva,
 const epoch=100000;
 function fresh(){const s=initialFoundation();s.compute=500;ensureLandscape(s,epoch,'hq-polish');return s;}
 test('all new basic clearing work lasts 15s; legacy active 30s work retains its exact deadline and reward',()=>{
- for(const kind of ['tree','rock','scrap']as const){const s=fresh(),o=s.landscape!.items.find(o=>o.kind===kind)!;clearObstacle(s,o.id,epoch);const j=s.landscape!.clearing!;assert.equal(j.clearedAt-j.workAt,15000);assert.equal(LANDSCAPE.workByKind[kind],15000);}
+ for(const kind of ['tree','rock','scrap']as const){const s=fresh(),o=s.landscape!.items.find(o=>o.kind===kind)!;clearObstacle(s,o.id,epoch);const j=s.landscape!.clearing!;assert.equal(j.clearedAt-j.startedAt,15000);assert.equal(LANDSCAPE.workByKind[kind],15000);}
  const s=fresh(),o=s.landscape!.items.find(o=>o.kind==='scrap')!;clearObstacle(s,o.id,epoch);const j=s.landscape!.clearing!;j.clearedAt+=15000;j.completesAt+=15000;const deadline=j.clearedAt;const restored=JSON.parse(JSON.stringify(s));advanceFoundation(restored,deadline-1);assert.equal(restored.buildersBusy,1);assert.equal(restored.landscape.clearing.clearedAt,deadline);advanceFoundation(restored,deadline);assert.equal(restored.buildersBusy,0);assert.equal(restored.compute,503);advanceFoundation(restored,deadline);assert.equal(restored.compute,503);
 });
 test('clearing releases at work completion and another job interrupts return from its actual authoritative position',()=>{

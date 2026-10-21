@@ -5,9 +5,9 @@ import {WorldKit} from './world';
 /** The actual HQ neighborhood renderer, sized for the rival campus. HQ defaults are unchanged. */
 export class InfiltrationDistrict{
  readonly group=new THREE.Group();private district:TechnologyDistrict;private k=new WorldKit('campus');
- constructor(_established:boolean,spacious=true){this.district=new TechnologyDistrict('raid',{halfX:spacious?21:14,halfZ:spacious?17:10});this.group.name='hq-style-rival-neighborhood';this.group.add(this.district.group);
+ constructor(_established:boolean,spacious=true,size?:{maxX:number;maxZ:number}){this.district=new TechnologyDistrict('raid',{halfX:size?.maxX??(spacious?21:14),halfZ:size?.maxZ??(spacious?17:10)});this.group.name='hq-style-rival-neighborhood';this.group.add(this.district.group);
  // A planted terraced edge behind the compact neighborhood, all outside navigation.
- const hx=(spacious?21:14)+23.7,hz=(spacious?17:10)+23.7;
+ const hx=(size?.maxX??(spacious?21:14))+23.7,hz=(size?.maxZ??(spacious?17:10))+23.7;
  for(const side of [-1,1]){for(const [from,to]of [[-hx-1,-hx+6],[-hx+10,hx-10],[hx-6,hx+1]])this.k.box(this.group,[to-from,.3,1],[(from+to)/2,-.05,side*hz],'#c9c8a7',.1);this.k.box(this.group,[1,.3,hz*2+2],[side*hx,-.05,0],'#c9c8a7',.1);
  for(let i=-40;i<=40;i+=6){for(const [x,z]of [[i,side*(hz+2)],[side*(hx+2),i]]){if(Math.abs(z)>hz&&Math.abs(Math.abs(x)-(hx-8))<3)continue;this.k.tree(this.group,x,z,.8+(i%5)*.035);this.k.boulder(this.group,[x+1.8,-.1,z+.6],[1.3,.45,1.1],'#9bae83',i);}}}
  // A small connected fringe beyond the original loop, rather than bare ground.

@@ -1,0 +1,43 @@
+{
+  "sourceSha256": "a493fc77c0cf16961c7daf7724449d3fa3a4924e0ada1623ed6fb1c850a56163",
+  "startSeconds": 17.9,
+  "endSeconds": 74.91749999999999,
+  "seconds": 57.0175,
+  "crossfadeSeconds": 0.6,
+  "joinCorrelation": 0.8344971278650681,
+  "lufs": -22.0,
+  "mixerScale": 0.6,
+  "truePeakDbTP": -8.934187272827527,
+  "seamDelta": [
+    0.0,
+    0.0
+  ],
+  "previewTransitionsSeconds": [
+    57.0175,
+    114.035
+  ],
+  "exports": {
+    "hq.flac": {
+      "sha256": "685e31de000685bd68d9c1cb8d4b76602a7f6ffff1ee840a014375d45775f81a",
+      "bytes": 2587211
+    },
+    "hq.m4a": {
+      "sha256": "deb95c14a4813ce6b677c56e65bdc81cdaa94228f9fd11f6ea589a8510e35f71",
+      "bytes": 1251402
+    },
+    "hq.wav": {
+      "sha256": "2efc1e94dc2b67c90d1a1bed6bce5cdf05aedc6d08f2ab67b9a37b425eb9c527",
+      "bytes": 7554284
+    }
+  },
+  "joins": [
+    {
+      "sample": 1824560,
+      "rmsChangeDb": 1.5706169571827797
+    },
+    {
+      "sample": 3649120,
+      "rmsChangeDb": 1.5706169571827797
+    }
+  ]
+}

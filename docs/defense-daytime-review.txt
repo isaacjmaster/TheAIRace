@@ -1,0 +1,45 @@
+Defense and daytime audio release review
+
+Implemented: enclosed owned walls and endpoint snapping/corner posts; owned
+builder wall phasing; 15-second server-accepted clearing deadlines; immediate
+builder reuse during the return trip; shared-objective and stalled-path Cipher
+AI recovery; versioned stronger drones; five handcrafted bases and progression-
+aware random matchmaking; restrained red INFILTRATION FAILED result heading.
+Legacy saved operations retain their balance version and active clearing jobs
+retain timestamps. Existing rewards are settled through the same receipt ledger.
+
+Five base rewards (Compute / Research / Influence):
+Lumen Labs: 30 / 20 / 25; Vector Works: 50 / 32 / 40;
+Prism Systems: 65 / 44 / 55; Orbit Research: 80 / 56 / 70;
+Apex Compute: 100 / 70 / 90. Configured in shared/infiltration-bases.ts.
+New companies start with the first base. Bot inventory, HQ level and successful
+missions gradually unlock the matchmaking pool. There is no manual level menu.
+
+Drones: 160 HP vs 100 previously; damage 24 vs 22; interval 1000ms vs 1250;
+warmup 400ms vs 650. In controlled direct combat, three bots previously lost
+none and now lose two; five previously lost none and now lose one. One bot
+loses in both versions. Ten-bot simulations across seven deployment strategies
+find a winning strategy for every base. This is an automated balance benchmark,
+not a claim of completed human playtesting.
+
+Validation: 419 automated tests pass; production TypeScript/Vite build passes.
+Existing large-chunk build advisory remains. Headless Edge captures all five
+maps, an elite portrait view, closed HQ, failure screen, builder wall crossing
+and immediate new job. Browser errors: none. Every agent preview uses
+?testAudio=off, isolated SQLite data, and closed browser contexts.
+Artifacts: output/Defense_Daytime_Review, output/HQ_Daytime_Review.
+Audio edit details: music/hq-daytime/NOTES.txt. Prior source/masters preserved.
+No human listening, physical iPhone, installed PWA or native desktop-app test
+was performed. Phone audition and human difficulty review remain useful.
+
+Local iPhone review: run node --import tsx scripts/preview-defense-daytime.ts,
+then open http://192.168.1.40:3080/review/hq?testAudio=off on the same Wi-Fi
+while this computer is awake. Each /review route creates an isolated test save.
+Use base ids lumen-labs, vector-works, prism-systems, orbit-research, apex-compute
+instead of hq to inspect individual maps. Production saves are never used.
+
+The request documents initially reserved deployment for approval. The subsequent
+owner instruction, "push thru fullly once done", authorizes this release.
+
+Same south-side ten-bot benchmark, losses by tier: 1, 3, 4, 6, 9.
+

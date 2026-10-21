@@ -19,14 +19,18 @@ export function validWallPosition(s:FoundationState,position:RigPosition,orienta
  for(const d of s.decorations??[])if(overlapsRect(a,decorationFootprint(d),.1))return 'Keep decorations clear.';
  for(const [x,z]of [[-16,7],[13,7],[-16,11],[25,11]])if(overlapsRect(a,{x,z,w:1.4,d:1.4},.1))return 'Keep streetlights clear.';
  for(const w of s.walls??[])if(w.id!==ignoreId&&overlapsRect(a,wallFootprint(w))){const joined=orientation%2!==w.orientation%2&&wallEnds(candidate).some(p=>wallEnds(w).some(q=>Math.hypot(p[0]-q[0],p[1]-q[1])<.01));if(!joined)return 'Align wall ends without overlapping.';}
- if(s.landscape?.clearing?.route.some(([x,z])=>overlapsRect(a,{x,z,w:1.2,d:1.2})))return 'Keep the Builder Bot route clear.';
- if(!verifyAccess)return null;
- const trial={...s,walls:[...(s.walls??[]).filter(w=>w.id!==ignoreId),candidate]};
- for(const k of FOUNDATION_BUILDINGS.filter(k=>buildingLayout(s,k)))if(landscapeRoute(s,door(s,k),undefined,1.1).length&&!landscapeRoute(trial,door(s,k),undefined,1.1).length)return 'Leave an entrance and a path to every building.';
- if(landscapeRoute(s,[0,9],undefined,1.1).length&&!landscapeRoute(trial,[0,9],undefined,1.1).length)return 'Leave a gate to the campus road.';
- if(s.droneStation&&canPatrol(s)&&!canPatrol(trial))return 'Leave a wider gate for the Security Drone.';
  return null;
 }
 export function buyWall(s:FoundationState,p:RigPosition,o:Orientation,id:string){const reason=validWallPosition(s,p,o);if(reason)throw Error(reason);if(s.walls?.some(w=>w.id===id))throw Error('Wall already purchased.');if(s.compute<CYBERSECURITY.wall.cost)throw Error('Need '+(CYBERSECURITY.wall.cost-s.compute)+' more Compute');s.compute-=CYBERSECURITY.wall.cost;(s.walls??=[]).push({id,position:[...p],orientation:o});}
 export function moveWall(s:FoundationState,id:string,p:RigPosition,o:Orientation){const w=s.walls?.find(w=>w.id===id);if(!w)throw Error('Security Wall not found.');const reason=validWallPosition(s,p,o,id);if(reason)throw Error(reason);w.position=[...p];w.orientation=o;}
 export function buildDroneStation(s:FoundationState,p:RigPosition,now:number,o:Orientation=0){advanceFoundation(s,now);if(s.droneStation)throw Error('Security Drone Station — 1/1 Built');if(!hasBuilderStation(s)||s.builders<1)throw Error('Place your Builder Station first.');if(s.buildersBusy)throw Error('Your Builder Bot is busy.');const reason=validFoundationPosition(s,p,'droneStation',o);if(reason)throw Error(reason);if(s.compute<CYBERSECURITY.station.cost)throw Error('You need 200 Compute.');const station={position:[...p] as RigPosition,orientation:o,startedAt:now,completesAt:now+CYBERSECURITY.station.buildSeconds*1000};const trial={...s,droneStation:station};if(!landscapeRoute(trial,door(trial,'droneStation'),undefined,1.1).length)throw Error('Leave a path for your Builder Bot.');if(!canPatrol(trial))throw Error('Leave a wide route for the Security Drone.');s.compute-=CYBERSECURITY.station.cost;s.droneStation=station;s.buildersBusy=(s.buildersBusy??0)+1;}
+
+/** Prefer exact endpoint joins near the pointer; authoritative placement still validates. */
+export function snapWallPosition(s:FoundationState,p:RigPosition,o:Orientation,ignoreId?:string):RigPosition{
+ const grid=p.map(Math.round) as RigPosition,candidates:RigPosition[]=[];
+ for(const w of s.walls??[]){if(w.id===ignoreId)continue;for(const end of wallEnds(w))for(const sign of [-1,1]){
+ const q:RigPosition=[end[0]+(o%2?0:sign),end[1]+(o%2?sign:0)];
+ if(Math.hypot(q[0]-p[0],q[1]-p[1])<=1.25&&!validWallPosition(s,q,o,ignoreId,false))candidates.push(q);
+ }}
+ return candidates.sort((a,b)=>Math.hypot(a[0]-p[0],a[1]-p[1])-Math.hypot(b[0]-p[0],b[1]-p[1]))[0]??grid;
+}

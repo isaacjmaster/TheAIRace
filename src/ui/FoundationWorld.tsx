@@ -1,4 +1,4 @@
-import {validWallPosition} from '../../shared/cybersecurity';
+import {validWallPosition,snapWallPosition} from '../../shared/cybersecurity';
 import {CYBERSECURITY} from '../../shared/security-catalog';
 import {RESEARCH} from '../../shared/research';
 import {ResearchIcon} from './ResearchIcon';
@@ -59,7 +59,7 @@ export function FoundationWorld({introFraming=false,onReady,state,placing,onWall
  useEffect(()=>{setEditWall(null);setSelectedWall(null);setEditDecoration(null);setSelectedDecoration(null);setRemoveConfirm(false);},[editMode,placing]);
  useEffect(()=>{if(focus&&buildingLayout(state,focus)&&!editMode){selection.current=null;setSelected(null);scene.current?.focusRig(buildingLayout(state,focus)!.position);}},[focus]);
  const release=(id:number)=>{pointers.current.delete(id);pinch.current=0;};
- const point=(x:number,y:number,pointer?:Pointer)=>{const p=scene.current?.groundPoint(x,y);if(p)setPosition(pointer?.ground&&pointer.origin?[pointer.origin[0]+p[0]-pointer.ground[0],pointer.origin[1]+p[1]-pointer.ground[1]]:p);};
+ const point=(x:number,y:number,pointer?:Pointer)=>{const p=scene.current?.groundPoint(x,y);if(p){const q:RigPosition=pointer?.ground&&pointer.origin?[pointer.origin[0]+p[0]-pointer.ground[0],pointer.origin[1]+p[1]-pointer.ground[1]]:p;setPosition(wallMode?snapWallPosition(state,q,orientation,editWall??undefined):q);}};
  function beginEdit(kind:RotatableBuilding){if(!buildingReady(state,kind,now)){setEditNotice('Wait for this building to finish construction.');return;}const layout=buildingLayout(state,kind);if(!layout)return;select(null);setPosition([...layout.position]);setOrientation(layout.orientation);setPanMode(false);setEditNotice('');setEditBuilding(kind);}
  function beginDecoration(id:string){const o=state.decorations?.find(o=>o.id===id);if(!o)return;select(null);setEditBuilding(null);setEditDecoration(id);setPosition([...o.position]);setOrientation(o.orientation);setPanMode(false);}
  function beginWall(id:string){const w=state.walls?.find(w=>w.id===id);if(!w)return;select(null);setEditBuilding(null);setEditDecoration(null);setEditWall(id);setPosition([...w.position]);setOrientation(w.orientation);setPanMode(false);}

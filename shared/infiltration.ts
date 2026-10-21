@@ -1,3 +1,4 @@
+import {BASE_IDS,craftCampusTarget} from './infiltration-bases';
 import {advanceSquad,commandSquad,type SquadState} from './squad-infiltration';
 import {findPath,pointClear,nearestOpen,segmentClear,type NavRect} from './navigation';
 import {rivalSecurityWalls,type SecurityBarrier} from './security-walls';
@@ -30,6 +31,8 @@ export type TargetSnapshot = {
     version: 1;
     arena?:'campus-v2';
     hqLevel?:2;
+    campusBounds?:{minX:number;maxX:number;minZ:number;maxZ:number};
+    compound?:Vec;
     navigationVersion?:2;
     walls?:SecurityBarrier[];
     id: string;
@@ -44,7 +47,7 @@ export type TargetSnapshot = {
 export const INFILTRATION = { stepMs: 100, operationMs: 180000, agentSpeed: 2.8, agentHealth:100, laserDamage:20, laserIntervalMs:1250, captureRadius: .65, cooldownMs: 7200000, awards: [25, 50] } as const;
 export const INFILTRATION_BOUNDS={minX:-14,maxX:14,minZ:-10,maxZ:10};
 export const CAMPUS_ARENA={bounds:{minX:-21,maxX:21,minZ:-17,maxZ:17},compound:[13.5,10] as Vec,outer:[20,16] as Vec};
-export const targetBounds=(t:TargetSnapshot)=>t.arena==='campus-v2'?CAMPUS_ARENA.bounds:INFILTRATION_BOUNDS;
+export const targetBounds=(t:TargetSnapshot)=>t.arena==='campus-v2'?(t.campusBounds??CAMPUS_ARENA.bounds):INFILTRATION_BOUNDS;
 export const DRONE_CLEARANCE=1.15;
 // Full rendered robot envelope, including its arms and mechanical feet.
 export const AGENT_CLEARANCE=.65;
@@ -52,6 +55,7 @@ const common: Asset[] = [{ id: 'hq', kind: 'hq', name: 'Founder HQ', position: [
 export const INFILTRATION_TARGETS: TargetSnapshot[] = [{ version: 1, id: 'lumen-labs', name: 'Lumen Labs', difficulty: 'Startup', entry: [-10, 6], exit: [-10, 6], assets: common, defenses: [{ id: 'sentinel-1', route: [[0, 2], [4, 4], [8, 3], [8, -1]], radius: 3.1, patrolSpeed: 1.1, pursuitSpeed: 2, warningSeconds: 2.2 }], influence: 25 }, { version: 1, id: 'vector-works', name: 'Vector Works', difficulty: 'Established', entry: [-10, 6], exit: [-10, 6], assets: common.map(a => ({ ...a, position: a.id === 'gpu' ? [-6, -1] : a.id === 'lab' ? [6, -1] : a.id === 'terminal' ? [7, -6] : a.position, access: a.id === 'gpu' ? [-6, 1.2] : a.id === 'lab' ? [6, 1.3] : a.id === 'terminal' ? [7, -4.5] : a.access, hackSeconds: a.hackSeconds ? a.hackSeconds + 1 : undefined, compute: a.compute * 2, research: a.research * 2 })), defenses: [{ id: 'sentinel-1', route: [[-4, 3], [1, 4], [5, 3], [1, 2]], radius: 3.3, patrolSpeed: 1.2, pursuitSpeed: 2.2, warningSeconds: 2 }, { id: 'sentinel-2', route: [[6, 4], [9, 1], [9, -5], [5, -6]], radius: 3.2, patrolSpeed: 1.1, pursuitSpeed: 2.1, warningSeconds: 2 }], influence: 50 }];
 // New operations capture the compound layout. Already saved snapshots are not rewritten.
 for(const target of INFILTRATION_TARGETS){target.navigationVersion=2;target.entry=[-8,6.5];target.exit=[-10.5,6.5];target.walls=rivalSecurityWalls(target.id==='vector-works');for(const defense of target.defenses)defense.route=defense.route.map(p=>nearestOpen(p,infiltrationSolids(target),INFILTRATION_BOUNDS,DRONE_CLEARANCE,.5)??p);}
+for(const id of BASE_IDS.slice(2))INFILTRATION_TARGETS.push(craftCampusTarget(id));
 export const npcBaseName=(id:string)=>id==='vector-works'?'Level 2 Base':'Level 1 Base';
 export type DroneState = {
     lastShotAt?:number;health?:number;acquiredAt?:number;
@@ -130,7 +134,7 @@ export function operationFromSnapshot(id: string, target: TargetSnapshot, now: n
 export function infiltrationSolids(t:TargetSnapshot):NavRect[]{return [...t.assets.map(a=>({x:a.position[0],z:a.position[1],w:a.size[0],d:a.size[1]})),...(t.walls??[])];}
 export function navigable(t: TargetSnapshot, p: Vec) { if(t.navigationVersion===2)return pointClear(p,infiltrationSolids(t),targetBounds(t),AGENT_CLEARANCE);return p.every(Number.isFinite) && Math.abs(p[0]) <= 11.5 && Math.abs(p[1]) <= 7.5 && !t.assets.some(a => Math.abs(p[0] - a.position[0]) < a.size[0] / 2 + .3 && Math.abs(p[1] - a.position[1]) < a.size[1] / 2 + .3); }
 /** The same perimeter predicate drives server validation and the continuous deployment lawn. */
-export function deploymentGround(t:TargetSnapshot,p:Vec){if(t.arena==='campus-v2')return p.every(Number.isFinite)&&Math.abs(p[0])<=CAMPUS_ARENA.outer[0]&&Math.abs(p[1])<=CAMPUS_ARENA.outer[1]&&(Math.abs(p[0])>=14.2||p[1]<=-10.4||p[1]>=7.4)&&navigable(t,p);return p.every(Number.isFinite)&&Math.abs(p[0])<=13.2&&Math.abs(p[1])<=9.2&&(Math.abs(p[0])>=11.8||Math.abs(p[1])>=8.3||p[1]>=5.8&&Math.abs(p[0])<=10.5&&p[1]<=7.2)&&navigable(t,p);}
+export function deploymentGround(t:TargetSnapshot,p:Vec){if(t.arena==='campus-v2'&&t.compound){const b=targetBounds(t);return p.every(Number.isFinite)&&p[0]>=b.minX+.8&&p[0]<=b.maxX-.8&&p[1]>=b.minZ+.8&&p[1]<=b.maxZ-.8&&(Math.abs(p[0])>=t.compound[0]||Math.abs(p[1])>=t.compound[1])&&navigable(t,p);}if(t.arena==='campus-v2')return p.every(Number.isFinite)&&Math.abs(p[0])<=CAMPUS_ARENA.outer[0]&&Math.abs(p[1])<=CAMPUS_ARENA.outer[1]&&(Math.abs(p[0])>=14.2||p[1]<=-10.4||p[1]>=7.4)&&navigable(t,p);return p.every(Number.isFinite)&&Math.abs(p[0])<=13.2&&Math.abs(p[1])<=9.2&&(Math.abs(p[0])>=11.8||Math.abs(p[1])>=8.3||p[1]>=5.8&&Math.abs(p[0])<=10.5&&p[1]<=7.2)&&navigable(t,p);}
 export function validDeployment(t:TargetSnapshot,p:Vec){return deploymentGround(t,p)&&infiltrationPath(t,p,t.exit).length>0;}
 /** Reservation is already removed from stock; count it only until it is deployed. */
 export function deploymentCount(stock:number,o:Operation){return o.squad?.undeployed!==undefined?Math.max(0,Math.min(stock,o.squad.undeployed)):Math.max(0,stock)+(o.status==='ready'&&o.unit?.status==='reserved'?1:0);}

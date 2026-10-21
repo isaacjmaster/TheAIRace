@@ -28,7 +28,7 @@ export function campusSecurityWalls(s:FoundationState){return ownedSecurityWalls
 export function landscapeRoute(s:FoundationState,target:RigPosition,origin?:RigPosition,clearance=.3):RigPosition[]{
  const start=origin??door(s,buildingLayout(s,'station')?'station':'hq');
  const solids=FOUNDATION_BUILDINGS.map(k=>{const l=buildingLayout(s,k);return l?footprint(k,l):null;}).filter((r):r is NonNullable<typeof r>=>!!r);
- solids.push(...campusSecurityWalls(s));
+ // Owner Builder Bots phase through owned security walls; other navigation is unchanged.
  for(const o of OBSTACLES.filter(o=>o.kind==='rock'))solids.push({x:o.position[0],z:o.position[1],w:o.width,d:o.depth});
  for(const o of s.landscape?.items||[])solids.push(rect(o));
  for(const o of s.decorations||[])solids.push(decorationFootprint(o));
@@ -77,5 +77,5 @@ export function clearObstacle(s:FoundationState,id:string,now:number){advanceFou
  const travel=Math.max(600,route.reduce((d,p,i)=>i?d+Math.hypot(p[0]-route[i-1][0],p[1]-route[i-1][1]):d,0)/LANDSCAPE.travelSpeed*1000);
  const back=landscapeRoute(s,door(s,'station'),route.at(-1),1.1),returnRoute=back.length?[...back,buildingLayout(s,'station')!.position]:[...route].reverse();
  const returnMs=Math.max(600,returnRoute.reduce((d,p,i)=>i?d+Math.hypot(p[0]-returnRoute[i-1][0],p[1]-returnRoute[i-1][1]):d,0)/LANDSCAPE.travelSpeed*1000);
- l.clearing={id:o.id,obstacle:structuredClone(o),route,returnRoute,startedAt:now,workAt:now+travel,clearedAt:now+travel+LANDSCAPE.workByKind[o.kind],completesAt:now+travel+returnMs+LANDSCAPE.workByKind[o.kind],rewarded:false};s.buildersBusy=1;
+ l.clearing={id:o.id,obstacle:structuredClone(o),route,returnRoute,startedAt:now,workAt:now+Math.min(travel,LANDSCAPE.workByKind[o.kind]-1000),clearedAt:now+LANDSCAPE.workByKind[o.kind],completesAt:now+returnMs+LANDSCAPE.workByKind[o.kind],rewarded:false};s.buildersBusy=1;
 }

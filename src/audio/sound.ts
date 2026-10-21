@@ -1,8 +1,9 @@
+import {HQAmbience,HQ_AUDIO} from './Ambience';
 import {INFILTRATION_CUES,type InfiltrationCue} from './infiltrationCues';
 import {RecordedMusic,type TrackLoader} from './RecordedMusic';
 import {loadApprovedTrack,MUSIC_GAIN} from './tracks';
 import { BUILDING_SOUNDS, MUTE_KEY, readMuted, writeMuted, type Cue, type MusicMode } from './score';
-export type SoundPlatform={storage?:Pick<Storage,'getItem'|'setItem'>;createContext:()=>AudioContext;silent?:boolean;loadTrack?:TrackLoader};
+export type SoundPlatform={storage?:Pick<Storage,'getItem'|'setItem'>;createContext:()=>AudioContext;silent?:boolean;ambience?:boolean;loadTrack?:TrackLoader};
 /** Explicit opt-in for agent previews; standard automation is silent automatically. */
 export function testAudioDisabled(search:string,webdriver=false){return webdriver||new URLSearchParams(search).get('testAudio')==='off';}
 function browserPlatform():SoundPlatform {
@@ -14,7 +15,7 @@ import {voiceEnvelope} from './envelope';
 import {MusicSynth} from './musicSynth';
 /** Context creation/resume is exclusively initiated by a user gesture. */
 export class Soundscape {
- private ctx?:AudioContext;private master?:GainNode;private hq?:GainNode;private raid?:GainNode;private infiltration?:GainNode;
+ private ambience?:HQAmbience;private ctx?:AudioContext;private master?:GainNode;private hq?:GainNode;private raid?:GainNode;private infiltration?:GainNode;
  private timer?:ReturnType<typeof setInterval>;private synth?:MusicSynth;private music?:RecordedMusic;private playingMode?:MusicMode;private hidden=false;private fadeUntil={hq:0,raid:0,infiltration:0};private mode:MusicMode='hq';
  private gainRamps=new Map<GainNode,{from:number;to:number;start:number;end:number}>();
  private listeners=new Set<()=>void>();private last=new Map<Cue,number>();private noise?:AudioBuffer;private cipherVoice=0;
@@ -35,6 +36,7 @@ export class Soundscape {
    if(!this.ctx){this.ctx=this.platform.createContext();this.synth=new MusicSynth(this.ctx);this.master=this.ctx.createGain();this.master.gain.value=.22;this.master.connect(this.ctx.destination);this.hq=this.ctx.createGain();this.raid=this.ctx.createGain();this.infiltration=this.ctx.createGain();this.hq.connect(this.master);this.raid.connect(this.master);this.infiltration.connect(this.master);this.hq.gain.value=0;this.raid.gain.value=0;this.infiltration.gain.value=0;this.music=new RecordedMusic(this.ctx,{hq:this.hq,raid:this.raid,infiltration:this.infiltration},this.platform.loadTrack??loadApprovedTrack);}
    const ctx=this.ctx;await ctx.resume();
    if(this.ctx!==ctx||this.platform.silent||this.muted||this.hidden)return;
+   if(this.platform.ambience!==false&&!this.ambience)this.ambience=new HQAmbience(ctx,this.master!);if(this.mode==='hq')this.ambience?.start();
    if(!this.timer)this.timer=setInterval(()=>this.schedule(),100);void this.activate(this.mode);this.schedule();
   }catch{/* Audio unsupported/interrupted: the game remains playable. */}
  }
@@ -43,19 +45,21 @@ export class Soundscape {
   // Attack scenes are effects-only. Do not download or start a music buffer;
   // fade the outgoing HQ once, even when repeated gestures call activate again.
   if(mode!=='hq'){
+   this.ambience?.stop();
    if(this.playingMode){this.fadeUntil[this.playingMode]=ctx.currentTime+1.1;this.ramp(this.hq!,0,1.1);this.ramp(this.raid!,0,1.1);this.ramp(this.infiltration!,0,1.1);this.playingMode=undefined;}
    return;
   }
   try{await music.load(mode);if(this.ctx!==ctx||this.music!==music||this.muted||this.hidden||this.mode!==mode||ctx.state!=='running')return;
-   if(this.playingMode!==mode||!music.has(mode)){const previous=this.playingMode;music.start(mode);if(previous)this.fadeUntil[previous]=ctx.currentTime+1.1;this.ramp(this.hq!,MUSIC_GAIN,1.1);this.ramp(this.raid!,0,1.1);this.ramp(this.infiltration!,0,1.1);this.playingMode=mode;}
+   if(this.playingMode!==mode||!music.has(mode)){const previous=this.playingMode;music.start(mode);if(previous)this.fadeUntil[previous]=ctx.currentTime+1.1;this.ramp(this.hq!,MUSIC_GAIN*HQ_AUDIO.musicScale,1.1);this.ramp(this.raid!,0,1.1);this.ramp(this.infiltration!,0,1.1);this.playingMode=mode;this.ambience?.start();}
   }catch{/* Missing/unsupported audio never blocks gameplay; a later gesture retries. */}
  }
- setMuted(value:boolean){if(this.platform.silent)return;this.muted=value;writeMuted(this.platform.storage,value);if(this.master)this.ramp(this.master,value?0:.22,.1);if(!value)void this.unlock();for(const listener of this.listeners)listener();}
+ setMuted(value:boolean){if(this.platform.silent)return;this.muted=value;if(value)this.ambience?.stop(0);writeMuted(this.platform.storage,value);if(this.master)this.ramp(this.master,value?0:.22,.1);if(!value)void this.unlock();for(const listener of this.listeners)listener();}
  setMode(mode:MusicMode){if(mode===this.mode)return;this.mode=mode;void this.activate(mode);}
- visibility(hidden:boolean){this.hidden=hidden;if(hidden){if(this.timer)clearInterval(this.timer);this.timer=undefined;void this.ctx?.suspend().catch(()=>{});}/* Safari resumes on the next explicit interaction. */}
+ visibility(hidden:boolean){this.hidden=hidden;if(hidden){this.ambience?.stop(0);if(this.timer)clearInterval(this.timer);this.timer=undefined;void this.ctx?.suspend().catch(()=>{});}/* Safari resumes on the next explicit interaction. */}
  private note(...args:Parameters<MusicSynth['note']>){this.synth?.note(...args);}
  private schedule(){
   if(!this.ctx||!this.music||this.ctx.state!=='running'||this.platform.silent||this.hidden)return;
+  if(!this.muted&&this.mode==='hq')this.ambience?.tick();
   for(const mode of ['hq','raid','infiltration'] as const)if(mode!==this.playingMode&&this.ctx.currentTime>=this.fadeUntil[mode])this.music.stop(mode);
  }
  cue=(cue:Cue)=>{
@@ -77,7 +81,7 @@ export class Soundscape {
   const notes=cue==='win'?[62,66,69,74,78]:cue==='resources'?[81,86,90]:cue==='upgrade'?[57,62,66,74]:[];
   notes.forEach((n,i)=>this.note(n,t+i*.1,.65,.12,out,'sine',.008));
  };
- dispose(){if(this.timer)clearInterval(this.timer);this.timer=undefined;this.music?.dispose();void this.ctx?.close().catch(()=>{});this.music=undefined;this.playingMode=undefined;this.ctx=undefined;this.synth=undefined;this.fadeUntil={hq:0,raid:0,infiltration:0};this.gainRamps.clear();this.master=undefined;this.hq=undefined;this.raid=undefined;this.infiltration=undefined;this.noise=undefined;this.last.clear();}
+ dispose(){this.ambience?.dispose();this.ambience=undefined;if(this.timer)clearInterval(this.timer);this.timer=undefined;this.music?.dispose();void this.ctx?.close().catch(()=>{});this.music=undefined;this.playingMode=undefined;this.ctx=undefined;this.synth=undefined;this.fadeUntil={hq:0,raid:0,infiltration:0};this.gainRamps.clear();this.master=undefined;this.hq=undefined;this.raid=undefined;this.infiltration=undefined;this.noise=undefined;this.last.clear();}
 }
 export const sound=new Soundscape();
 // Closing/navigating a preview stops all scheduled sound, including a pending unlock.
