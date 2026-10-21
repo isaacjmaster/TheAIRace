@@ -1,0 +1,28 @@
+{
+  "hq": {
+    "seconds": 171.91,
+    "encodedSeconds": 173.91,
+    "loopStart": 1,
+    "loopEnd": 172.91,
+    "sampleRate": 32000,
+    "frames": 5565120,
+    "sha256Wav": "b6015782f231a8f78a2f365e94357cd91a07b4153b6a9caf1314d738b7ad16d8",
+    "flac": "/audio/supplied-v1/hq.flac",
+    "wav": "/audio/supplied-v1/hq.wav",
+    "aac": "/audio/supplied-v1/hq.m4a",
+    "compressedBytes": 3631447
+  },
+  "infiltration": {
+    "seconds": 118.43,
+    "encodedSeconds": 120.43,
+    "loopStart": 1,
+    "loopEnd": 119.43,
+    "sampleRate": 32000,
+    "frames": 3853760,
+    "sha256Wav": "dd884d0adaf0482983950ab059f4107abc2b7c3d3c3f8edc831844314c8b7e6a",
+    "flac": "/audio/supplied-v1/infiltration.flac",
+    "wav": "/audio/supplied-v1/infiltration.wav",
+    "aac": "/audio/supplied-v1/infiltration.m4a",
+    "compressedBytes": 2443479
+  }
+}

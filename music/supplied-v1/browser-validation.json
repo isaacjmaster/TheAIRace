@@ -1,0 +1,61 @@
+{
+  "browser": "headless Edge; silent offline decode, not physical iPhone",
+  "results": [
+    {
+      "mode": "hq",
+      "codec": "aac",
+      "rate": 44100,
+      "seconds": 173.91,
+      "peakDb": -8.577783649992037
+    },
+    {
+      "mode": "hq",
+      "codec": "flac",
+      "rate": 44100,
+      "seconds": 173.91,
+      "peakDb": -12.233251455423451
+    },
+    {
+      "mode": "infiltration",
+      "codec": "aac",
+      "rate": 44100,
+      "seconds": 120.43,
+      "peakDb": -15.600592899328248
+    },
+    {
+      "mode": "infiltration",
+      "codec": "flac",
+      "rate": 44100,
+      "seconds": 120.43,
+      "peakDb": -15.535598165638419
+    },
+    {
+      "mode": "hq",
+      "codec": "aac",
+      "rate": 48000,
+      "seconds": 173.91,
+      "peakDb": -8.577783649992037
+    },
+    {
+      "mode": "hq",
+      "codec": "flac",
+      "rate": 48000,
+      "seconds": 173.91,
+      "peakDb": -12.023629647076897
+    },
+    {
+      "mode": "infiltration",
+      "codec": "aac",
+      "rate": 48000,
+      "seconds": 120.43,
+      "peakDb": -15.563424696219624
+    },
+    {
+      "mode": "infiltration",
+      "codec": "flac",
+      "rate": 48000,
+      "seconds": 120.43,
+      "peakDb": -15.593411793831109
+    }
+  ]
+}

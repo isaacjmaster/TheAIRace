@@ -11,7 +11,7 @@ export const PREVIOUS_HQ_TRACK={
   "wav": "/audio/identity-v1/hq.wav",
   "compressedBytes": 3340516
 } as const;
-export const IDENTITY_TRACKS={
+export const LEGACY_IDENTITY_TRACKS={
   "hq": {
     "seconds": 71.11,
     "encodedSeconds": 73.11,
@@ -37,8 +37,40 @@ export const IDENTITY_TRACKS={
     "compressedBytes": 3039660
   }
 } as const;
-/** Default is the latest HQ score; comparisons never write saved preferences. */
+export const IDENTITY_TRACKS={
+  "hq": {
+    "seconds": 171.91,
+    "encodedSeconds": 173.91,
+    "loopStart": 1,
+    "loopEnd": 172.91,
+    "sampleRate": 32000,
+    "frames": 5565120,
+    "sha256Wav": "b6015782f231a8f78a2f365e94357cd91a07b4153b6a9caf1314d738b7ad16d8",
+    "flac": "/audio/supplied-v1/hq.flac",
+    "wav": "/audio/supplied-v1/hq.wav",
+    "aac": "/audio/supplied-v1/hq.m4a",
+    "compressedBytes": 3631447
+  },
+  "infiltration": {
+    "seconds": 118.43,
+    "encodedSeconds": 120.43,
+    "loopStart": 1,
+    "loopEnd": 119.43,
+    "sampleRate": 32000,
+    "frames": 3853760,
+    "sha256Wav": "dd884d0adaf0482983950ab059f4107abc2b7c3d3c3f8edc831844314c8b7e6a",
+    "flac": "/audio/supplied-v1/infiltration.flac",
+    "wav": "/audio/supplied-v1/infiltration.wav",
+    "aac": "/audio/supplied-v1/infiltration.m4a",
+    "compressedBytes": 2443479
+  }
+} as const;
+/** Owner-supplied recordings are default; comparisons never write saved preferences. */
 export const identityMusicRequested=(search:string)=>new URLSearchParams(search).get('music')!=='current';
 export function identityTrack(mode:'hq'|'infiltration',search:string){
- return mode==='hq'&&new URLSearchParams(search).get('music')==='hq-v1'?PREVIOUS_HQ_TRACK:IDENTITY_TRACKS[mode];
+ const edition=new URLSearchParams(search).get('music');
+ if(edition==='identity-v1')return mode==='hq'?PREVIOUS_HQ_TRACK:LEGACY_IDENTITY_TRACKS.infiltration;
+ if(mode==='hq'&&edition==='hq-v1')return PREVIOUS_HQ_TRACK;
+ if(edition==='previous'||edition==='hq-v2')return LEGACY_IDENTITY_TRACKS[mode];
+ return IDENTITY_TRACKS[mode];
 }

@@ -1,0 +1,22 @@
+{
+  "sourceFilename": "Epic Modern Space Journey Music  Cinematic Sci-Fi Soundtrack  Stellar Odyssey - The Unknown - MMC Sound Lab.mp3",
+  "sourceSha256": "e10324bd5fde36413be15f6633354183266d80f57f573477aa7dee8016dd6f5e",
+  "sourceSeconds": 118.4653125,
+  "trimmedEndSeconds": 0.0353125,
+  "lufs": -25.99999999999999,
+  "truePeakDbTP": -15.519561729788087,
+  "exports": {
+    "infiltration.flac": {
+      "bytes": 7595206,
+      "sha256": "d574971ee823587b63a96f99792c36d3c016c75ca3c3218eaa61ef89df2e06e3"
+    },
+    "infiltration.m4a": {
+      "bytes": 2443479,
+      "sha256": "d6469b5c6f44a512a8bf2823a6330445aab3eb735ee490834c85d991c52fb116"
+    },
+    "infiltration.wav": {
+      "bytes": 15415084,
+      "sha256": "dd884d0adaf0482983950ab059f4107abc2b7c3d3c3f8edc831844314c8b7e6a"
+    }
+  }
+}

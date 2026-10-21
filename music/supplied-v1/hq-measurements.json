@@ -1,0 +1,22 @@
+{
+  "sourceFilename": "Futuristic Technology Music for a Modern World  No copyright music - PicSound.mp3",
+  "sourceSha256": "47c35e070d1b888f88ed762db15168f78f793ae1a09db859e5b18431fbd9d80d",
+  "sourceSeconds": 172.3559375,
+  "trimmedEndSeconds": 0.4459375,
+  "lufs": -22.0,
+  "truePeakDbTP": -11.99217469510768,
+  "exports": {
+    "hq.flac": {
+      "bytes": 11017934,
+      "sha256": "d27ffe5473d807f0961823efb306c88b2e1bb31efebb4f479483efd59f29caa6"
+    },
+    "hq.m4a": {
+      "bytes": 3631447,
+      "sha256": "5850064c3fa2187b3b4eeb5f17885b5142e77db8301b8fa3a6ad8ec3166241f2"
+    },
+    "hq.wav": {
+      "bytes": 22260524,
+      "sha256": "b6015782f231a8f78a2f365e94357cd91a07b4153b6a9caf1314d738b7ad16d8"
+    }
+  }
+}
