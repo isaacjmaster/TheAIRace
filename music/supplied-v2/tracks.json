@@ -1,0 +1,15 @@
+{
+  "hq": {
+    "seconds": 136.97,
+    "encodedSeconds": 138.97,
+    "loopStart": 1,
+    "loopEnd": 137.97,
+    "sampleRate": 32000,
+    "frames": 4447040,
+    "sha256Wav": "eb9c4ba505f82d2d909ef7ad58ecf3dc214097b2bd843fbabf0fb5e89ad2071f",
+    "flac": "/audio/supplied-v2/hq.flac",
+    "wav": "/audio/supplied-v2/hq.wav",
+    "aac": "/audio/supplied-v2/hq.m4a",
+    "compressedBytes": 2930656
+  }
+}

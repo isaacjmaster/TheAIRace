@@ -1,7 +1,6 @@
 import {INFILTRATION_CUES,type InfiltrationCue} from './infiltrationCues';
 import {RecordedMusic,type TrackLoader} from './RecordedMusic';
 import {loadApprovedTrack,MUSIC_GAIN} from './tracks';
-import {identityMusicRequested} from './identityTracks';
 import { BUILDING_SOUNDS, MUTE_KEY, readMuted, writeMuted, type Cue, type MusicMode } from './score';
 export type SoundPlatform={storage?:Pick<Storage,'getItem'|'setItem'>;createContext:()=>AudioContext;silent?:boolean;loadTrack?:TrackLoader};
 /** Explicit opt-in for agent previews; standard automation is silent automatically. */
@@ -41,10 +40,14 @@ export class Soundscape {
  }
  private async activate(mode:MusicMode){
   const ctx=this.ctx,music=this.music;if(!ctx||!music||this.muted||this.hidden||ctx.state!=='running')return;
+  // Attack scenes are effects-only. Do not download or start a music buffer;
+  // fade the outgoing HQ once, even when repeated gestures call activate again.
+  if(mode!=='hq'){
+   if(this.playingMode){this.fadeUntil[this.playingMode]=ctx.currentTime+1.1;this.ramp(this.hq!,0,1.1);this.ramp(this.raid!,0,1.1);this.ramp(this.infiltration!,0,1.1);this.playingMode=undefined;}
+   return;
+  }
   try{await music.load(mode);if(this.ctx!==ctx||this.music!==music||this.muted||this.hidden||this.mode!==mode||ctx.state!=='running')return;
-   if(this.playingMode!==mode||!music.has(mode)){const previous=this.playingMode;music.start(mode);if(previous)this.fadeUntil[previous]=ctx.currentTime+1.1;this.ramp(this.hq!,mode==='hq'?MUSIC_GAIN:0,1.1);this.ramp(this.raid!,mode==='raid'?MUSIC_GAIN:0,1.1);this.ramp(this.infiltration!,mode==='infiltration'?MUSIC_GAIN:0,1.1);this.playingMode=mode;}
-   // HQ is needed first; warm the attack buffer after it becomes audible.
-   if(mode==='hq')void music.load(identityMusicRequested(typeof location==='undefined'?'':location.search)?'infiltration':'raid').catch(()=>{});
+   if(this.playingMode!==mode||!music.has(mode)){const previous=this.playingMode;music.start(mode);if(previous)this.fadeUntil[previous]=ctx.currentTime+1.1;this.ramp(this.hq!,MUSIC_GAIN,1.1);this.ramp(this.raid!,0,1.1);this.ramp(this.infiltration!,0,1.1);this.playingMode=mode;}
   }catch{/* Missing/unsupported audio never blocks gameplay; a later gesture retries. */}
  }
  setMuted(value:boolean){if(this.platform.silent)return;this.muted=value;writeMuted(this.platform.storage,value);if(this.master)this.ramp(this.master,value?0:.22,.1);if(!value)void this.unlock();for(const listener of this.listeners)listener();}

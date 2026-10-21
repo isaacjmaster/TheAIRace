@@ -1,0 +1,22 @@
+{
+  "sourceFilename": "Earthbound Music Twoson - TeamMx2.mp3",
+  "sourceSha256": "a493fc77c0cf16961c7daf7724449d3fa3a4924e0ada1623ed6fb1c850a56163",
+  "sourceSeconds": 138.86696875,
+  "trimmedEndSeconds": 1.89696875,
+  "lufs": -22.0,
+  "truePeakDbTP": -8.33859189636349,
+  "exports": {
+    "hq.flac": {
+      "bytes": 5982975,
+      "sha256": "9dcb62a7b2fb80b8647d853cfd80522e34877d370be25b9ccb7ab08ab36c9592"
+    },
+    "hq.m4a": {
+      "bytes": 2930656,
+      "sha256": "4eeb25f9b091320245921e607875b96bd99e12af9a901f3f95257b525a1f3e42"
+    },
+    "hq.wav": {
+      "bytes": 17788204,
+      "sha256": "eb9c4ba505f82d2d909ef7ad58ecf3dc214097b2bd843fbabf0fb5e89ad2071f"
+    }
+  }
+}

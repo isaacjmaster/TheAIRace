@@ -1,0 +1,33 @@
+{
+  "browser": "headless Edge; silent offline decode, not physical iPhone",
+  "results": [
+    {
+      "mode": "hq",
+      "codec": "aac",
+      "rate": 44100,
+      "seconds": 138.97,
+      "peakDb": -8.272719211436426
+    },
+    {
+      "mode": "hq",
+      "codec": "flac",
+      "rate": 44100,
+      "seconds": 138.97,
+      "peakDb": -8.359670666786535
+    },
+    {
+      "mode": "hq",
+      "codec": "aac",
+      "rate": 48000,
+      "seconds": 138.97,
+      "peakDb": -8.272334085612755
+    },
+    {
+      "mode": "hq",
+      "codec": "flac",
+      "rate": 48000,
+      "seconds": 138.97,
+      "peakDb": -8.374868188746689
+    }
+  ]
+}

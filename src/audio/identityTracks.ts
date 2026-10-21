@@ -37,7 +37,7 @@ export const LEGACY_IDENTITY_TRACKS={
     "compressedBytes": 3039660
   }
 } as const;
-export const IDENTITY_TRACKS={
+export const SUPPLIED_V1_TRACKS={
   "hq": {
     "seconds": 171.91,
     "encodedSeconds": 173.91,
@@ -65,10 +65,24 @@ export const IDENTITY_TRACKS={
     "compressedBytes": 2443479
   }
 } as const;
-/** Owner-supplied recordings are default; comparisons never write saved preferences. */
+export const IDENTITY_TRACKS={...SUPPLIED_V1_TRACKS,hq:{
+  "seconds": 136.97,
+  "encodedSeconds": 138.97,
+  "loopStart": 1,
+  "loopEnd": 137.97,
+  "sampleRate": 32000,
+  "frames": 4447040,
+  "sha256Wav": "eb9c4ba505f82d2d909ef7ad58ecf3dc214097b2bd843fbabf0fb5e89ad2071f",
+  "flac": "/audio/supplied-v2/hq.flac",
+  "wav": "/audio/supplied-v2/hq.wav",
+  "aac": "/audio/supplied-v2/hq.m4a",
+  "compressedBytes": 2930656
+}} as const;
+/** Comparisons never write saved preferences. Attack playback is disabled in Soundscape. */
 export const identityMusicRequested=(search:string)=>new URLSearchParams(search).get('music')!=='current';
 export function identityTrack(mode:'hq'|'infiltration',search:string){
  const edition=new URLSearchParams(search).get('music');
+ if(edition==='supplied-v1')return SUPPLIED_V1_TRACKS[mode];
  if(edition==='identity-v1')return mode==='hq'?PREVIOUS_HQ_TRACK:LEGACY_IDENTITY_TRACKS.infiltration;
  if(mode==='hq'&&edition==='hq-v1')return PREVIOUS_HQ_TRACK;
  if(edition==='previous'||edition==='hq-v2')return LEGACY_IDENTITY_TRACKS[mode];

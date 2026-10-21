@@ -59,7 +59,7 @@ export function musicStep(step:number,mode:MusicMode){
   pluck:chord[1+([0,1,2,1][beat%4])]+(beat%2?12:0),
   kick:beat===0||beat===4,snare:beat===2||beat===6,hat:beat%2===1,arp:null};
 }
-/** Results, menus and abandoned views use the HQ theme; only an open unsettled raid uses combat music. */
-export function musicModeFor(phase:string,panel:string|null,raid?:{settled:boolean}|null):MusicMode{return phase==='game'&&panel==='raid'&&raid&&!raid.settled?'raid':'hq';}
+/** Keep the entire infiltration view effects-only, including searching and results. */
+export function musicModeFor(phase:string,panel:string|null,raid?:{settled:boolean}|null):MusicMode{if(phase==='game'&&panel==='infiltration')return 'infiltration';return phase==='game'&&panel==='raid'&&raid&&!raid.settled?'raid':'hq';}
 export function readMuted(storage?:Pick<Storage,'getItem'>){try{return storage?.getItem(MUTE_KEY)==='true';}catch{return false;}}
 export function writeMuted(storage:Pick<Storage,'setItem'>|undefined,value:boolean){try{storage?.setItem(MUTE_KEY,String(value));}catch{}}

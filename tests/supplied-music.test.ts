@@ -2,15 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {IDENTITY_TRACKS,LEGACY_IDENTITY_TRACKS,identityTrack} from '../src/audio/identityTracks';
+import {IDENTITY_TRACKS,SUPPLIED_V1_TRACKS,LEGACY_IDENTITY_TRACKS,identityTrack} from '../src/audio/identityTracks';
 import {loadApprovedTrack} from '../src/audio/tracks';
 import {musicLoop} from '../src/audio/RecordedMusic';
 
-test('supplied recordings are defaults and both prior recordings remain available',()=>{
+test('previous supplied recordings remain preserved and older comparisons remain available',()=>{
  for(const mode of ['hq','infiltration'] as const){
-  assert.equal(identityTrack(mode,''),IDENTITY_TRACKS[mode]);
+  assert.equal(identityTrack(mode,'?music=supplied-v1'),SUPPLIED_V1_TRACKS[mode]);
   assert.equal(identityTrack(mode,'?music=previous'),LEGACY_IDENTITY_TRACKS[mode]);
-  const t=IDENTITY_TRACKS[mode],stats=JSON.parse(readFileSync(`music/supplied-v1/${mode}-measurements.json`,'utf8'));
+  const t=SUPPLIED_V1_TRACKS[mode],stats=JSON.parse(readFileSync(`music/supplied-v1/${mode}-measurements.json`,'utf8'));
   const hash=(p:string)=>createHash('sha256').update(readFileSync(p)).digest('hex');
   assert.equal(hash(`music/supplied-v1/source/${mode}.mp3`),stats.sourceSha256);
   for(const [name,info] of Object.entries(stats.exports) as [string,{sha256:string}][])assert.equal(hash(`public/audio/supplied-v1/${name}`),info.sha256);

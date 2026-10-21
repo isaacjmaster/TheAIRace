@@ -104,7 +104,7 @@ export function App(){
    if(command.action==='infiltration-start')setPanel('infiltration');if(command.action==='start')setPanel('raid');if(command.action==='deploy')sound.cue('deploy');if(command.action==='retreat')setPanel(null);return true;
   }catch(e){setError((e as Error).message);return false;}finally{gate.current=false;setBusy(false);}
  }
- useEffect(()=>{sound.setMode(phase==='game'&&panel==='infiltration'&&state?.infiltration&&['ready','active'].includes(state.infiltration.status)?'infiltration':musicModeFor(phase,panel,state?.botRaid));},[phase,panel,state?.botRaid?.id,state?.botRaid?.settled,state?.infiltration?.status]);
+ useEffect(()=>{sound.setMode(musicModeFor(phase,panel,state?.botRaid));},[phase,panel,state?.botRaid?.id,state?.botRaid?.settled]);
  function open(next:typeof panel){lastFocus.current=document.activeElement as HTMLElement;setPanel(next);setError('');}
  async function reset(){if(gate.current||!state||identityChanged)return;const generation=state.generation||0;gate.current=true;setBusy(true);setError('');
   const finish=(next:FoundationState)=>{setState(next);setRecoveredEntry(false);setWorldKey(k=>k+1);setPlacing(null);setCollected(null);pending.current=null;botPending.current=null;setPanel(null);setError('');sound.cue('resources');};
