@@ -1,9 +1,14 @@
-/** CSS owns the dynamic viewport, matching Maze Sprint's working mobile approach. */
+/** The scene fills the viewport; only controls consume safe-area insets. */
 export const SCREEN_BACKGROUNDS={splash:'#07090c',menu:'#ace8f5',game:'#b5eafa'} as const;
 export function setPresentationBackground(phase:keyof typeof SCREEN_BACKGROUNDS){
  const color=SCREEN_BACKGROUNDS[phase];
  document.documentElement.dataset.presentation=phase;
  document.documentElement.style.setProperty('--app-background',color);
+ // Safari can sample the actual page paint for native chrome. Set it directly
+ // as well as the CSS variable, so the launch charcoal cannot remain as a fallback.
+ document.documentElement.style.backgroundColor=color;
+ document.body.style.backgroundColor=color;
+ document.documentElement.style.colorScheme=phase==='splash'?'dark':'light';
  // The standalone native region can paint the page background rather than artwork.
  // Keep the studio fade's endpoint synchronized with the menu sky, not HQ blue.
  document.documentElement.style.setProperty('--title-sky-color',SCREEN_BACKGROUNDS.menu);

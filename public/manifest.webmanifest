@@ -8,7 +8,7 @@
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#07090c",
-  "theme_color": "#07090c",
+  "theme_color": "#b5eafa",
   "icons": [
     {
       "src": "/icons/campus-v2-192.png",

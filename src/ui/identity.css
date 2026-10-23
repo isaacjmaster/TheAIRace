@@ -70,3 +70,11 @@ html[data-presentation="splash"] .audio-toggle,
 html[data-presentation="splash"] .menu-recover{visibility:hidden}
 html[data-presentation="splash"] body{background:#07090c;color-scheme:dark}
 html[data-presentation="splash"] .studio-splash{position:fixed;inset:0;min-height:100%;padding:0}
+
+/* Home Screen: pin the single viewport owner to all four available edges.
+   Do not reserve a status-bar row or size the world from a safe-area rectangle.
+   Safari browser mode retains dynamic viewport sizing for its collapsing toolbar. */
+@media(display-mode:standalone){
+ #root{position:fixed;inset:0;width:auto;height:auto;min-height:0}
+ .foundation-app .race-menu.ava-title-screen{position:absolute;inset:0}
+}

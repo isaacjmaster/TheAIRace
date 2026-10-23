@@ -1,0 +1,31 @@
+The AI Race — iPhone edge-to-edge display patch
+
+Release approved by the owner after local review. This display-only patch changes no gameplay, player data or database configuration. Physical iPhone verification remains outstanding.
+
+Evidence
+The owner reports this worked a couple of updates ago and the screenshots come from the installed Home Screen app. Commit 61a8b9e changed manifest theme_color from #b5eafa to #07090c, changed Apple's status-bar style from default to black-translucent, and added a black standalone status-region overlay. df5eefa removed that overlay, but an already-running install can still be displaying the older page. That is a possible explanation, not a physical-device diagnosis.
+
+Local changes
+- Restore the previously working blue installed-app theme fallback. Keep black OS launch background for Master Studios.
+- Retain viewport-fit=cover, Apple web-app-capable=yes, black-translucent status bar and standalone display. Apple's documented full-screen content-under-status-bar configuration requires black-translucent; reverting to default would surrender that capability.
+- Paint HTML and body directly from the active splash/menu/game background, along with the existing CSS variable and theme-color metadata. Explicit light color-scheme for the active game/menu and dark for the splash helps browser chrome choose its supported appearance; the OS ultimately controls native glyph color.
+- In standalone mode, pin the single #root viewport owner with fixed inset:0 and auto width/height. Keep loading artwork positioned inside that root. No negative offsets, fixed notch dimensions, safe-area subtraction from the canvas or additional status-bar overlay.
+- Preserve all existing env(safe-area-inset-*) spacing on HUD, menus, close buttons and bottom controls.
+
+Native limits
+No physical iPhone, iOS Simulator or installed iPhone PWA is available here. Desktop screenshots show application layout only, not native clock/battery/Dynamic Island. A desktop browser viewport cannot prove native iOS integration or status-glyph contrast. Apple has also tracked an iOS 26.1 edge-to-edge regression as a Safari issue (WebKit report 300445, moved to Apple). No workaround here can force pixels outside a native viewport if iOS restricts it.
+
+Device verification after approval/deployment
+1. Save the existing company's recovery code securely before any reinstall or site-data change. Never clear website data as a troubleshooting shortcut.
+2. Fully close the existing Home Screen app and relaunch to fetch the updated page; compare splash, loading, HQ, Infiltrate and menus. This may be sufficient if an older page remained running.
+3. Check Safari separately. Confirm HUD/taps below Dynamic Island, bottom controls above home indicator, no gaps and no horizontal scrolling.
+4. If native install metadata remains cached, a fresh Home Screen installation may be needed. Preserve recovery access first; do not remove the old install until recovery is secured. Reinstalling is a user action, not performed by this patch.
+5. If a fresh install still has a native band, record iOS version and compare Safari vs Home Screen. Do not claim success without that test.
+
+Sources
+Apple supported meta tags: https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html
+WebKit safe-area guidance: https://webkit.org/blog/7929/designing-websites-for-iphone-x/
+Apple-tracked Safari regression: https://www2.webkit.org/show_bug.cgi?id=300445
+
+Verification
+Relevant viewport/configuration tests pass; TypeScript/Vite production build passes. No gameplay/server/database files changed. Browser layout screenshots and measurements: output/Edge_To_Edge_Review. These exercise normal browser layout and the standalone CSS branch with explicitly simulated safe-area values, not a native installed PWA.
