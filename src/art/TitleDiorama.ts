@@ -1,3 +1,4 @@
+import {titleBuilderPose,TITLE_BUILDER_START} from './titleBuilderRoute';
 import {PowerConnections} from './PowerConnections';
 import * as THREE from 'three';
 import {titlePixelRatio} from './titleQuality';
@@ -51,7 +52,7 @@ export class TitleDiorama {
   this.walls=new SecurityWalls([{id:'west',x:-10.3,z:-1,w:.5,d:13,height:1.25},{id:'rear',x:0,z:-8.4,w:20.6,d:.5,height:1.25},{id:'front-left',x:-7.3,z:8.6,w:6,d:.5,height:1.15},{id:'front-right',x:6.5,z:8.6,w:7.6,d:.5,height:1.15}]);this.walls.group.position.y=.55;this.campus.add(this.walls.group);
   for(const [kind,x,z,scale] of [['cypress',-9,3.1,.8],['ornamental',8.9,-5.6,.85],['planter',-3.3,1.9,.8],['flowers',-7.8,4.4,.8]] as const){const m=decorationModel(k,kind);m.position.set(x,.55,z);m.scale.setScalar(scale);this.campus.add(m);}
   // A small yellow builder, deliberately simple and readable at menu scale.
-  this.bot.position.set(.25,.56,5);this.bot.scale.setScalar(1.25);this.campus.add(this.bot);
+  this.bot.position.set(TITLE_BUILDER_START.x,.56,TITLE_BUILDER_START.z);this.bot.scale.setScalar(1.25);this.campus.add(this.bot);
   k.box(this.bot,[.85,.7,.7],[0,.8,0],c.gold,.14);k.box(this.bot,[1,.72,.8],[0,1.5,0],c.cream,.15);
   k.box(this.bot,[.8,.42,.06],[0,1.5,.43],c.dark,.1);
   for(const x of [-.22,.22])k.box(this.bot,[.1,.13,.04],[x,1.52,.48],c.cyan,.025,true);
@@ -90,7 +91,7 @@ export class TitleDiorama {
  private contextLost=(event:Event)=>{event.preventDefault();cancelAnimationFrame(this.frame);this.frame=0;this.active=false;this.onFailure();};
  setStartupProgress(read:()=>number){this.startupProgress=read;if(this.motion.matches){this.powerOn(1);this.render();}}
  private powerOn(p:number){
-  const walk=THREE.MathUtils.smoothstep(p,.3,.64);this.bot.position.x=.25+walk*3;this.bot.position.z=5-walk*2.7;this.bot.rotation.y=walk<1&&p>.3?2.35:.2;
+  const pose=titleBuilderPose(p);this.bot.position.x=pose.x;this.bot.position.z=pose.z;this.bot.rotation.y=pose.yaw;
   const pulse=p>=.18&&p<=.32?Math.sin((p-.18)/.14*Math.PI)*.035:0;this.gpu.scale.setScalar(1.25+pulse);
   this.powerLights.forEach((light,i)=>light.visible=p>=.65+i*.035);
   const t=THREE.MathUtils.clamp((p-.52)/.4,0,1),a=t<.5?[3.1,3.5]:[-4.4,-2.1],b=t<.5?[-4.4,-2.1]:[4.5,-4.3],u=t<.5?t*2:(t-.5)*2;

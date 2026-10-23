@@ -56,3 +56,10 @@
 .rank-wide .rank-numeral{font-size:12px;font-variant-numeric:tabular-nums}
 /* Top ten: a fixed header and internally scrolling, full-row touch targets. */
 .leaderboard{width:min(650px,100%);max-height:calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow:hidden;padding:14px}.leaderboard-subtitle{margin:8px 0 0;font-size:11px;color:#66838f}.leaderboard-rows{overflow-y:auto;overscroll-behavior:contain;min-height:0;flex:0 1 auto;grid-auto-rows:minmax(44px,auto);gap:3px;scrollbar-width:thin;padding-right:2px}.leaderboard-rows li,.leaderboard footer{padding:0;min-height:44px;display:block}.leaderboard-player{display:flex;width:100%;min-height:44px;box-sizing:border-box;align-items:center;gap:8px;padding:4px 20px 4px 7px;border:0;background:transparent;border-radius:7px;color:inherit;text-align:left;cursor:pointer}.leaderboard-player:focus-visible{outline:2px solid #2b9cac;outline-offset:-2px}.leaderboard-player:hover{background:#bcece733}.leaderboard .rank-medal:has(.ranking-insignia),.leaderboard .ranking-insignia{width:34px;height:31px}.leaderboard .rank-medal:not(:has(.ranking-insignia)){width:28px;height:28px;font-size:13px;margin:0 3px}.leaderboard .influence-score{min-width:68px;min-height:25px;padding:3px 24px 3px 8px}.leaderboard .influence-score svg{width:32px;height:35px;right:-14px}.leaderboard .influence-score{font-size:15px}.leaderboard-rows strong,.leaderboard footer strong{font-size:13px;flex:1}.leaderboard footer{flex-shrink:0}.leaderboard-columns{flex-shrink:0}
+
+/* Player names lead the compact rows without borrowing space from the score. */
+.leaderboard .leaderboard-player .username-label{flex:1 1 0;min-width:0;overflow:hidden;font-size:clamp(16px,2vw,18px);font-weight:900;line-height:1.2;letter-spacing:.01em;color:#203f58;text-shadow:0 1px #fff8}
+.leaderboard .leaderboard-player .username-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.leaderboard .leaderboard-player .username-hash{font-size:.57em;font-weight:600;opacity:.55;color:#71909b}
+.leaderboard .is-current .username-label{color:#12667a}
+.leaderboard .influence-score{flex-shrink:0}

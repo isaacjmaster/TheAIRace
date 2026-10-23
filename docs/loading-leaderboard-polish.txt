@@ -1,0 +1,27 @@
+Loading worker route and leaderboard identity polish
+==================================================
+The title worker's old .25,5 to 3.25,2.3 diagonal intersected the enlarged GPU.
+It now follows the existing front service aisle at Z=6.3, moving from X=-.55
+across the GPU front. The route has the exact same 4.036-unit travel distance,
+.30-.64 loading-progress interval and smoothstep easing. Heading follows the
+walk; existing bob, wave and idle motions remain. Loading duration, readiness
+logic, artwork layout, GPU model, gameplay and saved bases are untouched.
+The worker holds the endpoint during readiness waits; ambient loops do not
+restart the walk or drift into a structure. No pathfinding/dependency added.
+
+Leaderboard usernames are now 16-18px, bold, high contrast, with a subdued #.
+The existing current-player row uses a teal name accent. Ellipsis stays confined
+to the name; rank, Influence values/icons, touch targets and actual names stay
+intact. Styles apply only to leaderboard rows, including the off-list own row.
+
+Validation: 471 tests and production build passed. New geometry checks sample
+1001 progress values against the real title building bounds (including maximum
+GPU pulse scale), walls and platform edges with a conservative worker radius.
+Distance/timing and repeated endpoint samples preserve original movement pace.
+Muted isolated browser checks record the entire sequence and extended idle at
+1100x820 and 390x844, with no GPU/HQ/lab intersections or page errors. Ten real
+isolated accounts exercise 16-character wide names, ellipsis, highlight, profile
+identity, unchanged rankings and scores at 320px, 390px and desktop widths.
+All contexts close after captures. Physical iPhone testing was not performed.
+Review artifacts: output/Loading_Leaderboard_Polish (screenshots, video, JSON).
+No server, persistence, economy, ranking or Influence calculation files changed.
