@@ -23,7 +23,8 @@
     "preview:plot": "node --import tsx scripts/preview-hq-plot.ts",
     "preview:hq": "node --import tsx scripts/preview-founder-hq.ts",
     "preview:compound": "node --import tsx scripts/preview-compound.ts",
-    "preview:cybersecurity": "node --import tsx scripts/preview-cybersecurity.ts"
+    "preview:cybersecurity": "node --import tsx scripts/preview-cybersecurity.ts",
+    "preview:players": "node --import tsx scripts/preview-player-world.ts"
   },
   "dependencies": {
     "express": "^5.1.0",

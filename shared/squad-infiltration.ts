@@ -25,7 +25,7 @@ export function newSquadOperation(id:string,targetId:string,now:number,spacious=
  if(spacious){o.squad.balanceVersion=2;o.squad.rules='tactical-v1';for(const a of o.target.assets)if(a.hackSeconds)a.hackSeconds=a.kind==='gpu'?TACTICAL_BALANCE.hackSeconds.gpu:a.kind==='lab'?TACTICAL_BALANCE.hackSeconds.lab:TACTICAL_BALANCE.hackSeconds.core;for(const d of o.target.defenses){d.radius=TACTICAL_BALANCE.droneDetection;d.warningSeconds=TACTICAL_BALANCE.droneWarmupMs/1000;}}
  o.drones=o.target.defenses.map(d=>({id:d.id,position:[...d.route[0]],segment:1,alert:0,lost:0,mode:'patrol'}));if(spacious)for(const d of o.drones)d.health=TACTICAL_BALANCE.droneHealth;return o;
 }
-export function squadTarget(o:Operation){return o.squad?{...o.target,walls:o.target.walls?.filter(w=>!o.squad!.breachedWalls.includes(w.id))}:o.target;}
+export function squadTarget(o:Operation){return o.squad?{...o.target,...(o.pvp?{assets:o.target.assets.filter(a=>!o.hacked.includes(a.id))}:{}),walls:o.target.walls?.filter(w=>!o.squad!.breachedWalls.includes(w.id))}:o.target;}
 const distance=(a:Vec,b:Vec)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 function event(o:Operation,type:string,detail?:string){if(o.events.length<1024)o.events.push({at:o.lastTick,type,...(detail?{detail}:{})});}
 function walk(a:SquadAgent,dt:number){let budget=INFILTRATION.agentSpeed*dt;const before:Vec=[...a.position];while(a.path.length&&budget>0){const q=a.path[0],d=distance(a.position,q);if(d<=budget){a.position=[...q];a.path.shift();budget-=d;}else{a.position[0]+=(q[0]-a.position[0])*budget/d;a.position[1]+=(q[1]-a.position[1])*budget/d;break;}}if(distance(before,a.position)>.001)a.yaw=Math.atan2(a.position[0]-before[0],a.position[1]-before[1]);}

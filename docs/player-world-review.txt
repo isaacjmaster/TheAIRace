@@ -1,0 +1,46 @@
+THE AI RACE — REAL PLAYER PvP, PROFILES, VISITS & TOP 10
+
+Player experience
+Infiltrate now offers Missions, Players and Battle History. Missions retains the existing five-base server search and combat rules. Players uses Find Opponent -> read-only Scout -> Infiltrate or Next Opponent -> deployment -> result. A peaceful visit is available only through a public profile and never creates a scout/battle or spends troops.
+Global Leaderboard displays up to ten actual named companies, plus the current company's own row below the Top 10 if needed. Influence order remains total descending, company creation time ascending, permanent ID ascending. No placeholders fill empty rows. Full-row buttons preserve medals and gold Influence styling, with 44px minimum touch targets and internal scrolling.
+Profiles expose only permanent public company ID, username, Company XP level, Founder HQ level, Influence, global rank and visit availability. The existing credential/recovery/save IDs are never exposed.
+
+Random matching
+The server uses crypto.randomInt among actual eligible companies, excluding self. Eligible companies have a named permanent identity, sufficiently completed onboarding, a Builder Station and a validated layout. With multiple opponents, the immediate previous opponent is excluded. Reward-eligible opponents are preferred; within that pool, unseen companies are preferred. Seen history resets when the small pool is exhausted. With eight or more opponents, prefer Company Level +/-1 when available; otherwise expand rather than refusing a match. Search is free and does not reserve or deduct troops. UUID scout receipts are bound to the authenticated attacker and expire after five minutes. A client cannot request an opponent by name or public company ID.
+
+One public layout system
+server/player-world.ts loads the saved owner state once and shared/player-base.ts projects only visual fields: structure kind, position, rotation, current level, construction-complete flag, walls, decorations and scenery. Resource balances, stored production, armies, training jobs, technology levels and credentials are omitted.
+Visits and scouting both use PublicBaseView and baseVisualState with the regular HeadquartersScene, with only camera inputs installed. There are no owner action handlers. The underlying own HQ is inert and aria-hidden. New/unavailable companies receive a friendly message. Both own-company and other-company visits work.
+At battle creation the server captures a fresh validated defensive layout, stores it in pvp_battles and embeds the fixed copy in the saved operation. Later owner edits do not alter that battle. No defender save is written by the incoming attack. Coordinates are retained directly; rotated HQ collision offsets and original model pivots are represented separately. Arena/deployment boundaries derive from the actual layout footprint. Decorations and scenery remain non-combat visuals.
+
+Combat and validation
+The existing deterministic infiltration/squad engine and 100ms server ticks are reused. Inputs remain deployment/abandon intentions; no client result/Influence/timestamp claims are accepted. Player structures use explicit battle-only health (216 HQ, 108 other buildings), with the existing Cipher Bot damage and shot interval, Research multiplier and collapse-to-ruins visuals. Mission hacking remains unchanged. Existing Cipher shots and wall breaches are reused; Research damage bonuses apply. Only a completed real Security Drone Station creates a defensive drone. No extra weapons or towers are invented.
+For PvP only, destroying Founder HQ ends the battle as victory. Other destroyed structures contribute to destruction percent. Timeout, losing troops or abandoning without destroying HQ fails. Enclosed bases use the existing breach planner. NPC missions retain their prior simulation, loot and survivor-return rules.
+PvP deployed Cipher Bots are consumed once. Undeployed bots stay in inventory and scouting spends none. Deployment is checked against actual inventory and permitted exterior ground. Ready operations expire safely after five minutes; active battles retain the existing three-minute timer. Saved active operations survive refresh and server restart.
+
+Rewards and history
+A successful PvP attack awards 25 Influence, matching the entry mission's 25 (the existing five mission rewards are 25/40/55/70/90). Failed attacks award zero. There is no Compute/Research reward or theft. A permanent attacker/defender pair has a 12-hour Influence cooldown after a rewarded win; practice attacks remain possible. Names and browser reloads cannot change the pair key.
+Battle creation, action receipts, game-state saves, final results, Influence and cooldown writes share BEGIN IMMEDIATE transactions. Battle ID, scout-use and action-request uniqueness prevent duplicate starts/deployments/payouts. Returning players can read Attack and Defense history; a bounded server sweep settles saved offline operations without requiring the attacker to reconnect. No replay or push notification system is added.
+
+Migration and production protection
+Only three new tables are added: pvp_scouts, pvp_battles and pvp_reward_cooldowns, plus lookup indexes. No existing table or save JSON is reset/reseeded/replaced. Active NPC operations and existing accounts, usernames, resources, queues, layout, recovery, XP and Influence remain compatible.
+Before rollout, a consistent VACUUM INTO snapshot was created on the unchanged /app/data/backups volume: manual-pre-pvp-1792733650194.sqlite. Its SQLite integrity_check returned ok and it contains all 15 saved foundation records present at capture. This is a protected SQLite backup file on the existing volume, not a new paid Railway backup plan.
+Production startup additionally creates and verifies a pre-PvP backup before the first additive migration. If verification fails, startup fails without proceeding to the migration. GAME_DB_PATH and the existing Railway volume/service are unchanged. No production test accounts or battles are used.
+
+Verification
+- 14 focused player-world tests: real Top 10/ties; public profile data/privacy; own and unavailable visits; random small pools; no self/forged scouts; free/idempotent search; frozen geometry; legal inventory-backed deployment; actual HQ victory; single award; 12-hour practice cooldown; offline history; closed-wall breach; expiry; backup/additive compatibility; multiple attackers; write-failure rollback; level and reward preferences; persistent battles/history across server restart.
+- 443/443 automated tests passed. The TypeScript/Vite production build and isolated production smoke test passed, including persistence across process restart.
+- Silent Edge browser emulation at 390x844 verified all ten interactive rows, >=44px touch targets, public profile, actual other-campus visit, no visit POSTs, pan/zoom, random Next Opponent, actual pointer-position troop deployment, live combat, results and both history tabs.
+- Own-base visits, two-finger touch-event pinch zoom, direct return to leaderboard and PvP retreat/failure result were additionally verified. Landscape 844x390 leaderboard scrolling passed.
+- Every game preview used testAudio=off and browser contexts were closed. No saved mute preferences changed. Physical iPhone/PWA/native desktop testing is not claimed.
+
+Local test instructions
+From TheAIRace:
+  npm run build
+  npm run preview:players
+Desktop: http://127.0.0.1:3094/review/player-world?testAudio=off
+On an iPhone connected to the same Wi-Fi: http://192.168.1.40:3094/review/player-world?testAudio=off
+The computer's current LAN IPv4 was verified as 192.168.1.40; update the address if the network changes. This preview creates a new isolated SQLite file under data/player-world-review for each launch, seeded with clearly labelled QA companies and real simulated history. It never uses GAME_DB_PATH or production records. A development-only clock endpoint accelerates screenshots/tests; it is not included in the production Docker image.
+
+Visual artifacts
+output/Player_World_Review/index.html contains the complete screenshot gallery.

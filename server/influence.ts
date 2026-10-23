@@ -36,10 +36,10 @@ export function influenceStore(db:DatabaseSync){
   return {total:total(company),raids:INFLUENCE.awards.map((award,layout)=>({award,eligibleAt:eligible(company,layout)})),result,serverTime:now};
  }
  function leaderboard(company:string):LeaderboardData{
-  // Usernames are public. No IDs, cookies, recovery verifiers or save JSON leave here.
+  // Only public identity and ranking fields leave here; permanent IDs route safe profiles.
   const query=`WITH ranked AS (SELECT p.id,u.username AS name,COALESCE(i.total,0) AS influence,ROW_NUMBER() OVER (ORDER BY COALESCE(i.total,0) DESC,p.created_at ASC,p.id ASC) AS rank FROM company_players p JOIN player_usernames u ON u.player_id=p.id LEFT JOIN company_influence i ON i.company_id=p.id) SELECT * FROM ranked`;
-  const map=(r:Record<string,unknown>):Ranking=>({rank:Number(r.rank),name:String(r.name),influence:Number(r.influence),current:r.id===company});
-  return {rows:db.prepare(query+' WHERE rank<=5 ORDER BY rank').all().map(map),own:(()=>{const row=db.prepare(query+' WHERE id=?').get(company);return row?map(row):null;})()};
+  const map=(r:Record<string,unknown>):Ranking=>({companyId:String(r.id),rank:Number(r.rank),name:String(r.name),influence:Number(r.influence),current:r.id===company});
+  return {rows:db.prepare(query+' WHERE rank<=10 ORDER BY rank').all().map(map),own:(()=>{const row=db.prepare(query+' WHERE id=?').get(company);return row?map(row):null;})()};
  }
  return {register,settle,snapshot,leaderboard};
 }

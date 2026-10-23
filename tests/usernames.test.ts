@@ -62,7 +62,7 @@ test('authoritative username API handles retries, exact 14-day boundary, concurr
   now++;const concurrent=await Promise.all([post(a,'username',{username:'Next_Name'}),post(a,'username',{username:'Other_Name'})]);assert.deepEqual(concurrent.map(r=>r.status).sort(),[200,409]);
   const final=concurrent.find(r=>r.status===200)!.data.company;
   db.prepare('INSERT INTO company_influence VALUES(?,?)').run(a.id,375);
-  const ranking=await(await fetch(base+'/leaderboard',{headers:{cookie:a.cookie}})).json();assert.equal(ranking.rows[0].name,final.username);assert.equal(ranking.rows[0].influence,375);assert.ok(!JSON.stringify(ranking).includes(a.id));
+  const ranking=await(await fetch(base+'/leaderboard',{headers:{cookie:a.cookie}})).json();assert.equal(ranking.rows[0].name,final.username);assert.equal(ranking.rows[0].influence,375);assert.equal(ranking.own.companyId,a.id);
   const code=(await post(a,'recovery-code',{})).data.code;
   const ticket=(await post(b,'recover/check',{code})).data.ticket;
   const recovered=await post(b,'recover/confirm',{ticket,confirm:true});

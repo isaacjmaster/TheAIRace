@@ -1,3 +1,5 @@
+import type {PublicBase} from './player-base';
+import type {RotatableBuilding,Orientation} from './foundation';
 import {BASE_IDS,craftCampusTarget} from './infiltration-bases';
 import {advanceSquad,commandSquad,type SquadState} from './squad-infiltration';
 import {findPath,pointClear,nearestOpen,segmentClear,type NavRect} from './navigation';
@@ -8,6 +10,7 @@ export type Vec = [
     number
 ];
 export type Asset = {
+    maxHealth?:number;model?:RotatableBuilding;orientation?:Orientation;level?:1|2;visualPosition?:Vec;
     id: string;
     kind: 'hq' | 'gpu' | 'lab' | 'terminal' | 'station';
     name: string;
@@ -30,7 +33,8 @@ export type Defense = {
 export type TargetSnapshot = {
     version: 1;
     arena?:'campus-v2';
-    hqLevel?:2;
+    hqLevel?:1|2;
+    publicBase?:PublicBase;
     campusBounds?:{minX:number;maxX:number;minZ:number;maxZ:number};
     compound?:Vec;
     navigationVersion?:2;
@@ -76,6 +80,7 @@ export type InfiltrationEvent = {
     detail?: string;
 };
 export type Operation = {
+    pvp?:{attackerId:string;defenderId:string};
     squad?:SquadState;
     cipherDamageMultiplier?:number;
     unit?:{kind:'scrap';reservationId:string;status:'reserved'|'returned'|'lost'};
