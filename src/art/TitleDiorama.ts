@@ -1,3 +1,4 @@
+import {PowerConnections} from './PowerConnections';
 import * as THREE from 'three';
 import {titlePixelRatio} from './titleQuality';
 import {WorldKit,palette as c} from './world';
@@ -16,6 +17,7 @@ export class TitleDiorama {
  private scene=new THREE.Scene();private camera=new THREE.OrthographicCamera(-12,12,12,-12,.1,100);
  private kit=new WorldKit('campus');private campus=new THREE.Group();private gpu:THREE.Group;private bot=new THREE.Group();
  private house:THREE.Group;private research:THREE.Group;private drone:THREE.Group;private walls:SecurityWalls;
+ private power=new PowerConnections(.67);
  private startupProgress=()=>1;private energy=new THREE.Group();private powerLights:THREE.Object3D[]=[];
  private frame=0;private last=0;private elapsed=0;private active=true;private disposed=false;
  private observer:ResizeObserver;private motion=matchMedia('(prefers-reduced-motion: reduce)');
@@ -41,6 +43,7 @@ export class TitleDiorama {
   k.box(this.campus,[20.8,.04,1.3],[0,.54,2.1],'#f7f0dc',.04);
   this.house=founderHQ(k,this.campus,2);this.house.position.set(-4.4,.55,-2.1);this.house.scale.setScalar(.9);
   this.gpu=gpuRigModel(k);this.gpu.position.set(3.1,.55,3.5);this.gpu.scale.setScalar(1.25);this.campus.add(this.gpu);
+  this.scene.add(this.power.group);this.power.sync(this.house,[{id:'rig',model:this.gpu}],[{x:-4.4,z:-2.1,w:8.1,d:7.2},{x:3.1,z:3.5,w:5,d:3.6},{x:4.5,z:-4.3,w:6.4,d:6.1}]);
   this.research=researchLabModel(k);this.research.position.set(4.5,.55,-4.3);this.research.scale.setScalar(1.45);this.campus.add(this.research);
   const station=builderStationModel(k);station.position.set(-3.2,.55,4.6);station.scale.setScalar(.92);this.campus.add(station);
   const dronePad=droneStationModel(k);dronePad.position.set(7.9,.55,1.6);dronePad.scale.setScalar(1.05);this.campus.add(dronePad);
@@ -94,5 +97,5 @@ export class TitleDiorama {
   this.energy.visible=p>.52&&p<.92;this.energy.position.set(a[0]+(b[0]-a[0])*u,.7,a[1]+(b[1]-a[1])*u);this.renderer.domElement.dataset.powerProgress=p.toFixed(3);
  }
  setActive(active:boolean){this.active=active;this.updateActivity();}
- dispose(){if(this.disposed)return;this.disposed=true;cancelAnimationFrame(this.frame);this.observer.disconnect();window.removeEventListener('resize',this.resize);document.removeEventListener('visibilitychange',this.updateActivity);this.motion.removeEventListener('change',this.updateActivity);this.renderer.domElement.removeEventListener('webglcontextlost',this.contextLost);this.walls.dispose();this.kit.dispose();this.scene.traverse(o=>{if(o instanceof THREE.Light)o.dispose();});this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
+ dispose(){if(this.disposed)return;this.disposed=true;cancelAnimationFrame(this.frame);this.observer.disconnect();window.removeEventListener('resize',this.resize);document.removeEventListener('visibilitychange',this.updateActivity);this.motion.removeEventListener('change',this.updateActivity);this.renderer.domElement.removeEventListener('webglcontextlost',this.contextLost);this.walls.dispose();this.power.dispose();this.kit.dispose();this.scene.traverse(o=>{if(o instanceof THREE.Light)o.dispose();});this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
 }

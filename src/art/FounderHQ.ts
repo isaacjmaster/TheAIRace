@@ -1,3 +1,4 @@
+import {addHqPowerBox} from './PowerConnections';
 import * as THREE from 'three';
 import {WorldKit,palette as c} from './world';
 
@@ -81,7 +82,7 @@ export function founderHQ(k:WorldKit,parent:THREE.Group,level:1|2=1):THREE.Group
   k.batchStatic(founder,'campus-founder');k.batchStatic(house,'campus-house');
   k.grounding(house,10,9,0,.4);
  }
- return house;
+ addHqPowerBox(k,house,1);return house;
 }
 
 export type FoundationBuilding='hq'|'rig'|'rig2'|'fabricator'|'hangar'|'station'|'lab'|'droneStation';
@@ -180,5 +181,5 @@ function founderHQLevel2(k:WorldKit,parent:THREE.Group){
  const canopy=box([2.65,.22,6.35],[2.9,4.42,.15],'#155976',.08);canopy.rotation.z=-.08;
  box([2.55,.07,.07],[2.9,4.33,3.34],c.cyan,.025,true);box([1.65,.18,.8],[2.38,.48,3.82],c.slate,.05);
  for(const x of [-3.86,1.69,3.98])box([.12,3.7,.11],[x,2.5,3.25],'#fff8e6',.025);
- k.batchStatic(founder,'campus-founder-level2');k.batchStatic(house,'campus-house-level2');k.grounding(house,10,9,0,.4);return house;
+ k.batchStatic(founder,'campus-founder-level2');k.batchStatic(house,'campus-house-level2');k.grounding(house,10,9,0,.4);addHqPowerBox(k,house,2);return house;
 }

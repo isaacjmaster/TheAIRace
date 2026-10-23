@@ -43,6 +43,15 @@ export class WorldKit {
  gable(parent:THREE.Object3D,width:number,height:number,depth:number,position:[number,number,number],color:string){
   const mesh=new THREE.Mesh(this.geometry(`gable${width},${height},${depth}`,()=>{const shape=new THREE.Shape();shape.moveTo(-width/2,0);shape.lineTo(width/2,0);shape.lineTo(0,height);shape.closePath();const geometry=new THREE.ExtrudeGeometry(shape,{depth,bevelEnabled:false});geometry.translate(0,0,-depth/2);return geometry;}),this.mat(color));mesh.position.set(...position);mesh.castShadow=true;parent.add(mesh);return mesh;
  }
+ extrusion(parent:THREE.Object3D,key:string,shape:THREE.Shape,depth:number,position:[number,number,number],color:string){
+  const mesh=new THREE.Mesh(this.geometry('extrusion'+key+depth,()=>new THREE.ExtrudeGeometry(shape,{depth,steps:1,curveSegments:4,bevelEnabled:false})),this.mat(color));mesh.position.set(...position);parent.add(mesh);return mesh;
+ }
+ emblem(parent:THREE.Object3D,points:[number,number][],position:[number,number,number],color:string){
+  const mesh=new THREE.Mesh(this.geometry('emblem'+points.flat().join(),()=>{const shape=new THREE.Shape(points.map(p=>new THREE.Vector2(...p)));return new THREE.ShapeGeometry(shape);}),this.mat(color,true));mesh.position.set(...position);parent.add(mesh);return mesh;
+ }
+ ring(parent:THREE.Object3D,radius:number,tube:number,position:[number,number,number],color:string,glow=false){
+  const mesh=new THREE.Mesh(this.geometry('ring'+radius+','+tube,()=>new THREE.TorusGeometry(radius,tube,6,24)),this.mat(color,glow));mesh.position.set(...position);parent.add(mesh);return mesh;
+ }
  cylinder(parent:THREE.Object3D,radius:number,height:number,position:[number,number,number],color:string){
   const mesh=new THREE.Mesh(this.geometry('cyl'+radius+','+height,()=>new THREE.CylinderGeometry(radius,radius,height,10)),this.mat(color));mesh.position.set(...position);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
  }

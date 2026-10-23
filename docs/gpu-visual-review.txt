@@ -1,0 +1,28 @@
+GPU Rig overhaul and refinement
+===============================
+Shared stylized model: longer 4.5 x 2.48 chassis, top near 2.32, three recessed
+seven-blade animated fans, layered metallic rims and cyan emissive rings.
+Chamfered supports, vented top modules, fasteners and side sockets. Geometry
+is cached/batched. No new point lights, bloom, physics or dependencies.
+
+Founder HQ levels 1 and 2 have an exterior power box with a cyan bolt.
+Per-rig cables use actual transformed ports and grounded rounded routes,
+avoid buildings/walls when feasible, and update during placement/rotation.
+Crowded legacy layouts can use buried conduit rather than moving structures.
+Visual width fits neighboring obstacles while saved positions and logical
+placement footprints remain unchanged. Geometry is disposed on rebuild.
+
+Shared across HQ, visits, scouting/combat, title diorama and building images.
+Destroyed PvP rig cables hide only within the battle instance. Production,
+storage, collection, balance, saves, recovery, accounts and DB are unchanged.
+
+Validation: 462/462 tests passed, production build passed, diff check clean.
+Browser captures verified home, detail, box, distant route, rotation, visits,
+390x844 viewport, PvP GPU IDs and local cable destruction. No page errors;
+fan angles advance and contexts close. All previews use testAudio=off and
+isolated visual state. About 237 draw calls / 118k triangles in review campus.
+Physical iPhone performance and appearance have not been verified.
+
+Local review: output/GPU_Refinement_Review/index.html, close.png, normal.png,
+mobile.png, far.png, rotated.png, visit.png, combat.png, destroyed.png and
+fan-preview.webm. Before images show the first local GPU iteration.

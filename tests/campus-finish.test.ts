@@ -18,7 +18,7 @@ test('campus finish leaves the title/raid default material profile unchanged and
 test('polished meshes keep real selection, ignore decorative contact shadows, and preserve the visible founder',()=>{
  const k=new WorldKit('campus'),root=new THREE.Group(),house=founderHQ(k,root),gpu=gpuRigModel(k);gpu.position.set(6,0,0);k.grounding(gpu,4.6,3.6);root.updateMatrixWorld(true);gpu.updateMatrixWorld(true);
  const ray=new THREE.Raycaster();const down=(x:number,z:number)=>{ray.set(new THREE.Vector3(x,20,z),new THREE.Vector3(0,-1,0));return pickFoundationBuilding(ray,root,gpu);};
- assert.equal(down(-5,-1),'hq');assert.equal(down(6,0),'rig');assert.equal(down(-9.8,-1),undefined);assert.equal(down(8.15,0),undefined);
+ assert.equal(down(-5,-1),'hq');assert.equal(down(6,0),'rig');assert.equal(down(-9.8,-1),undefined);assert.equal(down(8.6,0),undefined);
  const founder=house.getObjectByName('Founder at laptop')!,face=founder.localToWorld(new THREE.Vector3(0,3.15,.4)),direction=new THREE.Vector3(13,28,30).normalize();
  ray.set(face.clone().addScaledVector(direction,30),direction.clone().negate());assert.ok(founder.getObjectById(ray.intersectObject(root,true)[0]!.object.id),'the camera ray must reach the visible founder through the window');
  const fan=gpu.getObjectByName('gpu-fan-0')!;animateGpu(gpu,1,.1,true);assert.ok(fan.rotation.z>0);assert.ok(gpu.getObjectByName('gpu-activity'));k.dispose();
