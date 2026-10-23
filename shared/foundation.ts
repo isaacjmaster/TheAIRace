@@ -17,12 +17,12 @@ export const COMPUTE_CAPACITY = 1000;
 export const GPU_RIG={cost:50,buildSeconds:15,perMinute:10,storage:100,maxCount:2,width:4,depth:3} as const;
 export type Orientation=0|1|2|3;
 export type RotatableBuilding='hq'|'station'|'rig'|'rig2'|'fabricator'|'hangar'|'lab'|'droneStation';
-export type BuildingLayout={position:RigPosition;orientation:Orientation;size?:'expanded'};
+export type BuildingLayout={position:RigPosition;orientation:Orientation;size?:'expanded'|'compound'};
 export const BUILDER_STATION_POSITION:RigPosition=[-1,4.8];
 export type RigPosition=[number,number];
 export type GpuRig={orientation?:Orientation;position:RigPosition;startedAt:number;completesAt:number;lastProducedAt:number;stored:number};
-export type Hangar={size?:'expanded';orientation?:Orientation;position:RigPosition;startedAt:number;completesAt:number};
-export type Fabricator={hangarSize?:'expanded';separateHangar?:boolean;orientation?:Orientation;hangarOrientation?:Orientation;position:RigPosition;hangarPosition:RigPosition;startedAt:number;completesAt:number};
+export type Hangar={unplaced?:boolean;relocationNotice?:boolean;size?:'expanded'|'compound';orientation?:Orientation;position:RigPosition;startedAt:number;completesAt:number};
+export type Fabricator={hangarSize?:'expanded'|'compound';separateHangar?:boolean;orientation?:Orientation;hangarOrientation?:Orientation;position:RigPosition;hangarPosition:RigPosition;startedAt:number;completesAt:number};
 export type BotRaid={id:string;simulation:Raid;lastTick:number;started:boolean;settled:boolean;reward:number;companyId?:string;result?:{mapId:string;companyId?:string;combatVersion:number;victory:boolean;previouslyCompleted:boolean|null;destruction:number;survivors:number;reason:string;reward:number}};
 export const FABRICATOR={cost:50,buildSeconds:15,maxCount:1} as const;
 export const HANGAR={cost:0,buildSeconds:15,maxCount:1} as const;
@@ -83,7 +83,16 @@ export function armyUsed(s:FoundationState){return reservedAgent(s.infiltration)
 /** Pure compatibility view: expand old Hangars only when the existing layout has room.
  * The candidate validation skips this Hangar, so this does not recurse through itself.
  * New purchases/moves persist the larger size; crowded old saves keep every coordinate. */
-export function getHangar(s:FoundationState):Hangar|undefined{const h=s.hangar||(s.fabricator&&!s.fabricator.separateHangar?{size:s.fabricator.hangarSize,position:s.fabricator.hangarPosition,orientation:s.fabricator.hangarOrientation,startedAt:s.fabricator.startedAt,completesAt:s.fabricator.completesAt}:undefined);if(!h)return;const expanded=h.size==='expanded'||!validateLayout(s,h.position,'hangar',h.orientation??0,false,true);return {...h,...(expanded?{size:'expanded' as const}:{})};}
+export function getHangar(s:FoundationState):Hangar|undefined{const h=s.hangar||(s.fabricator&&!s.fabricator.separateHangar?{size:s.fabricator.hangarSize,position:s.fabricator.hangarPosition,orientation:s.fabricator.hangarOrientation,startedAt:s.fabricator.startedAt,completesAt:s.fabricator.completesAt}:undefined);if(!h||h.size==='compound'||h.unplaced)return h;const expanded=h.size==='expanded'||!validateLayout(s,h.position,'hangar',h.orientation??0,false,true,'expanded');return {...h,...(expanded?{size:'expanded' as const}:{})};}
+/** Explicit migration only: ownership and original construction timestamps remain intact. */
+export function redesignHangar(s:FoundationState){const h=getHangar(s);if(!h||h.size==='compound')return 'unchanged';
+ const owned={...h,position:[...h.position] as RigPosition,size:'compound' as const};s.hangar=owned;
+ if(s.fabricator)s.fabricator.separateHangar=true;
+ const reason=validLayoutPosition(s,owned.position,'hangar',owned.orientation??0);
+ if(reason){owned.unplaced=true;owned.relocationNotice=true;return 'unplaced';}return 'expanded';
+}
+export function placeOwnedHangar(s:FoundationState,p:RigPosition,orientation:Orientation=0){const h=getHangar(s);if(!h?.unplaced)throw Error('No owned Hangar awaiting placement.');const reason=validLayoutPosition(s,p,'hangar',orientation);if(reason)throw Error(reason);h.position=[...p];h.orientation=orientation;h.unplaced=false;h.relocationNotice=false;}
+export function acknowledgeHangar(s:FoundationState){if(s.hangar)s.hangar.relocationNotice=false;}
 export function hangarReady(s:FoundationState,now=Date.now()){const h=getHangar(s);return !!h&&now>=h.completesAt;}
 export function buildingFootprint(orientation:Orientation=0):[number,number]{return orientation%2?[3,4]:[4,3];}
 export function hangarPlacement(p:RigPosition,orientation:Orientation=0):RigPosition{const offsets:RigPosition[]=[[6,0],[0,-6],[-6,0],[0,6]];return [p[0]+offsets[orientation][0],p[1]+offsets[orientation][1]];}
@@ -93,7 +102,7 @@ export function buildingLayout(s:FoundationState,kind:RotatableBuilding):Buildin
  if(kind==='station')return !hasBuilderStation(s)?undefined:s.stationLayout??{position:[...BUILDER_STATION_POSITION],orientation:0};
  if(kind==='rig'||kind==='rig2'){const r=s[kind];return r?{position:r.position,orientation:r.orientation??0}:undefined;}
  if(kind==='lab'||kind==='droneStation'){const l=s[kind];return l?{position:l.position,orientation:l.orientation??0}:undefined;}
- if(kind==='hangar'){const h=getHangar(s);return h?{position:h.position,orientation:h.orientation??0,...(h.size?{size:h.size}:{})}:undefined;}
+ if(kind==='hangar'){const h=getHangar(s);return h&&!h.unplaced?{position:h.position,orientation:h.orientation??0,...(h.size?{size:h.size}:{})}:undefined;}
  return s.fabricator?{position:s.fabricator.position,orientation:s.fabricator.orientation??0}:undefined;
 }
 export function buildingReady(s:FoundationState,kind:RotatableBuilding,now=Date.now()){
@@ -102,17 +111,17 @@ export function buildingReady(s:FoundationState,kind:RotatableBuilding,now=Date.
  return kind==='station'||(kind==='rig'||kind==='rig2'?!!s[kind]&&now>=s[kind]!.completesAt:kind==='fabricator'?!!s.fabricator&&now>=s.fabricator.completesAt:hangarReady(s,now));
 }
 export function footprint(kind:RotatableBuilding,layout:BuildingLayout,reserved=false){
- let [w,d]=kind==='droneStation'?[3,3]:kind==='hq'?(reserved?[14,10]:[9,8]):kind==='station'?(reserved?[4,3]:[2.7,1.8]):kind==='hangar'&&layout.size==='expanded'?[5.6,4.2]:[4,3];
+ let [w,d]=kind==='droneStation'?[3,3]:kind==='hq'?(reserved?[14,10]:[9,8]):kind==='station'?(reserved?[4,3]:[2.7,1.8]):kind==='hangar'&&layout.size==='compound'?[8,7]:kind==='hangar'&&layout.size==='expanded'?[5.6,4.2]:[4,3];
  if(layout.orientation%2)[w,d]=[d,w];
  const [x,z]=layout.position;
  // The house's foundation extends 0.6 forward from its rotation pivot.
  const offsets:RigPosition[]=[[0,.6],[.6,0],[0,-.6],[-.6,0]],offset=kind==='hq'&&!reserved?offsets[layout.orientation]:[0,0];
  return {x:x+offset[0],z:z+offset[1],w,d};
 }
-function validateLayout(s:FoundationState,p:RigPosition,kind:RotatableBuilding,orientation:Orientation,pair:boolean,editing:boolean):string|null{
+function validateLayout(s:FoundationState,p:RigPosition,kind:RotatableBuilding,orientation:Orientation,pair:boolean,editing:boolean,hangarSize?:'expanded'|'compound'):string|null{
  const legacyStation=kind==='station'&&p[0]===BUILDER_STATION_POSITION[0]&&p[1]===BUILDER_STATION_POSITION[1];
  if(p.length!==2||!p.every(Number.isFinite)||(!legacyStation&&!p.every(Number.isInteger)))return 'Snap the building to the grid.';
- const candidates=[{kind,layout:{position:p,orientation,...(kind==='hangar'?{size:'expanded' as const}:{})}},...(pair?[{kind:'hangar' as const,layout:{position:hangarPlacement(p,orientation),orientation,size:'expanded' as const}}]:[])];
+ const candidates=[{kind,layout:{position:p,orientation,...(kind==='hangar'?{size:hangarSize??(editing?(s.hangar?.size??s.fabricator?.hangarSize??'expanded'):'compound')}:{})}},...(pair?[{kind:'hangar' as const,layout:{position:hangarPlacement(p,orientation),orientation,size:'expanded' as const}}]:[])];
  for(const candidate of candidates){
  const a=footprint(candidate.kind,candidate.layout),b=RIG_BOUNDS;
  if(a.x-a.w/2<b.minX||a.x+a.w/2>b.maxX||a.z-a.d/2<b.minZ||a.z+a.d/2>b.maxZ)return 'Keep the building inside the campus.';
@@ -144,7 +153,7 @@ export function moveBuilding(s:FoundationState,kind:RotatableBuilding,position:R
  else if(kind==='rig'||kind==='rig2'){s[kind]!.position=layout.position;s[kind]!.orientation=orientation;}
  else if(kind==='lab'||kind==='droneStation'){s[kind]!.position=layout.position;s[kind]!.orientation=orientation;}
  else if(kind==='fabricator'){s.fabricator!.position=layout.position;s.fabricator!.orientation=orientation;}
- else if(s.hangar){s.hangar.position=layout.position;s.hangar.orientation=orientation;s.hangar.size='expanded';}else {s.fabricator!.hangarPosition=layout.position;s.fabricator!.hangarOrientation=orientation;s.fabricator!.hangarSize='expanded';}
+ else if(s.hangar){s.hangar.position=layout.position;s.hangar.orientation=orientation;s.hangar.size=s.hangar.size==='compound'?'compound':'expanded';}else {s.fabricator!.hangarPosition=layout.position;s.fabricator!.hangarOrientation=orientation;s.fabricator!.hangarSize=s.fabricator!.hangarSize==='compound'?'compound':'expanded';}
 }
 export function rotateBuilding(s:FoundationState,kind:RotatableBuilding,orientation:Orientation,now=Date.now()){
  const layout=buildingLayout(s,kind);if(!layout)throw new Error('Build this structure first.');moveBuilding(s,kind,layout.position,orientation,now);
@@ -158,7 +167,7 @@ export function buildFabricator(s:FoundationState,p:RigPosition,now=Date.now(),o
  s.bots??=0;s.training??=[];
 }
 export function buildHangar(s:FoundationState,p:RigPosition,now=Date.now(),orientation:Orientation=0){
- advanceFoundation(s,now);if(getHangar(s))throw new Error('Bot Hangar — 1/1 Built');if(!hasBuilderStation(s)||s.builders<1)throw new Error('Place your free Builder Station first.');if((s.buildersBusy??0)>=s.builders)throw new Error('Your Builder Bot is busy.');const reason=validFoundationPosition(s,p,'hangar',orientation);if(reason)throw new Error(reason);s.hangar={size:'expanded',position:[...p],orientation,startedAt:now,completesAt:now+HANGAR.buildSeconds*1000};s.buildersBusy=(s.buildersBusy??0)+1;s.bots??=0;
+ advanceFoundation(s,now);if(getHangar(s))throw new Error('Bot Hangar — 1/1 Built');if(!hasBuilderStation(s)||s.builders<1)throw new Error('Place your free Builder Station first.');if((s.buildersBusy??0)>=s.builders)throw new Error('Your Builder Bot is busy.');const reason=validFoundationPosition(s,p,'hangar',orientation);if(reason)throw new Error(reason);s.hangar={size:'compound',position:[...p],orientation,startedAt:now,completesAt:now+HANGAR.buildSeconds*1000};s.buildersBusy=(s.buildersBusy??0)+1;s.bots??=0;
 }
 export function trainScrap(s:FoundationState,count:number,now=Date.now()){
  advanceFoundation(s,now);if(!s.fabricator||now<s.fabricator.completesAt)throw new Error('Finish building your Bot Fabricator first.');if(!hangarReady(s,now))throw new Error('Build and finish a Bot Hangar first.');

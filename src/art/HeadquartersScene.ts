@@ -1,3 +1,4 @@
+import {syncCompoundInstances} from './HangarCompound';
 import {adjacentWallPreviews} from '../../shared/wall-assistance';
 import {PowerConnections} from './PowerConnections';
 import {ConstructionVisuals} from './ConstructionVisuals';
@@ -230,7 +231,7 @@ export class HeadquartersScene {
  previewLayout(kind:RotatableBuilding,position:RigPosition,orientation:Orientation,valid:boolean){
   if(this.layoutPreviewKind!==kind){this.clearRigPreview();this.layoutPreviewKind=kind;const k=this.rigPreviewKit=new WorldKit();
    if(kind==='hq'){this.rigPreview=new THREE.Group();const house=founderHQ(k,this.rigPreview,this.founderLevel);house.position.set(0,0,0);}
-   else this.rigPreview=kind==='droneStation'?droneStationModel(k):kind==='lab'?researchLabModel(k):kind==='station'?builderStationModel(k):kind==='rig'||kind==='rig2'?gpuRigModel(k):kind==='fabricator'?fabricatorModel(k):hangarModel(k,0,true);
+   else this.rigPreview=kind==='droneStation'?droneStationModel(k):kind==='lab'?researchLabModel(k):kind==='station'?builderStationModel(k):kind==='rig'||kind==='rig2'?gpuRigModel(k):kind==='fabricator'?fabricatorModel(k):hangarModel(k,0,'compound');
    this.rigPreviewMaterial=new THREE.MeshBasicMaterial({color:c.cyan,transparent:true,opacity:.55,depthWrite:false});this.rigPreview.traverse(o=>{if(o instanceof THREE.Mesh){o.material=this.rigPreviewMaterial!;o.castShadow=false;}if(o instanceof THREE.Light)o.visible=false;});this.scene.add(this.rigPreview);
    this.rigGrid=foundationGrid(c.cyan,c.slate);this.scene.add(this.rigGrid);
   }
@@ -263,17 +264,17 @@ export class HeadquartersScene {
  syncBots(state:FoundationState,now:number){
   this.producing=!!state.training?.length;this.assemblyAt=this.lifeClock;this.assemblyProgress=this.producing?Math.max(0,Math.min(1,1-(state.training![0]-now)/5000)):0;
   this.gpuActive=!!state.rig&&now>=state.rig.completesAt&&state.rig.stored<GPU_RIG.storage;this.gpu2Active=!!state.rig2&&now>=state.rig2.completesAt&&state.rig2.stored<GPU_RIG.storage;
-  const f=state.fabricator,h=getHangar(state),ready=!!h&&now>=h.completesAt,bots=Math.min(10,(state.bots||0)+(!state.botRaid?.settled?(state.botRaid?.simulation.stock.scrap||0):0));
+  const f=state.fabricator,h=getHangar(state)?.unplaced?undefined:getHangar(state),ready=!!h&&now>=h.completesAt,bots=Math.min(h?.size==='compound'?8:10,(state.bots||0)+(!state.botRaid?.settled?(state.botRaid?.simulation.stock.scrap||0):0));
   const key=JSON.stringify([f?.position,h?.position,f?.orientation,h?.orientation,h?.size,ready]),reset=this.catchup||document.hidden||this.reduced;
   const incoming=this.arrivals.sync(state,now,reset);if(!document.hidden&&state!==this.lastBotState)this.catchup=false;this.lastBotState=state;
   if(reset||bots<this.stagedCount||key!==this.botKey){for(const w of this.walkers)w.group.removeFromParent();this.walkers=[];}
   this.stagedCount=bots;
   if(key!==this.botKey){this.botKey=key;this.fabricatorGroup?.removeFromParent();this.hangarGroup?.removeFromParent();this.botKit?.dispose();this.fabricatorGroup=undefined;this.hangarGroup=undefined;
    if(f||h){const k=this.botKit=new WorldKit('campus');if(f){this.fabricatorGroup=fabricatorModel(k);k.grounding(this.fabricatorGroup,4.7,3.7);this.fabricatorGroup.position.set(f.position[0],0,f.position[1]);this.fabricatorGroup.rotation.y=(f.orientation??0)*Math.PI/2;this.scene.add(this.fabricatorGroup);}
-    if(h){this.hangarGroup=hangarModel(k,10,h.size==='expanded');k.grounding(this.hangarGroup,h.size==='expanded'?6.3:4.7,h.size==='expanded'?4.9:3.7);this.hangarGroup.position.set(h.position[0],0,h.position[1]);this.hangarGroup.rotation.y=(h.orientation??0)*Math.PI/2;this.scene.add(this.hangarGroup);}}
+    if(h){this.hangarGroup=hangarModel(k,h.size==='compound'?8:10,h.size==='compound'?'compound':h.size==='expanded');k.grounding(this.hangarGroup,h.size==='compound'?8.7:h.size==='expanded'?6.3:4.7,h.size==='compound'?7.7:h.size==='expanded'?4.9:3.7);this.hangarGroup.position.set(h.position[0],0,h.position[1]);this.hangarGroup.rotation.y=(h.orientation??0)*Math.PI/2;this.scene.add(this.hangarGroup);}}
 
   }
-  if(ready&&this.botKit&&!reset)for(const slot of incoming){const points=dockingRoute(state,slot);if(!points.length)continue;const group=scrapBotModel(this.botKit);group.name='walking-scrapbot';group.scale.setScalar(.7);group.position.set(...points[0]);group.visible=false;this.scene.add(group);this.walkers.push({slot,group,motion:new DeliveryMotion(points),delay:this.walkers.length*.35,settled:0,finished:false});}
+  if(ready&&h?.size!=='compound'&&this.botKit&&!reset)for(const slot of incoming){const points=dockingRoute(state,slot);if(!points.length)continue;const group=scrapBotModel(this.botKit);group.name='walking-scrapbot';group.scale.setScalar(.7);group.position.set(...points[0]);group.visible=false;this.scene.add(group);this.walkers.push({slot,group,motion:new DeliveryMotion(points),delay:this.walkers.length*.35,settled:0,finished:false});}
   const assembly=this.fabricatorGroup?.getObjectByName('assembly-bot');if(assembly)assembly.visible=this.producing;
   this.syncDockVisibility();
  }
@@ -283,11 +284,15 @@ export class HeadquartersScene {
  }
  private syncDockVisibility(){
   for(let i=0;i<10;i++){const bot=this.hangarGroup?.getObjectByName('docked-bot-'+i);if(bot)bot.visible=i<this.stagedCount&&!this.walkers.some(w=>w.slot===i);}
+  syncCompoundInstances(this.hangarGroup);
   this.renderer.domElement.dataset.walkingBots=String(this.walkers.length);this.renderer.domElement.dataset.dockedBots=String(this.stagedCount-this.walkers.length);this.renderer.domElement.dataset.gpuActive=String(this.gpuActive);this.renderer.domElement.dataset.gpu2Active=String(this.gpu2Active);
  }
+ private animationProbe=new THREE.Vector3();
+ private animationVisible(group:THREE.Object3D|undefined){if(!group||!group.visible||document.hidden)return false;this.animationProbe.copy(group.position).project(this.camera);return Math.abs(this.animationProbe.x)<1.3&&Math.abs(this.animationProbe.y)<1.3;}
  private animateBotLife(dt:number){
-  this.lifeClock+=dt;animateFabricator(this.fabricatorGroup,this.lifeClock,Math.min(1,this.assemblyProgress+(this.lifeClock-this.assemblyAt)/5),this.producing,this.reduced);this.security.group.visible=this.security.active;this.security.update(this.lifeClock,dt,this.reduced);this.renderer.domElement.dataset.securityDroneCount=String(this.security.count);this.renderer.domElement.dataset.securityDronePhase=this.security.phase;this.renderer.domElement.dataset.securityWalls=String(this.lastBotState?.walls?.length??0);animateResearchLab(this.labGroup,this.lifeClock,this.labActive,this.reduced);animateGpu(this.rigGroup,this.lifeClock,dt,this.gpuActive,this.reduced);animateGpu(this.rig2Group,this.lifeClock,dt,this.gpu2Active,this.reduced);
-  for(let i=0;i<10;i++){const bot=this.hangarGroup?.getObjectByName('docked-bot-'+i);if(bot?.visible)animateDockedBot(bot,i,this.lifeClock,this.reduced,dt);}
+  this.lifeClock+=dt;animateFabricator(this.animationVisible(this.fabricatorGroup)?this.fabricatorGroup:undefined,this.lifeClock,Math.min(1,this.assemblyProgress+(this.lifeClock-this.assemblyAt)/5),this.producing,this.reduced);this.security.group.visible=this.security.active;this.security.update(this.lifeClock,dt,this.reduced);this.renderer.domElement.dataset.securityDroneCount=String(this.security.count);this.renderer.domElement.dataset.securityDronePhase=this.security.phase;this.renderer.domElement.dataset.securityWalls=String(this.lastBotState?.walls?.length??0);animateResearchLab(this.labGroup,this.lifeClock,this.labActive,this.reduced);animateGpu(this.rigGroup,this.lifeClock,dt,this.gpuActive,this.reduced);animateGpu(this.rig2Group,this.lifeClock,dt,this.gpu2Active,this.reduced);
+  for(let i=0;i<10;i++){const bot=this.hangarGroup?.getObjectByName('docked-bot-'+i);if(bot?.visible&&this.animationVisible(this.hangarGroup))animateDockedBot(bot,i,this.lifeClock,this.reduced,dt);}
+  if(this.animationVisible(this.hangarGroup))syncCompoundInstances(this.hangarGroup);
   for(let i=0;i<this.walkers.length;i++){
    const w=this.walkers[i],m=w.motion;w.delay-=dt;if(w.delay>0){w.group.visible=false;continue;}
    if(!w.group.visible&&this.walkers.some((leader,j)=>j<i&&leader.group.visible&&!leader.finished&&Math.hypot(leader.group.position.x-m.x,leader.group.position.z-m.z)<.85))continue;
@@ -319,7 +324,7 @@ export class HeadquartersScene {
  }
  pickRig(x:number,y:number){if(!this.rigGroup||!this.setRay(x,y))return false;return this.raycaster.intersectObject(this.rigGroup,true).length>0;}
  previewRig(position:RigPosition,valid:boolean,kind:'droneStation'|'station'|'rig'|'fabricator'|'hangar'|'lab'='rig',orientation:Orientation=0){
-  if(!this.rigPreview){this.rigPreviewKit=new WorldKit();this.rigPreview=kind==='droneStation'?droneStationModel(this.rigPreviewKit):kind==='lab'?researchLabModel(this.rigPreviewKit):kind==='station'?builderStationModel(this.rigPreviewKit):kind==='fabricator'?fabricatorModel(this.rigPreviewKit):kind==='hangar'?hangarModel(this.rigPreviewKit,0,true):gpuRigModel(this.rigPreviewKit);this.rigPreviewMaterial=new THREE.MeshBasicMaterial({color:c.cyan,transparent:true,opacity:.48,depthWrite:false});this.rigPreview.traverse(o=>{if(o instanceof THREE.Mesh){o.material=this.rigPreviewMaterial!;o.castShadow=false;}});this.scene.add(this.rigPreview);this.rigGrid=foundationGrid(c.cyan,c.slate);this.scene.add(this.rigGrid);}
+  if(!this.rigPreview){this.rigPreviewKit=new WorldKit();this.rigPreview=kind==='droneStation'?droneStationModel(this.rigPreviewKit):kind==='lab'?researchLabModel(this.rigPreviewKit):kind==='station'?builderStationModel(this.rigPreviewKit):kind==='fabricator'?fabricatorModel(this.rigPreviewKit):kind==='hangar'?hangarModel(this.rigPreviewKit,0,'compound'):gpuRigModel(this.rigPreviewKit);this.rigPreviewMaterial=new THREE.MeshBasicMaterial({color:c.cyan,transparent:true,opacity:.48,depthWrite:false});this.rigPreview.traverse(o=>{if(o instanceof THREE.Mesh){o.material=this.rigPreviewMaterial!;o.castShadow=false;}});this.scene.add(this.rigPreview);this.rigGrid=foundationGrid(c.cyan,c.slate);this.scene.add(this.rigGrid);}
   this.rigPreview.rotation.y=orientation*Math.PI/2;this.rigPreview.position.set(position[0],.2,position[1]);this.rigPreviewMaterial!.color.set(valid?c.cyan:c.coral);if(kind==='rig'&&this.lastBotState)this.syncPower(this.lastBotState,this.lastSecurityNow,{kind:this.lastBotState.rig?'rig2':'rig',position,orientation});
  }
  clearRigPreview(){this.cablePreview=undefined;if(this.hiddenWall){this.hiddenWall=undefined;this.wallKey='';if(this.lastBotState)this.syncLab(this.lastBotState,this.lastSecurityNow);}if(this.decorationPreviewId)this.decorations.show(this.decorationPreviewId,true);this.decorationPreviewId=undefined;for(const kind of ['hq','station','rig','rig2','fabricator','hangar','lab','droneStation'] as const){const group=this.layoutGroup(kind);if(group)group.visible=kind!=='station'||this.stationOwned;}this.layoutPreviewKind=undefined;this.rigPreview?.removeFromParent();this.rigPreviewKit?.dispose();this.rigPreviewMaterial?.dispose();this.rigPreview=undefined;this.rigPreviewKit=undefined;this.rigPreviewMaterial=undefined;if(this.rigGrid){this.rigGrid.removeFromParent();this.rigGrid.geometry.dispose();const m=this.rigGrid.material;(Array.isArray(m)?m:[m]).forEach(item=>item.dispose());this.rigGrid=undefined;}if(this.lastBotState)this.syncPower(this.lastBotState,this.lastSecurityNow);}

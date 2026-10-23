@@ -1,3 +1,4 @@
+import {openHangar} from './helpers/open-hangar';
 import {establishedFoundation as initialFoundation,placeTestStation} from './helpers/established-foundation';
 import {buildLegacyFabricator as buildFabricator} from './helpers/legacy-foundation';
 import {identityHeaders,saveIdForCookie} from './helpers/identity';
@@ -53,7 +54,7 @@ test('SQLite restart, concurrent requests and action retries never duplicate bui
  const action=(command:unknown)=>({requestId:randomUUID(),generation:0,command});
  await placeTestStation(url+'/api/foundation',identityHeaders(db,cookie));const build=action({action:'build',position});assert.equal((await post(build)).status,200);assert.equal((await post(build)).status,200);assert.equal(read().compute,50);assert.equal((await post(action({action:'build',position}))).status,400);
  const s=read();s.fabricator!.completesAt=Date.now()-1000;db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(s),id);
- const hangar=action({action:'build-hangar',position:[12,-6]});assert.equal((await post(hangar)).status,200);const h=read();h.hangar!.completesAt=Date.now()-1000;db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(h),id);
+ const hangar=action({action:'build-hangar',position:openHangar(read())});assert.equal((await post(hangar)).status,200);const h=read();h.hangar!.completesAt=Date.now()-1000;db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(h),id);
  const train=action({action:'train',count:5});const attempts=await Promise.all([post(train),post(train)]);assert.ok(attempts.every(r=>r.status===200));assert.equal(read().compute,25);assert.equal(read().training!.length,5);
  assert.equal((await post({...train,command:{action:'train',count:1}})).status,400);
  const waiting=read();waiting.training=waiting.training!.map(()=>Date.now()-1000);db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(waiting),id);

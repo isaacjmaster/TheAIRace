@@ -84,7 +84,7 @@ export class InfiltrationScene {
                 g = gpuRigModel(this.k);
             else if(a.model==='station')g=builderStationModel(this.k);
             else if(a.model==='fabricator')g=fabricatorModel(this.k);
-            else if(a.model==='hangar')g=hangarModel(this.k,0,o.target.publicBase?.buildings.find(b=>b.id===a.id)?.size==='expanded');
+            else if(a.model==='hangar')g=hangarModel(this.k,0,o.target.publicBase?.buildings.find(b=>b.id===a.id)?.size==='compound'?'compound':o.target.publicBase?.buildings.find(b=>b.id===a.id)?.size==='expanded');
             else if(a.kind==='station')g=droneStationModel(this.k);
             else if (a.kind === 'lab')
                 g = researchLabModel(this.k);

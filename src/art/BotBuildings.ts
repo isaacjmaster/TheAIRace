@@ -1,37 +1,21 @@
+import {orbitalFabricator,animateOrbital} from './OrbitalFabricator';
+import {hangarCompound,animateCompoundBot} from './HangarCompound';
 import {cipherBotModel} from './CipherBot';
-import {CAMPUS_BOT_SCALE,hangarBay} from '../../shared/bot-presentation';
-import {registerScrapPose,animateScrapBot,turnScrapBot,SCRAP_BOT_VISUAL_SCALE,type BotLeg} from './ScrapBotMotion';
-import * as THREE from 'three';
-import {WorldKit,palette as c} from './world';
-/** Presentation only: shared silhouette, named limbs retained for existing animations. */
+import {CAMPUS_BOT_SCALE,hangarBay} from '../../shared/bot-presentation';
+
+import {animateScrapBot,turnScrapBot} from './ScrapBotMotion';
+
+import * as THREE from 'three';
+
+import {WorldKit,palette as c} from './world';
+
+/** Presentation only: shared silhouette, named limbs retained for existing animations. */
+
 export function scrapBotModel(k:WorldKit){return cipherBotModel(k);}
-export function fabricatorModel(k:WorldKit){
- const g=new THREE.Group();g.name='Bot Fabricator';
- k.box(g,[4,.24,3],[0,.16,0],c.dark,.12);k.box(g,[3.86,.16,2.88],[0,.36,0],c.cream,.1);
- k.box(g,[2.35,.18,2.25],[0,.54,.08],c.dark,.12);
- k.box(g,[2.02,.07,1.95],[0,.67,.08],c.cyan,.08,true);
- k.box(g,[1.74,.09,1.65],[0,.75,.08],c.slate,.08);
- k.cylinder(g,.58,.12,[0,.86,.08],c.dark);k.cylinder(g,.47,.05,[0,.95,.08],c.gold);
- const bot=scrapBotModel(k);bot.scale.setScalar(CAMPUS_BOT_SCALE);bot.position.set(0,.99,.08);bot.name='assembly-bot';g.add(bot);
- for(const side of [-1,1]){
-  k.box(g,[.65,2.35,1.25],[side*1.54,1.6,-.45],c.dark,.12);
-  k.box(g,[.68,1.45,.32],[side*1.54,2.1,-1],c.cream,.12);
-  k.box(g,[.5,.7,.18],[side*1.54,.97,.24],c.cream,.07);
-  k.box(g,[.09,.68,.035],[side*1.54,1,.35],c.cyan,.015,true);
-  const arm=new THREE.Group();arm.name=side<0?'fabrication-arm-left':'fabrication-arm-right';g.add(arm);
-  const upper=k.box(arm,[.15,1,.17],[0,0,0],c.slate,.03),lower=k.box(arm,[.12,1,.13],[0,0,0],c.dark,.025),tool=new THREE.Group();tool.name='assembly-gripper';arm.add(tool);k.box(tool,[.16,.14,.19],[0,0,0],c.gold,.025);for(const z of [-.105,.105])k.box(tool,[.035,.2,.045],[0,-.09,z],c.slate,.01);k.box(tool,[.03,.05,.08],[-side*.08,-.08,0],c.cyan,.01,true);
-  for(const z of [-1.16,1.16])k.box(g,[.3,.12,.24],[side*1.65,.49,z],c.dark,.04);
- }
- k.box(g,[3.9,.5,1.55],[0,2.98,-.44],c.cream,.16);
- k.box(g,[2.45,.26,.12],[0,2.97,.39],c.dark,.05);
- const lamp=k.box(g,[1.3,.08,.04],[0,3,.47],c.cyan,.02,true);lamp.name='production-light';
- k.box(g,[2,.12,.85],[0,3.29,-.45],c.dark,.07);
- for(let i=0;i<4;i++)k.box(g,[1.2,.03,.06],[0,3.37,-.72+i*.16],c.slate,.01);
- k.box(g,[1.5,.07,.45],[0,2.69,-.2],c.gold,.03,true);
- k.box(g,[.56,.5,.3],[1.5,.72,1],c.dark,.07);const screen=k.box(g,[.44,.25,.04],[1.5,.9,1.17],c.cyan,.03,true);screen.rotation.x=-.2;
- const ramp=k.box(g,[1.3,.08,.65],[0,.54,1.05],c.slate,.025);ramp.rotation.x=.45;animateFabricator(g,0,0,false,true);return g;
-}
-export function hangarModel(k:WorldKit,bots:number,expanded=false){
+export const fabricatorModel=orbitalFabricator;
+
+export function hangarModel(k:WorldKit,bots:number,expanded:boolean|'compound'=false){
+ if(expanded==='compound')return hangarCompound(k,bots);
  const g=new THREE.Group();g.name='Bot Hangar';const shell=new THREE.Group();g.add(shell);shell.name='hangar-structure';if(expanded)shell.scale.set(1.4,1.08,1.4);
  k.box(shell,[4,.22,3],[0,.15,0],c.dark,.12);k.box(shell,[3.88,.12,2.9],[0,.32,0],c.cream,.08);
  // Open four-sided charging pavilion: no opaque rear wall or preferred facade.
@@ -67,27 +51,47 @@ export function hangarModel(k:WorldKit,bots:number,expanded=false){
  return g;
 }
 
-/** Free permanent worker dock; fits entirely inside the already reserved work area. */
-export function builderStationModel(k:WorldKit){
- const g=new THREE.Group();g.name='Builder Station';
- k.box(g,[2.7,.18,1.8],[0,.12,0],c.dark,.13);k.box(g,[2.55,.1,1.7],[0,.26,0],c.cream,.1);
- k.box(g,[1.35,.03,1.1],[0,.33,.13],c.slate,.08);k.box(g,[1,.025,.08],[0,.36,.61],c.cyan,.02,true);
- k.box(g,[2.2,1.55,.2],[0,1.1,-.73],c.dark,.1);
- for(const side of [-1,1]){k.box(g,[.22,1.5,1.6],[side*1.14,1.1,0],c.slate,.06);k.box(g,[.24,.65,.3],[side*1.14,.66,.61],c.cream,.05);}
- const roof=k.box(g,[2.65,.24,1.3],[0,1.97,-.28],c.cream,.14);roof.rotation.x=-.12;
- k.box(g,[.6,.06,.3],[0,2.14,-.28],c.gold,.04);
- k.box(g,[1.15,.06,.04],[0,1.7,-.57],c.gold,.02,true);
- k.box(g,[.45,.64,.4],[-.83,.63,-.35],c.dark,.04);k.box(g,[.22,.12,.03],[-.83,.82,-.12],c.cyan,.02,true);
- for(const x of [.62,.82]){k.box(g,[.07,.4,.07],[x,1.15,-.59],c.slate,.02);k.box(g,[.16,.08,.08],[x,1.35,-.59],c.gold,.02);}
- return g;
-}
-
-/** Subtle bay-local motion: never crosses a neighbour's docking space. */
-export function animateDockedBot(bot:THREE.Object3D,slot:number,time:number,reduced=false,dt=1/60){
- const bay=(bot.userData.bay as [number,number,number]|undefined)??hangarBay(slot),phase=time*.8+slot*1.7;
- bot.position.set(...bay);turnScrapBot(bot,reduced?0:Math.sin(phase*.65)*.16,dt,reduced);animateScrapBot(bot,dt,reduced,0,reduced?0:Math.sin(phase*1.3)*.009);
-}
-
-const assemblyA=new THREE.Vector3(),assemblyB=new THREE.Vector3(),assemblyC=new THREE.Vector3(),assemblyD=new THREE.Vector3(),assemblyUp=new THREE.Vector3(0,1,0);
-function assemblyLink(mesh:THREE.Object3D,a:THREE.Vector3,b:THREE.Vector3){mesh.position.copy(a).add(b).multiplyScalar(.5);assemblyD.copy(b).sub(a);mesh.scale.y=assemblyD.length();mesh.quaternion.setFromUnitVectors(assemblyUp,assemblyD.normalize());}
-export function animateFabricator(g:THREE.Object3D|undefined,time:number,progress:number,active:boolean,reduced=false){if(!g)return;const bot=g.getObjectByName('assembly-bot');if(bot){bot.visible=active;const core=bot.getObjectByName('body-core');if(core){core.visible=progress>.25;for(const name of ['arm-left','arm-right']){const arm=core.getObjectByName(name);if(arm)arm.visible=progress>.62;}}}for(const side of [-1,1]){const arm=g.getObjectByName(side<0?'fabrication-arm-left':'fabrication-arm-right');if(!arm)continue;const swing=active&&!reduced?Math.sin(time*3+side)*.1:0;assemblyA.set(side*1.12,2.22,-.22);assemblyB.set(side*.77,1.93+swing,-.04);assemblyC.set(side*(active?.36:.68),active?1.49+swing:1.9,.12+(active?Math.cos(time*2+side)*.1:0));assemblyLink(arm.children[0],assemblyA,assemblyB);assemblyLink(arm.children[1],assemblyB,assemblyC);arm.children[2].position.copy(assemblyC);}const lamp=g.getObjectByName('production-light');if(lamp)lamp.visible=!active||reduced||Math.sin(time*5)>-.4;}
+/** Free permanent worker dock; fits entirely inside the already reserved work area. */
+
+export function builderStationModel(k:WorldKit){
+
+ const g=new THREE.Group();g.name='Builder Station';
+
+ k.box(g,[2.7,.18,1.8],[0,.12,0],c.dark,.13);k.box(g,[2.55,.1,1.7],[0,.26,0],c.cream,.1);
+
+ k.box(g,[1.35,.03,1.1],[0,.33,.13],c.slate,.08);k.box(g,[1,.025,.08],[0,.36,.61],c.cyan,.02,true);
+
+ k.box(g,[2.2,1.55,.2],[0,1.1,-.73],c.dark,.1);
+
+ for(const side of [-1,1]){k.box(g,[.22,1.5,1.6],[side*1.14,1.1,0],c.slate,.06);k.box(g,[.24,.65,.3],[side*1.14,.66,.61],c.cream,.05);}
+
+ const roof=k.box(g,[2.65,.24,1.3],[0,1.97,-.28],c.cream,.14);roof.rotation.x=-.12;
+
+ k.box(g,[.6,.06,.3],[0,2.14,-.28],c.gold,.04);
+
+ k.box(g,[1.15,.06,.04],[0,1.7,-.57],c.gold,.02,true);
+
+ k.box(g,[.45,.64,.4],[-.83,.63,-.35],c.dark,.04);k.box(g,[.22,.12,.03],[-.83,.82,-.12],c.cyan,.02,true);
+
+ for(const x of [.62,.82]){k.box(g,[.07,.4,.07],[x,1.15,-.59],c.slate,.02);k.box(g,[.16,.08,.08],[x,1.35,-.59],c.gold,.02);}
+
+ return g;
+
+}
+
+
+
+/** Subtle bay-local motion: never crosses a neighbour's docking space. */
+
+export function animateDockedBot(bot:THREE.Object3D,slot:number,time:number,reduced=false,dt=1/60){
+
+ if(bot.userData.compound){animateCompoundBot(bot,slot,time,reduced,dt);return;}
+ const bay=(bot.userData.bay as [number,number,number]|undefined)??hangarBay(slot),phase=time*.8+slot*1.7;
+
+ bot.position.set(...bay);turnScrapBot(bot,reduced?0:Math.sin(phase*.65)*.16,dt,reduced);animateScrapBot(bot,dt,reduced,0,reduced?0:Math.sin(phase*1.3)*.009);
+
+}
+
+
+
+export const animateFabricator=animateOrbital;

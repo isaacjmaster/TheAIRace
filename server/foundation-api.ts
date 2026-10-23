@@ -20,7 +20,7 @@ import type express from 'express';
 import type { DatabaseSync } from 'node:sqlite';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { upgradeFounderHQ,establishBuilderStation,moveBuilding,rotateBuilding,buildFabricator,buildHangar,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
+import { placeOwnedHangar,acknowledgeHangar,upgradeFounderHQ,establishBuilderStation,moveBuilding,rotateBuilding,buildFabricator,buildHangar,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
 /** Separate table and cookie: foundation resets never touch any previous game save. */
 export function registerFoundation(app:express.Express,db:DatabaseSync,options:{legacyRaids?:boolean;cookieName?:string;legacyPaths?:string[];clock?:()=>number;operationFactory?:(id:string,target:string,now:number)=>Operation}={}){
  db.exec('CREATE TABLE IF NOT EXISTS foundation_saves(id TEXT PRIMARY KEY,state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS foundation_actions(session TEXT,id TEXT,payload TEXT,amount INTEGER,PRIMARY KEY(session,id))');
@@ -117,6 +117,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   z.object({action:z.literal('upgrade-hq')}).strict(),
   z.object({action:z.literal('establish-station'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('clear-obstacle'),obstacleId:z.string().min(1).max(100)}).strict(),
+  z.object({action:z.literal('acknowledge-hangar')}).strict(),
+  z.object({action:z.literal('place-owned-hangar'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build-hangar'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('rotate'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation']),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
@@ -154,6 +156,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
     else if(c.action==='establish-station')establishBuilderStation(state,c.position,c.orientation);
     else if(c.action==='clear-obstacle')clearObstacle(state,c.obstacleId,now);
     else if(c.action==='build')buildFabricator(state,c.position,now,c.orientation);
+    else if(c.action==='acknowledge-hangar')acknowledgeHangar(state);
+    else if(c.action==='place-owned-hangar')placeOwnedHangar(state,c.position,c.orientation);
     else if(c.action==='build-hangar')buildHangar(state,c.position,now,c.orientation);
     else if(c.action==='move')moveBuilding(state,c.building,c.position,c.orientation,now);
     else if(c.action==='rotate')rotateBuilding(state,c.building,c.orientation,now);

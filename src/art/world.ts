@@ -24,6 +24,8 @@ export class WorldKit {
  private geometries=new Map<string,THREE.BufferGeometry>();
  private materials=new Map<string,THREE.Material>();
  private textures:THREE.Texture[]=[];
+ private instances:THREE.InstancedMesh[]=[];
+ instanced(parent:THREE.Object3D,geometry:THREE.BufferGeometry,mat:THREE.Material,count:number){const mesh=new THREE.InstancedMesh(geometry,mat,count);mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);mesh.frustumCulled=false;mesh.castShadow=true;mesh.receiveShadow=true;this.instances.push(mesh);parent.add(mesh);return mesh;}
  mat(color:string,glow=false){const key=color+glow;if(!this.materials.has(key)){
   const mat=material(color,glow);if(this.finish==='campus'){
    finishCampusMaterial(mat,color,glow);const roof=['#155976','#185d7a'].includes(color);
@@ -89,5 +91,5 @@ export class WorldKit {
   const key='grounding-material';if(!this.materials.has(key))this.materials.set(key,new THREE.MeshBasicMaterial({map:this.contact,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,toneMapped:false}));
   const shadow=new THREE.Mesh(this.geometry(`grounding${width},${depth}`,()=>new THREE.PlaneGeometry(width,depth)),this.materials.get(key)!);shadow.name='decorative-contact-shadow';shadow.rotation.x=-Math.PI/2;shadow.position.set(x,-.105,z);shadow.raycast=()=>{};parent.add(shadow);return shadow;
  }
- dispose(){for(const g of this.geometries.values())g.dispose();for(const m of this.materials.values())m.dispose();for(const t of this.textures)t.dispose();}
+ dispose(){for(const i of this.instances)i.dispose();for(const g of this.geometries.values())g.dispose();for(const m of this.materials.values())m.dispose();for(const t of this.textures)t.dispose();}
 }
