@@ -1,3 +1,4 @@
+import {protectedAreas,insideProtected} from './deployment-boundary';
 import type {PublicBase} from './player-base';
 import type {RotatableBuilding,Orientation} from './foundation';
 import {BASE_IDS,craftCampusTarget} from './infiltration-bases';
@@ -80,6 +81,7 @@ export type InfiltrationEvent = {
     detail?: string;
 };
 export type Operation = {
+    breachRatingVersion?:1;
     pvp?:{attackerId:string;defenderId:string};
     squad?:SquadState;
     cipherDamageMultiplier?:number;
@@ -140,7 +142,7 @@ export function operationFromSnapshot(id: string, target: TargetSnapshot, now: n
 export function infiltrationSolids(t:TargetSnapshot):NavRect[]{return [...t.assets.map(a=>({x:a.position[0],z:a.position[1],w:a.size[0],d:a.size[1]})),...(t.walls??[])];}
 export function navigable(t: TargetSnapshot, p: Vec) { if(t.navigationVersion===2)return pointClear(p,infiltrationSolids(t),targetBounds(t),AGENT_CLEARANCE);return p.every(Number.isFinite) && Math.abs(p[0]) <= 11.5 && Math.abs(p[1]) <= 7.5 && !t.assets.some(a => Math.abs(p[0] - a.position[0]) < a.size[0] / 2 + .3 && Math.abs(p[1] - a.position[1]) < a.size[1] / 2 + .3); }
 /** The same perimeter predicate drives server validation and the continuous deployment lawn. */
-export function deploymentGround(t:TargetSnapshot,p:Vec){if(t.arena==='campus-v2'&&t.compound){const b=targetBounds(t);return p.every(Number.isFinite)&&p[0]>=b.minX+.8&&p[0]<=b.maxX-.8&&p[1]>=b.minZ+.8&&p[1]<=b.maxZ-.8&&(Math.abs(p[0])>=t.compound[0]||Math.abs(p[1])>=t.compound[1])&&navigable(t,p);}if(t.arena==='campus-v2')return p.every(Number.isFinite)&&Math.abs(p[0])<=CAMPUS_ARENA.outer[0]&&Math.abs(p[1])<=CAMPUS_ARENA.outer[1]&&(Math.abs(p[0])>=14.2||p[1]<=-10.4||p[1]>=7.4)&&navigable(t,p);return p.every(Number.isFinite)&&Math.abs(p[0])<=13.2&&Math.abs(p[1])<=9.2&&(Math.abs(p[0])>=11.8||Math.abs(p[1])>=8.3||p[1]>=5.8&&Math.abs(p[0])<=10.5&&p[1]<=7.2)&&navigable(t,p);}
+export function deploymentGround(t:TargetSnapshot,p:Vec){if(t.publicBase){const b=targetBounds(t);return p.every(Number.isFinite)&&p[0]>=b.minX+.8&&p[0]<=b.maxX-.8&&p[1]>=b.minZ+.8&&p[1]<=b.maxZ-.8&&!insideProtected(p,protectedAreas(t))&&navigable(t,p);}if(t.arena==='campus-v2'&&t.compound){const b=targetBounds(t);return p.every(Number.isFinite)&&p[0]>=b.minX+.8&&p[0]<=b.maxX-.8&&p[1]>=b.minZ+.8&&p[1]<=b.maxZ-.8&&(Math.abs(p[0])>=t.compound[0]||Math.abs(p[1])>=t.compound[1])&&navigable(t,p);}if(t.arena==='campus-v2')return p.every(Number.isFinite)&&Math.abs(p[0])<=CAMPUS_ARENA.outer[0]&&Math.abs(p[1])<=CAMPUS_ARENA.outer[1]&&(Math.abs(p[0])>=14.2||p[1]<=-10.4||p[1]>=7.4)&&navigable(t,p);return p.every(Number.isFinite)&&Math.abs(p[0])<=13.2&&Math.abs(p[1])<=9.2&&(Math.abs(p[0])>=11.8||Math.abs(p[1])>=8.3||p[1]>=5.8&&Math.abs(p[0])<=10.5&&p[1]<=7.2)&&navigable(t,p);}
 export function validDeployment(t:TargetSnapshot,p:Vec){return deploymentGround(t,p)&&infiltrationPath(t,p,t.exit).length>0;}
 /** Reservation is already removed from stock; count it only until it is deployed. */
 export function deploymentCount(stock:number,o:Operation){return o.squad?.undeployed!==undefined?Math.max(0,Math.min(stock,o.squad.undeployed)):Math.max(0,stock)+(o.status==='ready'&&o.unit?.status==='reserved'?1:0);}

@@ -1,3 +1,4 @@
+import {breachRating} from '../shared/breach-rating';
 import type express from 'express';
 import type {DatabaseSync} from 'node:sqlite';
 import {randomInt,randomUUID} from 'node:crypto';
@@ -17,6 +18,7 @@ export function playerWorldStore(db:DatabaseSync,clock:()=>number,leaderboard:(i
  CREATE INDEX IF NOT EXISTS pvp_attack_history ON pvp_battles(attacker_id,created_at DESC);CREATE INDEX IF NOT EXISTS pvp_defense_history ON pvp_battles(defender_id,created_at DESC);
  CREATE INDEX IF NOT EXISTS pvp_unfinished ON pvp_battles(created_at) WHERE finished_at IS NULL;
  CREATE TABLE IF NOT EXISTS pvp_reward_cooldowns(attacker_id TEXT NOT NULL,defender_id TEXT NOT NULL,eligible_at INTEGER NOT NULL,PRIMARY KEY(attacker_id,defender_id));`);
+ if(!db.prepare('PRAGMA table_info(pvp_battles)').all().some(c=>c.name==='breach_rating'))db.exec('ALTER TABLE pvp_battles ADD COLUMN breach_rating TEXT');
  const eligible=(a:string,d:string)=>Number(db.prepare('SELECT eligible_at FROM pvp_reward_cooldowns WHERE attacker_id=? AND defender_id=?').get(a,d)?.eligible_at??0);
  function view(id:string):{company:PublicCompany;base:PublicBase|null}|null{
   const row=db.prepare('SELECT p.save_id,s.state,u.username,x.total,x.floor_level FROM company_players p JOIN foundation_saves s ON s.id=p.save_id JOIN player_usernames u ON u.player_id=p.id LEFT JOIN company_xp x ON x.company_id=p.id WHERE p.id=?').get(id);if(!row)return null;
@@ -36,10 +38,10 @@ export function playerWorldStore(db:DatabaseSync,clock:()=>number,leaderboard:(i
   const o=s.infiltration;if(!o?.pvp)return;const row=db.prepare('SELECT * FROM pvp_battles WHERE id=? AND attacker_id=? AND defender_id=?').get(o.id,attacker,o.pvp.defenderId);if(!row||row.finished_at!==null)return;
   if(o.status==='ready'&&now>=Number(row.created_at)+PVP.readyMs)commandOperation(o,{action:'abandon'},Number(row.created_at)+PVP.readyMs);
   if(['ready','active'].includes(o.status)){db.prepare('UPDATE pvp_battles SET status=? WHERE id=?').run(o.status,o.id);return;}
-  const success=o.status==='extracted'&&o.hacked.includes('hq'),at=o.finishedAt??now;let award=0,next=eligible(attacker,o.pvp.defenderId);
+  const rating=breachRating(o),success=rating.count>0,at=o.finishedAt??now;let award=0,next=eligible(attacker,o.pvp.defenderId);
   if(success&&at>=next){award=PVP.award;next=at+PVP.cooldownMs;db.prepare('INSERT INTO company_influence VALUES(?,?) ON CONFLICT(company_id) DO UPDATE SET total=total+excluded.total').run(attacker,award);db.prepare('INSERT INTO pvp_reward_cooldowns VALUES(?,?,?) ON CONFLICT(attacker_id,defender_id) DO UPDATE SET eligible_at=excluded.eligible_at').run(attacker,o.pvp.defenderId,next);}
   o.settlement={compute:0,research:0,influence:award,eligibleAt:next,pendingCompute:0,pendingResearch:0};
-  db.prepare('UPDATE pvp_battles SET finished_at=?,status=?,destruction=?,influence=? WHERE id=? AND finished_at IS NULL').run(at,success?'victory':o.status,playerDestruction(o),award,o.id);
+  db.prepare('UPDATE pvp_battles SET finished_at=?,status=?,destruction=?,influence=?,breach_rating=? WHERE id=? AND finished_at IS NULL').run(at,success?'victory':o.status,playerDestruction(o),award,JSON.stringify(rating.tokens),o.id);
  }
  // A returning defender can see an offline attack without requiring the attacker to reconnect.
  function sweep(){const now=clock();for(const row of db.prepare("SELECT b.id,b.attacker_id,p.save_id,s.state FROM pvp_battles b JOIN company_players p ON p.id=b.attacker_id JOIN foundation_saves s ON s.id=p.save_id WHERE b.finished_at IS NULL ORDER BY b.created_at LIMIT 100").all()){
@@ -63,7 +65,7 @@ export function playerWorldStore(db:DatabaseSync,clock:()=>number,leaderboard:(i
     const scout:PlayerScout={id:String(row!.id),company:target.company,base:target.base,eligibleAt:eligible(player.companyId,target.company.id),expiresAt:Number(row!.expires_at),serverTime:now};db.exec('COMMIT');res.set('Cache-Control','private, no-store').json({scout});
    }catch(e){db.exec('ROLLBACK');res.status(409).json({error:(e as Error).message});}
   });
-  app.get('/api/foundation/pvp/history',(req,res)=>{const player=authorize(req,res);if(!player)return;db.exec('BEGIN IMMEDIATE');try{sweep();const map=(direction:'attacker'|'defender')=>db.prepare(`SELECT * FROM pvp_battles WHERE ${direction}_id=? AND finished_at IS NOT NULL ORDER BY finished_at DESC,id DESC LIMIT 30`).all(player.companyId).map(r=>{const id=String(direction==='attacker'?r.defender_id:r.attacker_id),known=view(id)?.company;return {id:String(r.id),opponent:known??{id,name:String(direction==='attacker'?r.defender_name:r.attacker_name),level:1,hqLevel:1,influence:0,rank:null,visitable:false},outcome:String(r.status),destruction:Number(r.destruction),influence:direction==='attacker'?Number(r.influence):0,finishedAt:Number(r.finished_at)};});const data={attacks:map('attacker'),defenses:map('defender'),serverTime:clock()};db.exec('COMMIT');res.set('Cache-Control','private, no-store').json(data);}catch{db.exec('ROLLBACK');res.status(503).json({error:'Battle history is temporarily unavailable.'});}});
+  app.get('/api/foundation/pvp/history',(req,res)=>{const player=authorize(req,res);if(!player)return;db.exec('BEGIN IMMEDIATE');try{sweep();const map=(direction:'attacker'|'defender')=>db.prepare(`SELECT * FROM pvp_battles WHERE ${direction}_id=? AND finished_at IS NOT NULL ORDER BY finished_at DESC,id DESC LIMIT 30`).all(player.companyId).map(r=>{const id=String(direction==='attacker'?r.defender_id:r.attacker_id),known=view(id)?.company;return {id:String(r.id),opponent:known??{id,name:String(direction==='attacker'?r.defender_name:r.attacker_name),level:1,hqLevel:1,influence:0,rank:null,visitable:false},outcome:String(r.status),...(r.breach_rating?{breachTokens:JSON.parse(String(r.breach_rating))}:{}),destruction:Number(r.destruction),influence:direction==='attacker'?Number(r.influence):0,finishedAt:Number(r.finished_at)};});const data={attacks:map('attacker'),defenses:map('defender'),serverTime:clock()};db.exec('COMMIT');res.set('Cache-Control','private, no-store').json(data);}catch{db.exec('ROLLBACK');res.status(503).json({error:'Battle history is temporarily unavailable.'});}});
  }
  return {register,start,settle,view,eligible};
 }

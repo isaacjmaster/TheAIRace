@@ -7,7 +7,7 @@ import {ensureOwnedOperation,settleOwnedUnit,reservedAgent} from './infiltration
 import {advanceResearch,type ResearchLab} from './research';
 import {decorationFootprint,type Decoration} from './decoration-catalog';
 import {FOUNDATION_PLOT} from './foundation-plot';
-import {FOUNDER_HQ,founderHqLevel,gpuRigCapacity,type FounderHQUpgrade} from './founder-hq';
+import {FOUNDER_HQ,founderHqLevel,founderBuilderCapacity,gpuRigCapacity,type FounderHQUpgrade} from './founder-hq';
 import {advanceLandscape,clearingActive,landscapeRoute,type Landscape,obstacleSize} from './landscape';
 import {createStarterRaid} from '../raid/starter';
 import {deploy,tick,finish,STEP,destruction,type Raid,type Point} from '../raid/engine';
@@ -30,7 +30,7 @@ export const SCRAP_BOT={cost:5,trainSeconds:5,housing:1,capacity:10} as const;
 export type FoundationState = {technologyUpgrade?:TechnologyUpgrade;technologies?:Technologies;trainingDurations?:number[];walls?:OwnedWall[];droneStation?:Hangar;security?:CompanySecurity;infiltrationTutorial?:'complete'|'skipped';infiltration?:Operation;infiltrationReserve?:{compute:number;research:number};research?:number;researchCapacity?:number;lab?:ResearchLab;decorations?:Decoration[];founderHqLevel?:1|2;hqUpgrade?:FounderHQUpgrade;starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
 export function initialFoundation(revision=0):FoundationState{return {version:1,revision,research:0,researchCapacity:500,founderHqLevel:1,companyName:'Garage Intelligence',level:1,compute:STARTING_COMPUTE,capacity:COMPUTE_CAPACITY,builders:0,starterStation:'unplaced',raidRecord:{wins:[],completeHistory:true}};}
 export const hasBuilderStation=(s:FoundationState)=>s.starterStation!=='unplaced';
-export function establishBuilderStation(s:FoundationState,position:RigPosition,orientation:Orientation=0){if(hasBuilderStation(s))throw new Error('Builder Station — 1/1 Built');const reason=validFoundationPosition(s,position,'station',orientation);if(reason)throw new Error(reason);s.stationLayout={position:[...position],orientation};s.starterStation='placed';s.builders=1;s.buildersBusy=0;}
+export function establishBuilderStation(s:FoundationState,position:RigPosition,orientation:Orientation=0){if(hasBuilderStation(s))throw new Error('Builder Station — 1/1 Built');const reason=validFoundationPosition(s,position,'station',orientation);if(reason)throw new Error(reason);s.stationLayout={position:[...position],orientation};s.starterStation='placed';s.builders=founderBuilderCapacity(s);s.buildersBusy=0;}
 export const RIG_BOUNDS=FOUNDATION_PLOT;
 export function validRigPosition(position:RigPosition,orientation:Orientation=0):string|null{
  if(position.length!==2||!position.every(n=>Number.isFinite(n)&&Number.isInteger(n)))return 'Snap the rig to the grid.';
@@ -50,6 +50,7 @@ export function advanceFoundation(s:FoundationState,now=Date.now()){
  const rigs=[s.rig,s.rig2].filter((r):r is GpuRig=>!!r),jobs=[...rigs,s.fabricator,getHangar(s),s.lab,s.droneStation].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
  const clearing=!!s.landscape?.clearing;advanceLandscape(s,now);
  if(s.hqUpgrade&&now>=s.hqUpgrade.completesAt)s.founderHqLevel=2;
+ if(hasBuilderStation(s)&&founderHqLevel(s)===2)s.builders=Math.max(s.builders,founderBuilderCapacity(s));
  if(jobs.length||clearing||s.hqUpgrade)s.buildersBusy=jobs.filter(b=>now<b.completesAt).length+Number(clearingActive(s,now))+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt);
  if(s.training){const completed=s.training.filter(t=>t<=now).length;s.bots=(s.bots||0)+completed;if(s.trainingDurations)s.trainingDurations=s.trainingDurations.slice(completed);s.training=s.training.filter(t=>t>now);}
  ensureOwnedOperation(s,now);if(s.infiltration)advanceOperation(s.infiltration,now);settleOwnedUnit(s);
@@ -150,14 +151,14 @@ export function rotateBuilding(s:FoundationState,kind:RotatableBuilding,orientat
 }
 export function buildFabricator(s:FoundationState,p:RigPosition,now=Date.now(),orientation:Orientation=0,independent=true){
  advanceFoundation(s,now);if(s.fabricator)throw new Error('Bot Fabricator — 1/1 Built');
- if(!hasBuilderStation(s)||s.builders<1)throw new Error('Place your free Builder Station first.');if(s.buildersBusy)throw new Error('Your Builder Bot is busy.');
+ if(!hasBuilderStation(s)||s.builders<1)throw new Error('Place your free Builder Station first.');if((s.buildersBusy??0)>=s.builders)throw new Error('Your Builder Bot is busy.');
  const reason=validFoundationPosition(s,p,'fabricator',orientation,!independent);if(reason)throw new Error(reason);
  if(s.compute<FABRICATOR.cost)throw new Error('You need 50 Compute.');
- s.compute-=FABRICATOR.cost;s.fabricator={...(independent?{separateHangar:true}:{}),orientation,hangarOrientation:orientation,position:[...p],hangarPosition:hangarPlacement(p,orientation),startedAt:now,completesAt:now+15000};s.buildersBusy=1;
+ s.compute-=FABRICATOR.cost;s.fabricator={...(independent?{separateHangar:true}:{}),orientation,hangarOrientation:orientation,position:[...p],hangarPosition:hangarPlacement(p,orientation),startedAt:now,completesAt:now+15000};s.buildersBusy=(s.buildersBusy??0)+1;
  s.bots??=0;s.training??=[];
 }
 export function buildHangar(s:FoundationState,p:RigPosition,now=Date.now(),orientation:Orientation=0){
- advanceFoundation(s,now);if(getHangar(s))throw new Error('Bot Hangar — 1/1 Built');if(!hasBuilderStation(s)||s.builders<1)throw new Error('Place your free Builder Station first.');if(s.buildersBusy)throw new Error('Your Builder Bot is busy.');const reason=validFoundationPosition(s,p,'hangar',orientation);if(reason)throw new Error(reason);s.hangar={size:'expanded',position:[...p],orientation,startedAt:now,completesAt:now+HANGAR.buildSeconds*1000};s.buildersBusy=1;s.bots??=0;
+ advanceFoundation(s,now);if(getHangar(s))throw new Error('Bot Hangar — 1/1 Built');if(!hasBuilderStation(s)||s.builders<1)throw new Error('Place your free Builder Station first.');if((s.buildersBusy??0)>=s.builders)throw new Error('Your Builder Bot is busy.');const reason=validFoundationPosition(s,p,'hangar',orientation);if(reason)throw new Error(reason);s.hangar={size:'expanded',position:[...p],orientation,startedAt:now,completesAt:now+HANGAR.buildSeconds*1000};s.buildersBusy=(s.buildersBusy??0)+1;s.bots??=0;
 }
 export function trainScrap(s:FoundationState,count:number,now=Date.now()){
  advanceFoundation(s,now);if(!s.fabricator||now<s.fabricator.completesAt)throw new Error('Finish building your Bot Fabricator first.');if(!hangarReady(s,now))throw new Error('Build and finish a Bot Hangar first.');

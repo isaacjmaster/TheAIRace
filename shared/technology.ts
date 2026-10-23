@@ -2,7 +2,7 @@ import type {FoundationState} from './foundation';
 export const TECHNOLOGY_IDS=['gpuOptimization','cipherEngineering','trainingEfficiency'] as const;
 export type TechnologyId=typeof TECHNOLOGY_IDS[number];
 export type Technologies=Partial<Record<TechnologyId,number>>;
-export const TECHNOLOGY_DURATION_MS=15*60*1000;
+export const TECHNOLOGY_DURATIONS_MS=[5*60*1000,10*60*1000,15*60*1000] as const;
 export type TechnologyUpgrade={technology:TechnologyId;level:number;startedAt:number;completesAt:number};
 export const TECHNOLOGY_COSTS=[50,125,250] as const;
 export const TECHNOLOGIES={
@@ -22,7 +22,7 @@ export function purchaseTechnology(s:FoundationState,id:TechnologyId,expectedLev
  const level=technologyLevel(s,id);if(level>=3)throw Error('This technology is already at MAX LEVEL.');
  if(expectedLevel!==level)throw Error('Technology level changed. Review the next upgrade and try again.');
  const cost=TECHNOLOGY_COSTS[level];if((s.research??0)<cost)throw Error(`You need ${cost} Research.`);
- s.research=(s.research??0)-cost;s.technologyUpgrade={technology:id,level:level+1,startedAt:now,completesAt:now+TECHNOLOGY_DURATION_MS};
+ s.research=(s.research??0)-cost;s.technologyUpgrade={technology:id,level:level+1,startedAt:now,completesAt:now+TECHNOLOGY_DURATIONS_MS[level]};
 }
 
 /** Server time completes a saved job once. Existing purchased levels remain intact. */

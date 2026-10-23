@@ -4,7 +4,7 @@ import {dirname,join} from 'node:path';
 import {randomUUID} from 'node:crypto';
 /** Called before additive PvP migration on production. A failed backup prevents startup. */
 export function backupBeforePvPMigration(db:DatabaseSync){
- if(db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='pvp_battles'").get())return null;
+ if(db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='pvp_battles'").get()&&db.prepare('PRAGMA table_info(pvp_battles)').all().some(c=>c.name==='breach_rating'))return null;
  if(!db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='foundation_saves'").get()||!Number(db.prepare('SELECT COUNT(*) n FROM foundation_saves').get()!.n))return null;
  const file=String(db.prepare('PRAGMA database_list').all().find(r=>r.name==='main')?.file??'');if(!file)throw Error('PvP migration requires a persistent backup destination.');
  const count=Number(db.prepare('SELECT COUNT(*) n FROM foundation_saves').get()!.n);

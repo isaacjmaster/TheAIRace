@@ -15,7 +15,7 @@ export function ensureOwnedOperation(s:FoundationState,now:number){
 }
 export function settleOwnedUnit(s:FoundationState){
  const o=s.infiltration;if(!o||!reservedAgent(o)||['ready','active'].includes(o.status))return;
- if(o.squad&&o.squad.agents.length){for(const agent of o.squad.agents){if(agent.unitStatus!=='reserved')continue;const returned=agent.state==='extracted'&&!o.pvp;if(returned)s.bots=(s.bots??0)+1;agent.unitStatus=returned?'returned':'lost';}return;}
+ if(o.squad&&o.squad.agents.length){for(const agent of o.squad.agents){if(agent.unitStatus!=='reserved')continue;const returned=agent.state==='extracted'&&(agent.health??1)>0;if(returned)s.bots=(s.bots??0)+1;agent.unitStatus=returned?'returned':'lost';}return;}
  const returned=o.status==='extracted'||o.status==='abandoned'&&o.startedAt===undefined;
  if(returned)s.bots=(s.bots??0)+1;
  o.unit!.status=returned?'returned':'lost';

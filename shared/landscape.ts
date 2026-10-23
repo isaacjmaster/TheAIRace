@@ -70,12 +70,12 @@ export function advanceLandscape(s:FoundationState,now:number){const l=s.landsca
  const paid=Math.min(l.pendingCompute,Math.max(0,s.capacity-s.compute));s.compute+=paid;l.pendingCompute-=paid;
  if(now>=l.nextSpawnAt){if(l.items.length<LANDSCAPE.maxCount)spawn(s);l.nextSpawnAt=now+LANDSCAPE.regenerationMs;}
 }
-export function clearObstacle(s:FoundationState,id:string,now:number){advanceFoundation(s,now);if(s.builders<1)throw new Error('Place your free Builder Station first.');const l=s.landscape;if(!l)throw new Error('Reload your landscape first.');if(s.buildersBusy||clearingActive(s,now))throw new Error('Your Builder Bot is busy.');const o=l.items.find(o=>o.id===id);if(!o)throw new Error('This obstacle was already cleared.');const [w,d]=obstacleSize(o);
+export function clearObstacle(s:FoundationState,id:string,now:number){advanceFoundation(s,now);if(s.builders<1)throw new Error('Place your free Builder Station first.');const l=s.landscape;if(!l)throw new Error('Reload your landscape first.');if((s.buildersBusy??0)>=s.builders||clearingActive(s,now))throw new Error('Your Builder Bot is busy.');const o=l.items.find(o=>o.id===id);if(!o)throw new Error('This obstacle was already cleared.');const [w,d]=obstacleSize(o);
  const targets:RigPosition[]=[[o.position[0],o.position[1]+d/2+1],[o.position[0]+w/2+1,o.position[1]],[o.position[0],o.position[1]-d/2-1],[o.position[0]-w/2-1,o.position[1]]];
  const origin=l.clearing?clearingPosition(l.clearing,now):undefined;
  const route=targets.map(t=>landscapeRoute(s,t,origin,1.1)).filter(p=>p.length).sort((a,b)=>a.length-b.length)[0]??(origin?targets.map(t=>landscapeRoute(s,t,undefined,1.1)).filter(p=>p.length).sort((a,b)=>a.length-b.length)[0]:undefined);if(!route)throw new Error('The Builder Bot needs a clear route to this obstacle.');
  const travel=Math.max(600,route.reduce((d,p,i)=>i?d+Math.hypot(p[0]-route[i-1][0],p[1]-route[i-1][1]):d,0)/LANDSCAPE.travelSpeed*1000);
  const back=landscapeRoute(s,door(s,'station'),route.at(-1),1.1),returnRoute=back.length?[...back,buildingLayout(s,'station')!.position]:[...route].reverse();
  const returnMs=Math.max(600,returnRoute.reduce((d,p,i)=>i?d+Math.hypot(p[0]-returnRoute[i-1][0],p[1]-returnRoute[i-1][1]):d,0)/LANDSCAPE.travelSpeed*1000);
- l.clearing={id:o.id,obstacle:structuredClone(o),route,returnRoute,startedAt:now,workAt:now+Math.min(travel,LANDSCAPE.workByKind[o.kind]-1000),clearedAt:now+LANDSCAPE.workByKind[o.kind],completesAt:now+returnMs+LANDSCAPE.workByKind[o.kind],rewarded:false};s.buildersBusy=1;
+ l.clearing={id:o.id,obstacle:structuredClone(o),route,returnRoute,startedAt:now,workAt:now+Math.min(travel,LANDSCAPE.workByKind[o.kind]-1000),clearedAt:now+LANDSCAPE.workByKind[o.kind],completesAt:now+returnMs+LANDSCAPE.workByKind[o.kind],rewarded:false};s.buildersBusy=(s.buildersBusy??0)+1;
 }

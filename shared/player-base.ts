@@ -1,5 +1,5 @@
 import {FOUNDATION_BUILDINGS,buildingLayout,footprint,initialFoundation,type FoundationState,type RotatableBuilding,type BuildingLayout} from './foundation';
-import {founderHqLevel} from './founder-hq';
+import {founderHqLevel,founderBuilderCapacity} from './founder-hq';
 import {FOUNDATION_PLOT} from './foundation-plot';
 import {DECORATIONS,type Decoration} from './decoration-catalog';
 import type {OwnedWall} from './security-catalog';
@@ -20,8 +20,9 @@ export function publicBase(s:FoundationState,companyId:string,now:number):Public
 export function baseVisualState(b:PublicBase):FoundationState{
  const s=initialFoundation();s.compute=0;s.builders=0;s.starterStation='unplaced';s.walls=structuredClone(b.walls);s.decorations=structuredClone(b.decorations);s.landscape={version:1,epoch:'public',sequence:0,nextSpawnAt:Number.MAX_SAFE_INTEGER,items:structuredClone(b.scenery),pendingCompute:0};
  for(const v of b.buildings){const shape={position:[...v.position] as [number,number],orientation:v.orientation},job={...shape,startedAt:0,completesAt:v.complete?0:Number.MAX_SAFE_INTEGER};if(v.id==='hq'){s.hqLayout=shape;s.founderHqLevel=v.level;}else if(v.id==='station'){s.stationLayout=shape;s.starterStation='placed';}else if(v.id==='rig'||v.id==='rig2'||v.id==='lab')s[v.id]={...job,lastProducedAt:b.capturedAt,stored:0};else if(v.id==='hangar')s.hangar={...job,size:v.size};else if(v.id==='fabricator')s.fabricator={...job,separateHangar:true,hangarPosition:b.buildings.find(x=>x.id==='hangar')?.position??shape.position};else s.droneStation=job;}
+ if(s.starterStation==='placed')s.builders=founderBuilderCapacity(s);
  return s;
 }
 export const publicFootprint=(v:PublicBuilding)=>footprint(v.id,v);
 export type PlayerScout={id:string;company:PublicCompany;base:PublicBase;eligibleAt:number;expiresAt:number;serverTime:number};
-export type PvPHistory={id:string;opponent:PublicCompany;outcome:string;destruction:number;influence:number;finishedAt:number};
+export type PvPHistory={breachTokens?:boolean[];id:string;opponent:PublicCompany;outcome:string;destruction:number;influence:number;finishedAt:number};

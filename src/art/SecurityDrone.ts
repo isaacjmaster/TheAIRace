@@ -1,4 +1,4 @@
-import {companySecurity,securitySolids} from '../../shared/security';
+import {securityDroneCount,securitySolids} from '../../shared/security';
 import {findPath,nearestOpen,type NavPoint,type NavRect} from '../../shared/navigation';
 import {FOUNDATION_PLOT as P} from '../../shared/foundation-plot';
 import {buildingLayout,footprint,type FoundationState} from '../../shared/foundation';
@@ -20,11 +20,22 @@ export function animateSecurityDrone(g: THREE.Object3D, time: number, reduced: b
     for (const c of g.children)
         if (c.name === 'rotor')
             c.rotation.y = time * 12; }
-export class HQSecurityPatrol {
+class SingleSecurityPatrol {
+
  readonly group=new THREE.Group();private k=new WorldKit('campus');private drone=securityDroneModel(this.k);private key='';private rects:NavRect[]=[];private route:NavPoint[]=[];private corners:NavPoint[]=[];private segment=0;private retryAt=0;private enabled=false;private launching=0;private launchFrom:NavPoint=[0,0];private launchTo:NavPoint=[0,0];
  get active(){return this.enabled;}get phase(){return !this.enabled?'none':this.launching>0?'launching':'patrolling';}
- constructor(){this.group.name='HQ security patrol';this.group.add(this.drone);this.drone.visible=false;}
- sync(s:FoundationState,now=Date.now()){this.enabled=companySecurity(s,now).drone.enabled;if(!this.enabled){this.drone.visible=false;this.key='';return;}const rects=securitySolids(s);const key=JSON.stringify([rects,s.droneStation]);if(key===this.key)return;this.key=key;this.rects=rects;const hq=footprint('hq',buildingLayout(s,'hq')!),radius=1.15;this.corners=[[-1,-1],[1,-1],[1,1],[-1,1]].flatMap(([x,z])=>{const p=nearestOpen([hq.x+x*(hq.w/2+2.2),hq.z+z*(hq.d/2+2.2)],rects,P,radius);return p?[p]:[];});const station=s.droneStation!;this.launchFrom=[...station.position];this.launchTo=[...station.position];const start=nearestOpen(station.position,rects,P,radius);this.launching=1.8;this.drone.visible=!!start;if(start)this.drone.position.set(this.launchFrom[0],1.5,this.launchFrom[1]);if(start){this.launchFrom=start;this.launchTo=start;}this.route=[];this.segment=0;this.retryAt=0;}
+ constructor(private index=0){this.group.name='HQ security patrol';this.group.add(this.drone);this.drone.visible=false;}
+ sync(s:FoundationState,now=Date.now()){this.enabled=securityDroneCount(s,now)>this.index;if(!this.enabled){this.drone.visible=false;this.key='';return;}const rects=securitySolids(s);const key=JSON.stringify([rects,s.droneStation]);if(key===this.key)return;this.key=key;this.rects=rects;const hq=footprint('hq',buildingLayout(s,'hq')!),radius=1.15;this.corners=[[-1,-1],[1,-1],[1,1],[-1,1]].flatMap(([x,z])=>{const p=nearestOpen([hq.x+x*(hq.w/2+2.2),hq.z+z*(hq.d/2+2.2)],rects,P,radius);return p?[p]:[];});const station=s.droneStation!;this.launchFrom=[...station.position];this.launchTo=[...station.position];const start=nearestOpen(this.index?this.corners[2]??station.position:station.position,rects,P,radius);this.launching=1.8;this.drone.visible=!!start;if(start)this.drone.position.set(this.launchFrom[0],1.5,this.launchFrom[1]);if(start){this.launchFrom=start;this.launchTo=start;}this.route=[];this.segment=this.index*2;this.retryAt=0;}
  update(time:number,dt:number,reduced:boolean){if(!this.drone.visible||!this.enabled)return;if(reduced&&this.launching>0){this.launching=0;this.drone.position.set(this.launchTo[0],2.6,this.launchTo[1]);}if(this.launching>0){this.launching=Math.max(0,this.launching-dt);const t=1-this.launching/1.8,e=t*t*(3-2*t);this.drone.position.set(this.launchFrom[0]+(this.launchTo[0]-this.launchFrom[0])*e,1.5+1.1*e,this.launchFrom[1]+(this.launchTo[1]-this.launchFrom[1])*e);if(!reduced)for(const c of this.drone.children)if(c.name==='rotor')c.rotation.y=time*12;return;}const p:NavPoint=[this.drone.position.x,this.drone.position.z];if(!this.route.length&&this.corners.length&&time>=this.retryAt){this.segment=(this.segment+1)%this.corners.length;this.route=findPath(p,this.corners[this.segment],this.rects,P,1.15,1);this.retryAt=this.route.length?0:time+1;}let budget=reduced?0:dt*1.5;while(budget>0&&this.route.length){const q=this.route[0],dx=q[0]-this.drone.position.x,dz=q[1]-this.drone.position.z,d=Math.hypot(dx,dz);if(d<.001){this.route.shift();continue;}const step=Math.min(d,budget);this.drone.position.x+=dx/d*step;this.drone.position.z+=dz/d*step;const angle=Math.atan2(dx,dz),delta=Math.atan2(Math.sin(angle-this.drone.rotation.y),Math.cos(angle-this.drone.rotation.y));this.drone.rotation.y+=delta*(1-Math.exp(-dt*10));budget-=step;if(step>=d)this.route.shift();}animateSecurityDrone(this.drone,time,reduced);}
  dispose(){this.k.dispose();}
+}
+
+export class HQSecurityPatrol {
+ private patrols=[new SingleSecurityPatrol(0),new SingleSecurityPatrol(1)];readonly group=this.patrols[0].group;private second=this.patrols[1].group.children[0];
+ get count(){return this.patrols.filter(p=>p.active).length;}
+ get active(){return this.count>0;}
+ get phase(){return this.patrols[0].phase;}
+ sync(s:FoundationState,now=Date.now()){for(const p of this.patrols)p.sync(s,now);if(this.patrols[1].active)this.group.add(this.second);else this.second.removeFromParent();}
+ update(time:number,dt:number,reduced:boolean){for(const p of this.patrols)p.update(time,dt,reduced);}
+ dispose(){for(const p of this.patrols)p.dispose();}
 }

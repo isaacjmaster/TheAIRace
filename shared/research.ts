@@ -9,7 +9,7 @@ export function advanceResearch(s: FoundationState, now: number) { s.research ??
 } }
 export function buildResearchLab(s: FoundationState, p: RigPosition, now: number, orientation: Orientation = 0) { advanceFoundation(s, now); if (s.lab)
     throw new Error('Research Lab — 1/1 Built'); if (!hasBuilderStation(s) || s.builders < 1)
-    throw new Error('Place your Builder Station first.'); if (s.buildersBusy)
+    throw new Error('Place your Builder Station first.'); if ((s.buildersBusy??0)>=s.builders)
     throw new Error('Your Builder Bot is busy.'); const reason = validFoundationPosition(s, p, 'lab', orientation); if (reason)
     throw new Error(reason); if (s.compute < RESEARCH.lab.cost)
     throw new Error('You need 150 Compute.'); s.compute -= RESEARCH.lab.cost; s.lab = { position: [...p], orientation, startedAt: now, completesAt: now + RESEARCH.lab.buildSeconds * 1000, lastProducedAt: now + RESEARCH.lab.buildSeconds * 1000, stored: 0 }; s.buildersBusy = (s.buildersBusy || 0) + 1; }

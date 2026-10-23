@@ -19,7 +19,7 @@ export function newSquadOperation(id:string,targetId:string,now:number,spacious=
  for(const wall of o.target.walls){wall.x*=1.2;wall.z*=1.2;if(wall.w>wall.d)wall.w*=1.2;else wall.d*=1.2;}
  for(const defense of o.target.defenses)defense.route=defense.route.map(p=>p.map(v=>v*1.2) as Vec);
  }
- if(spacious)o.target=craftCampusTarget(targetId);
+ if(spacious){o.target=craftCampusTarget(targetId);o.breachRatingVersion=1;const hq=o.target.assets.find(a=>a.kind==='hq')!;hq.access=[hq.position[0],hq.position[1]+hq.size[1]/2+1.2];hq.hackSeconds=TACTICAL_BALANCE.hackSeconds.core;}
  const solids=infiltrationSolids(o.target);
  for(const defense of o.target.defenses){defense.radius+=.6;defense.warningSeconds=0;defense.route=defense.route.map(p=>nearestOpen(p,solids,targetBounds(o.target),DRONE_CLEARANCE,.5)??p);}
  if(spacious){o.squad.balanceVersion=2;o.squad.rules='tactical-v1';for(const a of o.target.assets)if(a.hackSeconds)a.hackSeconds=a.kind==='gpu'?TACTICAL_BALANCE.hackSeconds.gpu:a.kind==='lab'?TACTICAL_BALANCE.hackSeconds.lab:TACTICAL_BALANCE.hackSeconds.core;for(const d of o.target.defenses){d.radius=TACTICAL_BALANCE.droneDetection;d.warningSeconds=TACTICAL_BALANCE.droneWarmupMs/1000;}}
@@ -46,7 +46,7 @@ function targetAgent(o:Operation,a:SquadAgent){
  }}
  if(candidates.length){a.mode='idle';a.target=undefined;}else returnAgent(o,a);
 }
-function finish(o:Operation,status:Operation['status']){o.status=status;o.finishedAt=o.lastTick;for(const a of o.squad!.agents)if(a.state==='active'){a.state='lost';a.path=[];a.mode='idle';}if(status!=='extracted')o.carried={compute:0,research:0,intel:false};event(o,status);}
+function finish(o:Operation,status:Operation['status']){o.status=status;o.finishedAt=o.lastTick;for(const a of o.squad!.agents)if(a.state==='active'){a.state=(a.health??0)>0?'extracted':'lost';a.path=[];a.mode='idle';}if(status!=='extracted')o.carried={compute:0,research:0,intel:false};event(o,status);}
 export function commandSquad(o:Operation,c:InfiltrationCommand,now:number){
  advanceSquad(o,now);if(o.status!=='ready'&&o.status!=='active')throw Error('This operation has ended.');
  if(c.action==='abandon'){finish(o,'abandoned');(o.orders??=[]).push({at:now,intent:structuredClone(c)});return;}
