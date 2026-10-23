@@ -1,0 +1,18 @@
+App icon v4: approved Founder HQ and Ava tablet artwork
+=====================================================
+Built-in image editor used with the owner-provided image as the edit target.
+Final prompt: Remove only the exterior black surround and rounded-square padding.
+Extend the existing scene naturally to every square edge and corner. Preserve
+Ava holding the tablet, Founder HQ, GPU hardware, bots, trees, sky and street;
+keep the composition, proportions, colors and low-poly 3D style. No zoom,
+central crop, redesign, text, border, frame or new subjects. Opaque full bleed
+square for native platform masking.
+
+Master: public/icons/ava-hq-v4-original.png
+Delivery: ava-hq-v4-{16,32,180,192,512,1024}.png, maskable 512 and multi-size ICO.
+Index and manifest reference v4. Previous versions remain recoverable.
+Only app/browser icon assets and references changed. No gameplay, audio,
+viewport, database, saves or production configuration changes.
+Validated square opaque images and nonblack corners; production build checked.
+iOS may retain an installed Home Screen icon. Do not clear app data to refresh
+it; secure company recovery information before any manual reinstall.
