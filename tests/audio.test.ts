@@ -192,3 +192,14 @@ test('a pending unsupported pointerdown resume cannot swallow a supported click 
 test('foreground gesture during fade resumes synchronously and delayed cleanup cannot suspend it',async()=>{
  const h=harness();try{await ready(h.sound);h.sound.visibility(true);h.sound.visibility(false);const before=h.ctx.resumes,pending=h.sound.unlock();assert.equal(h.ctx.resumes,before+1);assert.equal(await pending,true);await (h.sound as any).quiet;assert.equal(h.ctx.state,'running');h.ctx.currentTime+=1;const voices=h.ctx.sources.length;h.sound.cue('tap');assert.ok(h.ctx.sources.length>voices);assert.equal(h.created(),1);}finally{h.sound.dispose();}
 });
+
+
+test('startup autoplay makes one attempt, respects mute/hidden/test policy and shares the gesture context',async()=>{
+ const h=harness();try{assert.equal(await h.sound.tryAutoplay(),true);await (h.sound as any).activate('hq');assert.equal(await h.sound.tryAutoplay(),false);assert.equal(h.ctx.resumes,1);await ready(h.sound);assert.equal(h.created(),1);assert.equal(h.ctx.sources.filter(n=>n.loop&&n.stops===0).length,1);}finally{h.sound.dispose();}
+ for(const kind of ['muted','hidden','silent']){const a=harness(kind==='muted'?'true':undefined),audio=new Soundscape({...a.platform,silent:kind==='silent',isHidden:()=>kind==='hidden'});try{assert.equal(await audio.tryAutoplay(),false);assert.equal(a.created(),0);assert.equal(a.data.get(MUTE_KEY),kind==='muted'?'true':undefined);}finally{audio.dispose();a.sound.dispose();}}
+});
+test('blocked startup autoplay never prevents first eligible interaction or repeatedly retries',async()=>{
+ const h=harness();let eligible=false;const waiting:(()=>void)[]=[];
+ h.ctx.resume=()=>{h.ctx.resumes++;return new Promise<void>(resolve=>{waiting.push(resolve);if(eligible){h.ctx.state='running';waiting.splice(0).forEach(done=>done());}});};
+ try{const automatic=h.sound.tryAutoplay();assert.equal(h.ctx.resumes,1);assert.equal(await h.sound.tryAutoplay(),false);assert.equal(h.ctx.resumes,1);eligible=true;assert.equal(await h.sound.unlock(),true);await automatic;await (h.sound as any).activate('hq');h.sound.cue('tap');assert.equal(h.created(),1);assert.equal(h.ctx.sources.filter(n=>n.loop&&n.stops===0).length,1);assert.ok(h.ctx.sources.some(n=>!n.loop));}finally{h.sound.dispose();}
+});

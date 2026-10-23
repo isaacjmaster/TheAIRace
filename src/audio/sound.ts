@@ -13,11 +13,12 @@ function browserPlatform():SoundPlatform {
 export {voiceEnvelope} from './envelope';
 import {voiceEnvelope} from './envelope';
 import {MusicSynth} from './musicSynth';
-/** Context creation/resume is exclusively initiated by a user gesture. */
+/** One best-effort startup attempt; supported user gestures can always retry. */
 export class Soundscape {
  private ambience?:HQAmbience;private ctx?:AudioContext;private master?:GainNode;private hq?:GainNode;private raid?:GainNode;private infiltration?:GainNode;
  private timer?:ReturnType<typeof setInterval>;private synth?:MusicSynth;private music?:RecordedMusic;private playingMode?:MusicMode;private hidden=false;private fadeUntil={hq:0,raid:0,infiltration:0};private mode:MusicMode='hq';
  private audible=false;private epoch=0;private resuming?:AudioContext;private quiet?:Promise<void>;
+ private autoplayAttempted=false;
  private effects=new Set<AudioBufferSourceNode>();
  private backgrounded(){return this.hidden||!!this.platform.isHidden?.();}
  private gainRamps=new Map<GainNode,{from:number;to:number;start:number;end:number}>();
@@ -32,6 +33,11 @@ export class Soundscape {
   // Explicitly anchor the ramp; a bare future linear endpoint can fade from context startup.
   node.gain.cancelScheduledValues(t);node.gain.setValueAtTime(current,t);node.gain.linearRampToValueAtTime(value,t+seconds);
   this.gainRamps.set(node,{from:current,to:value,start:t,end:t+seconds});
+ }
+ /** A blocked autoplay promise must never gate a later gesture or trigger a loop. */
+ tryAutoplay():Promise<boolean>{
+  if(this.autoplayAttempted)return Promise.resolve(false);
+  this.autoplayAttempted=true;return this.unlock();
  }
  /** A gesture may resume one existing context, but never resurrect stale work. */
  unlock():Promise<boolean>{
