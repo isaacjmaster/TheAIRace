@@ -26,3 +26,22 @@ Physical iPhone performance and appearance have not been verified.
 Local review: output/GPU_Refinement_Review/index.html, close.png, normal.png,
 mobile.png, far.png, rotated.png, visit.png, combat.png, destroyed.png and
 fan-preview.webm. Before images show the first local GPU iteration.
+Final LED / cable refinement (October 23)
+---------------------------------------
+The HQ cable previously descended through the .375-high concrete foundation.
+Its last bend now sits outside the slab edge and passes above the slab before
+rising into the existing connector. House-local waypoints follow every HQ
+rotation/scale. Tests sample the rounded tube path with its full radius for
+both HQ levels and all four rotations, including title scale .9.
+
+All three fan chambers now have recessed blue emissive backing, two concentric
+LED channels and an inner-housing highlight behind the existing dark blades.
+Existing outer rings, body dimensions, materials, positions and fan animation
+are unchanged. No added lights, bloom or textures; four additional batched
+materials per rig (about 4 draw calls and 2.7k triangles per two-rig campus).
+
+463/463 full tests pass; production build and diff check pass. Isolated browser
+captures pass for HQ, close/connection views, rotations, visits, mobile-sized
+viewport and combat/destruction, with no page errors. Physical iPhone testing
+is unavailable. No gameplay/server/persistence files or production DB changed.
+Review: output/GPU_Final_Tweaks_Review (close, connection, mobile and other PNGs).

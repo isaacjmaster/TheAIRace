@@ -34,6 +34,14 @@ export function gpuRigModel(k:WorldKit){
   k.ring(g,.565,.035,[x,1.235,1.205],cyan,true);
   k.ring(g,.529,.015,[x,1.235,1.204],ice,true);
   k.ring(g,.642,.018,[x,1.235,1.14],edge);
+  // Recessed LED chamber: a dim blue backplate and brighter concentric channels
+  // sit behind the dark impeller, leaving visible depth between blades and rims.
+  const backing=k.cylinder(g,.511,.024,[x,1.235,1.114],dark);backing.rotation.x=Math.PI/2;
+  backing.material=k.mat('#087fae',true);backing.castShadow=false;backing.receiveShadow=false;
+  const backMaterial=backing.material as THREE.MeshStandardMaterial;backMaterial.emissiveIntensity=.85;
+  k.ring(g,.423,.032,[x,1.235,1.139],'#23bedc',true);
+  k.ring(g,.276,.022,[x,1.235,1.139],'#1497c4',true);
+  k.ring(g,.507,.014,[x,1.235,1.153],'#55dce9',true);
   const rotor=new THREE.Group();rotor.name='gpu-fan-'+i;rotor.position.set(x,1.235,1.16);g.add(rotor);
   for(let n=0;n<7;n++){const b=k.extrusion(rotor,'gpu-swept-blade',bladeShape,.045,[0,0,0],blade);b.rotation.z=n*Math.PI*2/7;}
   k.batchStatic(rotor,'gpu-swept-rotor');

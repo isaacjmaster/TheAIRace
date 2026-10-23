@@ -33,17 +33,22 @@ export class PowerConnections{
   for(const r of rigs)fitGpuVisual(r.model,[...obstacles,...walls]);
   // Route around the displayed casing, including any fit for a crowded saved lot.
   obstacles=obstacles.map(rect=>{const rig=rigs.find(r=>{const p=r.model.getWorldPosition(new THREE.Vector3());return Math.hypot(rect.x-p.x,rect.z-p.z)<.1;});if(!rig)return rect;const g=rig.model,odd=Math.abs(Math.sin(g.rotation.y))>.5,w=4.7*g.scale.x,d=2.65*g.scale.z;return {...rect,w:odd?d:w,d:odd?w:d};});
-  house!.updateWorldMatrix(true,true);const end=port.getWorldPosition(new THREE.Vector3()),exit=port.localToWorld(new THREE.Vector3(0,-port.position.y,.25));exit.y=this.ground;
+  house!.updateWorldMatrix(true,true);const end=port.getWorldPosition(new THREE.Vector3());
+  // The concrete slab reaches local X=4.4, top Y=.375. Keep the full cable
+  // radius above it, and make the ground-to-slab bend outside its rounded edge.
+  // House-local points preserve this clearance through rotations and title scale.
+  const localEnd=house!.worldToLocal(end.clone()),exit=house!.localToWorld(new THREE.Vector3(4.65,0,localEnd.z));exit.y=this.ground;
+  const slabEdge=house!.localToWorld(new THREE.Vector3(4.56,.54,localEnd.z)),riser=house!.localToWorld(new THREE.Vector3(localEnd.x,.54,localEnd.z));
   const inputs=rigs.map(r=>{r.model.updateWorldMatrix(true,true);const candidates=[r.model.getObjectByName('gpu-power-port'),r.model.getObjectByName('gpu-power-port-left')].filter((p):p is THREE.Object3D=>!!p);const p=candidates.sort((a,b)=>a.getWorldPosition(new THREE.Vector3()).distanceToSquared(end)-b.getWorldPosition(new THREE.Vector3()).distanceToSquared(end))[0];return {...r,start:p.getWorldPosition(new THREE.Vector3()),exit:p.localToWorld(new THREE.Vector3((p.getWorldPosition(new THREE.Vector3()).distanceTo(end)<2?.14:.65)*(p.userData.exitSign??1),0,0))};});
-  const key=JSON.stringify([end.toArray(),exit.toArray(),inputs.map(r=>[r.id,r.start.toArray(),r.exit.toArray()]),obstacles,walls]);if(key===this.signature)return;this.clear();this.signature=key;
+  const key=JSON.stringify([end.toArray(),exit.toArray(),slabEdge.toArray(),riser.toArray(),inputs.map(r=>[r.id,r.start.toArray(),r.exit.toArray()]),obstacles,walls]);if(key===this.signature)return;this.clear();this.signature=key;
   for(const r of inputs){let tight=false;const routeFrom=(p:P)=>{const end:P=[exit.x,exit.z];let route=cableRoute(p,end,[...obstacles,...walls]);if(!route.length){route=cableRoute(p,end,[...obstacles,...walls],.12);tight=!!route.length;}if(!route.length)route=cableRoute(p,end,obstacles);return route;};let route=routeFrom([r.exit.x,r.exit.z]);if(!route.length){
     // A neighbouring building can cover the nearer connector's ground lead.
     // Try the opposite physical socket before giving up on this layout.
     const other=[r.model.getObjectByName('gpu-power-port'),r.model.getObjectByName('gpu-power-port-left')].filter((p):p is THREE.Object3D=>!!p).find(p=>p.getWorldPosition(new THREE.Vector3()).distanceToSquared(r.start)>.01);
     if(other){r.start=other.getWorldPosition(new THREE.Vector3());r.exit=other.localToWorld(new THREE.Vector3(.65*(other.userData.exitSign??1),0,0));route=routeFrom([r.exit.x,r.exit.z]);}
    }const buried=!route.length;if(buried)route=[[r.exit.x,r.exit.z],[exit.x,exit.z]];const ground=buried?-.22:this.ground;
-   const cable=new THREE.Group();cable.name='power-cable-'+r.id;cable.userData.route=route;cable.userData.buried=buried;cable.userData.endpoints=[r.start.toArray(),end.toArray()];this.group.add(cable);
-   const points=[r.start.clone(),new THREE.Vector3(r.exit.x,ground+.04,r.exit.z),...route.slice(1).map(p=>new THREE.Vector3(p[0],ground,p[1])),new THREE.Vector3(end.x,ground+.08,end.z),end.clone()];
+   const cable=new THREE.Group();cable.name='power-cable-'+r.id;cable.userData.route=route;cable.userData.buried=buried;cable.userData.endpoints=[r.start.toArray(),end.toArray()];cable.userData.hqApproach=[exit.toArray(),slabEdge.toArray(),riser.toArray(),end.toArray()];this.group.add(cable);
+   const points=[r.start.clone(),new THREE.Vector3(r.exit.x,ground+.04,r.exit.z),...route.slice(1).map(p=>new THREE.Vector3(p[0],ground,p[1])),slabEdge.clone(),riser.clone(),end.clone()];
    // Round only the ground elbows. Elevated ends run close to each machine.
    const curve=new THREE.CurvePath<THREE.Vector3>();let cursor=points[0];for(let i=1;i<points.length-1;i++){const p=points[i],next=points[i+1],radius=Math.min(tight?.015:.22,cursor.distanceTo(p)/3,p.distanceTo(next)/3),a=p.clone().add(cursor.clone().sub(p).normalize().multiplyScalar(radius)),b=p.clone().add(next.clone().sub(p).normalize().multiplyScalar(radius));curve.add(new THREE.LineCurve3(cursor,a));curve.add(new THREE.QuadraticBezierCurve3(a,p,b));cursor=b;}curve.add(new THREE.LineCurve3(cursor,points.at(-1)!));
    const geometry=new THREE.TubeGeometry(curve,Math.min(260,Math.max(24,Math.ceil(curve.getLength()*3))),.095,6,false);this.geometry.push(geometry);const mesh=new THREE.Mesh(geometry,this.k.mat('#202a32'));mesh.name='grounded-power-conduit';mesh.raycast=()=>{};cable.add(mesh);
