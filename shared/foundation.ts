@@ -1,4 +1,4 @@
-import {productionPerMinute,trainingMilliseconds,type Technologies} from './technology';
+import {productionPerMinute,trainingMilliseconds,advanceTechnology,type TechnologyUpgrade,type Technologies} from './technology';
 import {canPatrol} from './security';
 import {ownedSecurityWalls,type OwnedWall} from './security-catalog';
 import type {CompanySecurity} from './security';
@@ -27,7 +27,7 @@ export type BotRaid={id:string;simulation:Raid;lastTick:number;started:boolean;s
 export const FABRICATOR={cost:50,buildSeconds:15,maxCount:1} as const;
 export const HANGAR={cost:0,buildSeconds:15,maxCount:1} as const;
 export const SCRAP_BOT={cost:5,trainSeconds:5,housing:1,capacity:10} as const;
-export type FoundationState = {technologies?:Technologies;trainingDurations?:number[];walls?:OwnedWall[];droneStation?:Hangar;security?:CompanySecurity;infiltrationTutorial?:'complete'|'skipped';infiltration?:Operation;infiltrationReserve?:{compute:number;research:number};research?:number;researchCapacity?:number;lab?:ResearchLab;decorations?:Decoration[];founderHqLevel?:1|2;hqUpgrade?:FounderHQUpgrade;starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
+export type FoundationState = {technologyUpgrade?:TechnologyUpgrade;technologies?:Technologies;trainingDurations?:number[];walls?:OwnedWall[];droneStation?:Hangar;security?:CompanySecurity;infiltrationTutorial?:'complete'|'skipped';infiltration?:Operation;infiltrationReserve?:{compute:number;research:number};research?:number;researchCapacity?:number;lab?:ResearchLab;decorations?:Decoration[];founderHqLevel?:1|2;hqUpgrade?:FounderHQUpgrade;starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
 export function initialFoundation(revision=0):FoundationState{return {version:1,revision,research:0,researchCapacity:500,founderHqLevel:1,companyName:'Garage Intelligence',level:1,compute:STARTING_COMPUTE,capacity:COMPUTE_CAPACITY,builders:0,starterStation:'unplaced',raidRecord:{wins:[],completeHistory:true}};}
 export const hasBuilderStation=(s:FoundationState)=>s.starterStation!=='unplaced';
 export function establishBuilderStation(s:FoundationState,position:RigPosition,orientation:Orientation=0){if(hasBuilderStation(s))throw new Error('Builder Station — 1/1 Built');const reason=validFoundationPosition(s,position,'station',orientation);if(reason)throw new Error(reason);s.stationLayout={position:[...position],orientation};s.starterStation='placed';s.builders=1;s.buildersBusy=0;}
@@ -45,6 +45,8 @@ export function validRigPosition(position:RigPosition,orientation:Orientation=0)
  return null;
 }
 export function advanceFoundation(s:FoundationState,now=Date.now()){
+ // Split offline accrual at the research deadline so old production never receives a retroactive bonus.
+ if(s.technologyUpgrade&&now>s.technologyUpgrade.completesAt)advanceFoundation(s,s.technologyUpgrade.completesAt);
  const rigs=[s.rig,s.rig2].filter((r):r is GpuRig=>!!r),jobs=[...rigs,s.fabricator,getHangar(s),s.lab,s.droneStation].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
  const clearing=!!s.landscape?.clearing;advanceLandscape(s,now);
  if(s.hqUpgrade&&now>=s.hqUpgrade.completesAt)s.founderHqLevel=2;
@@ -54,6 +56,7 @@ export function advanceFoundation(s:FoundationState,now=Date.now()){
  advanceResearch(s,now);advanceBotRaid(s,now);
  for(const r of rigs){const cursor=Math.max(r.lastProducedAt,r.completesAt);if(now>cursor){if(r.stored<GPU_RIG.storage)r.stored=Math.min(GPU_RIG.storage,r.stored+(now-cursor)*productionPerMinute(s)/60000);r.lastProducedAt=now;}}
 
+ advanceTechnology(s,now);
  return s;
 }
 /** Same timestamp-based availability for server actions and the between-poll HUD. */

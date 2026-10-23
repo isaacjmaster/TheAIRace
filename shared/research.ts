@@ -1,10 +1,10 @@
 import { advanceFoundation, validFoundationPosition, hasBuilderStation, type FoundationState, type RigPosition, type Orientation, type GpuRig } from './foundation';
-export const RESEARCH = { capacity: 500, lab: { cost: 150, buildSeconds: 60, perMinute: 2, storage: 20, maxCount: 1 } } as const;
+export const RESEARCH = { capacity: 500, lab: { cost: 150, buildSeconds: 60, perMinute: 2, storage: 50, maxCount: 1 } } as const;
 export type ResearchLab = GpuRig;
 /** Additive defaults only; no legacy record or unrelated progression is replaced. */
 export function advanceResearch(s: FoundationState, now: number) { s.research ??= 0; s.researchCapacity ??= RESEARCH.capacity; const l = s.lab; if (!l)
     return; const cursor = Math.max(l.completesAt, l.lastProducedAt); if (now > cursor) {
-    l.stored = Math.min(RESEARCH.lab.storage, l.stored + (now - cursor) * RESEARCH.lab.perMinute / 60000);
+    if(l.stored<RESEARCH.lab.storage) l.stored = Math.min(RESEARCH.lab.storage, l.stored + (now - cursor) * RESEARCH.lab.perMinute / 60000);
     l.lastProducedAt = now;
 } }
 export function buildResearchLab(s: FoundationState, p: RigPosition, now: number, orientation: Orientation = 0) { advanceFoundation(s, now); if (s.lab)

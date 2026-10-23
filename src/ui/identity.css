@@ -63,6 +63,10 @@ html,body{height:100%;min-height:0;background:var(--app-background,#b5eafa)}
    Full-screen iOS uses light status glyphs over the page, configured at launch. */
 html[data-presentation="splash"],html[data-presentation="splash"] body,
 html[data-presentation="splash"] #root,html[data-presentation="splash"] .race-app{background:#07090c}
-/* A backing only in the OS status-bar region keeps light glyphs readable after
-   startup too. It never intercepts input or changes the gameplay viewport. */
-@media(display-mode:standalone){body:after{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:#07090c;pointer-events:none;z-index:200}}
+/* Use the page's continuous backdrop instead of a separate status-area strip.
+   Keep the preloaded blue menu out of the splash fade on every display mode. */
+html[data-presentation="splash"] .race-menu,
+html[data-presentation="splash"] .audio-toggle,
+html[data-presentation="splash"] .menu-recover{visibility:hidden}
+html[data-presentation="splash"] body{background:#07090c;color-scheme:dark}
+html[data-presentation="splash"] .studio-splash{position:fixed;inset:0;min-height:100%;padding:0}

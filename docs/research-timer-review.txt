@@ -1,0 +1,17 @@
+Research timers and startup polish
+
+Lab uncollected storage: 50 Research (confirmed by owner). Production remains 2/min. Wallet remains 500; existing upgrade costs 50/125/250 are unchanged. Existing stored overflow is preserved for collection.
+
+All three technologies now take 15 minutes per level, one active Lab job at a time. Research is deducted atomically at start through the existing authenticated transaction/action receipt. The saved optional technologyUpgrade field holds technology, target level and server timestamps. Completed old upgrades remain completed. No database reset or schema replacement is needed.
+
+The existing shared foundation advance completes each job once, including offline/restart. GPU accrual is split at the exact completion timestamp so old time receives the old rate. Training jobs already queued retain their deadlines; new orders and new infiltrations use completed technology levels. Research jobs do not reserve a Builder Bot or stop normal Lab production.
+
+The world countdown reuses the scrap-clearing TaskCountdown and measured Lab screen anchor. Research displays minutes:seconds. Timers track pan/zoom and hide when offscreen or behind HUD controls. The menu shows progress and disables new research while the Lab is busy. Collection remains available from the Research panel.
+
+Loading timeline reduced 4650ms -> 3150ms (1.5 seconds less), with the same 350ms readiness-gated fade. The 2-second Master Studios animation is unchanged. The separate standalone status-area overlay was removed; the preloaded blue scene and audio control are hidden during the splash, preventing blue bleed during fade. Root/body/splash paint charcoal continuously.
+
+Verification: 445 automated tests passed; production TypeScript/Vite build and isolated production smoke passed. Silent mobile browser checks verified charcoal splash paint, original 2s animation, shorter loading, 15:00 progress, disabled concurrent purchases, saved job on refresh, camera-following timer, landscape, single completion and 50 storage. No physical iPhone/PWA testing is claimed; native status-area rendering needs device confirmation.
+
+Artifacts: output/Research_Timer_Review.
+
+Production protection: verified a consistent pre-research-timers-1792760714269.sqlite backup on the existing /app/data/backups volume before deployment. SQLite integrity_check returned ok and the copy includes all 16 saved foundation records present at capture. No database reset, volume or service change.

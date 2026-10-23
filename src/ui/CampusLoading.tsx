@@ -1,7 +1,7 @@
 import {useEffect,useRef,useState,type MutableRefObject} from 'react';
 import './campus-loading.css';
 import {CAMPUS_LOADING_MS,CAMPUS_FADE_MS,loadingProgress} from './loadingTiming';
-/** Owner timing: 4.65s linear sequence, then a readiness-gated 350ms fade. */
+/** Owner timing: 3.15s linear sequence, then a readiness-gated 350ms fade. */
 export function CampusLoading({active,ready,progress,onComplete}:{active:boolean;ready:boolean;progress:MutableRefObject<number>;onComplete:()=>void}){
  const [value,setValue]=useState(0),[leaving,setLeaving]=useState(false),elapsed=useRef(0),done=useRef(onComplete);done.current=onComplete;
  useEffect(()=>{let frame=0,last=performance.now();const draw=(now:number)=>{const dt=now-last;last=now;if(active&&!document.hidden)elapsed.current+=Math.min(dt,100);const next=loadingProgress(elapsed.current,ready);progress.current=next;setValue(next);frame=requestAnimationFrame(draw);};frame=requestAnimationFrame(draw);return()=>cancelAnimationFrame(frame);},[active,ready,progress]);

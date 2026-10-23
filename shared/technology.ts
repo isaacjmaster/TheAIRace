@@ -2,6 +2,8 @@ import type {FoundationState} from './foundation';
 export const TECHNOLOGY_IDS=['gpuOptimization','cipherEngineering','trainingEfficiency'] as const;
 export type TechnologyId=typeof TECHNOLOGY_IDS[number];
 export type Technologies=Partial<Record<TechnologyId,number>>;
+export const TECHNOLOGY_DURATION_MS=15*60*1000;
+export type TechnologyUpgrade={technology:TechnologyId;level:number;startedAt:number;completesAt:number};
 export const TECHNOLOGY_COSTS=[50,125,250] as const;
 export const TECHNOLOGIES={
  gpuOptimization:{name:'GPU Optimization',description:'More Compute from every GPU Rig.',effect:'Compute production',icon:'gpu'},
@@ -16,8 +18,16 @@ export const cipherDamageMultiplier=(s:Pick<FoundationState,'technologies'>)=>1+
 /** Caller advances accrual at the old rate, then holds the save/action transaction. */
 export function purchaseTechnology(s:FoundationState,id:TechnologyId,expectedLevel:number,now:number){
  if(!s.lab||now<s.lab.completesAt)throw Error('Finish your Research Lab first.');
+ if(s.technologyUpgrade)throw Error('Your Research Lab is already researching an upgrade.');
  const level=technologyLevel(s,id);if(level>=3)throw Error('This technology is already at MAX LEVEL.');
  if(expectedLevel!==level)throw Error('Technology level changed. Review the next upgrade and try again.');
  const cost=TECHNOLOGY_COSTS[level];if((s.research??0)<cost)throw Error(`You need ${cost} Research.`);
- s.research=(s.research??0)-cost;s.technologies={...s.technologies,[id]:level+1};
+ s.research=(s.research??0)-cost;s.technologyUpgrade={technology:id,level:level+1,startedAt:now,completesAt:now+TECHNOLOGY_DURATION_MS};
+}
+
+/** Server time completes a saved job once. Existing purchased levels remain intact. */
+export function advanceTechnology(s:FoundationState,now:number){
+ const job=s.technologyUpgrade;if(!job||now<job.completesAt)return;
+ s.technologies={...s.technologies,[job.technology]:Math.max(technologyLevel(s,job.technology),job.level)};
+ delete s.technologyUpgrade;
 }
