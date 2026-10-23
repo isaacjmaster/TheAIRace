@@ -1,3 +1,4 @@
+import {purchaseTechnology,TECHNOLOGY_IDS} from '../shared/technology';
 import {BASE_IDS,chooseInfiltrationBase} from '../shared/infiltration-bases';
 import {newSquadOperation} from '../shared/squad-infiltration';
 import type {Operation} from '../shared/infiltration';
@@ -98,6 +99,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   z.object({action:z.literal('infiltration-command'),operationId:z.string().uuid(),intent:z.discriminatedUnion('action',[z.object({action:z.literal('deploy'),position:z.tuple([z.number().finite(),z.number().finite()]).optional()}).strict(),z.object({action:z.literal('abandon')}).strict()])}).strict(),
   z.object({action:z.literal('build-lab'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('collect-research')}).strict(),
+  z.object({action:z.literal('upgrade-technology'),technology:z.enum(TECHNOLOGY_IDS),expectedLevel:z.number().int().min(0).max(2)}).strict(),
   z.object({action:z.literal('buy-decoration'),kind:z.enum(['ornamental','cypress','flowers','planter']),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('move-decoration'),id:z.string().uuid(),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('remove-decoration'),id:z.string().uuid()}).strict(),
@@ -132,6 +134,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
     else if(c.action==='infiltration-command'){if(state.infiltration?.id!==c.operationId)throw new Error('This operation is no longer active.');commandOwnedOperation(state,c.intent,now);}
     else if(c.action==='build-lab')buildResearchLab(state,c.position,now,c.orientation);
     else if(c.action==='collect-research')collectResearch(state,now);
+    else if(c.action==='upgrade-technology')purchaseTechnology(state,c.technology,c.expectedLevel,now);
     else if(c.action==='buy-decoration')purchaseDecoration(state,c.kind,c.position,c.orientation,input.requestId);
     else if(c.action==='move-decoration')moveDecoration(state,c.id,c.position,c.orientation);
     else if(c.action==='remove-decoration')removeDecoration(state,c.id);

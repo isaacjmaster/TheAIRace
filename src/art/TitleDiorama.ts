@@ -16,6 +16,7 @@ export class TitleDiorama {
  private scene=new THREE.Scene();private camera=new THREE.OrthographicCamera(-12,12,12,-12,.1,100);
  private kit=new WorldKit('campus');private campus=new THREE.Group();private gpu:THREE.Group;private bot=new THREE.Group();
  private house:THREE.Group;private research:THREE.Group;private drone:THREE.Group;private walls:SecurityWalls;
+ private startupProgress=()=>1;private energy=new THREE.Group();private powerLights:THREE.Object3D[]=[];
  private frame=0;private last=0;private elapsed=0;private active=true;private disposed=false;
  private observer:ResizeObserver;private motion=matchMedia('(prefers-reduced-motion: reduce)');
  constructor(private host:HTMLElement,private onFailure:()=>void){
@@ -55,6 +56,8 @@ export class TitleDiorama {
   for(const x of [-.3,.3])k.box(this.bot,[.35,.25,.52],[x,.24,.1],c.dark,.06);
   const arm=k.box(this.bot,[.24,.65,.28],[.6,.9,0],c.cream,.06);arm.name='wave-arm';arm.rotation.z=-.3;
   k.box(this.bot,[.24,.65,.28],[-.6,.9,0],c.cream,.06);
+  this.campus.add(this.energy);k.box(this.energy,[.28,.14,.28],[0,0,0],c.cyan,.08,true);
+  for(const x of [3.8,4.5,5.2]){const light=new THREE.Group();light.position.set(x,4.1,-4.3);k.box(light,[.22,.12,.22],[0,0,0],c.cyan,.05,true);this.campus.add(light);this.powerLights.push(light);}
   // Only static siblings are merged; fans, founder joints and the drone stay animated.
   k.batchStatic(this.campus,'title-campus-plinth');k.batchStatic(this.gpu,'title-gpu');k.batchStatic(this.research,'title-research');k.batchStatic(this.drone,'title-drone');
   for(const rotor of this.drone.children)if(rotor.name==='rotor')k.batchStatic(rotor,'title-drone-'+rotor.position.x);
@@ -72,7 +75,8 @@ export class TitleDiorama {
  private render=()=>{this.renderer.render(this.scene,this.camera);this.renderer.domElement.dataset.drawCalls=String(this.renderer.info.render.calls);this.renderer.domElement.dataset.triangles=String(this.renderer.info.render.triangles);};
  private tick=(now:number)=>{this.frame=0;if(this.disposed||!this.active||document.hidden||this.motion.matches)return;
   if(now-this.last>=1000/30){const dt=Math.min((now-this.last)/1000,.05);this.last=now;this.elapsed+=dt;
-   animateGpu(this.gpu,this.elapsed,dt,true);animateResearchLab(this.research,this.elapsed,true,false);animateFounderIdle(this.house,this.elapsed);animateSecurityDrone(this.drone,this.elapsed,false);this.drone.position.set(9.3+Math.sin(this.elapsed*.3)*.6,8.6+Math.sin(this.elapsed*1.6)*.09,-.2+Math.cos(this.elapsed*.3)*.5);this.drone.rotation.y=.5+Math.sin(this.elapsed*.3)*.2;this.bot.position.y=.56+Math.sin(this.elapsed*2)*.035;this.bot.rotation.y=Math.sin(this.elapsed*.8)*.12;
+   const p=this.startupProgress();animateGpu(this.gpu,this.elapsed,dt,p>=.18);animateResearchLab(this.research,this.elapsed,p>=.65,false);animateFounderIdle(this.house,this.elapsed);animateSecurityDrone(this.drone,this.elapsed,false);this.drone.position.set(9.3+Math.sin(this.elapsed*.3)*.6,8.6+Math.sin(this.elapsed*1.6)*.09,-.2+Math.cos(this.elapsed*.3)*.5);this.drone.rotation.y=.5+Math.sin(this.elapsed*.3)*.2;this.bot.position.y=.56+Math.sin(this.elapsed*2)*.035;this.bot.rotation.y=Math.sin(this.elapsed*.8)*.12;
+   this.powerOn(p);
    const arm=this.bot.getObjectByName('wave-arm');if(arm)arm.rotation.z=-.3+Math.sin(this.elapsed*1.7)*.12;
    this.render();
   }this.frame=requestAnimationFrame(this.tick);
@@ -81,6 +85,14 @@ export class TitleDiorama {
   if(this.active&&!document.hidden&&!this.motion.matches){this.last=performance.now();this.frame=requestAnimationFrame(this.tick);}else{animateGpu(this.gpu,0,0,true,true);animateResearchLab(this.research,0,true,true);animateFounderIdle(this.house,0,true);animateSecurityDrone(this.drone,0,true);this.drone.position.set(9.3,8.6,-.2);this.bot.position.y=.56;this.bot.rotation.y=0;this.render();}
  };
  private contextLost=(event:Event)=>{event.preventDefault();cancelAnimationFrame(this.frame);this.frame=0;this.active=false;this.onFailure();};
+ setStartupProgress(read:()=>number){this.startupProgress=read;if(this.motion.matches){this.powerOn(1);this.render();}}
+ private powerOn(p:number){
+  const walk=THREE.MathUtils.smoothstep(p,.3,.64);this.bot.position.x=.25+walk*3;this.bot.position.z=5-walk*2.7;this.bot.rotation.y=walk<1&&p>.3?2.35:.2;
+  const pulse=p>=.18&&p<=.32?Math.sin((p-.18)/.14*Math.PI)*.035:0;this.gpu.scale.setScalar(1.25+pulse);
+  this.powerLights.forEach((light,i)=>light.visible=p>=.65+i*.035);
+  const t=THREE.MathUtils.clamp((p-.52)/.4,0,1),a=t<.5?[3.1,3.5]:[-4.4,-2.1],b=t<.5?[-4.4,-2.1]:[4.5,-4.3],u=t<.5?t*2:(t-.5)*2;
+  this.energy.visible=p>.52&&p<.92;this.energy.position.set(a[0]+(b[0]-a[0])*u,.7,a[1]+(b[1]-a[1])*u);this.renderer.domElement.dataset.powerProgress=p.toFixed(3);
+ }
  setActive(active:boolean){this.active=active;this.updateActivity();}
  dispose(){if(this.disposed)return;this.disposed=true;cancelAnimationFrame(this.frame);this.observer.disconnect();window.removeEventListener('resize',this.resize);document.removeEventListener('visibilitychange',this.updateActivity);this.motion.removeEventListener('change',this.updateActivity);this.renderer.domElement.removeEventListener('webglcontextlost',this.contextLost);this.walls.dispose();this.kit.dispose();this.scene.traverse(o=>{if(o instanceof THREE.Light)o.dispose();});this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
 }

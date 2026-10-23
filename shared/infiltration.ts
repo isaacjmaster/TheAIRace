@@ -77,6 +77,7 @@ export type InfiltrationEvent = {
 };
 export type Operation = {
     squad?:SquadState;
+    cipherDamageMultiplier?:number;
     unit?:{kind:'scrap';reservationId:string;status:'reserved'|'returned'|'lost'};
     ownershipRequired?:boolean;
     version: 1;

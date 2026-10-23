@@ -1,0 +1,42 @@
+THE AI RACE — RESEARCH V1 / CAMPUS STARTUP RELEASE
+
+Scope
+- Three permanent technologies, three levels each, with total baseline bonuses of 10%, 20%, 30%.
+- GPU Optimization affects both rigs' server accrual, offline production, collection and displayed production.
+- Cipher Bot Engineering snapshots damage for new infiltrations; actual drone shots and wall breaches use it.
+- Bot Training Efficiency gives newly ordered bots 4.5s / 4s / 3.5s sequential jobs. Existing queued deadlines remain unchanged.
+- Each GPU Rig independently stores 250 uncollected Compute. Company Compute capacity stays 1,000.
+
+Economy
+Research Lab remains 2 Research/minute, storing 20, with company Research capacity 500.
+Costs remain the requested 50 / 125 / 250 for each technology. Without infiltration income those take 25 / 62.5 / 125 minutes of production per level. Frequent collection is still needed.
+
+Persistence / compatibility
+The existing version-1 JSON save format accepts additive optional technologies and trainingDurations fields. Missing technology levels read as zero without rewriting or replacing old saves. Valid existing technology levels are retained.
+Purchase uses the existing identity-checked BEGIN IMMEDIATE transaction and action receipts: accrue at the prior production rate, validate completed lab / expected level / balance / maximum, debit and save together. Request IDs make retries idempotent. Distinct concurrent requests with a stale expected level cannot buy the next level inadvertently.
+Existing company identity, recovery, buildings, troops, queue deadlines, mission state, resources and Influence are preserved. No production database reset or schema replacement.
+Existing missions retain their original damage snapshot; new missions use the purchased level.
+
+Ascent reference (read only)
+Inspected current src/AscentSplash.tsx, src/ascent-splash.css and src/App.tsx in Documents/Ascent (base commit 996258f). Reference timing is 2,650ms linear progress plus 350ms fade. No Ascent files were edited by this task.
+The AI Race keeps its Master Studios splash, existing miniature campus, muted preferences and soundtrack. Campus power-on uses a GPU pulse, short Builder Bot walk, lab lights and one traveling energy pulse. Progress is capped at 94% until saved state, HQ scene and required modules are ready. Recovery/session errors pause entry; no automatic replacement company. Reduced motion uses the powered scene and removes the fade/stripe motion.
+
+Verification
+- 427/427 automated tests passed, including exact costs, all levels/max, insufficient balance/lab, actual production/combat/training, duplicate/concurrent purchase requests, persistent database reopen and legacy defaults.
+- TypeScript and production Vite build passed (existing large-chunk advisory remains).
+- Production smoke passed with a temporary database, secure cookies and save persistence across process restart.
+- Headless Edge browser checks passed: 390x844 portrait; 844x390 landscape; 1280x800 desktop; actual menu purchase and reload; all three technology purchases; unaffordable next tier; settings navigation without replaying loading; slow-server readiness cap; new Ava onboarding; invalid-session recovery without new-company POST; reduced motion.
+- Startup sequence measured about 3.24s after the studio splash in the automated browser (nominal 2.65s + 0.35s fade).
+- Browser checks used testAudio=off and closed every test context. No saved mute preferences changed.
+- These are emulated browser viewport checks, not physical iPhone/PWA or native desktop-app tests.
+
+Local visual artifacts
+output/Research_Loading_Review/01-studio.png
+output/Research_Loading_Review/02-campus-loading.png
+output/Research_Loading_Review/04-research-portrait.png
+output/Research_Loading_Review/05-upgraded.png
+output/Research_Loading_Review/06-research-desktop.png
+output/Research_Loading_Review/07-research-landscape.png
+output/Research_Loading_Review/08-loading-waits-for-save.png
+output/Research_Loading_Review/09-new-player.png
+output/Research_Loading_Review/10-recovery.png

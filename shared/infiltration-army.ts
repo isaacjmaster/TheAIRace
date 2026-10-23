@@ -1,3 +1,4 @@
+import {cipherDamageMultiplier} from './technology';
 import type {FoundationState} from './foundation';
 import {newOperation,commandOperation,type InfiltrationCommand,type Operation} from './infiltration';
 export const reservedAgent=(o:Operation|undefined)=>o?.squad?o.squad.agents.filter(a=>a.unitStatus==='reserved').length:o?.unit?.status==='reserved'&&o.unit.reservationId===o.id?1:0;
@@ -5,7 +6,7 @@ export function startOwnedOperation(s:FoundationState,id:string,target:string,no
  if(s.botRaid&&!s.botRaid.settled)throw new Error('Finish your previous operation first.');
  if(s.infiltration&&['ready','active'].includes(s.infiltration.status))throw new Error('Resume your current infiltration.');
  if((s.bots??0)<1)throw new Error('No agents available. Train a Cipher Bot in your Bot Fabricator.');
- const o=factory(id,target,now);if(!o.squad){s.bots=(s.bots??0)-1;o.unit={kind:'scrap',reservationId:o.id,status:'reserved'};}if(o.squad)o.squad.undeployed=Math.max(0,s.bots??0);s.infiltration=o;
+ const o=factory(id,target,now);o.cipherDamageMultiplier=cipherDamageMultiplier(s);if(!o.squad){s.bots=(s.bots??0)-1;o.unit={kind:'scrap',reservationId:o.id,status:'reserved'};}if(o.squad)o.squad.undeployed=Math.max(0,s.bots??0);s.infiltration=o;
 }
 /** Pre-ownership live missions never reserved a unit. Close them without retroactively charging inventory or banking unsupported loot. */
 export function ensureOwnedOperation(s:FoundationState,now:number){
