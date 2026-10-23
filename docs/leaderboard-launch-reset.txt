@@ -1,0 +1,12 @@
+Owner-requested leaderboard reset for new-user launch
+
+Reset id: fresh-leaderboard-2026-10-22. Do not change this id to run it again.
+Production startup applies this once after the scoring tables are initialized.
+The same SQLite transaction archives positive totals to
+leaderboard_score_reset_backup, zeros company_influence totals, then records
+completion in leaderboard_score_resets. A failure rolls everything back.
+
+Company saves, usernames, credentials, XP, resources, award receipts and
+cooldowns are untouched. Future wins score normally. The persistent marker
+prevents restarts and future deployments from erasing newly earned points.
+No public reset endpoint is exposed. Prior totals remain available for audit.

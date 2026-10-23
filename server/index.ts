@@ -1,6 +1,7 @@
 import express from 'express';
 import {backupBeforeInfiltrationMigration} from './infiltration-backup.js';
 import {backupBeforeIdentityMigration} from './identity-backup.js';
+import {resetLaunchLeaderboard} from './leaderboard-reset.js';
 import { registerFoundation } from './foundation-api.js';
 import { registerProgression } from './progression-api.js';
 import { registerRaids } from './raid-api.js';
@@ -51,6 +52,7 @@ app.use('/api', (req, res, next) => {
 });
 const previewOptions=production?{}:{cookieName:process.env.GAME_SESSION_COOKIE,legacyPaths:process.env.GAME_LEGACY_DB_PATHS?JSON.parse(process.env.GAME_LEGACY_DB_PATHS):[]};
 registerFoundation(app,db,previewOptions);
+if(production)resetLaunchLeaderboard(db);
 function session(req: express.Request, res: express.Response): { id: string; state: GameState } {
   const candidate = /(?:^|;\s*)airace_integrated_session=([a-f0-9-]{36})(?:;|$)/.exec(req.headers.cookie || '')?.[1];
   const row = candidate ? db.prepare('SELECT state FROM sessions WHERE id=?').get(candidate) : undefined;
