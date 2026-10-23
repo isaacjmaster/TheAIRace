@@ -1,0 +1,29 @@
+STARTUP POLISH / 100-COMPUTE RIG STORAGE / RESEARCH MODEL VISUALS
+
+Startup
+- Installed-PWA launch metadata now uses black-translucent, with charcoal initial HTML/manifest theme and page backgrounds.
+- Removed the page-background animation that painted blue during the studio fade. The logo, studio animation and two-second intro timing are unchanged.
+- In standalone mode only, an input-transparent charcoal backing covers exactly the top safe-area inset so the OS's light status glyphs remain readable after startup; gameplay geometry and HUD offsets are unchanged. Bottom safe-area handling remains as before.
+- Apple reference: https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html
+- Campus progress is 4,650ms rather than 2,650ms; fade remains 350ms. Campus power-on uses the same normalized progress, retaining readiness gating and reduced-motion behavior.
+
+GPU storage
+- Both existing Level 1 rig slots cap new production at 100. Baseline remains 10/min, with purchased GPU Optimization bonuses unchanged; company Compute capacity remains 1,000.
+- A rig already above 100 retains all stored Compute, including fractions. Its accrual timestamp advances without adding production. Collection retains any overflow the company cannot accept. Production resumes only below 100, from collection time, with no backfill for the capped interval.
+- No database rewrite/migration, resource truncation, identity change, score change or timer reset.
+
+Research art
+- Existing headings now use cached transparent thumbnails of gpuRigModel, cipherBotModel and fabricatorModel. No generated/stock art or gameplay-model edits.
+- BuildingImage loads lazily on opening Research; its existing renderer is disposed after each cached snapshot. Cipher is framed to its own model bounds, without a large building plinth.
+- Research options, costs, eligibility and effects are unchanged.
+
+Verification
+- All 429 automated tests passed. Added overflow preservation across offline ticks, partial collection, serialized reload, actual server persistence and idempotent payout, while retaining company identity, Research, bots, technologies and Influence.
+- TypeScript/Vite production build passed. Existing large-chunk advisory remains.
+- Isolated production smoke passed, including save persistence across server restart.
+- Silent headless Edge mobile portrait and landscape checks passed; actual technology purchase persisted across reload; all three model thumbnails loaded; 100-capacity label verified.
+- Browser measured campus loading/fade around 4.9 to 5.65 seconds depending on rendering/readiness. The configured sequence is 4.65 + 0.35 seconds with no added end pause.
+- Every browser context used testAudio=off and was closed. Production verification uses public health and static assets only.
+
+DEVICE LIMIT
+A physical iPhone and installed iOS PWA are not remotely available in this workspace. The supplied screenshot identifies the native status-bar mismatch; the documented launch configuration and page-paint fix are implemented, but real-device status glyphs/home indicator and installed-PWA rendering cannot be honestly marked verified. Close and reopen the existing installed PWA to check the delivered fix; do not clear site data or reinstall just for this check.

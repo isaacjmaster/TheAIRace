@@ -59,11 +59,10 @@ html,body{height:100%;min-height:0;background:var(--app-background,#b5eafa)}
 @media(prefers-reduced-motion:reduce){.building-icon{filter:none}}
 .upgrade-prerequisite{font-size:9px;color:#96b7ce}.building-card .upgrade-prerequisite{margin:0}.network-list small{line-height:1.35}
 
-/* Animate the real page paint, not a safe-area overlay. Timings match studio-screen.
-   Apple status-bar-style stays default: changing it is not a reliable runtime API. */
+/* Keep native safe-area paint charcoal throughout the studio animation.
+   Full-screen iOS uses light status glyphs over the page, configured at launch. */
 html[data-presentation="splash"],html[data-presentation="splash"] body,
-html[data-presentation="splash"] #root,html[data-presentation="splash"] .race-app{
- animation:studio-page-paint 2s both;
-}
-@keyframes studio-page-paint{0%,78%{background-color:#07090c}100%{background-color:var(--title-sky-color,#58bbfd)}}
-@media(prefers-reduced-motion:reduce){html[data-presentation="splash"],html[data-presentation="splash"] body,html[data-presentation="splash"] #root,html[data-presentation="splash"] .race-app{animation:none}}
+html[data-presentation="splash"] #root,html[data-presentation="splash"] .race-app{background:#07090c}
+/* A backing only in the OS status-bar region keeps light glyphs readable after
+   startup too. It never intercepts input or changes the gameplay viewport. */
+@media(display-mode:standalone){body:after{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:#07090c;pointer-events:none;z-index:200}}

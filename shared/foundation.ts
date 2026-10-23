@@ -14,7 +14,7 @@ import {deploy,tick,finish,STEP,destruction,type Raid,type Point} from '../raid/
 import {OBSTACLES} from './campus-layout';
 export const STARTING_COMPUTE = 100;
 export const COMPUTE_CAPACITY = 1000;
-export const GPU_RIG={cost:50,buildSeconds:15,perMinute:10,storage:250,maxCount:2,width:4,depth:3} as const;
+export const GPU_RIG={cost:50,buildSeconds:15,perMinute:10,storage:100,maxCount:2,width:4,depth:3} as const;
 export type Orientation=0|1|2|3;
 export type RotatableBuilding='hq'|'station'|'rig'|'rig2'|'fabricator'|'hangar'|'lab'|'droneStation';
 export type BuildingLayout={position:RigPosition;orientation:Orientation;size?:'expanded'};
@@ -52,7 +52,7 @@ export function advanceFoundation(s:FoundationState,now=Date.now()){
  if(s.training){const completed=s.training.filter(t=>t<=now).length;s.bots=(s.bots||0)+completed;if(s.trainingDurations)s.trainingDurations=s.trainingDurations.slice(completed);s.training=s.training.filter(t=>t>now);}
  ensureOwnedOperation(s,now);if(s.infiltration)advanceOperation(s.infiltration,now);settleOwnedUnit(s);
  advanceResearch(s,now);advanceBotRaid(s,now);
- for(const r of rigs){const cursor=Math.max(r.lastProducedAt,r.completesAt);if(now>cursor){r.stored=Math.min(GPU_RIG.storage,r.stored+(now-cursor)*productionPerMinute(s)/60000);r.lastProducedAt=now;}}
+ for(const r of rigs){const cursor=Math.max(r.lastProducedAt,r.completesAt);if(now>cursor){if(r.stored<GPU_RIG.storage)r.stored=Math.min(GPU_RIG.storage,r.stored+(now-cursor)*productionPerMinute(s)/60000);r.lastProducedAt=now;}}
 
  return s;
 }
