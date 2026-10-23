@@ -1,0 +1,50 @@
+Regression fixes: audio, recovery placement, standalone clipping
+=============================================================
+Audio cause: lifecycle patch coalesced pending resume promises. An unsupported
+pointerdown resume on WebKit could remain pending; later valid touchend/click
+would reuse it rather than invoke resume during user activation. Awaiting the
+shutdown quiet promise also moved resume outside the gesture stack. Cleanup
+could suspend playback after a rapid foreground/unmute.
+Fix: resume is called synchronously for every eligible gesture on one shared
+context; touchend and keyboard coverage added; cleanup checks audible state
+before suspension. Epochs continue to reject stale cues/decode callbacks. The
+25ms fade, audio-clock stops, saved mute and existing music remain unchanged.
+
+Recovery cause: absolute link was positioned from the shortened standalone
+root, while the title used a different viewport owner. Fixed-position link now
+anchors to viewport with the existing responsive safe-area bottom spacing.
+
+PWA cause: previous patch grew root/session/canvas but not clipping html/body.
+Reproduced with a short initial containing block: canvas 844px, body 785px,
+producing a 59px exposed blue strip and clipped bottom controls. In standalone
+game only, html/body now use the same large viewport height as root. Canvas,
+body and root then agree at 844px (932px on larger test). Renderer already
+observes host resize and updates camera aspect; no renderer/camera changes.
+This identifies a reproducible layout defect consistent with owner screenshots,
+not a native WebKit diagnosis from device instrumentation. Physical iPhone
+confirmation remains required. Top splash/title viewport rules preserved.
+No service worker exists in the app; no cache reset/unregistration/storage
+clear was used. Installed OS snapshots or metadata can still be stale.
+
+Validation: 33 focused audio tests; full suite and build recorded separately.
+Actual AudioContext + approved HQ decode gives nonzero analyser output after
+click, foreground gesture and unmute, plus infiltration effects and return HQ;
+one context. Speaker output deliberately zero. Offline rendered samples show
+zero hidden output and resumed nonzero signal with no discontinuity at stop.
+Browser layout models at 390x844 and 430x932, standalone before/after and Safari,
+recovery dialog opens and closes, no page errors/scrolling; controls above the
+simulated 34px bottom inset. All browser contexts closed.
+The old portrait test now rejects ava-icon-* specifically, allowing the newly
+owner-approved ava-campus-v3 app icon from the preceding release.
+
+Physical verification: In Safari and installed Home Screen app, tap any game
+button to unlock audio; test mute/unmute, HQ/infiltration/return, background,
+lock/unlock and repeated quick switching. Swipe away and reopen; listen for
+silence at exit and normal playback after a fresh tap. Check recovery stays
+above home indicator and opens recovery, and pan HQ to confirm actual scenery
+continues behind home indicator without clipped buttons. Reload existing app
+first; do not remove app or clear data. Secure recovery code before any manual
+reinstallation if iOS keeps stale metadata. No physical iPhone testing claimed.
+
+No database schema, production volume, player data, resources, saves,
+leaderboards, gameplay balance or audio assets changed.

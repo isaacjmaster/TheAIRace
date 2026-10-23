@@ -169,8 +169,8 @@ test('late track decode stays canceled after hidden-visible even if a fresh inte
  const h=harness();let finish!:(b:AudioBuffer)=>void;h.platform.loadTrack=()=>new Promise<AudioBuffer>(r=>{finish=r;});const audio=new Soundscape(h.platform);
  try{await audio.unlock();audio.visibility(true);audio.visibility(false);h.ctx.currentTime=.04;await audio.unlock();finish({duration:20} as AudioBuffer);await new Promise(r=>setImmediate(r));assert.equal(h.ctx.sources.filter(n=>n.loop&&n.stops===0).length,1);assert.equal(h.created(),1);assert.equal((audio as any).playingMode,'hq');}finally{audio.dispose();}
 });
-test('concurrent gestures share one resume and rapid interruptions cannot multiply music or contexts',async()=>{
- const h=harness();try{const all=await Promise.all(Array.from({length:15},()=>h.sound.unlock()));assert.ok(all.every(Boolean));assert.equal(h.ctx.resumes,1);assert.equal(h.created(),1);
+test('concurrent gestures retry resume without multiplying music or contexts',async()=>{
+ const h=harness();try{const all=await Promise.all(Array.from({length:15},()=>h.sound.unlock()));assert.ok(all.every(Boolean));assert.equal(h.ctx.resumes,15);assert.equal(h.created(),1);
  for(let i=0;i<8;i++){h.sound.visibility(true);h.sound.visibility(true);h.sound.visibility(false);h.ctx.currentTime+=.05;await Promise.all([h.sound.unlock(),h.sound.unlock()]);await (h.sound as any).activate('hq');assert.equal(h.ctx.sources.filter(n=>n.loop&&n.stops===0).length,1);assert.equal(h.created(),1);}
  }finally{h.sound.dispose();}
 });
@@ -181,4 +181,14 @@ test('visibility, pagehide/pageshow and freeze/resume share one non-destructive 
  const h=harness(),win=new EventTarget(),doc=Object.assign(new EventTarget(),{hidden:false}),remove=installAudioLifecycle(h.sound,win,doc);
  try{await ready(h.sound);for(const event of ['visibilitychange','pagehide','freeze']){doc.hidden=true;(event==='pagehide'?win:doc).dispatchEvent(new Event(event));await (h.sound as any).quiet;assert.equal(h.ctx.state,'suspended');assert.equal(h.created(),1);doc.hidden=false;win.dispatchEvent(new Event('pageshow'));doc.dispatchEvent(new Event('resume'));assert.equal(h.ctx.state,'suspended');h.ctx.currentTime+=.05;await ready(h.sound);assert.equal(h.created(),1);}
  remove();win.dispatchEvent(new Event('pagehide'));assert.equal(h.ctx.state,'running');}finally{remove();h.sound.dispose();}
+});
+
+
+test('a pending unsupported pointerdown resume cannot swallow a supported click resume',async()=>{
+ const h=harness();let gesture=false;const pending:(()=>void)[]=[];
+ h.ctx.resume=()=>{h.ctx.resumes++;return new Promise<void>(resolve=>{pending.push(resolve);if(gesture){h.ctx.state='running';pending.splice(0).forEach(done=>done());}});};
+ try{const early=h.sound.unlock();assert.equal(h.ctx.resumes,1);gesture=true;const clicked=h.sound.unlock();assert.equal(h.ctx.resumes,2,'resume called synchronously in supported gesture');assert.equal(await clicked,true);await early;await (h.sound as any).activate('hq');h.sound.cue('tap');assert.ok(h.ctx.sources.some(n=>n.loop));assert.ok(h.ctx.sources.some(n=>!n.loop));assert.equal(h.created(),1);}finally{h.sound.dispose();}
+});
+test('foreground gesture during fade resumes synchronously and delayed cleanup cannot suspend it',async()=>{
+ const h=harness();try{await ready(h.sound);h.sound.visibility(true);h.sound.visibility(false);const before=h.ctx.resumes,pending=h.sound.unlock();assert.equal(h.ctx.resumes,before+1);assert.equal(await pending,true);await (h.sound as any).quiet;assert.equal(h.ctx.state,'running');h.ctx.currentTime+=1;const voices=h.ctx.sources.length;h.sound.cue('tap');assert.ok(h.ctx.sources.length>voices);assert.equal(h.created(),1);}finally{h.sound.dispose();}
 });

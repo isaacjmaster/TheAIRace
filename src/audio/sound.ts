@@ -17,7 +17,7 @@ import {MusicSynth} from './musicSynth';
 export class Soundscape {
  private ambience?:HQAmbience;private ctx?:AudioContext;private master?:GainNode;private hq?:GainNode;private raid?:GainNode;private infiltration?:GainNode;
  private timer?:ReturnType<typeof setInterval>;private synth?:MusicSynth;private music?:RecordedMusic;private playingMode?:MusicMode;private hidden=false;private fadeUntil={hq:0,raid:0,infiltration:0};private mode:MusicMode='hq';
- private audible=false;private epoch=0;private resuming?:AudioContext;private flight?:Promise<boolean>;private quiet?:Promise<void>;
+ private audible=false;private epoch=0;private resuming?:AudioContext;private quiet?:Promise<void>;
  private effects=new Set<AudioBufferSourceNode>();
  private backgrounded(){return this.hidden||!!this.platform.isHidden?.();}
  private gainRamps=new Map<GainNode,{from:number;to:number;start:number;end:number}>();
@@ -36,35 +36,34 @@ export class Soundscape {
  /** A gesture may resume one existing context, but never resurrect stale work. */
  unlock():Promise<boolean>{
   if(this.platform.silent||this.muted||this.backgrounded())return Promise.resolve(false);
-  if(this.flight)return this.flight;
   const epoch=this.epoch;
   const attempt=(async()=>{try{
-   if(this.quiet)await this.quiet;
    if(epoch!==this.epoch||this.muted||this.backgrounded())return false;
    if(!this.ctx){this.ctx=this.platform.createContext();this.synth=new MusicSynth(this.ctx);this.master=this.ctx.createGain();this.master.gain.value=0;this.master.connect(this.ctx.destination);this.hq=this.ctx.createGain();this.raid=this.ctx.createGain();this.infiltration=this.ctx.createGain();this.hq.connect(this.master);this.raid.connect(this.master);this.infiltration.connect(this.master);this.hq.gain.value=0;this.raid.gain.value=0;this.infiltration.gain.value=0;this.music=new RecordedMusic(this.ctx,{hq:this.hq,raid:this.raid,infiltration:this.infiltration},this.platform.loadTrack??loadApprovedTrack);
     const ctx=this.ctx;ctx.onstatechange=()=>{if(this.ctx!==ctx||this.resuming===ctx)return;if(ctx.state!=='running'&&this.audible||ctx.state==='running'&&(!this.audible||this.backgrounded()))void this.silence();};
    }
    const ctx=this.ctx;this.resuming=ctx;
+   // Call resume in EVERY gesture stack. WebKit can leave an earlier pointerdown
+   // resume pending until a supported touchend/click, which must be allowed to retry.
    try{await ctx.resume();}finally{if(this.resuming===ctx)this.resuming=undefined;}
-   if(this.ctx!==ctx||epoch!==this.epoch||this.platform.silent||this.muted||this.backgrounded()||ctx.state!=='running'){if(this.ctx===ctx){if(this.quiet)await this.quiet;if(this.ctx===ctx)void this.silence();}return false;}
+   if(this.ctx!==ctx||epoch!==this.epoch||this.platform.silent||this.muted||this.backgrounded()||ctx.state!=='running'){if(this.ctx===ctx&&!this.audible)void this.silence();return false;}
    this.audible=true;this.ramp(this.master!,.22,.08);
    if(this.platform.ambience!==false&&!this.ambience)this.ambience=new HQAmbience(ctx,this.master!);if(this.mode==='hq')this.ambience?.start();
    if(!this.timer)this.timer=setInterval(()=>this.schedule(),100);void this.activate(this.mode);this.schedule();return true;
   }catch{return false;}})();
-  this.flight=attempt;void attempt.then(()=>{if(this.flight===attempt)this.flight=undefined;});return attempt;
+  return attempt;
  }
  /** Fade on the audio clock before stopping sources. JS suspension is only cleanup:
      if iOS freezes timers, scheduled gains and source stops still make the mix silent. */
  private silence(){
   this.audible=false;this.epoch++;if(this.timer)clearInterval(this.timer);this.timer=undefined;
-  if(this.quiet)return this.quiet;
   const ctx=this.ctx;if(!ctx)return Promise.resolve();
   const fade=ctx.state==='running'?.025:0,at=ctx.currentTime+(fade?fade+.005:0);
   if(this.master)this.ramp(this.master,0,fade);
   this.ambience?.stop(fade?fade+.005:0);this.synth?.stopAll(at);this.music?.stopAll(at);
   for(const source of this.effects){try{source.stop(at);}catch{}}this.effects.clear();
   this.playingMode=undefined;this.last.clear();this.fadeUntil={hq:0,raid:0,infiltration:0};
-  const suspend=async()=>{try{if(ctx.state!=='closed')await ctx.suspend();}catch{}};
+  const suspend=async()=>{try{if(this.ctx===ctx&&!this.audible&&ctx.state!=='closed')await ctx.suspend();}catch{}};
   const pending=fade?new Promise<void>(resolve=>setTimeout(()=>void suspend().then(resolve),40)):suspend();
   this.quiet=pending;void pending.then(()=>{if(this.quiet===pending)this.quiet=undefined;});return pending;
  }
@@ -113,7 +112,7 @@ export class Soundscape {
   const ctx=this.ctx,music=this.music,ambience=this.ambience,quiet=this.silence();
   if(ctx)ctx.onstatechange=null;
   // Invalidate references immediately; asynchronous unlock/load cannot restart this graph.
-  this.ctx=undefined;this.music=undefined;this.ambience=undefined;this.synth=undefined;this.flight=undefined;
+  this.ctx=undefined;this.music=undefined;this.ambience=undefined;this.synth=undefined;
   this.master=undefined;this.hq=undefined;this.raid=undefined;this.infiltration=undefined;this.noise=undefined;this.gainRamps.clear();
   void quiet.then(()=>{ambience?.dispose();music?.dispose();try{void ctx?.close().catch(()=>{});}catch{}});
  }
