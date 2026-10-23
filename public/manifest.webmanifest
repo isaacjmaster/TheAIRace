@@ -11,19 +11,19 @@
   "theme_color": "#b5eafa",
   "icons": [
     {
-      "src": "/icons/campus-v2-192.png",
+      "src": "/icons/ava-campus-v3-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/campus-v2-512.png",
+      "src": "/icons/ava-campus-v3-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/campus-v2-maskable-512.png",
+      "src": "/icons/ava-campus-v3-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

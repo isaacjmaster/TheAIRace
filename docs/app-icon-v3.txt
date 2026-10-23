@@ -1,0 +1,19 @@
+App icon v3
+===========
+User-provided Ava/campus artwork is the approved design. Built-in image editing
+removed the outer black surround and rounded glow frame, extending the existing
+scene to square edges for native platform masking. No gameplay changes.
+
+Final prompt: Remove ONLY the external black background, outer cyan glowing
+rounded-square frame, and outer padding. Extend the existing sky/city/campus
+scene to all square edges. Preserve Ava, buildings, bots, colors and central
+composition. Opaque full bleed square, no border, text or new subjects.
+
+Source: public/icons/ava-campus-v3-original.png
+Generated sizes: 16, 32, 180, 192, 512, 1024; maskable 512; multi-size ICO.
+Previous campus-v2 assets remain recoverable. Versioned references updated in
+index.html and manifest.webmanifest; application identity and start URL retained.
+Validated dimensions, opaque RGB pixels and nonblack corners; production build
+passes. Installed iOS Home Screen icon refresh remains device-controlled.
+Do not clear app data or remove a Home Screen installation to refresh its icon
+without first securing its company recovery information.
