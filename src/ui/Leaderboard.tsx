@@ -15,7 +15,7 @@ export function Leaderboard({onClose}:{onClose:()=>void}){
  if(selected)return <PlayerProfile key={selected} companyId={selected} onClose={()=>setSelected(null)}/>;
  return <div className="foundation-backdrop leaderboard-backdrop"><section className="leaderboard glass" role="dialog" aria-modal="true" aria-labelledby="leaderboard-title" onKeyDown={e=>{if(e.key==='Escape')onClose();if(e.key==='Tab'){const buttons=[...e.currentTarget.querySelectorAll<HTMLButtonElement>('button')],first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}}}>
  <header><h2 id="leaderboard-title">Global Leaderboard</h2><button autoFocus ref={close} onClick={onClose} aria-label="Close leaderboard">×</button></header>
- <p className="leaderboard-subtitle">Top 10 Companies</p><div className="leaderboard-columns"><span>Player</span><span>Influence</span></div>
+ <p className="leaderboard-subtitle">Top 10 Players</p><div className="leaderboard-columns"><span>Player</span><span>Influence</span></div>
  {error&&<p role="status">{error}</p>}
  {!data&&!error&&<p role="status">Loading rankings…</p>}
  <ol className="leaderboard-rows">{data?.rows.map(row=><li key={row.companyId} className={row.current?'is-current':''} aria-current={row.current?'true':undefined}><button className="leaderboard-player" onClick={()=>setSelected(row.companyId)} aria-label={`View ${row.name}'s profile`}><RankBadge rank={row.rank}/><UsernameLabel username={row.name}/><b className="influence-score" aria-label={`${row.influence.toLocaleString()} Influence`}><span>{row.influence.toLocaleString()}</span><InfluenceIcon/></b></button></li>)}</ol>

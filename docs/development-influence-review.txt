@@ -1,0 +1,58 @@
+Construction Influence rewards — release notes
+==============================================
+Eligibility: Builder Station, GPU Rig slot 1 and slot 2, Research Lab,
+Bot Fabricator, Bot Hangar (including an existing legacy attached Hangar),
+and Security Drone Station (owner-requested explicit Cybersecurity exception).
+Founder HQ, walls, roads and decorations do not qualify. Catalog category
+names are shared with the build menu; the leaderboard says Top 10 Players.
+
+Each completed eligible building slot awards +5 once for its permanent company.
+Construction still uses original costs/timers. Pending jobs qualify only after
+server time reaches completion. Receipts and score additions happen in the same
+BEGIN IMMEDIATE transaction as the corresponding authoritative state save.
+The permanent company/slot UNIQUE key survives movement, rotation, reset and
+any later removal/reconstruction. Two GPU slots are separate. The current
+seven eligible slots can earn 35 Influence in total; future distinct slots
+need their own durable keys. Existing competitive rewards remain additive.
+No functional-building demolition API currently exists; decoration removal
+and refunds are untouched. A foundation reset cannot farm the free structures.
+
+Startup performs an additive, transactional reconciliation of every existing
+company/save, including offline players. First migration marks credits as
+retroactive; later startups and normal API settlement ignore existing receipts.
+No save JSON, identity, recovery code, inventory, timers, positions or XP is
+rewritten by migration. Existing Influence is incremented, never replaced.
+Legacy companies retain their existing implicit Builder Station semantics.
+
+Production startup first VACUUM INTO a unique pre-development-influence SQLite
+backup on the existing volume in backups/. The backup includes committed WAL
+state, is mode 0600, and must pass integrity_check and save-count verification.
+Failure blocks this new server startup. No replacement DB/volume is created.
+The receipt table is created in the same transaction as first reconciliation;
+failed migration rolls back both schema and credits and is safely retryable.
+
+Rollback strategy: rolling back application code can leave the additive ledger
+and earned balances intact, allowing a later fixed deployment to reuse receipts.
+Keep the backup and ledger. Do not restore the whole backup over newer live
+player activity. If a score correction is needed, review the exact retroactive
+receipt rows and subtract only audited deltas in a separate approved transaction;
+never reset scores or delete receipts to rerun credits. For full disaster recovery,
+stop writers and verify a copy of the timestamped backup before any restoration.
+
+Reward notice uses the existing Influence icon. Pending receipt announcements
+are acknowledged server-side only for the authenticated company and receipt
+cutoff. The retroactive message is Base Development Bonus: +N Influence;
+new completion shows +5 Influence (simultaneous catch-up can aggregate).
+Reload/recovery do not repeat an acknowledged announcement or award.
+
+Validation: 469 full tests passed, six focused development tests passed,
+production build passed and isolated production smoke passed. Tests cover all
+seven construction slots, timing, multiple rigs, offline migration, legacy
+Hangar, existing balances/save bytes, duplicate/concurrent requests, rollback,
+verified backup, removal/reset/rebuild prevention and persistent notices.
+Existing reward/compatibility expectations now include the intentional building
+bonus while preserving combat payout assertions. Isolated browser verification
+covers the mobile notice, persistent acknowledgement across reload, Top 10
+Players label, unchanged account balance/ranking identity and no page errors.
+Screenshots: output/Development_Influence_Review. All game previews were muted
+with testAudio=off and closed. Physical iPhone testing was not performed.

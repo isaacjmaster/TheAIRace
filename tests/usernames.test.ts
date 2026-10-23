@@ -22,7 +22,7 @@ test('username migration on a verified representative save copy never adopts leg
   db.exec('DROP TABLE player_usernames;DELETE FROM identity_migrations WHERE version=3');
   const path=backupBeforeIdentityMigration(db,3)!;const copy=new DatabaseSync(path);
   try{
-   const tables=['company_players','foundation_saves','foundation_ava','company_influence','company_sessions'];
+   const tables=['company_players','foundation_saves','foundation_ava','company_sessions'];
    const before=tables.map(t=>copy.prepare('SELECT * FROM '+t).all());
    registerFoundation(express(),copy);registerFoundation(express(),copy);
    tables.forEach((t,i)=>assert.deepEqual(copy.prepare('SELECT * FROM '+t).all(),before[i]));
@@ -31,7 +31,7 @@ test('username migration on a verified representative save copy never adopts leg
    saveUsername(copy,'permanent','Fresh_Name',1000);
    assert.equal(usernameProfile(copy,'permanent',1001).usernameChangedAt,null);
    assert.equal(copy.prepare('SELECT state FROM foundation_saves').get()!.state,state);
-   assert.equal(copy.prepare('SELECT total FROM company_influence').get()!.total,250);
+   assert.equal(copy.prepare('SELECT total FROM company_influence').get()!.total,255);
    assert.equal(copy.prepare('PRAGMA integrity_check').get()!.integrity_check,'ok');
   }finally{copy.close();}
   const reopened=new DatabaseSync(path);try{registerFoundation(express(),reopened);assert.equal(usernameProfile(reopened,'permanent',2000).username,'Fresh_Name');saveUsername(reopened,'permanent','Renamed_Founder',2000);}finally{reopened.close();}

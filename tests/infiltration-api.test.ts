@@ -185,7 +185,7 @@ test('genuine pre-Research saves gain only resource defaults; buildings, XP, rec
     assert.equal(r.state.researchCapacity, 500);
     for (const key of ['compute', 'founderHqLevel', 'builders', 'bots', 'training', 'rig', 'rig2', 'raidRecord', 'decorations'] as const)
         assert.deepEqual(r.state[key], s[key], key);
-    assert.equal(r.competition.total, 73);
+    assert.equal(r.competition.total, 88);
     assert.equal(r.state.lab, undefined);
 }
 finally {

@@ -152,3 +152,5 @@
 .task-countdown progress{display:block;width:48px;height:4px;accent-color:#28bec3}
 .obstacle-label{width:154px!important;min-width:0!important;padding:14px!important;gap:10px!important;text-align:center}
 .obstacle-label strong{font-size:18px}.obstacle-label .obstacle-duration{font-size:17px;font-weight:700;margin:8px 0 10px}.obstacle-label button{width:100%;min-height:44px;font-size:13px;font-weight:900}
+
+.development-influence-notice{position:absolute;z-index:55;left:50%;top:calc(190px + env(safe-area-inset-top));transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:10px 16px;width:max-content;max-width:calc(100% - 28px);pointer-events:none;color:#6b4c19;font-size:14px;animation:hq-notice-in .25s ease-out}.development-influence-notice svg{width:28px;height:30px;flex:none}.development-influence-notice strong{color:#8b5d15}@media(prefers-reduced-motion:reduce){.development-influence-notice{animation:none}}
