@@ -10,8 +10,8 @@ class Param {
  cancelScheduledValues(){return this;}
 }
 class Node {
- gain=new Param();frequency=new Param();type='sine';buffer:unknown;onended?:()=>void;starts=0;stops=0;loop=false;offsets:number[]=[];disconnected=false;
- connect(){return this;}disconnect(){this.disconnected=true;}start(_time=0,offset=0){this.starts++;this.offsets.push(offset);}stop(){this.stops++;}
+ gain=new Param();frequency=new Param();type='sine';buffer:unknown;onended?:()=>void;starts=0;stops=0;stopTimes:number[]=[];loop=false;offsets:number[]=[];disconnected=false;
+ connect(){return this;}disconnect(){this.disconnected=true;}start(_time=0,offset=0){this.starts++;this.offsets.push(offset);}stop(at=0){this.stops++;this.stopTimes.push(at);}
 }
 class Context {
  currentTime=0;state='suspended';destination=new Node();sampleRate=44100;gains:Node[]=[];sources:Node[]=[];resumes=0;suspends=0;
@@ -38,7 +38,7 @@ test('music crossfades gently, all effects produce bounded voices, and mute sile
  }finally{h.sound.dispose();}
 });
 test('backgrounding suspends audio; returning waits for an interaction to resume on Safari',async()=>{
- const h=harness();try{await ready(h.sound);h.sound.visibility(true);assert.equal(h.ctx.state,'suspended');const resumes=h.ctx.resumes;h.sound.visibility(false);assert.equal(h.ctx.resumes,resumes);await ready(h.sound);assert.equal(h.ctx.resumes,resumes+1);}finally{h.sound.dispose();}
+ const h=harness();try{await ready(h.sound);h.sound.visibility(true);await (h.sound as any).quiet;assert.equal(h.ctx.state,'suspended');const resumes=h.ctx.resumes;h.sound.visibility(false);assert.equal(h.ctx.resumes,resumes);await ready(h.sound);assert.equal(h.ctx.resumes,resumes+1);}finally{h.sound.dispose();}
 });
 test('blocked storage and unavailable audio do not break the game',async()=>{
  const storage={getItem:()=>{throw new Error('denied');},setItem:()=>{throw new Error('denied');}};
@@ -74,8 +74,8 @@ test('disposing a preview during pending resume cannot start its music scheduler
  const pending=h.sound.unlock();h.sound.dispose();resume();await pending;await new Promise(r=>setImmediate(r));assert.equal(h.ctx.sources.length,0);assert.equal((h.sound as any).timer,undefined);h.sound.dispose();
 });
 
-test('page teardown closes playback and a normal player can resume with effects after returning',async()=>{
- const h=harness();try{await ready(h.sound);h.ctx.currentTime=50;h.sound.cue('tap');h.sound.dispose();assert.equal(h.ctx.state,'closed');assert.equal((h.sound as any).timer,undefined);h.ctx.currentTime=0;await ready(h.sound);const before=h.ctx.sources.length;h.sound.cue('tap');assert.ok(h.ctx.sources.length>before);assert.equal(h.data.get(MUTE_KEY),undefined);}finally{h.sound.dispose();}
+test('explicit disposal fades then closes playback and a normal player can resume with effects after returning',async()=>{
+ const h=harness();try{await ready(h.sound);h.ctx.currentTime=50;h.sound.cue('tap');h.sound.dispose();await (h.sound as any).quiet;assert.equal(h.ctx.state,'closed');assert.equal((h.sound as any).timer,undefined);h.ctx.currentTime=0;await ready(h.sound);const before=h.ctx.sources.length;h.sound.cue('tap');assert.ok(h.ctx.sources.length>before);assert.equal(h.data.get(MUTE_KEY),undefined);}finally{h.sound.dispose();}
 });
 
 test('every synthesized voice starts from silent initialization and ends at exact silence',async()=>{
@@ -113,7 +113,7 @@ test('raid music is limited to open active battles; results, base, selection and
 test('HQ fades out for effects-only attacks, keeps its position and resumes without duplicates',async()=>{
  const h=harness();try{await ready(h.sound);const s=h.sound as any;h.ctx.currentTime=5;h.sound.setMode('raid');await s.activate('raid');assert.equal(h.ctx.sources.filter(n=>n.loop).length,1);const deadline=s.fadeUntil.hq;
  for(let i=0;i<8;i++){h.ctx.currentTime=5+i*.1;await ready(h.sound);}assert.equal(s.fadeUntil.hq,deadline,'repeated gestures must not postpone the fade');
- h.ctx.currentTime=7;s.schedule();assert.equal(h.ctx.sources[0].stops,1);h.ctx.currentTime=9;h.sound.setMode('hq');await s.activate('hq');assert.equal(h.ctx.sources.length,2);assert.ok(h.ctx.sources[1].offsets[0]>=7);h.sound.dispose();assert.ok(h.ctx.sources.every(n=>n.disconnected));assert.equal(s.timer,undefined);assert.equal(h.ctx.state,'closed');}finally{h.sound.dispose();}
+ h.ctx.currentTime=7;s.schedule();assert.equal(h.ctx.sources[0].stops,1);h.ctx.currentTime=9;h.sound.setMode('hq');await s.activate('hq');assert.equal(h.ctx.sources.length,2);assert.ok(h.ctx.sources[1].offsets[0]>=7);h.sound.dispose();await (h.sound as any).quiet;for(const n of h.ctx.sources)n.onended?.();assert.ok(h.ctx.sources.every(n=>n.disconnected));assert.equal(s.timer,undefined);assert.equal(h.ctx.state,'closed');}finally{h.sound.dispose();}
 });
 
 test('crossfades anchor at transition time and rapid reversals preserve the current interpolated gain',async()=>{const h=harness();try{await ready(h.sound);h.ctx.currentTime=8;h.sound.setMode('raid');await (h.sound as any).activate('raid');assert.deepEqual(h.ctx.gains[1].gain.events.slice(-2),[{kind:'set',value:1.2,time:8},{kind:'linear',value:0,time:9.1}]);assert.deepEqual(h.ctx.gains[2].gain.events.slice(-2),[{kind:'set',value:0,time:8},{kind:'linear',value:0,time:9.1}]);h.ctx.currentTime=8.55;h.sound.setMode('hq');await (h.sound as any).activate('hq');const anchored=h.ctx.gains[1].gain.events.at(-2)!;assert.equal(anchored.time,8.55);assert.ok(Math.abs(anchored.value-.6)<1e-9);h.sound.dispose();assert.equal((h.sound as any).gainRamps.size,0);}finally{h.sound.dispose();}});
@@ -127,9 +127,9 @@ test('music loading failures retry on interaction while effects remain usable',a
  const h=harness();let attempts=0;const audio=new Soundscape({...h.platform,loadTrack:async()=>{attempts++;throw Error('offline');}});try{await ready(audio);audio.cue('tap');assert.equal(h.ctx.sources.length,1);await ready(audio);assert.equal(attempts,2);assert.equal(h.ctx.sources.length,1);}finally{audio.dispose();h.sound.dispose();}
 });
 
-test('six minutes of HQ playback, repeated mode updates, mute and suspension never duplicate the loop or write test preferences',async()=>{const h=harness();try{await ready(h.sound);const count=h.ctx.sources.length;for(let t=0;t<=360;t++){h.ctx.currentTime=t;h.sound.setMode('hq');(h.sound as any).schedule();}assert.equal(h.ctx.sources.length,count);h.sound.visibility(true);assert.equal(h.ctx.state,'suspended');await h.sound.unlock();assert.equal(h.ctx.sources.length,count);h.sound.visibility(false);await ready(h.sound);assert.equal(h.ctx.sources.length,count);h.sound.setMuted(true);h.sound.setMode('raid');await (h.sound as any).activate('raid');assert.equal(h.ctx.sources.length,count);assert.equal(h.data.get(MUTE_KEY),'true');h.sound.setMuted(false);await ready(h.sound);assert.equal(h.created(),1);assert.ok(h.ctx.sources.length<=count+1);}finally{h.sound.dispose();assert.ok(h.ctx.sources.every(s=>s.stops===1));}});
+test('six minutes of HQ playback, repeated mode updates, mute and suspension never duplicate the loop or write test preferences',async()=>{const h=harness();try{await ready(h.sound);const count=h.ctx.sources.length;for(let t=0;t<=360;t++){h.ctx.currentTime=t;h.sound.setMode('hq');(h.sound as any).schedule();}assert.equal(h.ctx.sources.length,count);h.sound.visibility(true);await (h.sound as any).quiet;assert.equal(h.ctx.state,'suspended');await h.sound.unlock();assert.equal(h.ctx.sources.length,count);h.sound.visibility(false);await ready(h.sound);assert.equal(h.ctx.sources.length,count+1);assert.equal(h.ctx.sources.filter(n=>n.loop&&n.stops===0).length,1);h.sound.setMuted(true);h.sound.setMode('raid');await (h.sound as any).activate('raid');assert.equal(h.ctx.sources.length,count+1);assert.equal(h.data.get(MUTE_KEY),'true');h.sound.setMuted(false);await ready(h.sound);assert.equal(h.created(),1);assert.ok(h.ctx.sources.length<=count+1);}finally{h.sound.dispose();assert.ok(h.ctx.sources.every(s=>s.stops===1));}});
 
-test('infiltration fades HQ to silence while keeping effects and shared mute/visibility policy',async()=>{const h=harness();try{await ready(h.sound);h.sound.setMode('infiltration');await (h.sound as any).activate('infiltration');assert.equal(h.ctx.gains[1].gain.value,0);assert.equal(h.ctx.gains[2].gain.value,0);assert.equal(h.ctx.gains[3].gain.value,0);for(const cue of ['hack','security-alert','extraction','building-lab'] as Cue[]){h.ctx.currentTime++;const count=h.ctx.sources.length;h.sound.cue(cue);assert.ok(h.ctx.sources.length>count);}h.sound.visibility(true);assert.equal(h.ctx.state,'suspended');h.sound.visibility(false);await ready(h.sound);h.sound.setMode('hq');await (h.sound as any).activate('hq');h.ctx.currentTime+=2;(h.sound as any).schedule();assert.equal(h.ctx.gains[3].gain.value,0);h.sound.setMuted(true);const count=h.ctx.sources.length;h.sound.cue('hack');assert.equal(h.ctx.sources.length,count);}finally{h.sound.dispose();}});
+test('infiltration fades HQ to silence while keeping effects and shared mute/visibility policy',async()=>{const h=harness();try{await ready(h.sound);h.sound.setMode('infiltration');await (h.sound as any).activate('infiltration');assert.equal(h.ctx.gains[1].gain.value,0);assert.equal(h.ctx.gains[2].gain.value,0);assert.equal(h.ctx.gains[3].gain.value,0);for(const cue of ['hack','security-alert','extraction','building-lab'] as Cue[]){h.ctx.currentTime++;const count=h.ctx.sources.length;h.sound.cue(cue);assert.ok(h.ctx.sources.length>count);}h.sound.visibility(true);await (h.sound as any).quiet;assert.equal(h.ctx.state,'suspended');h.sound.visibility(false);await ready(h.sound);h.sound.setMode('hq');await (h.sound as any).activate('hq');h.ctx.currentTime+=2;(h.sound as any).schedule();assert.equal(h.ctx.gains[3].gain.value,0);h.sound.setMuted(true);const count=h.ctx.sources.length;h.sound.cue('hack');assert.equal(h.ctx.sources.length,count);}finally{h.sound.dispose();}});
 
 test('Cipher deployment, repeating hacking and defense laser respect mute, hidden state and automated silence',async()=>{const cues=['cipher-deploy','cipher-hacking','cipher-shot','drone-laser'] as const;const h=harness();try{await ready(h.sound);for(const cue of cues){h.ctx.currentTime++;const before=h.ctx.sources.length;h.sound.cue(cue);assert.equal(h.ctx.sources.length,before+3);}h.ctx.currentTime++;let before=h.ctx.sources.length;h.sound.cue('cipher-hacking');h.sound.cue('cipher-hacking');assert.equal(h.ctx.sources.length,before+3);h.sound.setMuted(true);before=h.ctx.sources.length;for(const cue of cues)h.sound.cue(cue);assert.equal(h.ctx.sources.length,before);h.sound.visibility(true);for(const cue of cues)h.sound.cue(cue);assert.equal(h.ctx.sources.length,before);const silent=new Soundscape({...h.platform,silent:true});try{await ready(silent);for(const cue of cues)silent.cue(cue);assert.equal(h.ctx.sources.length,before);}finally{silent.dispose();}}finally{h.sound.dispose();}});
 
@@ -147,4 +147,38 @@ test('cold-start attack, unmute and resume never load music; returning HQ loads 
 test('searching, mission results and reconnect within the infiltration panel remain effects-only',()=>{
  for(const raid of [null,{settled:false},{settled:true}])assert.equal(musicModeFor('game','infiltration',raid),'infiltration');
  assert.equal(musicModeFor('game',null,null),'hq');assert.equal(musicModeFor('menu',null,null),'hq');
+});
+
+import {installAudioLifecycle} from '../src/audio/lifecycle';
+test('background fade gates the full mix before stopping all active and future effect voices',async()=>{
+ const h=harness();try{await ready(h.sound);h.ctx.currentTime=3;h.sound.cue('win');h.sound.cue('destroy');const sources=[...h.ctx.sources],writes=[...h.data];h.sound.visibility(true);
+ assert.equal((h.sound as any).timer,undefined);assert.equal(h.ctx.gains[0].gain.events.at(-1)!.value,0);assert.equal(h.ctx.gains[0].gain.events.at(-1)!.time,3.025);
+ assert.ok(sources.every(n=>Math.abs(n.stopTimes.at(-1)!-3.03)<1e-9));assert.ok(sources.every(n=>!n.disconnected),'sources disconnect on ended, after the fade');
+ const count=h.ctx.sources.length;for(const cue of ['tap','win','destroy','cipher-deploy'] as Cue[])h.sound.cue(cue);assert.equal(await h.sound.unlock(),false);assert.equal(h.ctx.sources.length,count);assert.deepEqual([...h.data],writes);
+ await (h.sound as any).quiet;assert.equal(h.ctx.state,'suspended');h.sound.visibility(false);assert.equal(h.ctx.resumes,1);h.ctx.currentTime=3.04;assert.equal(await h.sound.unlock(),true);assert.equal(h.created(),1);assert.equal(h.ctx.sources.filter(n=>n.loop&&n.stops===0).length,1);
+ }finally{h.sound.dispose();}
+});
+test('hiding before the first interaction and hidden unmute never create or resume an AudioContext',async()=>{
+ const h=harness();h.sound.visibility(true);h.sound.setMuted(true);h.sound.setMuted(false);assert.equal(await h.sound.unlock(),false);assert.equal(h.created(),0);h.sound.visibility(false);assert.equal(h.created(),0);assert.equal(await h.sound.unlock(),true);h.sound.dispose();
+});
+test('pending resume cannot play a stale tap after a hidden-visible round trip',async()=>{
+ const h=harness();let finish!:()=>void;h.ctx.resume=()=>new Promise<void>(r=>{finish=()=>{h.ctx.state='running';r();};});
+ try{const pending=h.sound.unlock();h.sound.visibility(true);h.sound.visibility(false);finish();assert.equal(await pending,false);assert.equal(h.ctx.sources.length,0);assert.equal((h.sound as any).timer,undefined);await (h.sound as any).quiet;assert.equal(h.ctx.state,'suspended');}finally{h.sound.dispose();}
+});
+test('late track decode stays canceled after hidden-visible even if a fresh interaction resumes effects',async()=>{
+ const h=harness();let finish!:(b:AudioBuffer)=>void;h.platform.loadTrack=()=>new Promise<AudioBuffer>(r=>{finish=r;});const audio=new Soundscape(h.platform);
+ try{await audio.unlock();audio.visibility(true);audio.visibility(false);h.ctx.currentTime=.04;await audio.unlock();finish({duration:20} as AudioBuffer);await new Promise(r=>setImmediate(r));assert.equal(h.ctx.sources.filter(n=>n.loop&&n.stops===0).length,1);assert.equal(h.created(),1);assert.equal((audio as any).playingMode,'hq');}finally{audio.dispose();}
+});
+test('concurrent gestures share one resume and rapid interruptions cannot multiply music or contexts',async()=>{
+ const h=harness();try{const all=await Promise.all(Array.from({length:15},()=>h.sound.unlock()));assert.ok(all.every(Boolean));assert.equal(h.ctx.resumes,1);assert.equal(h.created(),1);
+ for(let i=0;i<8;i++){h.sound.visibility(true);h.sound.visibility(true);h.sound.visibility(false);h.ctx.currentTime+=.05;await Promise.all([h.sound.unlock(),h.sound.unlock()]);await (h.sound as any).activate('hq');assert.equal(h.ctx.sources.filter(n=>n.loop&&n.stops===0).length,1);assert.equal(h.created(),1);}
+ }finally{h.sound.dispose();}
+});
+test('iOS interrupted and unexpected suspended contexts quiesce until a fresh gesture',async()=>{
+ for(const state of ['interrupted','suspended']){const h=harness();try{await ready(h.sound);h.ctx.state=state;(h.ctx as any).onstatechange();await (h.sound as any).quiet;const count=h.ctx.sources.length;h.sound.cue('tap');assert.equal(h.ctx.sources.length,count);assert.equal(h.ctx.gains[0].gain.value,0);assert.equal(h.ctx.resumes,1);h.ctx.currentTime+=.05;await ready(h.sound);assert.equal(h.created(),1);assert.equal(h.ctx.resumes,2);}finally{h.sound.dispose();}}
+});
+test('visibility, pagehide/pageshow and freeze/resume share one non-destructive lifecycle policy',async()=>{
+ const h=harness(),win=new EventTarget(),doc=Object.assign(new EventTarget(),{hidden:false}),remove=installAudioLifecycle(h.sound,win,doc);
+ try{await ready(h.sound);for(const event of ['visibilitychange','pagehide','freeze']){doc.hidden=true;(event==='pagehide'?win:doc).dispatchEvent(new Event(event));await (h.sound as any).quiet;assert.equal(h.ctx.state,'suspended');assert.equal(h.created(),1);doc.hidden=false;win.dispatchEvent(new Event('pageshow'));doc.dispatchEvent(new Event('resume'));assert.equal(h.ctx.state,'suspended');h.ctx.currentTime+=.05;await ready(h.sound);assert.equal(h.created(),1);}
+ remove();win.dispatchEvent(new Event('pagehide'));assert.equal(h.ctx.state,'running');}finally{remove();h.sound.dispose();}
 });

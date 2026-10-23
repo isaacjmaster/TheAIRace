@@ -1,0 +1,26 @@
+The AI Race — local installed-PWA bottom world strip patch
+
+Release approved by the owner after local review. Physical iPhone verification remains outstanding. Audio interruption safeguards are a separate accompanying patch.
+
+Inspection
+The supplied installed-app screenshots show a blue bottom band approximately the size of the top status inset, while world imagery reaches the top. This is consistent with a shorter fixed-position containing block; it is not proof of native geometry without device measurements.
+
+The actual hierarchy had two fixed layers in standalone: #root with inset:0/auto height, and .startup-game-session with position:fixed/inset:0 even after loading finishes. The Three.js renderer sizes itself to its host via ResizeObserver, so a shortened host yields a shortened rendered canvas. No safe-area bottom padding was found on the world. The blue exposed color is the page backdrop. viewport-fit=cover, black-translucent Apple status-bar style and manifest standalone mode were already configured.
+
+Only standalone gameplay changes
+In @media(display-mode:standalone), while html[data-presentation=game], use a relative #root with 100vh fallback/100lvh height, and an absolute gameplay session at inset:0/height:100%. This removes both fixed-bottom dependencies. Canvas/scene resize normally with the host; no solid-color cover, negative position, hardcoded notch or home-indicator dimension is used. HUD, Build, Infiltrate, Move and Settings retain their existing env(safe-area-inset-*) control spacing. The same gameplay wrapper contains infiltration combat.
+
+Ordinary Safari, Master Studios, loading and title rules are unchanged. Manifest, Apple status metadata, root phase colors and safe-area values are unchanged by this patch, preserving the currently working top area. No gameplay/server/database or player-save file is modified.
+
+Caching
+No service worker registration or runtime cache-management path was found in this project. CSS/JS build assets have content hashes. There is no cache purge, IndexedDB clearing, service worker unregister or company reset. Once approved and deployed, fully close/reopen the Home Screen app to fetch the new HTML and hashed assets. This CSS-only patch does not require reinstalling or metadata changes; do not uninstall or clear website data to apply it.
+
+Verification and limits
+452 tests passed and production build passed. Browser QA used isolated companies, silent URLs and closed contexts. A desktop regression model deliberately gave fixed elements a shorter containing block and injected standalone CSS/safe areas: old canvas bottom was 785 in an 844 viewport, new canvas bottom 844. Pixel checks found all-blue last 40 rows before and no page-blue pixels there after. The actual 3D renderer, not a fill overlay, produces the after image. Top stayed at y=0; bottom controls remained at 810 with a simulated 34px inset; no horizontal overflow. Loading retained full viewport sizing. Normal browser layout, landscape, tap-open/close Build, touch camera pan and full-height combat passed.
+
+These are modeled desktop measurements, not installed iPhone screenshots. Native Home Indicator visibility, final physical edge-to-edge coverage and Safari/PWA differences still need device verification. No iPhone or iOS Simulator was available.
+
+After deployment is approved: check the same saved company in Safari and Home Screen; loading/title unchanged; pan the HQ and confirm actual scenery continues under the Home Indicator; tap Build/Infiltrate/Move/Settings; rotate; check combat and return; confirm no scroll, gaps or lost progress. Do not clear data or remove the install. If a gap remains, capture iOS version and viewport/host measurements before making further geometry assumptions.
+
+Related WebKit report: https://bugs.webkit.org/show_bug.cgi?id=236445 describes a translucent-status-bar fixed/absolute bottom discrepancy. The local regression models that failure; it does not establish which iOS version the owner has.
+Artifacts: output/PWA_Bottom_Audio_Review/index.html, layout-checks.json and bottom-pixel-checks.json.

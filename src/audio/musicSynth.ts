@@ -1,11 +1,13 @@
 import {frequency,musicStep,type MusicMode} from './score';
 import {voiceEnvelope} from './envelope';
 /** Shared live/offline synthesis, entirely original and sample-free. */
-export class MusicSynth{private noise?:AudioBuffer;constructor(private ctx:BaseAudioContext){}
+export class MusicSynth{private noise?:AudioBuffer;private voices=new Set<AudioScheduledSourceNode>();constructor(private ctx:BaseAudioContext){}
  note(midi:number,time:number,duration:number,volume:number,bus:AudioNode,type:OscillatorType='sine',attack=.015,slide?:number,cutoff?:number){
   const ctx=this.ctx,osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type;osc.frequency.setValueAtTime(frequency(midi),time);if(slide!==undefined)osc.frequency.exponentialRampToValueAtTime(frequency(slide),time+duration);
-  voiceEnvelope(gain.gain,time,duration,volume,attack);let filter:BiquadFilterNode|undefined;if(cutoff){filter=ctx.createBiquadFilter();filter.type='lowpass';filter.frequency.setValueAtTime(cutoff,time);filter.frequency.exponentialRampToValueAtTime(cutoff*.55,time+duration);osc.connect(filter);filter.connect(gain);}else osc.connect(gain);gain.connect(bus);osc.start(time);osc.stop(time+duration+.02);osc.onended=()=>{osc.disconnect();filter?.disconnect();gain.disconnect();};
+  voiceEnvelope(gain.gain,time,duration,volume,attack);let filter:BiquadFilterNode|undefined;if(cutoff){filter=ctx.createBiquadFilter();filter.type='lowpass';filter.frequency.setValueAtTime(cutoff,time);filter.frequency.exponentialRampToValueAtTime(cutoff*.55,time+duration);osc.connect(filter);filter.connect(gain);}else osc.connect(gain);gain.connect(bus);this.voices.add(osc);osc.start(time);osc.stop(time+duration+.02);osc.onended=()=>{this.voices.delete(osc);osc.disconnect();filter?.disconnect();gain.disconnect();};
  }
+ /** Cancel active and future notes on the audio clock; disconnect only after ended. */
+ stopAll(at=this.ctx.currentTime){for(const voice of this.voices){try{voice.stop(at);}catch{}}this.voices.clear();}
  /** Short synthesized drum strokes; shared deterministic noise, never external samples. */
  drum(time:number,bus:AudioNode,hat:boolean,volume:number){
   const ctx=this.ctx;
@@ -13,7 +15,7 @@ export class MusicSynth{private noise?:AudioBuffer;constructor(private ctx:BaseA
   const source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain(),duration=hat?.045:.11;
   source.buffer=this.noise;filter.type=hat?'highpass':'bandpass';filter.frequency.value=hat?6500:1800;
   voiceEnvelope(gain.gain,time,duration,volume,.008);
-  source.connect(filter);filter.connect(gain);gain.connect(bus);source.start(time);source.stop(time+duration+.01);source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};
+  source.connect(filter);filter.connect(gain);gain.connect(bus);this.voices.add(source);source.start(time);source.stop(time+duration+.01);source.onended=()=>{this.voices.delete(source);source.disconnect();filter.disconnect();gain.disconnect();};
  }
 }
 export function playMusicStep(synth:MusicSynth,step:number,mode:MusicMode,t:number,bus:AudioNode){

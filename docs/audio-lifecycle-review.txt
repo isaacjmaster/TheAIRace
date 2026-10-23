@@ -1,0 +1,29 @@
+The AI Race — local audio interruption patch
+
+Release approved by the owner after local review. Physical iPhone verification remains outstanding.
+
+Investigation
+The live game uses one gesture-created Web Audio AudioContext. RecordedMusic decodes and loops AudioBuffers through mode gain buses and the shared master. Effects are synthesized oscillators/noise sources; HQ ambience uses a loop and short detail voices. No HTMLAudioElement path was found in src/audio. Soundtrack files, cue definitions, normal mix volumes and stored mute preference are unchanged.
+
+Likely contributors, not a proven physical-device root cause:
+- visibilitychange suspended immediately without fading the complete mix.
+- Effects included future scheduled notes with no shared cancellation list; suspension could retain those tails for resume.
+- pagehide disposed the player, stopping/disconnecting active music immediately and closing the context.
+- unlock could resume/create audio after a background signal, and a delayed gesture continuation could play a stale tap after a fast return.
+
+Changes
+Lifecycle listeners live with the audio singleton, not a React screen: visibilitychange, pagehide/pageshow, freeze/resume where supported. Hidden/pagehide/freeze stop scheduling immediately and invalidate pending unlock/decode generations. All output fades to zero over 25ms on the audio clock; sources stop after the silent tail, including future effects. JS requests suspension after 40ms, but silence does not depend on that timeout firing: gains/source stops are already scheduled. If iOS already interrupted/suspended the context, quiescence is immediate. Nodes disconnect on ended rather than while active.
+
+Returning does not autoplay or replay old cues. The next gesture resumes the same context, with a short master fade-in, cached music buffers/loop position and a single active loop. Concurrent gestures share a resume attempt. UI tap/building callbacks only play if their unlock remains valid. Actual disposal invalidates references immediately and closes after quiescence; pagehide no longer destroys a reusable BFCache graph. Mute changes preserve the same storage key and meaning. iOS resume rejection fails silently and permits the next interaction to retry.
+
+Verification
+- 452/452 complete automated tests passed, including seven new interruption/race tests and existing music/effect/ambience tests.
+- TypeScript/Vite production build passed.
+- Real browser OfflineAudioContext rendering, without speakers, measured exact zero samples during the hidden interval and after close-style backgrounding; the stop-edge sample difference was zero. Explicit resume produced signal again using one context. This is signal verification, not human listening or an iPhone force-quit test.
+- Preview URLs used testAudio=off, no test mute preference was written, contexts were closed.
+
+Physical iPhone verification still required
+With the usual volume and both sound-enabled and muted settings, verify: app-switcher swipe-away; switch to another app/return; lock/unlock; background during HQ music; background immediately after an effect; rapid repeated switches; repeated launches. Check for glitch/pop/distorted tail, hidden playback, duplicate music and normal effects after returning. If silent after returning, tap a normal control once to allow iOS audio resume. Force termination has no guaranteed final callback, so this patch silences at backgrounding rather than depending on unload.
+
+Reference: https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/state documents Safari interruptions and gesture-dependent resumption. Device behavior has not been claimed as verified.
+Artifacts: output/Audio_Lifecycle_Review/offline-waveform-checks.json and output/PWA_Bottom_Audio_Review.
