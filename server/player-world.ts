@@ -20,6 +20,9 @@ export function playerWorldStore(db:DatabaseSync,clock:()=>number,leaderboard:(i
  CREATE INDEX IF NOT EXISTS pvp_unfinished ON pvp_battles(created_at) WHERE finished_at IS NULL;
  CREATE TABLE IF NOT EXISTS pvp_reward_cooldowns(attacker_id TEXT NOT NULL,defender_id TEXT NOT NULL,eligible_at INTEGER NOT NULL,PRIMARY KEY(attacker_id,defender_id));`);
  if(!db.prepare('PRAGMA table_info(pvp_battles)').all().some(c=>c.name==='breach_rating'))db.exec('ALTER TABLE pvp_battles ADD COLUMN breach_rating TEXT');
+ // One-time shortening preserves the original award time and never extends eligibility.
+ db.exec('CREATE TABLE IF NOT EXISTS pvp_policy_migrations(id TEXT PRIMARY KEY)');
+ db.exec('BEGIN IMMEDIATE');try{if(!db.prepare('SELECT 1 FROM pvp_policy_migrations WHERE id=?').get('reward-five-minutes-v1')){db.prepare('UPDATE pvp_reward_cooldowns SET eligible_at=eligible_at-?').run(12*60*60*1000-PVP.cooldownMs);db.prepare('INSERT INTO pvp_policy_migrations VALUES(?)').run('reward-five-minutes-v1');}db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;}
  const replays=replayStore(db);
  db.exec('CREATE TABLE IF NOT EXISTS pvp_shields(company_id TEXT PRIMARY KEY,expires_at INTEGER NOT NULL)');
  // Cap only this distinct post-attack shield; reward cooldowns remain untouched.
@@ -46,6 +49,7 @@ export function playerWorldStore(db:DatabaseSync,clock:()=>number,leaderboard:(i
   if(['ready','active'].includes(o.status)){db.prepare('UPDATE pvp_battles SET status=? WHERE id=?').run(o.status,o.id);replays.flush(o);return;}
   const rating=breachRating(o),success=rating.count>0,at=o.finishedAt??now;let award=0,next=eligible(attacker,o.pvp.defenderId);
   if(success&&at>=next){award=PVP.award;next=at+PVP.cooldownMs;db.prepare('INSERT INTO company_influence VALUES(?,?) ON CONFLICT(company_id) DO UPDATE SET total=total+excluded.total').run(attacker,award);db.prepare('INSERT INTO pvp_reward_cooldowns VALUES(?,?,?) ON CONFLICT(attacker_id,defender_id) DO UPDATE SET eligible_at=excluded.eligible_at').run(attacker,o.pvp.defenderId,next);}
+  if(!success&&o.startedAt!==undefined&&(o.squad?.agents.length??0)>0){const current=Number(db.prepare('SELECT total FROM company_influence WHERE company_id=?').get(attacker)?.total??0);award=-Math.min(PVP.penalty,current);db.prepare('UPDATE company_influence SET total=MAX(0,total+?) WHERE company_id=?').run(award,attacker);}
   o.settlement={compute:0,research:0,influence:award,eligibleAt:next,pendingCompute:0,pendingResearch:0};
   db.prepare('UPDATE pvp_battles SET finished_at=?,status=?,destruction=?,influence=?,breach_rating=? WHERE id=? AND finished_at IS NULL').run(at,success?'victory':o.status,playerDestruction(o),award,JSON.stringify(rating.tokens),o.id);
   if(o.startedAt!==undefined){db.prepare('INSERT INTO pvp_shields VALUES(?,?) ON CONFLICT(company_id) DO UPDATE SET expires_at=MAX(expires_at,excluded.expires_at)').run(o.pvp.defenderId,at+PVP.shieldMs);replays.finish(o);}else replays.flush(o);replays.prune(now);

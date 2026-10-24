@@ -47,7 +47,7 @@ export function planTactical(o:Operation,a:SquadAgent){
 }
 function end(o:Operation,status:Operation['status']){o.status=status;o.finishedAt=o.lastTick;for(const a of o.squad!.agents)if(a.state==='active'){a.state=(a.health??0)>0?'extracted':'lost';a.path=[];a.mode='idle';a.target=undefined;a.droneTarget=undefined;a.wallTarget=undefined;}for(const d of o.drones){d.path=[];d.targetAgentId=undefined;if(alive(o,d))d.mode='patrol';}if(status!=='extracted')o.carried={compute:0,research:0,intel:false};emit(o,status);captureReplayFrame(o);}
 function drones(o:Operation,dt:number){const bounds=targetBounds(o.target);
- for(const d of o.drones){if(!alive(o,d)){d.mode='disabled';d.path=[];d.targetAgentId=undefined;continue;}const cfg=o.target.defenses.find(c=>c.id===d.id)!,targetLayout=squadTarget(o),solids=infiltrationSolids(cfg.fliesOverWalls?{...targetLayout,walls:[]}:targetLayout);
+ for(const d of o.drones){if(!alive(o,d)){d.mode='disabled';d.path=[];d.targetAgentId=undefined;continue;}const cfg=o.target.defenses.find(c=>c.id===d.id)!,targetLayout=squadTarget(o),solids=cfg.aerial?[]:infiltrationSolids(cfg.fliesOverWalls?{...targetLayout,walls:[]}:targetLayout);
   const visible=o.squad!.agents.filter(a=>a.state==='active'&&distance(d.position,a.position)<=cfg.radius&&sight(o,d.position,a.position));const target=visible.find(a=>a.id===d.targetAgentId)??visible.sort((a,b)=>distance(d.position,a.position)-distance(d.position,b.position)||a.id.localeCompare(b.id))[0];
   if(target){if(d.targetAgentId!==target.id){d.acquiredAt=o.lastTick;emit(o,'detected',target.id);}d.targetAgentId=target.id;d.yaw=Math.atan2(target.position[0]-d.position[0],target.position[1]-d.position[1]);
    if(distance(d.position,target.position)<=tacticalBalance(o).droneRange){d.mode='attacking';d.path=[];d.pathKey=undefined;
@@ -59,7 +59,7 @@ function drones(o:Operation,dt:number){const bounds=targetBounds(o.target);
   }
   d.targetAgentId=undefined;d.acquiredAt=undefined;d.mode='patrol';const goal=cfg.route[d.segment];if(d.pathKey!==String(d.segment)||!d.path?.length){d.path=findPath(d.position,goal,solids,bounds,DRONE_CLEARANCE);d.pathKey=String(d.segment);}move(d,cfg.patrolSpeed*dt);if(distance(d.position,goal)<.05){d.segment=(d.segment+1)%cfg.route.length;d.pathKey=undefined;}
  }
- const active=o.drones.filter(d=>alive(o,d));const positions=separateDronePositions(active.map(d=>d.position),dt,(i,a,b)=>{const cfg=o.target.defenses.find(c=>c.id===active[i].id)!;const t=squadTarget(o);return segmentClear(a,b,infiltrationSolids(cfg.fliesOverWalls?{...t,walls:[]}:t),bounds,DRONE_CLEARANCE);});
+ const active=o.drones.filter(d=>alive(o,d));const positions=separateDronePositions(active.map(d=>d.position),dt,(i,a,b)=>{const cfg=o.target.defenses.find(c=>c.id===active[i].id)!;const t=squadTarget(o);return segmentClear(a,b,cfg.aerial?[]:infiltrationSolids(cfg.fliesOverWalls?{...t,walls:[]}:t),bounds,DRONE_CLEARANCE);});
  active.forEach((d,i)=>{if(distance(d.position,positions[i])>.001){d.position=positions[i];d.path=[];d.pathKey=undefined;}});
 }
 /** Shared work survives interruption. Pending loot banks only on a successful mission, exactly once. */

@@ -53,10 +53,10 @@ test('historical replay records intermediate frames, is private, read-only and h
  const stranger=await f.fresh('Replay_Stranger');assert.equal((await f.get(stranger,'/pvp/replays/'+id)).status,404);
  assert.equal((await f.post(stranger,'/pvp/notifications/'+id+'/dismiss',{})).status,404);
  assert.equal((await f.post(d,'/pvp/notifications/'+id+'/dismiss',{})).status,200);assert.equal((await f.get(d,'/pvp/notifications')).data.notification,null);
- assert.equal(notice.shieldUntil,replay.finishedAt+300000);assert.equal(PVP.cooldownMs,12*60*60*1000);
+ assert.equal(notice.shieldUntil,replay.finishedAt+300000);assert.equal(PVP.cooldownMs,5*60*1000);
  f.setTime(notice.shieldUntil-1);const staleScout=f.db.prepare('SELECT id FROM pvp_scouts WHERE attacker_id=?').get(a.id)!;
  assert.equal((await f.command(a,{action:'pvp-start',scoutId:String(staleScout.id)})).status,400);
- f.setTime(notice.shieldUntil);const next=(await f.search(a)).data.scout;assert.ok(next);assert.ok(f.db.prepare('SELECT eligible_at FROM pvp_reward_cooldowns WHERE attacker_id=? AND defender_id=?').get(a.id,d.id)!.eligible_at as number>f.time());
+ f.setTime(notice.shieldUntil);const next=(await f.search(a)).data.scout;assert.ok(next);assert.ok(f.db.prepare('SELECT eligible_at FROM pvp_reward_cooldowns WHERE attacker_id=? AND defender_id=?').get(a.id,d.id)!.eligible_at as number<=f.time());
  f.setTime(f.time()+31*86400000);assert.equal((await f.get(d,'/pvp/replays/'+id)).status,404);assert.equal((await f.get(d,'/pvp/history')).data.defenses[0].replayAvailable,false);
  }finally{await f.close();}
 });

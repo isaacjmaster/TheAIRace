@@ -10,6 +10,12 @@ export const BUILDING_SOUNDS={
  'building-rig':{notes:[84,91,88],type:'sine',duration:.09,gap:.045},
  'building-fabricator':{notes:[45,52,57],type:'triangle',duration:.11,gap:.06},
  'building-hangar':{notes:[62,69,64],type:'triangle',duration:.14,gap:.055},
+ 'ui-open':{notes:[76,83],type:'sine',duration:.09,gap:.045},
+ 'ui-close':{notes:[79,72],type:'sine',duration:.07,gap:.035},
+ 'ui-tab':{notes:[83],type:'sine',duration:.06,gap:0},
+ 'ui-confirm':{notes:[72,79,84],type:'sine',duration:.12,gap:.04},
+ 'building-sentinel':{notes:[38,45,50],type:'triangle',duration:.18,gap:.05},
+ 'building-droneStation':{notes:[81,88,93],type:'sine',duration:.1,gap:.055},
  'building-station':{notes:[55,79],type:'triangle',duration:.1,gap:.075},
 } as const;
 export type Cue=InfiltrationCue|'hack'|'security-alert'|'extraction'|'clear-tree'|'clear-scrap'|keyof typeof BUILDING_SOUNDS|'tap'|'deploy'|'laser'|'impact'|'destroy'|'win'|'resources'|'upgrade';

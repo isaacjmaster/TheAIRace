@@ -1,3 +1,4 @@
+import {commitLayout} from '../shared/layout-draft';
 import {buildSentinel} from '../shared/cybersecurity';
 import {developmentInfluenceStore} from './development-influence';
 import {playerWorldStore} from './player-world';
@@ -102,7 +103,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   }catch(e){db.exec('ROLLBACK');res.status(400).json({error:(e as Error).message});}
  });
  const botAction=z.discriminatedUnion('action',[
-  z.object({action:z.literal('set-drone-guard'),position:z.tuple([z.number().finite(),z.number().finite()])}).strict(),
+  z.object({action:z.literal('commit-layout'),expected:z.string().max(100000),placements:z.array(z.object({id:z.string().min(1).max(100),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict()).max(800)}).strict(),
+  z.object({action:z.literal('set-drone-guard'),drone:z.number().int().min(0).max(1).optional(),position:z.tuple([z.number().finite(),z.number().finite()])}).strict(),
   z.object({action:z.literal('acknowledge-hq'),id:z.string().min(1).max(100)}).strict(),
   z.object({action:z.literal('buy-wall'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('move-wall'),id:z.string().uuid(),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
@@ -145,7 +147,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
    if(cached&&cached.payload!==payload)throw new Error('Request already used for another action.');
    ensureLandscape(state,now,randomUUID());players.record(state);advanceFoundation(state,now);reconcileBuilderHuts(state);influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);
    let amount=Number(cached?.amount??0);if(!cached){const c=input.command;
-    if(c.action==='set-drone-guard')setGuardPosition(state,c.position);
+    if(c.action==='commit-layout'){if(db.prepare("SELECT 1 FROM pvp_battles WHERE defender_id=? AND status='active' AND finished_at IS NULL").get(player.company.playerId))throw Error('Your campus is under attack. Keep this draft and save after the battle.');commitLayout(state,c.expected,c.placements);}
+    else if(c.action==='set-drone-guard')setGuardPosition(state,c.position,c.drone??0);
     else if(c.action==='acknowledge-hq'){if(state.hqNotification?.id===c.id)state.hqNotification.acknowledged=true;}
     else if(c.action==='buy-wall')buyWall(state,c.position,c.orientation,input.requestId);
     else if(c.action==='move-builder-hut')moveBuilderHut(state,c.id,c.position,c.orientation);

@@ -21,7 +21,7 @@ export function craftCampusTarget(id:string):TargetSnapshot{
  // Fixed defensive emplacements replace one mobile patrol per tower to retain a viable army budget.
  const towerPositions:Vec[]=rank===2?[[6,-2]]:rank===3?[[0,6]]:rank===4?[[-7,6],[11,-3]]:[];
  // Mission emplacements use a slower training-defense profile; owned PvP towers retain their balance.
- const sentinels=towerPositions.map((position,i)=>({id:'vanguard-'+i,position,range:SENTINEL.range,damage:12,lockStep:2,maxDamage:20,intervalMs:2000,warmupMs:900}));
+ const sentinels=towerPositions.map((position,i)=>({id:'vanguard-'+i,position,range:SENTINEL.range,damage:SENTINEL.damage,lockStep:SENTINEL.lockStep,maxDamage:SENTINEL.maxDamage,intervalMs:2000,warmupMs:900}));
  for(const tower of sentinels)l.assets.push({id:tower.id,kind:'station',model:'sentinel',name:'Sentinel Tower',position:tower.position,size:[4,4],access:[tower.position[0],tower.position[1]+2.7],hackSeconds:12,compute:0,research:0});
  const tech=l.assets.filter(a=>a.access);let c=reward.compute,r=reward.research;
  for(const [i,a]of tech.entries()){a.compute=i===tech.length-1?c:Math.floor(reward.compute/tech.length);a.research=i===tech.length-1?r:Math.floor(reward.research/tech.length);c-=a.compute;r-=a.research;}

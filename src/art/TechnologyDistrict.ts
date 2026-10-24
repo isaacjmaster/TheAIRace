@@ -72,7 +72,7 @@ export class TechnologyDistrict{
  private lamp(x:number,z:number){this.block(this.group,[.12,2.2,.12],[x,1,z],C.navy);this.block(this.group,[.75,.12,.32],[x+.22,2.15,z],C.navy);this.block(this.group,[.56,.035,.23],[x+.22,2.075,z],'#ffe3a0');}
  private tree(x:number,z:number,scale:number){this.block(this.group,[1.5,.12,1.5],[x,-.035,z],C.concrete);this.k.tree(this.group,x,z,scale);}
  /** Flat property aprons follow existing position/rotation, never add solid clutter. */
- syncLots(state:FoundationState){if(this.kind!=='hq')return;const rects=FOUNDATION_BUILDINGS.flatMap(kind=>{const l=buildingLayout(state,kind);return l?[{kind,...footprint(kind,l)}]:[];});const key=JSON.stringify(rects);if(key===this.lotsKey)return;this.lotsKey=key;
+ syncLots(state:FoundationState,placed?:Set<string>){if(this.kind!=='hq')return;const rects=FOUNDATION_BUILDINGS.filter(kind=>!placed||placed.has(kind)).flatMap(kind=>{const l=buildingLayout(state,kind);return l?[{kind,...footprint(kind,l)}]:[];});const key=JSON.stringify(rects);if(key===this.lotsKey)return;this.lotsKey=key;
   this.lotInstances?.dispose();this.lotEdges?.geometry.dispose();(this.lotEdges?.material as THREE.Material|undefined)?.dispose();this.lots.clear();
   const unit=this.geometries.get('1,1,1')??new THREE.BoxGeometry(1,1,1);this.geometries.set('1,1,1',unit);
   this.lotInstances=new THREE.InstancedMesh(unit,this.k.mat(C.concrete),rects.length);this.lotInstances.receiveShadow=true;const pose=new THREE.Object3D(),lines:number[]=[];

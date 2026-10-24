@@ -101,10 +101,10 @@ export class Soundscape {
   const out=this.master!;
   if(cue in INFILTRATION_CUES){const variation=cue==='cipher-deploy'?[-.5,0,.5,0][this.cipherVoice++%4]:0;for(const voice of INFILTRATION_CUES[cue as InfiltrationCue])this.note(voice.note+variation,t+voice.at,voice.duration,voice.gain,out,voice.type,.004,voice.end+variation);return;}
   if(cue==='hack'){[76,83,88].forEach((n,i)=>this.note(n,t+i*.06,.14,.085,out,'sine',.008));return;}if(cue==='security-alert'){this.note(74,t,.15,.1,out,'triangle',.012);this.note(70,t+.18,.16,.08,out,'triangle',.012);return;}if(cue==='extraction'){[69,76,81,88].forEach((n,i)=>this.note(n,t+i*.08,.4,.11,out,'sine',.012));return;}
-  if(cue in BUILDING_SOUNDS){const voice=BUILDING_SOUNDS[cue as keyof typeof BUILDING_SOUNDS];voice.notes.forEach((note,i)=>this.note(note,t+i*voice.gap,voice.duration,.1,out,voice.type,.012));return;}
+  if(cue in BUILDING_SOUNDS){const voice=BUILDING_SOUNDS[cue as keyof typeof BUILDING_SOUNDS];voice.notes.forEach((note,i)=>this.note(note,t+i*voice.gap,voice.duration,cue.startsWith('ui-')?.045:.075,out,voice.type,.012));return;}
   if(cue==='clear-tree'){[74,81,86].forEach((n,i)=>this.note(n,t+i*.065,.2,.055,out,'sine',.015));return;}
   if(cue==='clear-scrap'){[50,62,78].forEach((n,i)=>this.note(n,t+i*.07,.16,.065,out,'triangle',.01));return;}
-  if(cue==='tap')this.note(81,t,.075,.13,out,'sine',.002,76);
+  if(cue==='tap')this.note(81,t,.065,.055,out,'sine',.002,76);
   if(cue==='deploy'){this.note(62,t,.18,.16,out,'triangle',.005);this.note(74,t+.06,.3,.13,out);}
   if(cue==='laser')this.note(94,t,.11,.08,out,'sine',.002,52);
   if(cue==='impact'||cue==='destroy'){

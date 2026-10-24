@@ -25,7 +25,7 @@ export type Asset = {
     intel?: boolean;
 };
 export type Defense = {
-    fliesOverWalls?:boolean;
+    aerial?:boolean;fliesOverWalls?:boolean;
     id: string;
     route: Vec[];
     radius: number;

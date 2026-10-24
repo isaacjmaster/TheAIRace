@@ -10,7 +10,7 @@ import {validGuardPosition,setGuardPosition,homePatrolPoints,DRONE_PATROL_RADIUS
 import {publicBase,baseVisualState} from '../shared/player-base';
 import {playerTarget,playerOperation} from '../shared/player-combat';
 import {attackApproach} from '../shared/attack-positions';
-import {advanceOperation,commandOperation,type Asset,type TargetSnapshot,type Vec} from '../shared/infiltration';
+import {targetBounds,advanceOperation,commandOperation,type Asset,type TargetSnapshot,type Vec} from '../shared/infiltration';
 import {separateDronePositions} from '../shared/drone-separation';
 import {segmentClear} from '../shared/navigation';
 import {BASE_IDS,craftCampusTarget} from '../shared/infiltration-bases';
@@ -33,7 +33,7 @@ test('decoration accepts valid enclosed campus terrain and rejects real occupied
  const s=ready();s.walls=Array.from({length:12},(_,i)=>({id:'wall'+i,position:[-12+i*2,6] as Vec,orientation:0}));for(const kind of ['cypress','ornamental','flowers','planter'] as const){assert.equal(validDecorationPosition(s,kind,[20,20],0),null);assert.ok(validDecorationPosition(s,kind,[-5,-1],0));assert.ok(validDecorationPosition(s,kind,[100,100],0));}purchaseDecoration(s,'cypress',[20,20],0,'tree');assert.equal(JSON.parse(JSON.stringify(s)).decorations[0].id,'tree');
 });
 test('guard assignment is authenticated, persistent, idempotent and captured by defensive PvP snapshots',async()=>{
- const f=await worldFixture();try{const p=await f.fresh('Guard_Owner'),other=await f.fresh('Guard_Other');const s=ready();s.droneStation={position:[15,0],startedAt:0,completesAt:0};f.save(p,s);assert.equal((await f.command(p,{action:'set-drone-guard',position:[-24,20]})).status,200);assert.equal((await f.command(p,{action:'set-drone-guard',position:[1e20,0]})).status,400);assert.equal((await f.command(other,{action:'set-drone-guard',position:[20,20],companyId:p.id})).status,400);const state=(await f.get(p)).data.state as FoundationState;assert.deepEqual(state.droneGuard,[-24,20]);const base=publicBase(state,p.id,f.time())!;assert.deepEqual(baseVisualState(base).droneGuard,state.droneGuard);const target=playerTarget(base,{id:p.id,name:'Guard',level:2,hqLevel:2,influence:0,rank:null,visitable:true});assert.equal(target.defenses.length,2);for(const d of target.defenses){assert.equal(d.radius,10.2);assert.ok(d.route.every(q=>Math.hypot(q[0]+24,q[1]-20)<=DRONE_PATROL_RADIUS+.01));}assert.notDeepEqual(target.defenses[0].route[0],target.defenses[1].route[0]);}finally{await f.close();}
+ const f=await worldFixture();try{const p=await f.fresh('Guard_Owner'),other=await f.fresh('Guard_Other');const s=ready();s.droneStation={position:[15,0],startedAt:0,completesAt:0};f.save(p,s);assert.equal((await f.command(p,{action:'set-drone-guard',position:[-24,20]})).status,200);assert.equal((await f.command(p,{action:'set-drone-guard',position:[1e20,0]})).status,400);assert.equal((await f.command(other,{action:'set-drone-guard',position:[20,20],companyId:p.id})).status,400);const state=(await f.get(p)).data.state as FoundationState;assert.deepEqual(state.droneGuards?.[0],[-24,20]);const base=publicBase(state,p.id,f.time())!;assert.deepEqual(baseVisualState(base).droneGuards?.[0],state.droneGuards?.[0]);const target=playerTarget(base,{id:p.id,name:'Guard',level:2,hqLevel:2,influence:0,rank:null,visitable:true});assert.equal(target.defenses.length,2);for(const [i,d] of target.defenses.entries()){assert.equal(d.radius,10.2);const center=i?state.droneStation!.position:state.droneGuards![0]!;assert.ok(d.route.every(q=>Math.hypot(q[0]-center[0],q[1]-center[1])<=DRONE_PATROL_RADIUS+.01));}assert.notDeepEqual(target.defenses[0].route[0],target.defenses[1].route[0]);}finally{await f.close();}
 });
 test('bounded drone separation opens spacing without crossing obstacles',()=>{let p:Vec[]=[[0,0],[0,0]];const bounds={minX:-10,maxX:10,minZ:-10,maxZ:10};for(let i=0;i<50;i++)p=separateDronePositions(p,.1,(_i,a,b)=>segmentClear(a,b,[],bounds,1));assert.ok(Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1])>1.6);const blocked=separateDronePositions([[0,0],[0,0]],.1,()=>false);assert.deepEqual(blocked,[[0,0],[0,0]]);});
 test('HQ notices originate only from a true completion, acknowledge across reload, and preserve historical upgrades',async()=>{
@@ -50,9 +50,9 @@ test('advanced missions include live hackable Sentinel Towers without changing t
 
 
 test('advanced tower missions remain winnable with ten unupgraded Cipher Bots and intentional approach choices',()=>{
- for(const [id,start] of [['prism-systems',[-3,15.5]],['orbit-research',[-20.5,-3]],['apex-compute',[22.5,-14]]] as [string,Vec][]){
-  const o=newSquadOperation('balance',id,100037);
-  for(let i=0;i<10;i++)commandOperation(o,{action:'deploy',position:id==='prism-systems'?[start[0]+i*.25,start[1]]:[start[0],start[1]+i*.25]},100037);
+ for(const id of ['prism-systems','orbit-research','apex-compute']){
+  const o=newSquadOperation('balance',id,100037),b=targetBounds(o.target);
+  for(let i=0;i<10;i++)commandOperation(o,{action:'deploy',position:id==='prism-systems'?[(i-4.5)*1.2,b.maxZ-1.5]:id==='orbit-research'?[b.minX+1.5,(i-4.5)*1.1]:[b.minX+1.5,b.minZ+3+i*.25]},100037);
   advanceSquad(o,280037);assert.equal(o.status,'extracted',id);assert.equal(o.hacked.length,o.target.assets.filter(a=>a.hackSeconds).length);assert.ok(o.events.some(e=>e.type==='sentinel-shot'),id);
  }
 });

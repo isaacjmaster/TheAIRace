@@ -1,3 +1,4 @@
+import {backupBeforeDefenseUpdate} from './defense-update-backup';
 import {backupBeforeGameplayRefinement} from './refinement-backup';
 import {backupBeforeQualityOfLifeMigration} from './qol-backup.js';
 import {backupBeforeDevelopmentMigration} from './development-backup.js';
@@ -29,7 +30,7 @@ if (databasePath !== ':memory:') mkdirSync(dirname(resolve(databasePath)), { rec
 if (production && !existsSync(resolve('dist/index.html'))) throw new Error('Build the frontend with npm run build before production startup.');
 process.env.AI_MODE = 'demo'; process.env.AI_LIVE_ENABLED = 'false';
 const db = new DatabaseSync(databasePath);
-if(production){backupBeforeQualityOfLifeMigration(db);backupBeforeGameplayRefinement(db);backupBeforeIdentityMigration(db);backupBeforeIdentityMigration(db,3);backupBeforeInfiltrationMigration(db);backupBeforePvPMigration(db);backupBeforeDevelopmentMigration(db);}
+if(production){backupBeforeDefenseUpdate(db);backupBeforeQualityOfLifeMigration(db);backupBeforeGameplayRefinement(db);backupBeforeIdentityMigration(db);backupBeforeIdentityMigration(db,3);backupBeforeInfiltrationMigration(db);backupBeforePvPMigration(db);backupBeforeDevelopmentMigration(db);}
 export function closeDatabase() { db.close(); }
 db.exec('PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS commands (session TEXT NOT NULL, id TEXT NOT NULL, response TEXT NOT NULL, PRIMARY KEY(session,id)); CREATE TABLE IF NOT EXISTS usage (day TEXT PRIMARY KEY, requests INTEGER NOT NULL);');
 db.exec("CREATE TABLE IF NOT EXISTS onboarding (session TEXT PRIMARY KEY, storySeen INTEGER NOT NULL DEFAULT 0, tutorial TEXT NOT NULL DEFAULT 'available')");
@@ -41,6 +42,8 @@ app.get('/healthz', (_req, res) => {
   try { db.prepare('SELECT 1').get(); res.status(200).json({status:'ok'}); }
   catch { res.status(503).json({status:'unavailable'}); }
 });
+// Complete base layouts include every owned wall and decoration; other endpoints retain the small limit.
+app.use('/api/foundation/bots',express.json({limit:'256kb'}));
 app.use(express.json({ limit: '4kb' }));
 app.use('/api', (req, res, next) => {
   res.setHeader('Cache-Control', 'no-store');

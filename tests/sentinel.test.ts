@@ -17,15 +17,15 @@ test('old saves and active old attacks gain no free turret or defense; unfinishe
  const s=ready(),before=JSON.stringify(s);assert.equal(buildingLayout(s,'sentinel'),undefined);const base=publicBase(s,'defender',epoch)!;assert.equal(playerOperation('old',base,company,'attacker',epoch).target.sentinels,undefined);assert.equal(JSON.stringify(s),before);
  buildSentinel(s,[9,9],epoch);const o=playerOperation('new',publicBase(s,'defender',epoch+1)!,company,'attacker',epoch+1);assert.equal(o.target.sentinels,undefined);assert.equal(o.target.assets.find(a=>a.id==='sentinel')?.maxHealth,240);
 });
-test('Target Lock ramps 32/36/40/44/48, caps and resets on range, occlusion and target changes',()=>{
+test('Target Lock ramps 18/20/22/24/26, caps and resets on range, occlusion and target changes',()=>{
  const o=battle(),bot=o.squad!.agents[0];bot.health=1000;advanceSentinels(o);o.lastTick+=400;advanceSentinels(o);assert.equal(bot.health,1000);o.lastTick+=100;
- const damage:number[]=[];for(let i=0;i<6;i++){advanceSentinels(o);damage.push(o.sentinels![0].shotDamage!);o.lastTick+=1300;}assert.deepEqual(damage,[32,36,40,44,48,48]);assert.ok(SENTINEL.damage>TACTICAL_BALANCE.droneDamage);
- bot.position=[0,9];advanceSentinels(o);assert.equal(o.sentinels![0].lockShots,0);assert.equal(o.sentinels![0].targetId,undefined);bot.position=[0,5];advanceSentinels(o);o.lastTick+=500;advanceSentinels(o);assert.equal(o.sentinels![0].shotDamage,32);
+ const damage:number[]=[];for(let i=0;i<8;i++){advanceSentinels(o);damage.push(o.sentinels![0].shotDamage!);o.lastTick+=1300;}assert.deepEqual(damage,[18,20,22,24,26,28,30,30]);assert.equal(SENTINEL.damage*3+SENTINEL.lockStep*3,TACTICAL_BALANCE.botHealth);
+ bot.position=[0,13];advanceSentinels(o);assert.equal(o.sentinels![0].lockShots,0);assert.equal(o.sentinels![0].targetId,undefined);bot.position=[0,5];advanceSentinels(o);o.lastTick+=500;advanceSentinels(o);assert.equal(o.sentinels![0].shotDamage,18);
  o.target.walls=[{id:'cover',x:0,z:3,w:8,d:.5}];o.lastTick+=2000;const health=bot.health;advanceSentinels(o);assert.equal(bot.health,health);assert.equal(o.sentinels![0].targetId,undefined);
  o.target.walls=[];o.target.assets.push({id:'cover-building',kind:'gpu',position:[0,3],size:[3,1],name:'Cover',compute:0,research:0});advanceSentinels(o);assert.equal(o.sentinels![0].targetId,undefined);
 });
 test('dead/extracted bots are ignored, tower retargets, destroyed towers and ended battles stop',()=>{
- const o=battle(3),[a,b,c]=o.squad!.agents;c.state='extracted';a.health=20;advanceSentinels(o);o.lastTick+=500;advanceSentinels(o);assert.equal(a.state,'lost');assert.deepEqual(a.cargo,{compute:0,research:0,intel:false});o.lastTick+=100;advanceSentinels(o);assert.equal(o.sentinels![0].targetId,b.id);assert.equal(o.sentinels![0].lockShots,0);
+ const o=battle(3),[a,b,c]=o.squad!.agents;c.state='extracted';a.health=18;advanceSentinels(o);o.lastTick+=500;advanceSentinels(o);assert.equal(a.state,'lost');assert.deepEqual(a.cargo,{compute:0,research:0,intel:false});o.lastTick+=100;advanceSentinels(o);assert.equal(o.sentinels![0].targetId,b.id);assert.equal(o.sentinels![0].lockShots,0);
  o.hacked.push('sentinel');o.lastTick+=5000;advanceSentinels(o);assert.equal(b.health,60);assert.equal(c.health,60);assert.equal(o.sentinels![0].targetId,undefined);
  const done=battle();done.status='extracted';advanceSentinels(done);assert.equal(done.sentinels,undefined);const friendly=battle();friendly.pvp=undefined;advanceSentinels(friendly);assert.ok(friendly.sentinels?.length);
 });
@@ -46,7 +46,7 @@ test('server rejects spoofed deadlines, deduplicates purchases, persists restart
 });
 test('actual PvP endpoint captures the tower, applies damage offline and leaves the defender untouched',async()=>{
  const f=await worldFixture();try{const attacker=await f.fresh('SentinelAttack'),defender=await f.fresh('SentinelDefense'),s=ready();s.sentinel={position:[9,9],orientation:0,startedAt:0,completesAt:0};f.save(defender,s);
- const scout=(await f.search(attacker)).data.scout,start=await f.command(attacker,{action:'pvp-start',scoutId:scout.id});assert.equal(start.status,200);const o=start.data.state.infiltration;assert.equal(o.target.sentinels[0].damage,32);
+ const scout=(await f.search(attacker)).data.scout,start=await f.command(attacker,{action:'pvp-start',scoutId:scout.id});assert.equal(start.status,200);const o=start.data.state.infiltration;assert.equal(o.target.sentinels[0].damage,18);
  const defenderBefore=JSON.stringify(f.read(defender));assert.equal((await f.command(attacker,{action:'infiltration-command',operationId:o.id,intent:{action:'deploy',position:[9,14]}})).status,200);assert.equal(f.read(attacker).bots,9);
  f.setTime(f.time()+10000);const after=(await f.get(attacker)).data.state.infiltration;assert.ok(after.events.some((e:{type:string})=>e.type==='sentinel-shot'));assert.equal(after.squad.agents[0].state,'lost');assert.equal(JSON.stringify(f.read(defender)),defenderBefore);assert.equal(f.read(attacker).bots,9);
  }finally{await f.close();}

@@ -16,21 +16,23 @@ export const companySecurity=(s:Pick<FoundationState,'droneStation'|'security'|'
 export function securitySolids(s:FoundationState):NavRect[]{const rects=FOUNDATION_BUILDINGS.filter(k=>k!=='droneStation').flatMap(k=>{const l=buildingLayout(s,k);return l?[footprint(k,l)]:[]});for(const o of OBSTACLES.filter(o=>o.kind==='rock'&&!s.landscape?.legacyRocksRegistered||!s.landscape&&o.kind==='tree'))rects.push({x:o.position[0],z:o.position[1],w:o.width,d:o.depth});for(const o of s.landscape?.items??[]){const [w,d]=obstacleSize(o);rects.push({x:o.position[0],z:o.position[1],w,d});}for(const d of s.decorations??[])rects.push(decorationFootprint(d));return [...rects,...builderHutFootprints(s),...ownedSecurityWalls(s)];}
 export const HOME_DRONE_CLEARANCE=1;
 /** Validate reachable local patrol space using the same body clearance as the renderer. */
-export function homePatrolPoints(s:FoundationState){if(!s.droneStation)return [];if(s.droneGuard)return guardPatrolPoints(s.droneGuard,securitySolids(s).filter(r=>!('id' in r)),P);const rects=securitySolids(s),start=s.droneStation.position;if(!pointClear(start,rects,P,HOME_DRONE_CLEARANCE))return [];const hq=footprint('hq',buildingLayout(s,'hq')!);const candidates:[number,number][]=[...([-1,1].flatMap(x=>[-1,1].map(z=>[hq.x+x*(hq.w/2+2.2),hq.z+z*(hq.d/2+2.2)] as [number,number]))),...[[-4,0],[0,4],[4,0],[0,-4]].map(([x,z])=>[start[0]+x,start[1]+z] as [number,number])];const reachable=candidates.map(p=>nearestOpen(p,rects,P,HOME_DRONE_CLEARANCE,.5,2)).filter((p):p is [number,number]=>!!p&&Math.hypot(p[0]-start[0],p[1]-start[1])>=2.5&&findPath(start,p,rects,P,HOME_DRONE_CLEARANCE,.5).length>0);return reachable.length?[...reachable,[...start] as [number,number]]:[];}
+export const DRONE_ALTITUDE=10;
+export const droneGuardPosition=(s:Pick<FoundationState,'droneGuards'|'droneGuard'|'droneStation'>,index=0)=>s.droneGuards?.[index]??s.droneGuard??s.droneStation?.position;
+export function homePatrolPoints(s:FoundationState,index=0){const center=droneGuardPosition(s,index);return center?guardPatrolPoints(center,[],P):[];}
 export function canPatrol(s:FoundationState){return !s.droneStation||homePatrolPoints(s).length>0;}
 
 
 export const securityDroneCount=(s:Pick<FoundationState,'droneStation'|'security'|'founderHqLevel'>,now=Date.now())=>companySecurity(s,now).drone.enabled?founderDroneCapacity(s):0;
 
-export const DRONE_PATROL_RADIUS=4;
-export function validGuardPosition(s:FoundationState,p:[number,number]){if(!s.droneStation)return 'Build a Security Drone Station first.';if(p.length!==2||!p.every(Number.isFinite)||p[0]<P.minX+HOME_DRONE_CLEARANCE||p[0]>P.maxX-HOME_DRONE_CLEARANCE||p[1]<P.minZ+HOME_DRONE_CLEARANCE||p[1]>P.maxZ-HOME_DRONE_CLEARANCE)return 'Keep the guard position inside the campus.';if(!pointClear(p,securitySolids(s).filter(r=>!ownedSecurityWalls(s).some(w=>w.id===(r as {id?:string}).id)),P,HOME_DRONE_CLEARANCE))return 'Choose open air away from buildings and trees.';return null;}
-export function setGuardPosition(s:FoundationState,p:[number,number]){const reason=validGuardPosition(s,p);if(reason)throw Error(reason);s.droneGuard=[...p];}
+export const DRONE_PATROL_RADIUS=6;
+export function validGuardPosition(s:FoundationState,p:[number,number]){if(!s.droneStation)return 'Build a Security Drone Station first.';if(p.length!==2||!p.every(Number.isFinite)||p[0]<P.minX+HOME_DRONE_CLEARANCE||p[0]>P.maxX-HOME_DRONE_CLEARANCE||p[1]<P.minZ+HOME_DRONE_CLEARANCE||p[1]>P.maxZ-HOME_DRONE_CLEARANCE)return 'Keep the guard position inside the campus.';return null;}
+export function setGuardPosition(s:FoundationState,p:[number,number],index=0){if(!Number.isInteger(index)||index<0||index>=founderDroneCapacity(s))throw Error('This Security Drone is not available.');const reason=validGuardPosition(s,p);if(reason)throw Error(reason);s.droneGuards??=[];s.droneGuards[index]=[...p];}
 export function guardPatrolPoints(center:[number,number],rects:NavRect[],bounds:{minX:number;maxX:number;minZ:number;maxZ:number}=P){
  const points:[number,number][]=[];
  // Test inward alternatives rather than moving a blocked waypoint outside the shown patrol radius.
  for(const angle of [Math.PI,Math.PI/2,0,-Math.PI/2])for(const radius of [DRONE_PATROL_RADIUS,3,2]){
   const p:[number,number]=[center[0]+Math.cos(angle)*radius,center[1]+Math.sin(angle)*radius];
-  if(pointClear(p,rects,bounds,HOME_DRONE_CLEARANCE)&&!points.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<1.6)){points.push(p);break;}
+  if(pointClear(p,[],bounds,HOME_DRONE_CLEARANCE)&&!points.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<1.6)){points.push(p);break;}
  }
  return points.length?points:[center];
 }
