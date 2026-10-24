@@ -14,7 +14,7 @@ export function dockingRoute(s:FoundationState,slot:number):WalkPoint[]{
  const f=s.fabricator,h=getHangar(s);if(!f||!h)return [];const expanded=h.size==='expanded',start=localPoint(f.position,f.orientation??0,[0,.05,2.5]),end=localPoint(h.position,h.orientation??0,[0,.05,expanded?3:2.5]);
  const rects:NavRect[]=FOUNDATION_BUILDINGS.flatMap(kind=>{const l=buildingLayout(s,kind);return l?[footprint(kind,l)]:[]});for(const o of OBSTACLES.filter(o=>o.kind==='rock'||!s.landscape&&o.kind==='tree'))rects.push({x:o.position[0],z:o.position[1],w:o.width,d:o.depth});for(const o of s.landscape?.items??[]){const [w,d]=obstacleSize(o);rects.push({x:o.position[0],z:o.position[1],w,d});}for(const o of s.decorations??[])rects.push(decorationFootprint(o));rects.push(...campusSecurityWalls(s));
  const path=findPath([start[0],start[2]],[end[0],end[2]],rects,P,.46,1);if(!path.length)return [];
- return [localPoint(f.position,f.orientation??0,[0,.99,.08]),localPoint(f.position,f.orientation??0,[0,.43,1.45]),start,...path.slice(1).map(([x,z]):WalkPoint=>[x,z>7.1&&z<10.9?.06:.05,z]),end,localPoint(h.position,h.orientation??0,bayPosition(slot,expanded))];
+ return [localPoint(f.position,f.orientation??0,[0,.99,.08]),localPoint(f.position,f.orientation??0,[0,.43,1.45]),start,...path.slice(1).map(([x,z]):WalkPoint=>[x,.05,z]),end,localPoint(h.position,h.orientation??0,bayPosition(slot,expanded))];
 }
 export class BotArrivals{
  private previous?:{count:number;training:number[];generation:number;layout:string};

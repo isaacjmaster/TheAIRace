@@ -1,3 +1,4 @@
+import {buildSentinel} from '../shared/cybersecurity';
 import {developmentInfluenceStore} from './development-influence';
 import {playerWorldStore} from './player-world';
 import {purchaseTechnology,TECHNOLOGY_IDS} from '../shared/technology';
@@ -103,6 +104,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   z.object({action:z.literal('buy-wall'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('move-wall'),id:z.string().uuid(),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('build-drone-station'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
+  z.object({action:z.literal('build-sentinel'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('infiltration-tutorial'),operationId:z.string().uuid(),result:z.enum(['complete','skipped'])}).strict(),
   z.object({action:z.literal('infiltration-search')}).strict(),
   z.object({action:z.literal('pvp-start'),scoutId:z.string().uuid()}).strict(),
@@ -121,8 +123,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   z.object({action:z.literal('place-owned-hangar'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build-hangar'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
-  z.object({action:z.literal('rotate'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation']),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
-  z.object({action:z.literal('move'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('rotate'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel']),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('move'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('train'),count:z.number().int().min(1).max(10)}).strict(),
   z.object({action:z.literal('start'),layout:z.number().int().min(0).max(1)}).strict(),
   z.object({action:z.literal('deploy'),raidId:z.string().uuid(),position:z.object({x:z.number().finite(),y:z.number().finite()}).strict()}).strict(),
@@ -140,6 +142,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
    if(!cached){const c=input.command;
     if(c.action==='buy-wall')buyWall(state,c.position,c.orientation,input.requestId);
     else if(c.action==='move-wall')moveWall(state,c.id,c.position,c.orientation);
+    else if(c.action==='build-sentinel')buildSentinel(state,c.position,now,c.orientation);
     else if(c.action==='build-drone-station')buildDroneStation(state,c.position,now,c.orientation);
     else if(c.action==='pvp-start')players.start(state,player.company.playerId,c.scoutId,now);
     else if(c.action==='infiltration-start'){startOwnedOperation(state,randomUUID(),c.targetId,now,options.operationFactory??newSquadOperation);}

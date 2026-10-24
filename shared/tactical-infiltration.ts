@@ -1,3 +1,4 @@
+import {advanceSentinels} from './sentinel-combat';
 import {findPath,segmentClear,nearestOpen} from './navigation';
 import {AGENT_CLEARANCE,DRONE_CLEARANCE,INFILTRATION,infiltrationPath,infiltrationSolids,targetBounds,type Operation,type Vec,type DroneState} from './infiltration';
 import {squadTarget,SQUAD_BALANCE,type SquadAgent} from './squad-infiltration';
@@ -67,7 +68,7 @@ export function advanceTactical(o:Operation,now:number){if(o.status!=='active')r
   }
   for(const asset of o.target.assets.filter(a=>a.hackSeconds&&!o.hacked.includes(a.id))){const workers=squad.agents.filter(a=>a.state==='active'&&a.mode==='hacking'&&a.target===asset.id&&!a.droneTarget);if(!workers.length)continue;const rate=tacticalBalance(o).hackContributions.slice(0,workers.length).reduce((a,b)=>a+b,0),maximum=o.pvp?(asset.maxHealth??asset.hackSeconds!):asset.hackSeconds!;squad.progress[asset.id]=Math.min(maximum,(squad.progress[asset.id]??0)+(o.pvp?0:dt*rate));if(squad.progress[asset.id]+1e-6>=maximum){squad.progress[asset.id]=maximum;o.hacked.push(asset.id);o.carried.compute+=asset.compute;o.carried.research+=asset.research;o.carried.intel||=!!asset.intel;emit(o,'hacked',asset.id);const affected=squad.agents.filter(a=>a.state==='active'&&a.target===asset.id);for(const a of affected){a.target=undefined;a.wallTarget=undefined;a.path=[];a.hack=0;a.mode='idle';a.nextPlanAt=o.lastTick;}for(const a of affected)planTactical(o,a);}}
   if(o.target.assets.filter(a=>a.hackSeconds&&a.access).every(a=>o.hacked.includes(a.id))){end(o,'extracted');break;}
-  drones(o,dt);if((squad.undeployed??0)===0&&squad.agents.length&&squad.agents.every(a=>a.state!=='active'))end(o,'caught');
+  drones(o,dt);advanceSentinels(o);if((squad.undeployed??0)===0&&squad.agents.length&&squad.agents.every(a=>a.state!=='active'))end(o,'caught');
  }
  o.agent=squad.agents[0]??o.agent;if(o.status==='active'&&now>=o.startedAt!+INFILTRATION.operationMs){o.lastTick=o.startedAt!+INFILTRATION.operationMs;end(o,'timeout');}
 }

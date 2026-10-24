@@ -85,12 +85,12 @@ export function founderHQ(k:WorldKit,parent:THREE.Group,level:1|2=1):THREE.Group
  addHqPowerBox(k,house,1);return house;
 }
 
-export type FoundationBuilding='hq'|'rig'|'rig2'|'fabricator'|'hangar'|'station'|'lab'|'droneStation';
+export type FoundationBuilding='hq'|'rig'|'rig2'|'fabricator'|'hangar'|'station'|'lab'|'droneStation'|'sentinel';
 /** Resolve the nearest visible building mesh, never the old invisible campus lots. */
-export function pickFoundationBuilding(ray:THREE.Raycaster,hq:THREE.Object3D,rig?:THREE.Object3D,fabricator?:THREE.Object3D,hangar?:THREE.Object3D,station?:THREE.Object3D,rig2?:THREE.Object3D,lab?:THREE.Object3D,droneStation?:THREE.Object3D):FoundationBuilding|undefined{
- const hit=ray.intersectObjects([hq,rig,fabricator,hangar,station,rig2,lab,droneStation].filter((g):g is THREE.Object3D=>!!g),true)[0];
+export function pickFoundationBuilding(ray:THREE.Raycaster,hq:THREE.Object3D,rig?:THREE.Object3D,fabricator?:THREE.Object3D,hangar?:THREE.Object3D,station?:THREE.Object3D,rig2?:THREE.Object3D,lab?:THREE.Object3D,droneStation?:THREE.Object3D,sentinel?:THREE.Object3D):FoundationBuilding|undefined{
+ const hit=ray.intersectObjects([hq,rig,fabricator,hangar,station,rig2,lab,droneStation,sentinel].filter((g):g is THREE.Object3D=>!!g),true)[0];
  if(!hit)return;
- for(let node:THREE.Object3D|null=hit.object;node;node=node.parent){if(node===hq)return 'hq';if(node===rig)return 'rig';if(node===rig2)return 'rig2';if(node===fabricator)return 'fabricator';if(node===hangar)return 'hangar';if(node===station)return 'station';if(node===lab)return 'lab';if(node===droneStation)return 'droneStation';}
+ for(let node:THREE.Object3D|null=hit.object;node;node=node.parent){if(node===hq)return 'hq';if(node===rig)return 'rig';if(node===rig2)return 'rig2';if(node===fabricator)return 'fabricator';if(node===hangar)return 'hangar';if(node===station)return 'station';if(node===lab)return 'lab';if(node===sentinel)return 'sentinel';if(node===droneStation)return 'droneStation';}
 }
 
 

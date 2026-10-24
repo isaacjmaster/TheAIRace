@@ -24,7 +24,7 @@ export function door(s:FoundationState,kind:typeof FOUNDATION_BUILDINGS[number])
 }
 /** Purchased segments only. Old automatic HQ perimeter scenery is never regenerated. */
 export function campusSecurityWalls(s:FoundationState){return ownedSecurityWalls(s);}
-/** Builder route stays inside the fence, avoids all solid footprints, and may cross the service road. */
+/** Builder route stays inside the fence, avoids all solid footprints, including the former road corridor. */
 export function landscapeRoute(s:FoundationState,target:RigPosition,origin?:RigPosition,clearance=.3):RigPosition[]{
  const start=origin??door(s,buildingLayout(s,'station')?'station':'hq');
  const solids=FOUNDATION_BUILDINGS.map(k=>{const l=buildingLayout(s,k);return l?footprint(k,l):null;}).filter((r):r is NonNullable<typeof r>=>!!r);
@@ -32,18 +32,17 @@ export function landscapeRoute(s:FoundationState,target:RigPosition,origin?:RigP
  for(const o of OBSTACLES.filter(o=>o.kind==='rock'))solids.push({x:o.position[0],z:o.position[1],w:o.width,d:o.depth});
  for(const o of s.landscape?.items||[])solids.push(rect(o));
  for(const o of s.decorations||[])solids.push(decorationFootprint(o));
- for(const [x,z] of [[-16,7],[13,7],[-16,11],[25,11]])solids.push({x,z,w:1.4,d:1.4});
  const path=findPath(start,target,solids,{minX:P.minX+.5,maxX:P.maxX-.5,minZ:P.minZ+.5,maxZ:P.maxZ-.5},clearance/2,.5);
  return path.length?[...(origin?[]:[buildingLayout(s,'station')?.position??start]),...path]:[];
 }
 export function validObstaclePosition(s:FoundationState,o:LandscapeObstacle){
- const a=rect(o);if(a.x-a.w/2<P.minX+1||a.x+a.w/2>P.maxX-1||a.z-a.d/2<P.minZ+1||a.z+a.d/2>P.maxZ-1||a.z+a.d/2>6.2&&a.z-a.d/2<11.8)return false;
+ const a=rect(o);if(a.x-a.w/2<P.minX+1||a.x+a.w/2>P.maxX-1||a.z-a.d/2<P.minZ+1||a.z+a.d/2>P.maxZ-1)return false;
  for(const k of FOUNDATION_BUILDINGS){const l=buildingLayout(s,k);if(!l)continue;if(overlap(a,footprint(k,l,true),1))return false;const [x,z]=door(s,k);if(overlap(a,{x,z,w:3,d:3},1))return false;}
  for(const r of OBSTACLES.filter(o=>o.kind==='rock'))if(overlap(a,{x:r.position[0],z:r.position[1],w:r.width,d:r.depth},1))return false;
  for(const wall of ownedSecurityWalls(s))if(overlap(a,wall,1))return false;
  for(const o of s.decorations||[])if(overlap(a,decorationFootprint(o),1))return false;
  for(const p of s.landscape?.items||[])if(overlap(a,rect(p),1))return false;
- for(const [x,z] of [[-16,7],[13,7],[-16,11],[25,11],[-18,-15],[23,-15],[-18,19],[22,20]])if(overlap(a,{x,z,w:3,d:2},.5))return false;
+ for(const [x,z] of [[-18,-15],[23,-15],[-18,19],[22,20]])if(overlap(a,{x,z,w:3,d:2},.5))return false;
  if(s.landscape?.clearing?.route.some(([x,z])=>overlap(a,{x,z,w:1,d:1},.5)))return false;
  // Preserve the initial tutorial's building plots as well as access to every owned structure.
  for(const [x,z] of [[3,5],[6,0],[12,0],[6,-6],[12,-6]])if(overlap(a,{x,z,w:4,d:3},1))return false;

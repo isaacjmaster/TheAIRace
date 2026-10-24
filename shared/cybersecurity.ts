@@ -1,3 +1,5 @@
+import {SENTINEL} from './sentinel-catalog';
+import {founderHqLevel} from './founder-hq';
 import {segmentClear} from './navigation';
 import {canPatrol} from './security';
 import {CYBERSECURITY,wallFootprint,wallEnds} from './security-catalog';
@@ -11,13 +13,11 @@ export function validWallPosition(s:FoundationState,position:RigPosition,orienta
  if(position.length!==2||!position.every(Number.isInteger)||![0,1,2,3].includes(orientation))return 'Snap the wall to the grid.';
  const candidate={id:ignoreId??'preview-wall',position,orientation},a=wallFootprint(candidate);
  if(a.x-a.w/2<P.minX||a.x+a.w/2>P.maxX||a.z-a.d/2<P.minZ||a.z+a.d/2>P.maxZ)return 'Keep the wall inside your property.';
- if(a.z+a.d/2>7.1&&a.z-a.d/2<10.9)return 'Keep roads and crossings clear.';
  if(!ignoreId&&(s.walls?.length??0)>=CYBERSECURITY.wall.maxSegments)return 'Wall placement limit reached.';
  for(const k of FOUNDATION_BUILDINGS){const l=buildingLayout(s,k);if(l&&overlapsRect(a,footprint(k,l),.15))return 'Leave space around buildings.';if(l&&!segmentClear(l.position,door(s,k),[a],{minX:-100,maxX:100,minZ:-100,maxZ:100},.55))return 'Leave building entrances clear.';}
  for(const o of OBSTACLES.filter(o=>o.kind==='rock'||!s.landscape&&o.kind==='tree'))if(overlapsRect(a,{x:o.position[0],z:o.position[1],w:o.width,d:o.depth},.1))return 'Choose open ground.';
  for(const o of s.landscape?.items??[]){const [w,d]=obstacleSize(o);if(overlapsRect(a,{x:o.position[0],z:o.position[1],w,d},.1))return 'Clear the obstacle first.';}
  for(const d of s.decorations??[])if(overlapsRect(a,decorationFootprint(d),.1))return 'Keep decorations clear.';
- for(const [x,z]of [[-16,7],[13,7],[-16,11],[25,11]])if(overlapsRect(a,{x,z,w:1.4,d:1.4},.1))return 'Keep streetlights clear.';
  for(const w of s.walls??[])if(w.id!==ignoreId&&overlapsRect(a,wallFootprint(w))){const joined=orientation%2!==w.orientation%2&&wallEnds(candidate).some(p=>wallEnds(w).some(q=>Math.hypot(p[0]-q[0],p[1]-q[1])<.01));if(!joined)return 'Align wall ends without overlapping.';}
  return null;
 }
@@ -33,4 +33,16 @@ export function snapWallPosition(s:FoundationState,p:RigPosition,o:Orientation,i
  if(Math.hypot(q[0]-p[0],q[1]-p[1])<=1.25&&!validWallPosition(s,q,o,ignoreId,false))candidates.push(q);
  }}
  return candidates.sort((a,b)=>Math.hypot(a[0]-p[0],a[1]-p[1])-Math.hypot(b[0]-p[0],b[1]-p[1]))[0]??grid;
+}
+
+export function buildSentinel(s:FoundationState,p:RigPosition,now:number,o:Orientation=0){
+ advanceFoundation(s,now);if(s.sentinel)throw Error('Sentinel Tower — 1/1 Built');
+ if(founderHqLevel(s)<SENTINEL.hqLevel)throw Error('Upgrade Founder HQ to Level 2 for a Sentinel Tower.');
+ if(!hasBuilderStation(s)||s.builders<1)throw Error('Place your Builder Station first.');
+ if((s.buildersBusy??0)>=s.builders)throw Error('Your Builder Bot is busy.');
+ const reason=validFoundationPosition(s,p,'sentinel',o);if(reason)throw Error(reason);
+ if(s.compute<SENTINEL.cost)throw Error('You need '+SENTINEL.cost+' Compute.');
+ const building={position:[...p] as RigPosition,orientation:o,startedAt:now,completesAt:now+SENTINEL.buildSeconds*1000},trial={...s,sentinel:building};
+ if(!landscapeRoute(trial,door(trial,'sentinel'),undefined,1.1).length)throw Error('Leave a path for your Builder Bot.');
+ s.compute-=SENTINEL.cost;s.sentinel=building;s.buildersBusy=(s.buildersBusy??0)+1;
 }

@@ -1,3 +1,4 @@
+import {sentinelModel,animateSentinel,SentinelPulse} from './SentinelTower';
 import {HackEffects} from './HackEffects';
 import {protectedAreas,protectedOutline} from '../../shared/deployment-boundary';
 import {PowerConnections} from './PowerConnections';
@@ -42,6 +43,7 @@ export class InfiltrationScene {
         laser:THREE.Mesh;impact:THREE.Mesh;muzzle:THREE.Mesh;
     }>();
     private power=new PowerConnections();private hacks=new HackEffects();
+    private sentinelPulses=new Map<string,SentinelPulse>();
     private buildings = new Map<string, THREE.Group>();
     private op: Operation;
     private anchor = 0;
@@ -85,6 +87,7 @@ export class InfiltrationScene {
             else if(a.model==='station')g=builderStationModel(this.k);
             else if(a.model==='fabricator')g=fabricatorModel(this.k);
             else if(a.model==='hangar')g=hangarModel(this.k,0,o.target.publicBase?.buildings.find(b=>b.id===a.id)?.size==='compound'?'compound':o.target.publicBase?.buildings.find(b=>b.id===a.id)?.size==='expanded');
+            else if(a.model==='sentinel'){g=sentinelModel(this.k);const pulse=new SentinelPulse();this.sentinelPulses.set(a.id,pulse);this.scene.add(pulse.group);}
             else if(a.kind==='station')g=droneStationModel(this.k);
             else if (a.kind === 'lab')
                 g = researchLabModel(this.k);
@@ -100,7 +103,7 @@ export class InfiltrationScene {
             this.buildings.set(a.id, g);
         }
         const hqAsset=o.target.assets.find(a=>a.kind==='hq'),house=hqAsset&&this.buildings.get(hqAsset.id);
-        this.scene.add(this.power.group);this.power.sync(house,o.target.assets.filter(a=>a.kind==='gpu').map(a=>({id:a.id,model:this.buildings.get(a.id)!})),o.target.assets.map(a=>{const p=a.visualPosition??a.position;const odd=(a.orientation??0)%2;let w=a.kind==='hq'?8.1:4,d=a.kind==='hq'?6.8:3;if(a.kind==='hq'&&!o.pvp){w*=.65;d*=.65;}return {x:p[0],z:p[1],w:odd?d:w,d:odd?w:d};}),o.target.walls??[]);
+        this.scene.add(this.power.group);this.power.sync(house,o.target.assets.filter(a=>a.kind==='gpu').map(a=>({id:a.id,model:this.buildings.get(a.id)!})),o.target.assets.map(a=>{const p=a.visualPosition??a.position;const odd=(a.orientation??0)%2;let w=a.kind==='hq'?8.1:4,d=a.kind==='hq'?6.8:a.model==='sentinel'?4:3;if(a.kind==='hq'&&!o.pvp){w*=.65;d*=.65;}return {x:p[0],z:p[1],w:odd?d:w,d:odd?w:d};}),o.target.walls??[]);
         const scenery=new THREE.Group();scenery.name='rival-natural-details';for(const item of o.target.publicBase?.scenery??rivalScenery(o.target)){const model=landscapeModel(this.k,item);model.hit.removeFromParent();if(!o.target.publicBase)model.group.scale.setScalar(item.kind==='tree'?.5:.45);model.group.traverse(n=>{n.raycast=()=>{};});scenery.add(model.group);}for(const d of o.target.publicBase?.decorations??[]){const g=decorationModel(this.k,d.kind);g.position.set(d.position[0],0,d.position[1]);g.rotation.y=d.orientation*Math.PI/2;scenery.add(g);}this.scene.add(scenery);this.renderer.domElement.dataset.sceneryCount=String(scenery.children.length);this.renderer.domElement.dataset.deploymentGhost='none';
         // One continuous lawn wash, not a grid of tiny target tiles. Match server bounds exactly.
         const vertices:number[]=[];const rect=(x0:number,z0:number,x1:number,z1:number)=>vertices.push(x0,.12,z0,x1,.12,z0,x1,.12,z1,x0,.12,z0,x1,.12,z1,x0,.12,z1);
@@ -159,7 +162,8 @@ export class InfiltrationScene {
         v.impact.visible=v.muzzle.visible=v.laser.visible;if(v.laser.visible){const target=o.squad?(d.shotPosition??o.agent.position):[this.agent.position.x,this.agent.position.z];v.impact.position.set(target[0],.85,target[1]);v.muzzle.position.copy(v.model.position);v.muzzle.position.y-=.25;this.laserDirection.set(target[0]-v.model.position.x,.85-(v.model.position.y-.25),target[1]-v.model.position.z);v.laser.scale.y=this.laserDirection.length();v.laser.quaternion.setFromUnitVectors(this.up,this.laserDirection.normalize());v.laser.position.set((v.model.position.x+(o.squad?d.shotPosition?.[0]??o.agent.position[0]:this.agent.position.x))/2,(v.model.position.y+.6)/2,(v.model.position.z+(o.squad?d.shotPosition?.[1]??o.agent.position[1]:this.agent.position.z))/2);}
         v.alert.visible = d.mode === 'warning' || d.mode === 'pursuit' || d.mode === 'attacking';
         v.alert.position.set(d.position[0], 3.5, d.position[1]);
-    } for (const [id, g] of this.buildings) {this.power.setActive(id,!o.hacked.includes(id)&&!o.hacked.includes(o.target.assets.find(a=>a.kind==='hq')?.id??''));if(o.hacked.includes(id)){const at=o.events.find(e=>e.type==='hacked'&&e.detail===id)?.at;this.hacks.apply(id,g,this.reduced||at===undefined?1000:Math.max(o.lastTick,this.server+Math.min(1100,performance.now()-this.anchor))-at);continue;}
+    } for(const [id,pulse] of this.sentinelPulses){const model=this.buildings.get(id)!,state=o.sentinels?.find(s=>s.id===id),active=o.status==='active'&&!o.hacked.includes(id),now=Math.max(o.lastTick,this.server+Math.min(1100,performance.now()-this.anchor));animateSentinel(model,state,now,dt,active);pulse.update(model,state,now,active);}
+    for (const [id, g] of this.buildings) {this.power.setActive(id,!o.hacked.includes(id)&&!o.hacked.includes(o.target.assets.find(a=>a.kind==='hq')?.id??''));if(o.hacked.includes(id)){const at=o.events.find(e=>e.type==='hacked'&&e.detail===id)?.at;this.hacks.apply(id,g,this.reduced||at===undefined?1000:Math.max(o.lastTick,this.server+Math.min(1100,performance.now()-this.anchor))-at);continue;}
         if (o.target.assets.find(a=>a.id===id)?.kind === 'gpu')
             animateGpu(g, this.clock, dt, true, this.reduced);
         if (id === 'lab')
@@ -177,7 +181,7 @@ export class InfiltrationScene {
         }
         this.renderer.domElement.dataset.cipherShots=String(squad.agents.filter(a=>a.lastShotAt!==undefined&&o.lastTick-a.lastShotAt<200).length);this.renderer.domElement.dataset.disabledDrones=String(o.drones.filter(d=>d.mode==='disabled').length);this.renderer.domElement.dataset.droneModes=o.drones.map(d=>d.mode).join(',');this.renderer.domElement.dataset.hackingAgents=String(squad.agents.filter(a=>a.mode==='hacking').length);this.renderer.domElement.dataset.agents=String(squad.agents.filter(a=>a.state==='active').length);this.renderer.domElement.dataset.breached=String(squad.breachedWalls.length);
     }
-    dispose() {this.hacks.dispose();this.power.dispose();for(const v of this.squadModels.values()){v.shot.geometry.dispose();(v.shot.material as THREE.Material).dispose();v.beam.geometry.dispose();(v.beam.material as THREE.Material).dispose();v.ring.geometry.dispose();(v.ring.material as THREE.Material).dispose();v.ring.removeFromParent();} this.deployment.traverse(n=>{if(n instanceof THREE.Line){n.geometry.dispose();(n.material as THREE.Material).dispose();}if(n instanceof THREE.InstancedMesh)n.dispose();if(n instanceof THREE.Mesh&&n.name==='continuous-deployment-lawn'){n.geometry.dispose();(n.material as THREE.Material).dispose();}});this.walls?.dispose();this.observer.disconnect(); this.scene.traverse(o => { if (o instanceof THREE.DirectionalLight)
+    dispose() {for(const pulse of this.sentinelPulses.values())pulse.dispose();this.hacks.dispose();this.power.dispose();for(const v of this.squadModels.values()){v.shot.geometry.dispose();(v.shot.material as THREE.Material).dispose();v.beam.geometry.dispose();(v.beam.material as THREE.Material).dispose();v.ring.geometry.dispose();(v.ring.material as THREE.Material).dispose();v.ring.removeFromParent();} this.deployment.traverse(n=>{if(n instanceof THREE.Line){n.geometry.dispose();(n.material as THREE.Material).dispose();}if(n instanceof THREE.InstancedMesh)n.dispose();if(n instanceof THREE.Mesh&&n.name==='continuous-deployment-lawn'){n.geometry.dispose();(n.material as THREE.Material).dispose();}});this.walls?.dispose();this.observer.disconnect(); this.scene.traverse(o => { if (o instanceof THREE.DirectionalLight)
         o.shadow.dispose(); }); for (const v of this.drones.values()) {
         v.impact.geometry.dispose();(v.impact.material as THREE.Material).dispose();v.laser.geometry.dispose();(v.laser.material as THREE.Material).dispose();
         v.scan.geometry.dispose();

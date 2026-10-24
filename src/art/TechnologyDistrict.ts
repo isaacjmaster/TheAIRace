@@ -50,12 +50,11 @@ export class TechnologyDistrict{
   for(const sign of [-1,1]){
    this.block(this.group,[hx*2+3,.08,1.2],[cx,-.075,cz+sign*(hz+1)],C.concrete);
    this.block(this.group,[hx*2+3,.12,.18],[cx,-.055,cz+sign*(hz+1.65)],C.curb);
-   const intervals=hq?[[cz-hz-.4,7.1],[10.9,cz+hz+.4]]:[[cz-hz-.4,cz+hz+.4]];
+   const intervals=[[cz-hz-.4,cz+hz+.4]];
    for(const [from,to]of intervals){this.block(this.group,[1.2,.08,to-from],[cx+sign*(hx+1),-.075,(from+to)/2],C.concrete);this.block(this.group,[.18,.12,to-from],[cx+sign*(hx+1.65),-.055,(from+to)/2],C.curb);}
    for(let x=-hx+3;x<hx;x+=9){this.tree(cx+x,cz+sign*(hz+2.4),.75);this.block(this.group,[2.4,.32,.7],[cx+x+2.5,.08,cz+sign*(hz+2.4)],C.hedge);this.lamp(cx+x+4.4,cz+sign*(hz+1.6));}
    for(let z=-hz+3;z<hz;z+=9)this.tree(cx+sign*(hx+2.5),cz+z,.75);
   }
-  if(hq){this.street(2,9,2*(roadX+2.1),false,3.2);for(const z of [7.1,10.9])this.block(this.group,[2*(roadX+2.1),.07,.16],[2,-.025,z],C.curb);for(const [x,z]of [[-16,7],[13,7],[-16,11],[25,11]])this.lamp(x,z);for(const x of [-11,8])this.crossing(x,9,false,3.2);}
   this.group.updateMatrixWorld(true);const nested:THREE.Mesh[]=[];this.group.traverse(o=>{if(o instanceof THREE.Mesh&&o.parent!==this.group)nested.push(o);});for(const mesh of nested)this.group.attach(mesh);
   this.k.batchStatic(this.group,'technology-district-'+kind);
   // Background offices receive the existing light but do not add a city-sized shadow pass.

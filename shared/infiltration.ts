@@ -1,3 +1,4 @@
+import type {SentinelDefense,SentinelState} from './sentinel-catalog';
 import {protectedAreas,insideProtected} from './deployment-boundary';
 import type {PublicBase} from './player-base';
 import type {RotatableBuilding,Orientation} from './foundation';
@@ -32,6 +33,7 @@ export type Defense = {
     warningSeconds: number;
 };
 export type TargetSnapshot = {
+    sentinels?:SentinelDefense[];
     version: 1;
     arena?:'campus-v2';
     hqLevel?:1|2;
@@ -81,6 +83,7 @@ export type InfiltrationEvent = {
     detail?: string;
 };
 export type Operation = {
+    sentinels?:SentinelState[];
     breachRatingVersion?:1;
     pvp?:{attackerId:string;defenderId:string};
     squad?:SquadState;

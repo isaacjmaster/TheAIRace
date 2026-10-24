@@ -8,13 +8,11 @@ export function validDecorationPosition(s:FoundationState,kind:DecorationKind,po
  if(!DECORATIONS[kind]||position.length!==2||!position.every(Number.isInteger)||![0,1,2,3].includes(orientation))return 'Choose a valid decoration position.';
  const a=decorationFootprint({kind,position,orientation});
  if(a.x-a.w/2<P.minX||a.x+a.w/2>P.maxX||a.z-a.d/2<P.minZ||a.z+a.d/2>P.maxZ)return 'Keep the decoration inside the campus.';
- if(a.z+a.d/2>7.1&&a.z-a.d/2<10.9)return 'Keep the road clear.';
  for(const k of FOUNDATION_BUILDINGS){const l=buildingLayout(s,k);if(l&&overlapsRect(a,footprint(k,l),.25))return 'Leave space around buildings.';}
  for(const o of OBSTACLES.filter(o=>o.kind==='rock'||!s.landscape&&o.kind==='tree'))if(overlapsRect(a,{x:o.position[0],z:o.position[1],w:o.width,d:o.depth},.2))return 'Choose open ground.';
  for(const o of s.landscape?.items||[]){const [w,d]=obstacleSize(o);if(overlapsRect(a,{x:o.position[0],z:o.position[1],w,d},.2))return 'Clear the obstacle first.';}
  for(const wall of ownedSecurityWalls(s))if(overlapsRect(a,wall,.2))return 'Keep Security Walls clear.';
  for(const o of s.decorations||[])if(o.id!==ignoreId&&overlapsRect(a,decorationFootprint(o),.15))return 'Leave space between decorations.';
- for(const [x,z] of [[-16,7],[13,7],[-16,11],[25,11]])if(overlapsRect(a,{x,z,w:1.4,d:1.4},.2))return 'Keep the streetlight clear.';
  if(s.landscape?.clearing?.route.some(([x,z])=>overlapsRect(a,{x,z,w:1,d:1},.2)))return 'Keep the Builder Bot’s route clear.';
  // Connectivity checks are authoritative; dragging uses the cheap footprint checks above.
  if(!verifyAccess)return null;
