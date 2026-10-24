@@ -301,7 +301,7 @@ export function commandOperation(o:Operation,c:InfiltrationCommand,now:number){
  advanceOperation(o,now);
  const record=()=>{(o.orders??=[]).push({at:now,intent:structuredClone(c)});};
  if(c.action==='deploy'){
-  if(o.status!=='ready')throw Error('Cipher Bot already deployed.');
+  if(o.status!=='ready')throw Error('Pulsewheel already deployed.');
   const position=c.position??o.target.entry;if(!validDeployment(o.target,position))throw Error('Deploy on clear ground along the highlighted campus perimeter.');
   o.agent.position=[...position];o.status='active';o.startedAt=now;o.lastTick=now;event(o,'deployed');chooseNextAsset(o);record();return;
  }
@@ -309,5 +309,5 @@ export function commandOperation(o:Operation,c:InfiltrationCommand,now:number){
   if(o.status!=='ready'&&o.status!=='active')throw Error('This operation has ended.');
   finish(o,'abandoned');record();return;
  }
- throw Error('Cipher Bot handles hacking and returning automatically.');
+ throw Error('Pulsewheel handles hacking and returning automatically.');
 }

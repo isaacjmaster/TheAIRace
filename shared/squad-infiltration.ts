@@ -50,8 +50,8 @@ function finish(o:Operation,status:Operation['status']){o.status=status;o.finish
 export function commandSquad(o:Operation,c:InfiltrationCommand,now:number){
  advanceSquad(o,now);if(o.status!=='ready'&&o.status!=='active')throw Error('This operation has ended.');
  if(c.action==='abandon'){finish(o,'abandoned');(o.orders??=[]).push({at:now,intent:structuredClone(c)});return;}
- if(c.action!=='deploy')throw Error('Cipher Bots hack automatically.');
- if(o.squad!.undeployed!==undefined&&o.squad!.undeployed<=0)throw Error('No Cipher Bots available for this mission.');
+ if(c.action!=='deploy')throw Error('Pulsewheels hack automatically.');
+ if(o.squad!.undeployed!==undefined&&o.squad!.undeployed<=0)throw Error('No Pulsewheels available for this mission.');
  const position=c.position??o.target.entry;if(!validDeployment(o.target,position))throw Error('Choose a highlighted perimeter tile.');
  // The Foundation command transaction owns the inventory deduction before this call.
  const a:SquadAgent={id:o.id+':'+o.squad!.agents.length,position:[...position],path:[],mode:'idle',hack:0,yaw:0,health:o.squad!.rules?TACTICAL_BALANCE.botHealth:SQUAD_BALANCE.health,state:'active',unitStatus:'reserved',work:0,cargo:{compute:0,research:0,intel:false}};

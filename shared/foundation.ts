@@ -168,16 +168,16 @@ export function buildHangar(s:FoundationState,p:RigPosition,now=Date.now(),orien
 }
 export function trainScrap(s:FoundationState,count:number,now=Date.now()){
  advanceFoundation(s,now);if(!s.fabricator||now<s.fabricator.completesAt)throw new Error('Finish building your Bot Fabricator first.');if(!hangarReady(s,now))throw new Error('Build and finish a Bot Hangar first.');
- if(!Number.isInteger(count)||count<1||count>10)throw new Error('Choose 1 to 10 Cipher Bots.');
+ if(!Number.isInteger(count)||count<1||count>10)throw new Error('Choose 1 to 10 Pulsewheels.');
  if(armyUsed(s)+count>10)throw new Error('Hangar full — finish an operation or cancel waiting bots.');
- if(s.compute<count*5)throw new Error('Each Cipher Bot costs 5 Compute.');
+ if(s.compute<count*5)throw new Error('Each Pulsewheel costs 5 Compute.');
  s.compute-=count*5;s.training??=[];
  s.trainingDurations??=s.training.map(()=>5000);const duration=trainingMilliseconds(s);
  let cursor=Math.max(now,s.training.at(-1)||0);for(let i=0;i<count;i++){cursor+=duration;s.training.push(cursor);s.trainingDurations.push(duration);}
 }
 export function startBotRaid(s:FoundationState,id:string,layout:number,now=Date.now()){
  advanceFoundation(s,now);if(s.botRaid&&!s.botRaid.settled)throw new Error('Resume your current raid.');
- if(!s.bots)throw new Error('Train a Cipher Bot first.');
+ if(!s.bots)throw new Error('Train a Pulsewheel first.');
  if(layout!==0&&layout!==1)throw new Error('Choose a starter network.');
  const simulation=createStarterRaid(layout,{scout:0,tank:0,breaker:0,scrap:s.bots});
  s.botRaid={id,simulation,lastTick:now,started:false,settled:false,reward:0};s.bots=0;

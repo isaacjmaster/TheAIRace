@@ -49,7 +49,7 @@ test('advanced missions include live hackable Sentinel Towers without changing t
 });
 
 
-test('advanced tower missions remain winnable with ten unupgraded Cipher Bots and intentional approach choices',()=>{
+test('advanced tower missions remain winnable with ten unupgraded Pulsewheels and intentional approach choices',()=>{
  for(const id of ['prism-systems','orbit-research','apex-compute']){
   const o=newSquadOperation('balance',id,100037),b=targetBounds(o.target);
   for(let i=0;i<10;i++)commandOperation(o,{action:'deploy',position:id==='prism-systems'?[(i-4.5)*1.2,b.maxZ-1.5]:id==='orbit-research'?[b.minX+1.5,(i-4.5)*1.1]:[b.minX+1.5,b.minZ+3+i*.25]},100037);

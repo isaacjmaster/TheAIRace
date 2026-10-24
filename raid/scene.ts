@@ -334,10 +334,11 @@ export class RaidScene {
   }
   private shot(e: Effect) {
     const group = new THREE.Group(); this.root.add(group);
-    const start = world(e.from, e.source < 100 ? 1.3 : .48), end = world(e.to, e.target < 100 ? .7 : .38), delta = end.clone().sub(start);
-    const melee=this.lastState?.units.some(u=>u.id===e.source&&u.kind==='scrap');
+    const start = world(e.from, e.source < 100 ? 1.3 : .48), end = world(e.to, e.target < 100 ? .7 : .38);
+    this.visuals.get(e.source)?.scrapBot?.getObjectByName('cipher-muzzle')?.getWorldPosition(start);
+    const delta=end.clone().sub(start);
     const beam = new THREE.Mesh(this.geometry('beam', () => new THREE.CylinderGeometry(.032, .032, 1, 6)), this.mat(e.color, true));
-    beam.position.copy(start.clone().add(end).multiplyScalar(.5)); beam.scale.y = delta.length(); beam.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), delta.normalize()); if(!melee)group.add(beam);
+    beam.position.copy(start.clone().add(end).multiplyScalar(.5)); beam.scale.y = delta.length(); beam.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), delta.normalize()); group.add(beam);
     this.beams.set(e.id, { group, life: .17, age: 0, effect: e });
     this.burst(end, e.color);
     const attacker=this.lastState?.buildings.find(b=>b.id===e.source);
@@ -386,7 +387,7 @@ export class RaidScene {
           v.turret.position.z = this.reduced ? 0 : -Math.max(0, 1 - (this.clock - v.lastHit) / .2) * .09;
         }
         const hit = Math.max(0, 1 - (this.clock - v.lastHit) / .18); v.body.rotation.z = this.reduced ? 0 : Math.sin(hit * 15) * hit * .025;
-        if(v.scrapBot)animateScrapBot(v.scrapBot,dt,this.reduced,Math.max(0,1-(this.clock-(v.lastAttack??-10))/.28));
+        if(v.scrapBot){v.scrapBot.userData.pulsewheelFiring=this.clock-(v.lastAttack??-10)<.17;animateScrapBot(v.scrapBot,dt,this.reduced,Math.max(0,1-(this.clock-(v.lastAttack??-10))/.28));}
       }
     }
     for (const e of s.effects) if (!this.seenEffects.has(e.id)) { this.seenEffects.add(e.id); this.shot(e); }

@@ -1,3 +1,4 @@
+import {ScrapBotIcon} from './ScrapBotIcon';
 import {builderBotModel} from '../art/BuilderBot';
 import {securityDroneModel} from '../art/SecurityDrone';
 import {sentinelModel} from '../art/SentinelTower';
@@ -22,5 +23,5 @@ export function BuildingImage({id,name}:{id:'builder'|'securityDrone'|'cipher'|'
  const hq=id==='hq1'||id==='hq2';const model=id==='builder'?builderBotModel(kit).group:id==='securityDrone'?securityDroneModel(kit):id==='cipher'?cipherBotModel(kit):id==='wall'?securityWallModel(kit):id==='sentinel'?sentinelModel(kit):id==='droneStation'?droneStationModel(kit):id==='lab'?researchLabModel(kit):id in DECORATIONS?decorationModel(kit,id as DecorationKind):hq?founderHQ(kit,new THREE.Group(),id==='hq2'?2:1):id==='station'?builderStationModel(kit):id==='rig'?gpuRigModel(kit):id==='fabricator'?fabricatorModel(kit):hangarModel(kit,2,'compound');if(hq)model.position.set(0,0,0);scene.add(model);if(!hq&&!['cipher','builder','securityDrone'].includes(id))kit.box(scene,[id==='rig'?5:4.5,.08,id==='rig'?3.15:3.5],[0,-.07,0],'#d1ded8',.08);
  const span=hq?7.4:3.8,camera=new THREE.OrthographicCamera(-span,span,span*.6,-span*.6,.1,60);camera.position.set(12,12,18);camera.lookAt(0,hq?2.6:1.35,0);if(id==='builder'||id==='securityDrone'||id==='sentinel'||id==='cipher'||id==='hangar'||id==='fabricator'||id in DECORATIONS)fitPreviewCamera(camera,scene.children.filter(o=>o instanceof THREE.Group||o instanceof THREE.Mesh),id==='cipher'?1:5/3);renderer.render(scene,camera);const image=renderer.domElement.toDataURL('image/png');thumbnails.set(id,image);setUrl(image);
  }catch{/* A named image fallback keeps the catalog usable without WebGL. */}finally{scene.traverse(o=>{if(o instanceof THREE.DirectionalLight)o.shadow.dispose();});kit.dispose();renderer?.dispose();renderer?.forceContextLoss();}},[id]);
- return url?<img src={url} alt={`${name} in-game model`} width="300" height="180"/>:<span className="build-image-fallback">{name}</span>;
+ return url?<img src={url} alt={`${name} in-game model`} width="300" height="180"/>:id==='cipher'?<span className="build-image-fallback" role="img" aria-label={name}><ScrapBotIcon/></span>:<span className="build-image-fallback">{name}</span>;
 }

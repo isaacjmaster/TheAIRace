@@ -7,8 +7,8 @@ export type TechnologyUpgrade={technology:TechnologyId;level:number;startedAt:nu
 export const TECHNOLOGY_COSTS=[50,125,250] as const;
 export const TECHNOLOGIES={
  gpuOptimization:{name:'GPU Optimization',description:'More Compute from every GPU Rig.',effect:'Compute production',icon:'gpu'},
- cipherEngineering:{name:'Cipher Bot Engineering',description:'Stronger Cipher Bot attacks on rival defenses.',effect:'attack damage',icon:'cipher'},
- trainingEfficiency:{name:'Bot Training Efficiency',description:'Build your next Cipher Bots sooner.',effect:'shorter training',icon:'training'}
+ cipherEngineering:{name:'Pulsewheel Engineering',description:'Stronger Pulsewheel attacks on rival defenses.',effect:'attack damage',icon:'cipher'},
+ trainingEfficiency:{name:'Bot Training Efficiency',description:'Build your next Pulsewheels sooner.',effect:'shorter training',icon:'training'}
 } as const;
 /** Missing legacy fields mean level zero; legitimate saved levels are preserved. */
 export function technologyLevel(s:Pick<FoundationState,'technologies'>,id:TechnologyId){const n=s.technologies?.[id];return Number.isInteger(n)&&n!>=0&&n!<=3?n!:0;}

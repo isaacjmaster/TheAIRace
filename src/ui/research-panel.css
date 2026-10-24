@@ -5,6 +5,6 @@
 .technology-icon img{display:block;width:100%;height:100%;object-fit:contain}.technology-heading>div:nth-child(2){min-width:0}.technology-art-loading{width:100%;height:100%;background:#d4ede8}.technology-icon .build-image-fallback{font-size:10px;text-align:center}
 @media(max-width:430px){.technology-icon{width:64px;height:56px}.technology-heading{gap:8px}.technology-heading h3{font-size:14px}}
 
-.technology-icon img[alt="Cipher Bot in-game model"]{object-fit:cover}
+.technology-icon img[alt="Pulsewheel in-game model"]{object-fit:cover}
 
 .research-storage{font-size:12px;color:#557a88;margin:8px 0 14px}.research-active{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:12px;margin-bottom:14px;background:#d9f3ef;border:1px solid #8dc9c8;border-radius:13px}.research-active>strong{font-size:13px}.research-active>small{grid-column:1/-1;font-size:11px;color:#537480}.research-active .task-countdown{position:static;transform:none;min-width:80px;margin:0}

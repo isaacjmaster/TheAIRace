@@ -5,7 +5,7 @@ export const reservedAgent=(o:Operation|undefined)=>o?.squad?o.squad.agents.filt
 export function startOwnedOperation(s:FoundationState,id:string,target:string,now:number,factory=newOperation){
  if(s.botRaid&&!s.botRaid.settled)throw new Error('Finish your previous operation first.');
  if(s.infiltration&&['ready','active'].includes(s.infiltration.status))throw new Error('Resume your current infiltration.');
- if((s.bots??0)<1)throw new Error('No agents available. Train a Cipher Bot in your Bot Fabricator.');
+ if((s.bots??0)<1)throw new Error('No agents available. Train a Pulsewheel in your Bot Fabricator.');
  const o=factory(id,target,now);o.cipherDamageMultiplier=cipherDamageMultiplier(s);if(!o.squad){s.bots=(s.bots??0)-1;o.unit={kind:'scrap',reservationId:o.id,status:'reserved'};}if(o.squad)o.squad.undeployed=Math.max(0,s.bots??0);s.infiltration=o;
 }
 /** Pre-ownership live missions never reserved a unit. Close them without retroactively charging inventory or banking unsupported loot. */
@@ -20,11 +20,11 @@ export function settleOwnedUnit(s:FoundationState){
  if(returned)s.bots=(s.bots??0)+1;
  o.unit!.status=returned?'returned':'lost';
 }
-export function requireReservedAgent(o:Operation){if(!reservedAgent(o))throw new Error('No reserved agent. Return to HQ and train a Cipher Bot.');}
+export function requireReservedAgent(o:Operation){if(!reservedAgent(o))throw new Error('No reserved agent. Return to HQ and train a Pulsewheel.');}
 
 /** One serialized inventory purchase per accepted placement; action receipts handle network retries. */
 export function commandOwnedOperation(s:FoundationState,c:InfiltrationCommand,now:number){const o=s.infiltration!;if(!o.squad){requireReservedAgent(o);commandOperation(o,c,now);settleOwnedUnit(s);return;}
- if(c.action==='deploy'){if(o.status!=='ready'&&o.status!=='active')throw Error('This operation has ended.');if(!(s.bots!>0))throw Error('No Cipher Bots available.');}
+ if(c.action==='deploy'){if(o.status!=='ready'&&o.status!=='active')throw Error('This operation has ended.');if(!(s.bots!>0))throw Error('No Pulsewheels available.');}
  commandOperation(o,c,now);
  if(c.action==='deploy')s.bots=(s.bots??0)-1;
  settleOwnedUnit(s);
