@@ -17,7 +17,13 @@ export function compoundBay(slot:number):[number,number,number]{return compoundB
 export function compoundBotPose(slot:number,time:number){
  // Spacing and small individual speed variations prevent overtaking without
  // making the whole group move in lockstep. The loop is continuous at its seam.
- let distance=((Math.max(0,time)*.38+slot*circuit/COMPOUND_BOT_LIMIT+.15*Math.sin(time*.5+slot))%circuit+circuit)%circuit;
+ const cycle=8,phase=((time+slot*.73)%cycle+cycle)%cycle;
+ const offset=slot*circuit/COMPOUND_BOT_LIMIT;
+ // Travel 1.45 units per cycle in a 1.7-second walk, then rest. Per-slot
+ // phase offsets stay bounded and retain the original ordered spacing.
+ const travel=(t:number)=>{const n=Math.floor(t/cycle),p=t-n*cycle;return n*1.45+Math.min(1.45,Math.max(0,p-3)*1.45/1.7);};
+ let distance=((travel(Math.max(0,time)+slot*.73)-travel(slot*.73)+offset)%circuit+circuit)%circuit;
+
  for(let i=0;i<route.length;i++){
   if(distance>lengths[i]){distance-=lengths[i];continue;}
   const p=route[i],q=route[(i+1)%route.length],t=distance/lengths[i];

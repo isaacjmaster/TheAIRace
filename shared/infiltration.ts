@@ -63,7 +63,7 @@ export const INFILTRATION_TARGETS: TargetSnapshot[] = [{ version: 1, id: 'lumen-
 // New operations capture the compound layout. Already saved snapshots are not rewritten.
 for(const target of INFILTRATION_TARGETS){target.navigationVersion=2;target.entry=[-8,6.5];target.exit=[-10.5,6.5];target.walls=rivalSecurityWalls(target.id==='vector-works');for(const defense of target.defenses)defense.route=defense.route.map(p=>nearestOpen(p,infiltrationSolids(target),INFILTRATION_BOUNDS,DRONE_CLEARANCE,.5)??p);}
 for(const id of BASE_IDS.slice(2))INFILTRATION_TARGETS.push(craftCampusTarget(id));
-export const npcBaseName=(id:string)=>id==='vector-works'?'Level 2 Base':'Level 1 Base';
+export const npcBaseName=(id:string)=>INFILTRATION_TARGETS.find(t=>t.id===id)?.name??'Rival campus';
 export type DroneState = {
     lastShotAt?:number;health?:number;acquiredAt?:number;
     targetAgentId?:string;shotPosition?:Vec;

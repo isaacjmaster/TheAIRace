@@ -17,7 +17,7 @@ test('each resident visits both sides and center of the open yard without jumpin
   let previous=compoundBotPose(slot,0).position;const xs:number[]=[],zs:number[]=[];let central=false;
   for(let frame=1;frame<=7200;frame++){
    const p=compoundBotPose(slot,frame/60).position;xs.push(p[0]);zs.push(p[2]);
-   assert.ok(Math.hypot(p[0]-previous[0],p[2]-previous[2])<=.46/60+1e-8,'continuous natural walking, including loop seam');
+   assert.ok(Math.hypot(p[0]-previous[0],p[2]-previous[2])<=.86/60+1e-8,'continuous natural walking, including loop seam');
    if(Math.abs(p[0])<.5&&p[2]>.5&&p[2]<1)central=true;
    // Conservative horizontal clearances for rear bay pillars, canopy supports,
    // side crates and the retained entrance posts, including the bot body radius.

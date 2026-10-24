@@ -5,7 +5,7 @@ import {purchaseTechnology,TECHNOLOGY_IDS} from '../shared/technology';
 import {BASE_IDS,chooseInfiltrationBase} from '../shared/infiltration-bases';
 import {newSquadOperation} from '../shared/squad-infiltration';
 import type {Operation} from '../shared/infiltration';
-import {buyWall,moveWall,buildDroneStation} from '../shared/cybersecurity';
+import {buyWall,moveWall,moveWallRow,buildDroneStation} from '../shared/cybersecurity';
 import {infiltrationStore,releaseReserve} from './infiltration';
 import {commandOperation} from '../shared/infiltration';
 import {startOwnedOperation,commandOwnedOperation,settleOwnedUnit} from '../shared/infiltration-army';
@@ -21,7 +21,7 @@ import type express from 'express';
 import type { DatabaseSync } from 'node:sqlite';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { placeOwnedHangar,acknowledgeHangar,upgradeFounderHQ,establishBuilderStation,moveBuilding,rotateBuilding,buildFabricator,buildHangar,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
+import { reconcileBuilderHuts,moveBuilderHut,placeOwnedHangar,acknowledgeHangar,upgradeFounderHQ,establishBuilderStation,moveBuilding,rotateBuilding,buildFabricator,buildHangar,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
 /** Separate table and cookie: foundation resets never touch any previous game save. */
 export function registerFoundation(app:express.Express,db:DatabaseSync,options:{legacyRaids?:boolean;cookieName?:string;legacyPaths?:string[];clock?:()=>number;operationFactory?:(id:string,target:string,now:number)=>Operation}={}){
  db.exec('CREATE TABLE IF NOT EXISTS foundation_saves(id TEXT PRIMARY KEY,state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS foundation_actions(session TEXT,id TEXT,payload TEXT,amount INTEGER,PRIMARY KEY(session,id))');
@@ -67,7 +67,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   const player=session(req,res);if(!player)return;const {id,company}=player,now=clock();
   db.exec('BEGIN IMMEDIATE');
   try{const state=JSON.parse(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(id)!.state as string) as FoundationState,before=JSON.stringify(state);
-   ensureLandscape(state,now,randomUUID());advanceFoundation(state,now);influence.settle(company.playerId,state,now);players.settle(company.playerId,state,now);infiltrations.settle(company.playerId,state,now);releaseReserve(state);xp.settle(company.playerId,state,now);development.settle(company.playerId,state,now);
+   ensureLandscape(state,now,randomUUID());players.record(state);advanceFoundation(state,now);reconcileBuilderHuts(state);influence.settle(company.playerId,state,now);players.settle(company.playerId,state,now);infiltrations.settle(company.playerId,state,now);releaseReserve(state);xp.settle(company.playerId,state,now);development.settle(company.playerId,state,now);
    if(JSON.stringify(state)!==before){state.revision++;save(id,state);}
    company.level=xp.snapshot(company.playerId).level;const ava=observeAva(id,state,now),competition=competitionSnapshot(company.playerId,state,now);db.exec('COMMIT');
    res.set('Cache-Control','private, no-store').json({state,company,serverTime:now,ava,competition,companyXp:xp.snapshot(company.playerId),infiltrationCooldowns:BASE_IDS.map(targetId=>({targetId,eligibleAt:infiltrations.eligible(company.playerId,targetId)}))});
@@ -95,7 +95,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
    if(input.generation!==(state.generation||0))throw new Error('Progress was reset. Reopen the building menu.');
    const payload=JSON.stringify(input),cached=db.prepare('SELECT payload,amount FROM foundation_actions WHERE session=? AND id=?').get(id,input.requestId);
    if(cached&&cached.payload!==payload)throw new Error('Request already used for another action.');
-   ensureLandscape(state,now,randomUUID());advanceFoundation(state,now);influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);let amount=Number(cached?.amount||0);
+   ensureLandscape(state,now,randomUUID());players.record(state);advanceFoundation(state,now);reconcileBuilderHuts(state);influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);let amount=Number(cached?.amount||0);
    if(!cached){if(input.action==='build')buildRig(state,input.position,now,input.orientation);else if(input.action==='move')moveRig(state,input.position,now,input.orientation,input.rig);else amount=collectRig(state,now,input.rig);db.prepare('INSERT INTO foundation_actions VALUES(?,?,?,?)').run(id,input.requestId,payload,amount);}
    influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);state.revision++;save(id,state);let ava=observeAva(id,state,now);if(!cached&&input.action==='collect'&&amount>0&&ava.status==='active'&&ava.step>=7){ava=reconcileAva({...ava,collected:true,revision:ava.revision+1},state,now);saveAva(id,ava);}db.exec('COMMIT');res.json({state,serverTime:now,amount,ava,competition:competitionSnapshot(player.company.playerId,state,now),companyXp:xp.snapshot(player.company.playerId),infiltrationCooldowns:BASE_IDS.map(targetId=>({targetId,eligibleAt:infiltrations.eligible(player.company.playerId,targetId)}))});
   }catch(e){db.exec('ROLLBACK');res.status(400).json({error:(e as Error).message});}
@@ -103,6 +103,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
  const botAction=z.discriminatedUnion('action',[
   z.object({action:z.literal('buy-wall'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('move-wall'),id:z.string().uuid(),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('move-wall-row'),id:z.string().min(1).max(100),position:z.tuple([z.number().int(),z.number().int()])}).strict(),
+  z.object({action:z.literal('move-builder-hut'),id:z.string().min(1).max(100),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('build-drone-station'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build-sentinel'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('infiltration-tutorial'),operationId:z.string().uuid(),result:z.enum(['complete','skipped'])}).strict(),
@@ -136,11 +138,13 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   const player=session(req,res);if(!player)return;const {id}=player,input=parsed.data,now=clock();db.exec('BEGIN IMMEDIATE');
   try{const state=JSON.parse(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(id)!.state as string) as FoundationState;
    if(input.generation!==(state.generation||0))throw new Error('Progress was reset. Reload the game.');
-   const payload='bots:'+JSON.stringify(input),cached=db.prepare('SELECT payload FROM foundation_actions WHERE session=? AND id=?').get(id,input.requestId);
+   const payload='bots:'+JSON.stringify(input),cached=db.prepare('SELECT payload,amount FROM foundation_actions WHERE session=? AND id=?').get(id,input.requestId);
    if(cached&&cached.payload!==payload)throw new Error('Request already used for another action.');
-   ensureLandscape(state,now,randomUUID());advanceFoundation(state,now);influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);
-   if(!cached){const c=input.command;
+   ensureLandscape(state,now,randomUUID());players.record(state);advanceFoundation(state,now);reconcileBuilderHuts(state);influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);
+   let amount=Number(cached?.amount??0);if(!cached){const c=input.command;
     if(c.action==='buy-wall')buyWall(state,c.position,c.orientation,input.requestId);
+    else if(c.action==='move-builder-hut')moveBuilderHut(state,c.id,c.position,c.orientation);
+    else if(c.action==='move-wall-row')moveWallRow(state,c.id,c.position);
     else if(c.action==='move-wall')moveWall(state,c.id,c.position,c.orientation);
     else if(c.action==='build-sentinel')buildSentinel(state,c.position,now,c.orientation);
     else if(c.action==='build-drone-station')buildDroneStation(state,c.position,now,c.orientation);
@@ -148,9 +152,9 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
     else if(c.action==='infiltration-start'){startOwnedOperation(state,randomUUID(),c.targetId,now,options.operationFactory??newSquadOperation);}
     else if(c.action==='infiltration-search'){const operationId=randomUUID(),targetId=chooseInfiltrationBase(state,parseInt(operationId.slice(0,8),16),Number(db.prepare("SELECT COUNT(*) n FROM infiltration_results WHERE company_id=? AND status='extracted'").get(player.company.playerId)?.n??0));startOwnedOperation(state,operationId,targetId,now,options.operationFactory??newSquadOperation);}
     else if(c.action==='infiltration-tutorial'){if(state.infiltration?.id!==c.operationId)throw new Error('This operation is no longer active.');state.infiltrationTutorial??=c.result;}
-    else if(c.action==='infiltration-command'){if(state.infiltration?.id!==c.operationId)throw new Error('This operation is no longer active.');commandOwnedOperation(state,c.intent,now);}
+    else if(c.action==='infiltration-command'){if(state.infiltration?.id!==c.operationId)throw new Error('This operation is no longer active.');if(c.intent.action==='deploy')players.validateDeployment(state,now);commandOwnedOperation(state,c.intent,now);}
     else if(c.action==='build-lab')buildResearchLab(state,c.position,now,c.orientation);
-    else if(c.action==='collect-research')collectResearch(state,now);
+    else if(c.action==='collect-research')amount=collectResearch(state,now);
     else if(c.action==='upgrade-technology')purchaseTechnology(state,c.technology,c.expectedLevel,now);
     else if(c.action==='buy-decoration')purchaseDecoration(state,c.kind,c.position,c.orientation,input.requestId);
     else if(c.action==='move-decoration')moveDecoration(state,c.id,c.position,c.orientation);
@@ -168,9 +172,9 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
     else if(c.action==='start'){if(!options.legacyRaids)throw new Error('Raids have been replaced by Infiltration. Reopen the game. Existing raids can still be resumed.');if(state.infiltration&&['ready','active'].includes(state.infiltration.status))throw new Error('Finish your infiltration first.');startBotRaid(state,randomUUID(),c.layout,now);state.botRaid!.companyId=player.company.playerId;influence.register(player.company.playerId,state,now);}
     else if(c.action==='deploy')deployScrap(state,c.raidId,c.position,now);
     else retreatBots(state,c.raidId,now);
-    db.prepare('INSERT INTO foundation_actions VALUES(?,?,?,?)').run(id,input.requestId,payload,0);
+    db.prepare('INSERT INTO foundation_actions VALUES(?,?,?,?)').run(id,input.requestId,payload,amount);
    }
-   influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);state.revision++;save(id,state);const ava=observeAva(id,state,now);db.exec('COMMIT');res.json({state,ava,serverTime:now,competition:competitionSnapshot(player.company.playerId,state,now),companyXp:xp.snapshot(player.company.playerId),infiltrationCooldowns:BASE_IDS.map(targetId=>({targetId,eligibleAt:infiltrations.eligible(player.company.playerId,targetId)}))});
+   influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);state.revision++;save(id,state);const ava=observeAva(id,state,now);db.exec('COMMIT');res.json({state,ava,amount,serverTime:now,competition:competitionSnapshot(player.company.playerId,state,now),companyXp:xp.snapshot(player.company.playerId),infiltrationCooldowns:BASE_IDS.map(targetId=>({targetId,eligibleAt:infiltrations.eligible(player.company.playerId,targetId)}))});
   }catch(e){db.exec('ROLLBACK');res.status(400).json({error:(e as Error).message});}
  });
  app.post('/api/foundation/reset',(req,res)=>{
