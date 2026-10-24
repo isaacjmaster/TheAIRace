@@ -76,7 +76,8 @@ export function collectRig(s:FoundationState,now=Date.now(),slot:'rig'|'rig2'='r
  advanceFoundation(s,now);if(!s[slot]||now<s[slot]!.completesAt)throw new Error('Your rig is not ready.');
  const amount=Math.min(Math.floor(s[slot]!.stored+1e-9),Math.max(0,s.capacity-s.compute));s[slot]!.stored=Math.max(0,s[slot]!.stored-amount);s.compute+=amount;return amount;
 }
-/** Existing saves gain optional fields only when the associated action is used. */
+/** Available, fully fabricated inventory; queued and deployed units are separate. */
+export function availableBots(s:FoundationState){return (s.bots||0)+(!s.botRaid?.settled?(s.botRaid?.simulation.stock.scrap||0):0);}
 export function armyUsed(s:FoundationState){return reservedAgent(s.infiltration)+(s.bots||0)+(s.training?.length||0)+(!s.botRaid?.settled?(s.botRaid?.simulation.stock.scrap||0):0);}
 /** Pure compatibility view: expand old Hangars only when the existing layout has room.
  * The candidate validation skips this Hangar, so this does not recurse through itself.

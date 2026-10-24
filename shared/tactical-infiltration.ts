@@ -1,4 +1,4 @@
-import {DRONE_DETECTION_RADIUS} from './drone-balance';
+import {DRONE_PURSUIT_RANGE,DRONE_DETECTION_RADIUS} from './drone-balance';
 import {separateDronePositions} from './drone-separation';
 import {attackApproach} from './attack-positions';
 import {captureReplayFrame} from './pvp-replay';
@@ -14,14 +14,22 @@ export const tacticalBalance=(o:Operation)=>o.squad?.balanceVersion===2?TACTICAL
 const distance=(a:Vec,b:Vec)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const emit=(o:Operation,type:string,detail?:string)=>{if(o.events.length<1024)o.events.push({at:o.lastTick,type,...(detail?{detail}:{})});};
 const alive=(o:Operation,d:DroneState)=>(d.health??tacticalBalance(o).droneHealth)>0;
+const airSight=(o:Operation,d:DroneState,p:Vec)=>!!o.target.defenses.find(c=>c.id===d.id)?.aerial||sight(o,d.position,p);
 const sight=(o:Operation,a:Vec,b:Vec)=>segmentClear(a,b,infiltrationSolids(squadTarget(o)),targetBounds(o.target),0);
 function move(a:{position:Vec;path?:Vec[];yaw?:number},budget:number){while(a.path?.length&&budget>0){const p=a.path[0],d=distance(a.position,p);if(d<.001){a.path.shift();continue;}a.yaw=Math.atan2(p[0]-a.position[0],p[1]-a.position[1]);if(d<=budget){a.position=[...p];a.path.shift();budget-=d;}else{a.position[0]+=(p[0]-a.position[0])*budget/d;a.position[1]+=(p[1]-a.position[1])*budget/d;break;}}}
-function chooseDrone(o:Operation,a:SquadAgent){return o.drones.filter(d=>alive(o,d)&&(d.id!==a.unreachableDrone||o.lastTick>=(a.retryDroneAt??0))&&distance(a.position,d.position)<=tacticalBalance(o).botAcquire&&sight(o,a.position,d.position)).sort((x,y)=>distance(a.position,x.position)-distance(a.position,y.position)||x.id.localeCompare(y.id))[0];}
+/** Ground troops approach a reachable firing point, not a flying target's occupied ground cell. */
+export function droneAttackPath(o:Operation,a:SquadAgent,d:DroneState){
+ if(!o.target.defenses.find(c=>c.id===d.id)?.aerial)return infiltrationPath(squadTarget(o),a.position,d.position);
+ const radius=tacticalBalance(o).botRange-.2,angle=Math.atan2(a.position[1]-d.position[1],a.position[0]-d.position[0]);
+ for(const offset of [0,.4,-.4,.8,-.8,1.6,-1.6,Math.PI]){const p:Vec=[d.position[0]+Math.cos(angle+offset)*radius,d.position[1]+Math.sin(angle+offset)*radius],path=infiltrationPath(squadTarget(o),a.position,p);if(path.length)return path;}
+ return [];
+}
+function chooseDrone(o:Operation,a:SquadAgent){return o.drones.filter(d=>alive(o,d)&&(d.id!==a.unreachableDrone||o.lastTick>=(a.retryDroneAt??0))&&distance(a.position,d.position)<=tacticalBalance(o).botAcquire&&airSight(o,d,a.position)).sort((x,y)=>distance(a.position,x.position)-distance(a.position,y.position)||x.id.localeCompare(y.id))[0];}
 /** Stable nearest eligible objective, with the existing opening-versus-breach policy. */
 export function planTactical(o:Operation,a:SquadAgent){
  const t=squadTarget(o),bounds=targetBounds(t),assets=t.assets.filter(v=>v.access&&v.hackSeconds&&!o.hacked.includes(v.id)).sort((x,y)=>distance(a.position,x.access!)-distance(a.position,y.access!)||x.id.localeCompare(y.id)),nearest=chooseDrone(o,a);
  const current=o.drones.find(d=>d.id===a.droneTarget&&alive(o,d));
- const currentValid=current&&distance(a.position,current.position)<=tacticalBalance(o).botAcquire&&sight(o,a.position,current.position);if(currentValid&&o.lastTick<(a.lockedUntil??0))return;
+ const currentValid=current&&distance(a.position,current.position)<=tacticalBalance(o).botAcquire&&airSight(o,current,a.position);if(currentValid&&o.lastTick<(a.lockedUntil??0))return;
  const drone=currentValid&&(!nearest||distance(a.position,nearest.position)>=distance(a.position,current.position)*tacticalBalance(o).retargetRatio)?current:nearest;
  const first=assets.find(v=>o.squad!.agents.filter(b=>b!==a&&b.state==='active'&&b.target===v.id&&!b.droneTarget).length<tacticalBalance(o).maxHackers);
  const objectiveDistance=first?distance(a.position,first.access!):Infinity;
@@ -48,12 +56,15 @@ export function planTactical(o:Operation,a:SquadAgent){
 function end(o:Operation,status:Operation['status']){o.status=status;o.finishedAt=o.lastTick;for(const a of o.squad!.agents)if(a.state==='active'){a.state=(a.health??0)>0?'extracted':'lost';a.path=[];a.mode='idle';a.target=undefined;a.droneTarget=undefined;a.wallTarget=undefined;}for(const d of o.drones){d.path=[];d.targetAgentId=undefined;if(alive(o,d))d.mode='patrol';}if(status!=='extracted')o.carried={compute:0,research:0,intel:false};emit(o,status);captureReplayFrame(o);}
 function drones(o:Operation,dt:number){const bounds=targetBounds(o.target);
  for(const d of o.drones){if(!alive(o,d)){d.mode='disabled';d.path=[];d.targetAgentId=undefined;continue;}const cfg=o.target.defenses.find(c=>c.id===d.id)!,targetLayout=squadTarget(o),solids=cfg.aerial?[]:infiltrationSolids(cfg.fliesOverWalls?{...targetLayout,walls:[]}:targetLayout);
-  const visible=o.squad!.agents.filter(a=>a.state==='active'&&distance(d.position,a.position)<=cfg.radius&&sight(o,d.position,a.position));const target=visible.find(a=>a.id===d.targetAgentId)??visible.sort((a,b)=>distance(d.position,a.position)-distance(d.position,b.position)||a.id.localeCompare(b.id))[0];
+  const active=o.squad!.agents.filter(a=>a.state==='active'&&(a.health??0)>0);
+  const home:Vec=[cfg.route.reduce((n,p)=>n+p[0],0)/cfg.route.length,cfg.route.reduce((n,p)=>n+p[1],0)/cfg.route.length],leash=Math.max(...cfg.route.map(p=>distance(home,p)))+DRONE_PURSUIT_RANGE;
+  const retained=active.find(a=>a.id===d.targetAgentId&&distance(d.position,a.position)<=(cfg.aerial?DRONE_PURSUIT_RANGE:cfg.radius)&&distance(home,a.position)<=leash&&airSight(o,d,a.position));
+  const visible=active.filter(a=>distance(d.position,a.position)<=cfg.radius&&airSight(o,d,a.position));const target=retained??visible.sort((a,b)=>distance(d.position,a.position)-distance(d.position,b.position)||a.id.localeCompare(b.id))[0];
   if(target){if(d.targetAgentId!==target.id){d.acquiredAt=o.lastTick;emit(o,'detected',target.id);}d.targetAgentId=target.id;d.yaw=Math.atan2(target.position[0]-d.position[0],target.position[1]-d.position[1]);
    if(distance(d.position,target.position)<=tacticalBalance(o).droneRange){d.mode='attacking';d.path=[];d.pathKey=undefined;
     if(o.lastTick-(d.acquiredAt??o.lastTick)>=tacticalBalance(o).droneWarmupMs&&o.lastTick-(d.lastShotAt??-Infinity)>=tacticalBalance(o).droneIntervalMs){d.lastShotAt=o.lastTick;d.shotPosition=[...target.position];target.health=Math.max(0,target.health!-tacticalBalance(o).droneDamage);emit(o,'laser',target.id);if(!target.health){target.state='lost';target.mode='idle';target.path=[];target.cargo={compute:0,research:0,intel:false};emit(o,'agent-lost',target.id);}}continue;
    }
-   d.mode='pursuit';if(o.lastTick-(d.lost??0)>=700||d.pathKey!=='engage'){// Find a reachable firing position; never fly through a wall to the target.
+   d.mode='pursuit';if(o.lastTick-(d.lost??0)>=700||d.pathKey!=='engage'){// Aerial defenders use open air; legacy ground patrols retain their obstacle rules.
     const route=findPath(d.position,nearestOpen(target.position,solids,bounds,DRONE_CLEARANCE)??d.position,solids,bounds,DRONE_CLEARANCE);d.path=route;d.pathKey='engage';d.lost=o.lastTick;
    }move(d,cfg.pursuitSpeed*dt);continue;
   }
@@ -66,8 +77,8 @@ function drones(o:Operation,dt:number){const bounds=targetBounds(o.target);
 export function advanceTactical(o:Operation,now:number){if(o.status!=='active')return;const squad=o.squad!,endAt=Math.min(now,o.startedAt!+INFILTRATION.operationMs);
  while(o.status==='active'&&o.lastTick+INFILTRATION.stepMs<=endAt){o.lastTick+=INFILTRATION.stepMs;const dt=INFILTRATION.stepMs/1000;
   for(const a of squad.agents){if(a.state!=='active')continue;if(o.lastTick>=(a.nextPlanAt??0)){planTactical(o,a);a.nextPlanAt=o.lastTick+500;}
-   if(a.droneTarget){const d=o.drones.find(d=>d.id===a.droneTarget&&alive(o,d));if(!d||!sight(o,a.position,d.position)||distance(a.position,d.position)>tacticalBalance(o).botAcquire){a.droneTarget=undefined;a.target=undefined;a.mode='idle';continue;}
-    a.yaw=Math.atan2(d.position[0]-a.position[0],d.position[1]-a.position[1]);if(distance(a.position,d.position)>tacticalBalance(o).botRange){if(!a.path.length||o.lastTick>=(a.lockedUntil??0)){a.path=infiltrationPath(squadTarget(o),a.position,d.position);a.lockedUntil=o.lastTick+tacticalBalance(o).targetLockMs;if(!a.path.length){a.unreachableDrone=d.id;a.retryDroneAt=o.lastTick+2000;a.droneTarget=undefined;a.target=undefined;a.mode='idle';a.lockedUntil=0;a.nextPlanAt=o.lastTick;}}move(a,INFILTRATION.agentSpeed*dt);a.mode='moving';}else{a.path=[];a.mode='attacking';if(o.lastTick-(a.lastShotAt??-Infinity)>=tacticalBalance(o).botIntervalMs){a.lastShotAt=o.lastTick;a.shotPosition=[...d.position];d.health=Math.max(0,(d.health??tacticalBalance(o).droneHealth)-tacticalBalance(o).botDamage*(o.cipherDamageMultiplier??1));emit(o,'cipher-shot',a.id);if(!d.health){d.mode='disabled';d.path=[];d.targetAgentId=undefined;emit(o,'drone-disabled',d.id);}}}continue;
+   if(a.droneTarget){const d=o.drones.find(d=>d.id===a.droneTarget&&alive(o,d));if(!d||!airSight(o,d,a.position)||distance(a.position,d.position)>tacticalBalance(o).botAcquire){a.droneTarget=undefined;a.target=undefined;a.mode='idle';continue;}
+    a.yaw=Math.atan2(d.position[0]-a.position[0],d.position[1]-a.position[1]);if(distance(a.position,d.position)>tacticalBalance(o).botRange){if(!a.path.length||o.lastTick>=(a.lockedUntil??0)){a.path=droneAttackPath(o,a,d);a.lockedUntil=o.lastTick+tacticalBalance(o).targetLockMs;if(!a.path.length){a.unreachableDrone=d.id;a.retryDroneAt=o.lastTick+2000;a.droneTarget=undefined;a.target=undefined;a.mode='idle';a.lockedUntil=0;a.nextPlanAt=o.lastTick;}}move(a,INFILTRATION.agentSpeed*dt);a.mode='moving';}else{a.path=[];a.mode='attacking';if(o.lastTick-(a.lastShotAt??-Infinity)>=tacticalBalance(o).botIntervalMs){a.lastShotAt=o.lastTick;a.shotPosition=[...d.position];d.health=Math.max(0,(d.health??tacticalBalance(o).droneHealth)-tacticalBalance(o).botDamage*(o.cipherDamageMultiplier??1));emit(o,'cipher-shot',a.id);if(!d.health){d.mode='disabled';d.path=[];d.targetAgentId=undefined;emit(o,'drone-disabled',d.id);}}}continue;
    }
    move(a,INFILTRATION.agentSpeed*dt);
    if(a.wallTarget){const wall=o.target.walls?.find(w=>w.id===a.wallTarget);if(!wall||squad.breachedWalls.includes(wall.id)){a.wallTarget=undefined;a.target=undefined;a.mode='idle';planTactical(o,a);}else if(!a.path.length){a.mode='breaching';a.yaw=Math.atan2(wall.x-a.position[0],wall.z-a.position[1]);squad.wallDamage[wall.id]=(squad.wallDamage[wall.id]??0)+dt*SQUAD_BALANCE.breachDps*(o.cipherDamageMultiplier??1);if(squad.wallDamage[wall.id]+1e-6>=SQUAD_BALANCE.wallHealth){squad.breachedWalls.push(wall.id);emit(o,'breached',wall.id);for(const b of squad.agents)if(b.wallTarget===wall.id){b.wallTarget=undefined;b.target=undefined;b.mode='idle';planTactical(o,b);}}}if(a.wallTarget)continue;}

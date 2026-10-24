@@ -57,5 +57,5 @@ export function hangarCompound(k:WorldKit,bots:number){
 const inverse=new THREE.Matrix4(),instanceMatrix=new THREE.Matrix4();
 export function syncCompoundInstances(g:THREE.Object3D|undefined){if(!g?.userData.residentBatches)return;g.updateWorldMatrix(true,true);inverse.copy(g.matrixWorld).invert();for(const batch of g.userData.residentBatches as {mesh:THREE.InstancedMesh;parts:{mesh:THREE.Mesh;bot:THREE.Group}[]}[]){let count=0;for(const p of batch.parts)if(p.bot.visible){instanceMatrix.multiplyMatrices(inverse,p.mesh.matrixWorld);batch.mesh.setMatrixAt(count++,instanceMatrix);}batch.mesh.count=count;batch.mesh.instanceMatrix.needsUpdate=true;}}
 export function animateCompoundBot(bot:THREE.Object3D,slot:number,time:number,reduced:boolean,dt:number){
- const pose=compoundBotPose(slot,reduced?0:time);bot.position.set(...pose.position);turnScrapBot(bot,pose.yaw,dt,reduced);animateScrapBot(bot,dt,reduced,0,Math.sin(time*.7+slot)*.005);
+ const pose=compoundBotPose(slot,reduced?0:Math.max(0,time-(bot.userData.arrivalTime??0)));bot.position.set(...pose.position);turnScrapBot(bot,pose.yaw,dt,reduced);animateScrapBot(bot,dt,reduced,0,Math.sin(time*.7+slot)*.005);
 }

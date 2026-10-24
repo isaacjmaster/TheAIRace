@@ -1,3 +1,4 @@
+import {compoundBay} from '../../shared/hangar-presentation';
 import {builderHutFootprints} from '../../shared/foundation';
 import {findPath,type NavRect} from '../../shared/navigation';
 import {hangarBay} from '../../shared/bot-presentation';
@@ -12,10 +13,13 @@ export const bayPosition=hangarBay;
 export function localPoint(position:number[],orientation:number,p:WalkPoint):WalkPoint{const a=orientation*Math.PI/2;return [position[0]+p[0]*Math.cos(a)+p[2]*Math.sin(a),p[1],position[1]-p[0]*Math.sin(a)+p[2]*Math.cos(a)];}
 /** Small presentation-only grid search, outside building footprints; never affects army logic. */
 export function dockingRoute(s:FoundationState,slot:number):WalkPoint[]{
- const f=s.fabricator,h=getHangar(s);if(!f||!h)return [];const expanded=h.size==='expanded',start=localPoint(f.position,f.orientation??0,[0,.05,2.5]),end=localPoint(h.position,h.orientation??0,[0,.05,expanded?3:2.5]);
- const rects:NavRect[]=FOUNDATION_BUILDINGS.flatMap(kind=>{const l=buildingLayout(s,kind);return l?[footprint(kind,l)]:[]});for(const o of OBSTACLES.filter(o=>o.kind==='rock'&&!s.landscape?.legacyRocksRegistered||!s.landscape&&o.kind==='tree'))rects.push({x:o.position[0],z:o.position[1],w:o.width,d:o.depth});for(const o of s.landscape?.items??[]){const [w,d]=obstacleSize(o);rects.push({x:o.position[0],z:o.position[1],w,d});}for(const o of s.decorations??[])rects.push(decorationFootprint(o));rects.push(...builderHutFootprints(s),...campusSecurityWalls(s));
- const path=findPath([start[0],start[2]],[end[0],end[2]],rects,P,.46,1);if(!path.length)return [];
- return [localPoint(f.position,f.orientation??0,[0,.99,.08]),localPoint(f.position,f.orientation??0,[0,.43,1.45]),start,...path.slice(1).map(([x,z]):WalkPoint=>[x,.05,z]),end,localPoint(h.position,h.orientation??0,bayPosition(slot,expanded))];
+ const f=s.fabricator,h=getHangar(s);if(!f||!h||h.unplaced)return [];const expanded=h.size==='expanded',start=localPoint(f.position,f.orientation??0,[0,.05,2.5]),end=localPoint(h.position,h.orientation??0,[0,.05,h.size==='compound'?4.8:expanded?3:2.5]);
+ const rects:NavRect[]=FOUNDATION_BUILDINGS.flatMap(kind=>{const l=buildingLayout(s,kind);return l?[footprint(kind,l)]:[]});for(const o of OBSTACLES.filter(o=>o.kind==='rock'&&!s.landscape?.legacyRocksRegistered||!s.landscape&&o.kind==='tree'))rects.push({x:o.position[0],z:o.position[1],w:o.width,d:o.depth});for(const o of s.landscape?.items??[]){const [w,d]=obstacleSize(o);rects.push({x:o.position[0],z:o.position[1],w,d});}for(const o of s.decorations??[])rects.push(decorationFootprint(o));rects.push(...builderHutFootprints(s));
+ const walls=campusSecurityWalls(s);
+ // Prefer gates; friendly wall traversal is the fallback, never ordinary building traversal.
+ const path=findPath([start[0],start[2]],[end[0],end[2]],[...rects,...walls],P,.46,1);
+ if(!path.length)path.push(...findPath([start[0],start[2]],[end[0],end[2]],rects,P,.46,1));if(!path.length)return [];
+ return [localPoint(f.position,f.orientation??0,[0,.99,.08]),localPoint(f.position,f.orientation??0,[0,.43,1.45]),start,...path.slice(1).map(([x,z]):WalkPoint=>[x,.05,z]),end,...(h.size==='compound'?[localPoint(h.position,h.orientation??0,[0,.28,2.3])]:[]),localPoint(h.position,h.orientation??0,h.size==='compound'?compoundBay(slot%8):bayPosition(slot,expanded))];
 }
 export class BotArrivals{
  private previous?:{count:number;training:number[];generation:number;layout:string};

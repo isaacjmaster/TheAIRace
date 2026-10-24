@@ -15,7 +15,7 @@ test('Sentinel enforces HQ2, funds, one ownership, builder, bounds and original 
 });
 test('old saves and active old attacks gain no free turret or defense; unfinished towers cannot fire',()=>{
  const s=ready(),before=JSON.stringify(s);assert.equal(buildingLayout(s,'sentinel'),undefined);const base=publicBase(s,'defender',epoch)!;assert.equal(playerOperation('old',base,company,'attacker',epoch).target.sentinels,undefined);assert.equal(JSON.stringify(s),before);
- buildSentinel(s,[9,9],epoch);const o=playerOperation('new',publicBase(s,'defender',epoch+1)!,company,'attacker',epoch+1);assert.equal(o.target.sentinels,undefined);assert.equal(o.target.assets.find(a=>a.id==='sentinel')?.maxHealth,240);
+ buildSentinel(s,[9,9],epoch);const o=playerOperation('new',publicBase(s,'defender',epoch+1)!,company,'attacker',epoch+1);assert.equal(o.target.sentinels,undefined);assert.equal(o.target.assets.find(a=>a.id==='sentinel')?.maxHealth,300);
 });
 test('Target Lock ramps 18/20/22/24/26, caps and resets on range, occlusion and target changes',()=>{
  const o=battle(),bot=o.squad!.agents[0];bot.health=1000;advanceSentinels(o);o.lastTick+=400;advanceSentinels(o);assert.equal(bot.health,1000);o.lastTick+=100;
