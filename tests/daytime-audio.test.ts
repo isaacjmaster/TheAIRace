@@ -3,8 +3,8 @@ import {HQAmbience,HQ_AUDIO} from '../src/audio/Ambience';import {IDENTITY_TRACK
 class Param{value=0;setValueAtTime(v:number){this.value=v;}linearRampToValueAtTime(v:number){this.value=v;}exponentialRampToValueAtTime(v:number){this.value=v;}cancelScheduledValues(){}}
 class Node{gain=new Param();frequency=new Param();buffer?:AudioBuffer;loop=false;type='';onended?:()=>void;ended=false;starts=0;connect(){return this;}disconnect(){}start(){this.starts++;}stop(){if(!this.ended){this.ended=true;this.onended?.();}}}
 class Context{currentTime=0;sampleRate=8000;nodes:Node[]=[];createBuffer(_c:number,n:number){const a=new Float32Array(n);return {getChannelData:()=>a};}createBufferSource(){const n=new Node();this.nodes.push(n);return n;}createBiquadFilter(){return new Node();}createGain(){return new Node();}createOscillator(){return this.createBufferSource();}}
-test('HQ music keeps its source backed up, uses a measured repeat edit and reduces the music bus to sixty percent',()=>{
- const t=IDENTITY_TRACKS.hq,r=JSON.parse(readFileSync('music/hq-daytime/measurements.json','utf8'));assert.equal(HQ_AUDIO.musicScale,.6);assert.equal(t.seconds,57.0175);assert.equal(identityTrack('hq','?music=supplied-v2'),SUPPLIED_V2_TRACKS.hq);
+test('HQ music keeps its source backed up, uses a measured repeat edit and reduces the music bus to forty-two percent',()=>{
+ const t=IDENTITY_TRACKS.hq,r=JSON.parse(readFileSync('music/hq-daytime/measurements.json','utf8'));assert.equal(HQ_AUDIO.musicScale,.42);assert.equal(t.seconds,57.0175);assert.equal(identityTrack('hq','?music=supplied-v2'),SUPPLIED_V2_TRACKS.hq);
  assert.equal(createHash('sha256').update(readFileSync('music/supplied-v2/source/hq.mp3')).digest('hex'),r.sourceSha256);assert.ok(r.joinCorrelation>.7);assert.equal(r.joins.length,2);assert.ok(r.joins.every((j:{rmsChangeDb:number})=>Math.abs(j.rmsChangeDb)<4));assert.deepEqual(r.seamDelta,[0,0]);
  for(const [name,info]of Object.entries(r.exports) as [string,{sha256:string}][])assert.equal(createHash('sha256').update(readFileSync('public/audio/hq-daytime/'+name)).digest('hex'),info.sha256);
 });

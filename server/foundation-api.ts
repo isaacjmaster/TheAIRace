@@ -21,6 +21,7 @@ import type express from 'express';
 import type { DatabaseSync } from 'node:sqlite';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
+import {setGuardPosition} from '../shared/security';
 import { reconcileBuilderHuts,moveBuilderHut,placeOwnedHangar,acknowledgeHangar,upgradeFounderHQ,establishBuilderStation,moveBuilding,rotateBuilding,buildFabricator,buildHangar,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
 /** Separate table and cookie: foundation resets never touch any previous game save. */
 export function registerFoundation(app:express.Express,db:DatabaseSync,options:{legacyRaids?:boolean;cookieName?:string;legacyPaths?:string[];clock?:()=>number;operationFactory?:(id:string,target:string,now:number)=>Operation}={}){
@@ -101,6 +102,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   }catch(e){db.exec('ROLLBACK');res.status(400).json({error:(e as Error).message});}
  });
  const botAction=z.discriminatedUnion('action',[
+  z.object({action:z.literal('set-drone-guard'),position:z.tuple([z.number().finite(),z.number().finite()])}).strict(),
+  z.object({action:z.literal('acknowledge-hq'),id:z.string().min(1).max(100)}).strict(),
   z.object({action:z.literal('buy-wall'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('move-wall'),id:z.string().uuid(),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('move-wall-row'),id:z.string().min(1).max(100),position:z.tuple([z.number().int(),z.number().int()])}).strict(),
@@ -142,7 +145,9 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
    if(cached&&cached.payload!==payload)throw new Error('Request already used for another action.');
    ensureLandscape(state,now,randomUUID());players.record(state);advanceFoundation(state,now);reconcileBuilderHuts(state);influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);
    let amount=Number(cached?.amount??0);if(!cached){const c=input.command;
-    if(c.action==='buy-wall')buyWall(state,c.position,c.orientation,input.requestId);
+    if(c.action==='set-drone-guard')setGuardPosition(state,c.position);
+    else if(c.action==='acknowledge-hq'){if(state.hqNotification?.id===c.id)state.hqNotification.acknowledged=true;}
+    else if(c.action==='buy-wall')buyWall(state,c.position,c.orientation,input.requestId);
     else if(c.action==='move-builder-hut')moveBuilderHut(state,c.id,c.position,c.orientation);
     else if(c.action==='move-wall-row')moveWallRow(state,c.id,c.position);
     else if(c.action==='move-wall')moveWall(state,c.id,c.position,c.orientation);

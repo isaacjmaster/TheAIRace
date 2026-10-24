@@ -30,7 +30,7 @@ test('every live bot leaves a completed shared target, including a moving follow
  const restored=structuredClone(o);advanceSquad(o,30000);advanceSquad(restored,30000);assert.deepEqual(restored,o);assert.ok((o.squad!.progress.gpu??0)>0);
 });
 test('five handcrafted campuses have increasing footprint, defenses and rewards; all objectives have legitimate ground paths',()=>{
- let area=0,award=0;for(const [i,id]of BASE_IDS.entries()){const t=craftCampusTarget(id),b=targetBounds(t),a=(b.maxX-b.minX)*(b.maxZ-b.minZ);assert.ok(a>area);area=a;assert.equal(t.defenses.length,i+1);assert.ok(t.influence>award);award=t.influence;
+ let area=0,award=0;for(const [i,id]of BASE_IDS.entries()){const t=craftCampusTarget(id),b=targetBounds(t),a=(b.maxX-b.minX)*(b.maxZ-b.minZ);assert.ok(a>area);area=a;assert.equal(t.defenses.length+(t.sentinels?.length??0),[1,2,3,4,4][i]);assert.ok(t.influence>award);award=t.influence;
   for(const obj of t.assets.filter(a=>a.access)){const path=infiltrationPath({...t,walls:[]},t.entry,obj.access!);assert.ok(path.length,`${id}/${obj.id} reachable`);for(let j=1;j<path.length;j++)assert.ok(segmentClear(path[j-1],path[j],[],b,.65));}
  }
  const s=initialFoundation();s.bots=1;for(let i=0;i<30;i++)assert.equal(chooseInfiltrationBase(s,i),BASE_IDS[0]);s.founderHqLevel=2;s.bots=10;assert.equal(new Set(Array.from({length:50},(_,i)=>chooseInfiltrationBase(s,i,3))).size,5);

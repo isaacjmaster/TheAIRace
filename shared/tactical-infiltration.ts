@@ -1,3 +1,6 @@
+import {DRONE_DETECTION_RADIUS} from './drone-balance';
+import {separateDronePositions} from './drone-separation';
+import {attackApproach} from './attack-positions';
 import {captureReplayFrame} from './pvp-replay';
 import {advanceSentinels} from './sentinel-combat';
 import {findPath,segmentClear,nearestOpen} from './navigation';
@@ -6,9 +9,8 @@ import {squadTarget,SQUAD_BALANCE,type SquadAgent} from './squad-infiltration';
 
 /** Snapshot-versioned tuning: old missions continue using their original simulation. */
 export const LEGACY_TACTICAL_BALANCE={botHealth:60,botDamage:9,botRange:4.6,botAcquire:6.4,botIntervalMs:1000,targetLockMs:900,retargetRatio:.7,droneHealth:100,droneDamage:22,droneRange:5.8,droneDetection:6.8,droneIntervalMs:1250,droneWarmupMs:650,hackSeconds:{gpu:12,lab:16,core:22},hackContributions:[1,.65,.4,.25,.15],maxHackers:5} as const;
-export const TACTICAL_BALANCE={...LEGACY_TACTICAL_BALANCE,droneHealth:160,droneDamage:24,droneIntervalMs:1000,droneWarmupMs:400} as const;
+export const TACTICAL_BALANCE={...LEGACY_TACTICAL_BALANCE,droneHealth:160,droneDamage:24,droneIntervalMs:1000,droneWarmupMs:400,droneDetection:DRONE_DETECTION_RADIUS} as const;
 export const tacticalBalance=(o:Operation)=>o.squad?.balanceVersion===2?TACTICAL_BALANCE:LEGACY_TACTICAL_BALANCE;
-const WORK_SPOTS:readonly Vec[]=[[0,0],[-.95,0],[.95,0],[-.48,.95],[.48,.95]];
 const distance=(a:Vec,b:Vec)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const emit=(o:Operation,type:string,detail?:string)=>{if(o.events.length<1024)o.events.push({at:o.lastTick,type,...(detail?{detail}:{})});};
 const alive=(o:Operation,d:DroneState)=>(d.health??tacticalBalance(o).droneHealth)>0;
@@ -31,26 +33,21 @@ export function planTactical(o:Operation,a:SquadAgent){
  if(existing&&a.mode!=='idle'&&(a.path.length>0||distance(a.position,a.workPosition??existing.access!)<1.5)&&(!a.wallTarget||!o.squad!.breachedWalls.includes(a.wallTarget)))return;
  a.target=undefined;a.wallTarget=undefined;a.workPosition=undefined;a.path=[];
  for(const asset of assets){const slot=o.squad!.agents.filter(b=>b!==a&&b.state==='active'&&b.target===asset.id&&!b.droneTarget).length;if(slot>=tacticalBalance(o).maxHackers)continue;
+  const occupied=o.squad!.agents.filter(b=>b!==a&&b.state==='active'&&b.target===asset.id).flatMap(b=>b.workPosition?[b.workPosition]:[]),approach=attackApproach(t,asset,a.position,occupied);
+  if(approach){a.target=asset.id;a.workPosition=approach.point;a.path=approach.path;a.mode='moving';a.blockedSince=undefined;return;}
   let path=o.pvp&&!segmentClear(a.position,asset.access!,t.walls??[],bounds,AGENT_CLEARANCE)?[]:infiltrationPath(t,a.position,asset.access!);let length=path.length?0:Infinity;for(let i=1;i<path.length;i++)length+=distance(path[i-1],path[i]);
   if(length>distance(a.position,asset.access!)+SQUAD_BALANCE.breachDetour){
    const walls=(t.walls??[]).filter(w=>!segmentClear(a.position,asset.access!,[w],bounds,AGENT_CLEARANCE)).sort((x,y)=>distance(a.position,[x.x,x.z])-distance(a.position,[y.x,y.z]));
    for(const w of walls){const horizontal=w.w>w.d,side=Math.sign(horizontal?a.position[1]-w.z:a.position[0]-w.x)||1,p:Vec=horizontal?[Math.max(w.x-w.w/2+.2,Math.min(w.x+w.w/2-.2,a.position[0])),w.z+side*(w.d/2+AGENT_CLEARANCE+.08)]:[w.x+side*(w.w/2+AGENT_CLEARANCE+.08),Math.max(w.z-w.d/2+.2,Math.min(w.z+w.d/2-.2,a.position[1]))],route=infiltrationPath(t,a.position,p);if(route.length){a.target=asset.id;a.wallTarget=w.id;a.path=route;a.mode='breaching';return;}}
   }
-  // A saved access point can be on the inaccessible side of a crowded base.
-  // Retry the other physical faces before giving up on this objective.
-  let access=asset.access!;
-  if(!path.length&&o.pvp){const [x,z]=asset.position,[w,d]=asset.size,pad=AGENT_CLEARANCE+.15;
-   const faces:Vec[]=[[x,z+d/2+pad],[x+w/2+pad,z],[x,z-d/2-pad],[x-w/2-pad,z]];
-   faces.sort((p,q)=>distance(a.position,p)-distance(a.position,q));
-   for(const face of faces){const route=infiltrationPath(t,a.position,face);if(route.length){access=face;path=route;break;}}
-  }
-  if(!path.length)continue;const offset=WORK_SPOTS[slot],spot:Vec=[access[0]+offset[0],access[1]+offset[1]+.12],spaced=infiltrationPath(t,a.position,spot);a.target=asset.id;a.workPosition=[...access];a.wallTarget=undefined;a.path=spaced.length&&distance(spot,access)<1.5?spaced:path;a.mode='moving';a.blockedSince=undefined;return;
+  if(!path.length)continue;
+
  }
  a.target=undefined;a.path=[];a.mode='idle';if(a.blockedSince===undefined){a.blockedSince=o.lastTick;emit(o,'waiting-for-route',a.id);}
 }
 function end(o:Operation,status:Operation['status']){o.status=status;o.finishedAt=o.lastTick;for(const a of o.squad!.agents)if(a.state==='active'){a.state=(a.health??0)>0?'extracted':'lost';a.path=[];a.mode='idle';a.target=undefined;a.droneTarget=undefined;a.wallTarget=undefined;}for(const d of o.drones){d.path=[];d.targetAgentId=undefined;if(alive(o,d))d.mode='patrol';}if(status!=='extracted')o.carried={compute:0,research:0,intel:false};emit(o,status);captureReplayFrame(o);}
-function drones(o:Operation,dt:number){const solids=infiltrationSolids(squadTarget(o)),bounds=targetBounds(o.target);
- for(const d of o.drones){if(!alive(o,d)){d.mode='disabled';d.path=[];d.targetAgentId=undefined;continue;}const cfg=o.target.defenses.find(c=>c.id===d.id)!;
+function drones(o:Operation,dt:number){const bounds=targetBounds(o.target);
+ for(const d of o.drones){if(!alive(o,d)){d.mode='disabled';d.path=[];d.targetAgentId=undefined;continue;}const cfg=o.target.defenses.find(c=>c.id===d.id)!,targetLayout=squadTarget(o),solids=infiltrationSolids(cfg.fliesOverWalls?{...targetLayout,walls:[]}:targetLayout);
   const visible=o.squad!.agents.filter(a=>a.state==='active'&&distance(d.position,a.position)<=cfg.radius&&sight(o,d.position,a.position));const target=visible.find(a=>a.id===d.targetAgentId)??visible.sort((a,b)=>distance(d.position,a.position)-distance(d.position,b.position)||a.id.localeCompare(b.id))[0];
   if(target){if(d.targetAgentId!==target.id){d.acquiredAt=o.lastTick;emit(o,'detected',target.id);}d.targetAgentId=target.id;d.yaw=Math.atan2(target.position[0]-d.position[0],target.position[1]-d.position[1]);
    if(distance(d.position,target.position)<=tacticalBalance(o).droneRange){d.mode='attacking';d.path=[];d.pathKey=undefined;
@@ -62,6 +59,8 @@ function drones(o:Operation,dt:number){const solids=infiltrationSolids(squadTarg
   }
   d.targetAgentId=undefined;d.acquiredAt=undefined;d.mode='patrol';const goal=cfg.route[d.segment];if(d.pathKey!==String(d.segment)||!d.path?.length){d.path=findPath(d.position,goal,solids,bounds,DRONE_CLEARANCE);d.pathKey=String(d.segment);}move(d,cfg.patrolSpeed*dt);if(distance(d.position,goal)<.05){d.segment=(d.segment+1)%cfg.route.length;d.pathKey=undefined;}
  }
+ const active=o.drones.filter(d=>alive(o,d));const positions=separateDronePositions(active.map(d=>d.position),dt,(i,a,b)=>{const cfg=o.target.defenses.find(c=>c.id===active[i].id)!;const t=squadTarget(o);return segmentClear(a,b,infiltrationSolids(cfg.fliesOverWalls?{...t,walls:[]}:t),bounds,DRONE_CLEARANCE);});
+ active.forEach((d,i)=>{if(distance(d.position,positions[i])>.001){d.position=positions[i];d.path=[];d.pathKey=undefined;}});
 }
 /** Shared work survives interruption. Pending loot banks only on a successful mission, exactly once. */
 export function advanceTactical(o:Operation,now:number){if(o.status!=='active')return;const squad=o.squad!,endAt=Math.min(now,o.startedAt!+INFILTRATION.operationMs);

@@ -1,0 +1,3 @@
+import {type NavPoint} from './navigation';
+/** Bounded pairwise steering. No physics engine or per-frame path search. */
+export function separateDronePositions(points:NavPoint[],dt:number,valid:(index:number,from:NavPoint,to:NavPoint)=>boolean){const next=points.map(p=>[...p] as NavPoint);for(let i=0;i<next.length;i++)for(let j=i+1;j<next.length;j++){const a=next[i],b=next[j],dx=b[0]-a[0],dz=b[1]-a[1],distance=Math.hypot(dx,dz);if(distance>=1.65)continue;const nx=distance>.001?dx/distance:1,nz=distance>.001?dz/distance:0,step=Math.min((1.65-distance)/2,dt*1.2);for(const [index,sign] of [[i,-1],[j,1]]){const from=next[index],to:NavPoint=[from[0]+nx*step*sign,from[1]+nz*step*sign];if(valid(index,from,to))next[index]=to;}}return next;}

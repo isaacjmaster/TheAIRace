@@ -4,8 +4,8 @@ import {DECORATIONS,decorationFootprint,overlapsRect,type DecorationKind,type De
 import {FOUNDATION_BUILDINGS,buildingLayout,footprint,type FoundationState,type RigPosition,type Orientation} from './foundation';
 import {FOUNDATION_PLOT as P} from './foundation-plot';
 import {OBSTACLES} from './campus-layout';
-import {obstacleSize,landscapeRoute,door} from './landscape';
-export function validDecorationPosition(s:FoundationState,kind:DecorationKind,position:RigPosition,orientation:Orientation,ignoreId?:string,verifyAccess=true):string|null{
+import {obstacleSize} from './landscape';
+export function validDecorationPosition(s:FoundationState,kind:DecorationKind,position:RigPosition,orientation:Orientation,ignoreId?:string,_verifyAccess=true):string|null{
  if(!DECORATIONS[kind]||position.length!==2||!position.every(Number.isInteger)||![0,1,2,3].includes(orientation))return 'Choose a valid decoration position.';
  const a=decorationFootprint({kind,position,orientation});
  if(a.x-a.w/2<P.minX||a.x+a.w/2>P.maxX||a.z-a.d/2<P.minZ||a.z+a.d/2>P.maxZ)return 'Keep the decoration inside the campus.';
@@ -16,10 +16,7 @@ export function validDecorationPosition(s:FoundationState,kind:DecorationKind,po
  for(const wall of ownedSecurityWalls(s))if(overlapsRect(a,wall,.2))return 'Keep Security Walls clear.';
  for(const o of s.decorations||[])if(o.id!==ignoreId&&overlapsRect(a,decorationFootprint(o),.15))return 'Leave space between decorations.';
  if(s.landscape?.clearing?.route.some(([x,z])=>overlapsRect(a,{x,z,w:1,d:1},.2)))return 'Keep the Builder Bot’s route clear.';
- // Connectivity checks are authoritative; dragging uses the cheap footprint checks above.
- if(!verifyAccess)return null;
- const trial={...s,decorations:[...(s.decorations||[]).filter(o=>o.id!==ignoreId),{id:ignoreId||'preview',kind,position,orientation}]};
- if(!FOUNDATION_BUILDINGS.filter(k=>buildingLayout(s,k)).every(k=>landscapeRoute(trial,door(s,k)).length>0))return 'Leave a path to each building.';
+ // Decorations require a valid footprint, not a route to every existing building.
  return null;
 }
 export function purchaseDecoration(s:FoundationState,kind:DecorationKind,position:RigPosition,orientation:Orientation,id:string){

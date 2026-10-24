@@ -1,3 +1,5 @@
+import {SENTINEL} from './sentinel-catalog';
+import {DRONE_DETECTION_RADIUS} from './drone-balance';
 import type {TargetSnapshot,Asset,Vec,Defense} from './infiltration';
 import type {FoundationState} from './foundation';
 import type {SecurityBarrier} from './security-walls';
@@ -16,11 +18,16 @@ export function craftCampusTarget(id:string):TargetSnapshot{
   {half:[24,20],compound:[19,15],entry:[-21,17],assets:[asset('hq','hq',0,-7),asset('gpu','gpu',-12,6,[-12,8.3]),asset('lab','lab',11,6,[11,8.4]),asset('terminal','terminal',13,-8,[13,-6.5]),asset('gpu-2','gpu',-11,-7,[-11,-4.7]),asset('lab-2','lab',1,4,[1,6.4])],walls:[rect('back',0,-14,36,.5),rect('left',-18,-3,.5,22),rect('right-a',18,-8,.5,12),rect('right-b',16,8,.5,8),rect('step',17,2,2,.5),rect('front-a',-12,13,12,.5),rect('front-b',9,13,14,.5),rect('divide-a',-7,0,22,.5),rect('divide-b',14,0,8,.5),rect('core-left',-5,-7,.5,8),rect('core-right',5,-7,.5,8),rect('core-back',0,-11,10,.5)],routes:[[[-14,10],[-9,10],[-8,6]],[[7,10],[12,10],[13,5]],[[-14,-3],[-12,-11],[-8,-10]],[[8,-4],[14,-6],[14,-11]],[[20,-12],[21,-10],[20,-6]]]}
  ];
  const l=layouts[rank],reward=BASE_REWARDS[rank];
+ // Fixed defensive emplacements replace one mobile patrol per tower to retain a viable army budget.
+ const towerPositions:Vec[]=rank===2?[[6,-2]]:rank===3?[[0,6]]:rank===4?[[-7,6],[11,-3]]:[];
+ // Mission emplacements use a slower training-defense profile; owned PvP towers retain their balance.
+ const sentinels=towerPositions.map((position,i)=>({id:'vanguard-'+i,position,range:SENTINEL.range,damage:12,lockStep:2,maxDamage:20,intervalMs:2000,warmupMs:900}));
+ for(const tower of sentinels)l.assets.push({id:tower.id,kind:'station',model:'sentinel',name:'Sentinel Tower',position:tower.position,size:[4,4],access:[tower.position[0],tower.position[1]+2.7],hackSeconds:12,compute:0,research:0});
  const tech=l.assets.filter(a=>a.access);let c=reward.compute,r=reward.research;
  for(const [i,a]of tech.entries()){a.compute=i===tech.length-1?c:Math.floor(reward.compute/tech.length);a.research=i===tech.length-1?r:Math.floor(reward.research/tech.length);c-=a.compute;r-=a.research;}
  const walls=l.walls.flatMap(w=>{const horizontal=w.w>w.d,len=Math.max(w.w,w.d),n=Math.ceil(len/2),span=len/n;return Array.from({length:n},(_,i)=>({...w,id:w.id+'-'+i,x:w.x+(horizontal?-len/2+span*(i+.5):0),z:w.z+(horizontal?0:-len/2+span*(i+.5)),w:horizontal?span:w.w,d:horizontal?w.d:span}));});
- const defenses:Defense[]=l.routes.map((route,i)=>({id:'sentinel-'+(i+1),route:route as Vec[],radius:6.8,patrolSpeed:1.2,pursuitSpeed:2.1,warningSeconds:.35}));
- return {version:1,id,name:['Lumen Labs','Vector Works','Prism Systems','Orbit Research','Apex Compute'][rank],difficulty:['Startup','Developing','Established','Advanced','Elite'][rank],arena:'campus-v2',campusBounds:{minX:-l.half[0],maxX:l.half[0],minZ:-l.half[1],maxZ:l.half[1]},compound:l.compound as Vec,entry:l.entry as Vec,exit:l.entry as Vec,assets:l.assets,defenses,walls,influence:reward.influence,navigationVersion:2,hqLevel:2};
+ const defenses:Defense[]=l.routes.slice(0,l.routes.length-sentinels.length-(rank===4?1:0)).map((route,i)=>({id:'sentinel-'+(i+1),route:route as Vec[],radius:DRONE_DETECTION_RADIUS,patrolSpeed:1.2,pursuitSpeed:2.1,warningSeconds:.35}));
+ return {version:1,id,name:['Lumen Labs','Vector Works','Prism Systems','Orbit Research','Apex Compute'][rank],difficulty:['Startup','Developing','Established','Advanced','Elite'][rank],arena:'campus-v2',campusBounds:{minX:-l.half[0],maxX:l.half[0],minZ:-l.half[1],maxZ:l.half[1]},compound:l.compound as Vec,entry:l.entry as Vec,exit:l.entry as Vec,assets:l.assets,sentinels,defenses,walls,influence:reward.influence,navigationVersion:2,hqLevel:2};
 }
 /** Random within a progression-appropriate pool; HQ 2 and three successful missions unlock all tiers. */
 export function chooseInfiltrationBase(s:FoundationState,seed:number,completed=0){const level=s.founderHqLevel??1,bots=s.bots??0;const tiers=completed>=3&&level>=2?5:completed>=1&&level>=2?4:level>=2||bots>=10?3:bots>=5?2:1;return BASE_IDS[(seed>>>0)%tiers];}

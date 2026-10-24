@@ -1,0 +1,1 @@
+export const DRONE_DETECTION_RADIUS=10.2;

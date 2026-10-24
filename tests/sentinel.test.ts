@@ -27,7 +27,7 @@ test('Target Lock ramps 32/36/40/44/48, caps and resets on range, occlusion and 
 test('dead/extracted bots are ignored, tower retargets, destroyed towers and ended battles stop',()=>{
  const o=battle(3),[a,b,c]=o.squad!.agents;c.state='extracted';a.health=20;advanceSentinels(o);o.lastTick+=500;advanceSentinels(o);assert.equal(a.state,'lost');assert.deepEqual(a.cargo,{compute:0,research:0,intel:false});o.lastTick+=100;advanceSentinels(o);assert.equal(o.sentinels![0].targetId,b.id);assert.equal(o.sentinels![0].lockShots,0);
  o.hacked.push('sentinel');o.lastTick+=5000;advanceSentinels(o);assert.equal(b.health,60);assert.equal(c.health,60);assert.equal(o.sentinels![0].targetId,undefined);
- const done=battle();done.status='extracted';advanceSentinels(done);assert.equal(done.sentinels,undefined);const friendly=battle();friendly.pvp=undefined;advanceSentinels(friendly);assert.equal(friendly.sentinels,undefined);
+ const done=battle();done.status='extracted';advanceSentinels(done);assert.equal(done.sentinels,undefined);const friendly=battle();friendly.pvp=undefined;advanceSentinels(friendly);assert.ok(friendly.sentinels?.length);
 });
 test('fixed-step combat persists identically across reconnect/offline; losses settle once',()=>{
  const o=battle(2);advanceOperation(o,epoch+700);const resumed=JSON.parse(JSON.stringify(o));advanceOperation(o,epoch+10000);for(let t=epoch+800;t<=epoch+10000;t+=100)advanceOperation(resumed,t);assert.deepEqual(JSON.parse(JSON.stringify(o)),JSON.parse(JSON.stringify(resumed)));assert.equal(o.status,'caught');assert.equal(o.squad!.agents.filter(a=>a.state==='lost').length,2);

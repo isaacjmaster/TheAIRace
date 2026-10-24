@@ -1,5 +1,5 @@
 /** Original stylized daytime air, leaves and birds. No downloaded recordings. */
-export const HQ_AUDIO={musicScale:.6,airGain:.025,birdGain:.025,leafGain:.035} as const;
+export const HQ_AUDIO={musicScale:.42,airGain:.03125,birdGain:.03125,leafGain:.04375} as const;
 export class HQAmbience{
  private fading?:AudioBufferSourceNode;private air?:AudioBufferSourceNode;private airBus?:GainNode;private noise?:AudioBuffer;
  private voices=new Set<AudioScheduledSourceNode>();private seed=8731;private nextBird=0;private nextLeaf=0;

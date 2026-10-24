@@ -1,6 +1,6 @@
 import {builderHutFootprints} from './foundation';
 import {SENTINEL} from './sentinel-catalog';
-import {founderHqLevel} from './founder-hq';
+import {founderHqLevel,wallCapacity} from './founder-hq';
 import {segmentClear} from './navigation';
 import {canPatrol} from './security';
 import {CYBERSECURITY,wallFootprint,wallEnds} from './security-catalog';
@@ -14,7 +14,7 @@ export function validWallPosition(s:FoundationState,position:RigPosition,orienta
  if(position.length!==2||!position.every(Number.isInteger)||![0,1,2,3].includes(orientation))return 'Snap the wall to the grid.';
  const candidate={id:ignoreId??'preview-wall',position,orientation},a=wallFootprint(candidate);
  if(a.x-a.w/2<P.minX||a.x+a.w/2>P.maxX||a.z-a.d/2<P.minZ||a.z+a.d/2>P.maxZ)return 'Keep the wall inside your property.';
- if(!ignoreId&&(s.walls?.length??0)>=CYBERSECURITY.wall.maxSegments)return 'Wall placement limit reached.';
+ if(!ignoreId&&(s.walls?.length??0)>=wallCapacity(s))return 'Wall placement limit reached.';
  for(const h of builderHutFootprints(s))if(overlapsRect(a,h,.15))return 'Keep the Builder Hut clear.';
  for(const k of FOUNDATION_BUILDINGS){const l=buildingLayout(s,k);if(l&&overlapsRect(a,footprint(k,l),.15))return 'Leave space around buildings.';if(l&&!segmentClear(l.position,door(s,k),[a],{minX:-100,maxX:100,minZ:-100,maxZ:100},.55))return 'Leave building entrances clear.';}
  for(const o of OBSTACLES.filter(o=>o.kind==='rock'&&!s.landscape?.legacyRocksRegistered||!s.landscape&&o.kind==='tree'))if(overlapsRect(a,{x:o.position[0],z:o.position[1],w:o.width,d:o.depth},.1))return 'Choose open ground.';

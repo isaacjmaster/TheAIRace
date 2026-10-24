@@ -3,7 +3,7 @@ import {infiltrationSolids,targetBounds,type Operation} from './infiltration';
 import {squadTarget} from './squad-infiltration';
 /** Runs only inside the authoritative fixed-step tactical simulation. Visuals read this state. */
 export function advanceSentinels(o:Operation){
- if(o.status!=='active'||!o.pvp||!o.squad||!o.target.sentinels?.length)return;
+ if(o.status!=='active'||!o.squad||!o.target.sentinels?.length)return;
  o.sentinels??=[];
  for(const cfg of o.target.sentinels){
   let state=o.sentinels.find(s=>s.id===cfg.id);

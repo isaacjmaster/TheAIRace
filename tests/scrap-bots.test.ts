@@ -24,19 +24,19 @@ test('Fabricator grants one Hangar, reserves both footprints, and shares the one
  const t=initialFoundation();t.compute=200;buildRig(t,[6,0],epoch);buildFabricator(t,position,epoch+75000);assert.equal(collectRig(t,epoch+75000),10);
 });
 test('training is sequential, charges once, includes queued capacity, and survives clock rollback and offline time',()=>{
- const s=ready();trainScrap(s,5,epoch+15000);trainScrap(s,5,epoch+15000);assert.equal(s.compute,400);assert.equal(armyUsed(s),10);assert.throws(()=>trainScrap(s,1,epoch+15000),/full/);assert.equal(s.training!.at(-1),epoch+65000);
- advanceFoundation(s,epoch+19999);assert.equal(s.bots,0);advanceFoundation(s,epoch+20000);assert.equal(s.bots,1);assert.equal(s.training!.length,9);advanceFoundation(s,epoch);assert.equal(s.bots,1);
+ const s=ready();trainScrap(s,5,epoch+15000);trainScrap(s,5,epoch+15000);assert.equal(s.compute,400);assert.equal(armyUsed(s),10);assert.throws(()=>trainScrap(s,1,epoch+15000),/full/);assert.equal(s.training!.at(-1),epoch+115000);
+ advanceFoundation(s,epoch+24999);assert.equal(s.bots,0);advanceFoundation(s,epoch+25000);assert.equal(s.bots,1);assert.equal(s.training!.length,9);advanceFoundation(s,epoch);assert.equal(s.bots,1);
  const restored=JSON.parse(JSON.stringify(s));advanceFoundation(restored,epoch+3600000);advanceFoundation(restored,epoch+7200000);assert.equal(restored.bots,10);assert.deepEqual(restored.training,[]);assert.equal(restored.compute,400);
- assert.throws(()=>trainScrap(ready(),0,epoch+20000));const poor=ready();poor.compute=4;assert.throws(()=>trainScrap(poor,1,epoch+20000),/5 Compute/);
+ assert.throws(()=>trainScrap(ready(),0,epoch+25000));const poor=ready();poor.compute=4;assert.throws(()=>trainScrap(poor,1,epoch+25000),/5 Compute/);
 });
 test('raid stock is reserved, deployments consume trained bots, and undeployed bots return exactly once',()=>{
- const s=ready();trainScrap(s,5,epoch+15000);advanceFoundation(s,epoch+40000);startBotRaid(s,randomUUID(),0,epoch+40000);const id=s.botRaid!.id;assert.equal(s.bots,0);assert.equal(armyUsed(s),5);assert.throws(()=>startBotRaid(s,randomUUID(),0,epoch+40000),/Resume/);
- assert.throws(()=>deployScrap(s,id,{x:13,y:9},epoch+40000),/outer|outside/);assert.equal(s.botRaid!.simulation.stock.scrap,5);deployScrap(s,id,{x:9,y:2},epoch+40000);assert.equal(s.botRaid!.simulation.stock.scrap,4);assert.equal(armyUsed(s),4);
- trainScrap(s,5,epoch+40000);assert.equal(armyUsed(s),9);retreatBots(s,id,epoch+41000);assert.equal(s.bots,4);retreatBots(s,id,epoch+42000);assert.equal(s.bots,4);advanceFoundation(s,epoch+100000);assert.equal(s.bots,9);assert.equal(armyUsed(s),9);
+ const s=ready();trainScrap(s,5,epoch+15000);advanceFoundation(s,epoch+65000);startBotRaid(s,randomUUID(),0,epoch+65000);const id=s.botRaid!.id;assert.equal(s.bots,0);assert.equal(armyUsed(s),5);assert.throws(()=>startBotRaid(s,randomUUID(),0,epoch+65000),/Resume/);
+ assert.throws(()=>deployScrap(s,id,{x:13,y:9},epoch+65000),/outer|outside/);assert.equal(s.botRaid!.simulation.stock.scrap,5);deployScrap(s,id,{x:9,y:2},epoch+65000);assert.equal(s.botRaid!.simulation.stock.scrap,4);assert.equal(armyUsed(s),4);
+ trainScrap(s,5,epoch+65000);assert.equal(armyUsed(s),9);retreatBots(s,id,epoch+66000);assert.equal(s.bots,4);retreatBots(s,id,epoch+67000);assert.equal(s.bots,4);advanceFoundation(s,epoch+125000);assert.equal(s.bots,9);assert.equal(armyUsed(s),9);
 });
 test('both starter layouts are winnable with ten trained melee Scrap Bots and settle once after offline continuation',()=>{
- for(const layout of [0,1]){const s=ready();trainScrap(s,10,epoch+15000);advanceFoundation(s,epoch+65000);startBotRaid(s,randomUUID(),layout,epoch+65000);const id=s.botRaid!.id;
- for(let i=0;i<10;i++)deployScrap(s,id,{x:9,y:2},epoch+65000);assert.throws(()=>deployScrap(s,id,{x:9,y:2},epoch+65000));
+ for(const layout of [0,1]){const s=ready();trainScrap(s,10,epoch+15000);advanceFoundation(s,epoch+115000);startBotRaid(s,randomUUID(),layout,epoch+115000);const id=s.botRaid!.id;
+ for(let i=0;i<10;i++)deployScrap(s,id,{x:9,y:2},epoch+115000);assert.throws(()=>deployScrap(s,id,{x:9,y:2},epoch+115000));
  const r=s.botRaid!.simulation;let meleeHits=0;for(let step=0;step<1801&&!r.ended;step++){tick(r);for(const e of r.effects.filter(e=>e.source>=100&&e.ttl>.29)){const u=r.units.find(u=>u.id===e.source)!;assert.equal(u.kind,'scrap');assert.ok(distance(e.from,e.to)<=STATS.scrap.range+.01);meleeHits++;}}
  assert.equal(r.reason,'Network cleared');assert.ok(meleeHits>0);const compute=s.compute;advanceFoundation(s,epoch+200000);assert.equal(s.compute,compute+45);assert.equal(s.bots,0);advanceFoundation(s,epoch+300000);assert.equal(s.compute,compute+45);
  }
@@ -67,8 +67,8 @@ test('SQLite restart, concurrent requests and action retries never duplicate bui
 });
 
 test('idle raids preserve reservation; offline defeat and expiry return only unspent bots and never repay deployed troops',()=>{
- const s=ready();trainScrap(s,5,epoch+15000);advanceFoundation(s,epoch+40000);startBotRaid(s,randomUUID(),0,epoch+40000);const id=s.botRaid!.id;
+ const s=ready();trainScrap(s,5,epoch+15000);advanceFoundation(s,epoch+65000);startBotRaid(s,randomUUID(),0,epoch+65000);const id=s.botRaid!.id;
  advanceFoundation(s,epoch+86400000);assert.equal(s.botRaid!.simulation.time,0);assert.equal(s.botRaid!.simulation.stock.scrap,5);
  deployScrap(s,id,{x:25,y:17},epoch+86400000);const restored=JSON.parse(JSON.stringify(s));advanceFoundation(restored,epoch+86400000+91000);assert.equal(restored.botRaid.settled,true);assert.equal(restored.bots,4);const paid=restored.compute;advanceFoundation(restored,epoch+86400000+100000);assert.equal(restored.bots,4);assert.equal(restored.compute,paid);
- const defeat=ready();defeat.bots=1;startBotRaid(defeat,randomUUID(),0,epoch+40000);deployScrap(defeat,defeat.botRaid!.id,{x:25,y:17},epoch+40000);defeat.botRaid!.simulation.units[0].hp=0;advanceFoundation(defeat,epoch+40100);assert.equal(defeat.botRaid!.simulation.reason,'Squad eliminated');assert.equal(defeat.bots,0);
+ const defeat=ready();defeat.bots=1;startBotRaid(defeat,randomUUID(),0,epoch+65000);deployScrap(defeat,defeat.botRaid!.id,{x:25,y:17},epoch+65000);defeat.botRaid!.simulation.units[0].hp=0;advanceFoundation(defeat,epoch+65100);assert.equal(defeat.botRaid!.simulation.reason,'Squad eliminated');assert.equal(defeat.bots,0);
 });

@@ -13,7 +13,7 @@ export const TECHNOLOGIES={
 /** Missing legacy fields mean level zero; legitimate saved levels are preserved. */
 export function technologyLevel(s:Pick<FoundationState,'technologies'>,id:TechnologyId){const n=s.technologies?.[id];return Number.isInteger(n)&&n!>=0&&n!<=3?n!:0;}
 export const productionPerMinute=(s:Pick<FoundationState,'technologies'>)=>10*(1+technologyLevel(s,'gpuOptimization')/10);
-export const trainingMilliseconds=(s:Pick<FoundationState,'technologies'>)=>Math.round(5000*(1-technologyLevel(s,'trainingEfficiency')/10));
+export const trainingMilliseconds=(s:Pick<FoundationState,'technologies'>)=>Math.round(10000*(1-technologyLevel(s,'trainingEfficiency')/10));
 export const cipherDamageMultiplier=(s:Pick<FoundationState,'technologies'>)=>1+technologyLevel(s,'cipherEngineering')/10;
 /** Caller advances accrual at the old rate, then holds the save/action transaction. */
 export function purchaseTechnology(s:FoundationState,id:TechnologyId,expectedLevel:number,now:number){
