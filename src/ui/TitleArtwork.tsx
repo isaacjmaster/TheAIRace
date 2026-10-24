@@ -1,16 +1,12 @@
 import {useEffect,useRef,useState,type MutableRefObject} from 'react';
-import type {TitleDiorama} from '../art/TitleDiorama';
 import {TitleFallback} from './TitleFallback';
 
-/** Decorative menu scene only: no player state, input handling, or game simulation. */
-export function TitleArtwork({active=true,progress,onReady}:{active?:boolean;progress?:MutableRefObject<number>;onReady?:()=>void}){
- const host=useRef<HTMLDivElement>(null),scene=useRef<TitleDiorama|null>(null),activeRef=useRef(active);
+/** Promotional art only; loading readiness and account recovery remain live UI. */
+export function TitleArtwork({onReady}:{active?:boolean;progress?:MutableRefObject<number>;onReady?:()=>void}){
  const ready=useRef(onReady);ready.current=onReady;
- const [failed,setFailed]=useState(false);activeRef.current=active;
- useEffect(()=>{let cancelled=false;
-  void import('../art/TitleDiorama').then(({TitleDiorama})=>{if(cancelled||!host.current)return;scene.current=new TitleDiorama(host.current,()=>{setFailed(true);ready.current?.();});scene.current.setStartupProgress(()=>progress?.current??1);scene.current.setActive(activeRef.current);ready.current?.();}).catch(()=>{if(!cancelled){setFailed(true);ready.current?.();}});
-  return ()=>{cancelled=true;scene.current?.dispose();scene.current=null;};
- },[]);
- useEffect(()=>{scene.current?.setActive(active);},[active]);
- return <div className="title-artwork" aria-hidden="true"><div className="title-diorama" ref={host} hidden={failed}/>{failed&&<TitleFallback/>}</div>;
+ const [failed,setFailed]=useState(false);
+ // Cached images and load failures both release the decorative-art readiness gate.
+ const image=useRef<HTMLImageElement>(null);
+ useEffect(()=>{if(image.current?.complete)ready.current?.();},[]);
+ return <div className="title-artwork" aria-hidden="true">{failed?<TitleFallback/>:<img ref={image} className="title-promo" src="/art/loading-campus.webp" alt="" fetchPriority="high" onLoad={()=>ready.current?.()} onError={()=>{setFailed(true);ready.current?.();}}/>}</div>;
 }
