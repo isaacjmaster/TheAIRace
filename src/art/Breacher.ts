@@ -7,7 +7,7 @@ const poses=new WeakMap<THREE.Object3D,Pose>();
 /** Reference-led, native stylized heavy assault mech. Forward +Z; all resources belong to WorldKit. */
 export function breacherModel(k:WorldKit){
  const root=new THREE.Group(),rig=new THREE.Group(),body=new THREE.Group(),head=new THREE.Group();
- root.name='Breacher';rig.scale.setScalar(1.08);rig.name='breacher-rig';body.name='breacher-torso';head.name='breacher-head';root.add(rig);rig.add(body);body.position.y=1.14;
+ root.name='Breacher';rig.scale.setScalar(1.38);rig.position.y=-.138;rig.name='breacher-rig';body.name='breacher-torso';head.name='breacher-head';root.add(rig);rig.add(body);body.position.y=1.14;
  const arms:THREE.Group[]=[],elbows:THREE.Group[]=[],legs:THREE.Group[]=[],knees:THREE.Group[]=[];
  // Compact layered torso, exposed waist machinery, and a broad angled breastplate.
  k.box(body,[.56,.21,.42],[0,-.08,0],joint,.04);
@@ -105,7 +105,7 @@ export function animateBreacher(bot:THREE.Object3D,dt:number,reduced=false,attac
   const stride=Math.sin(p.phase+i*Math.PI)*.34*walk;
   p.legs[i].rotation.x=stride-death*.35-(1-spawn)*.2;
   p.knees[i].rotation.x=Math.max(0,-stride)*.65+death*.75+(1-spawn)*.35;
-  p.arms[i].rotation.x=-stride*.55+(i===0?charge*.45-strike*1.42:charge*-.15-strike*.2)*motion-death*.12;
+  p.arms[i].rotation.x=-stride*.55+(i===0?charge*.45-strike*(bot.userData.breacherLowStrike?.7:1.42):charge*-.15-strike*.2)*motion-death*.12;
   p.arms[i].rotation.z=(i===0?.12:-.09)+Math.sin(p.time*1.6)*.01*motion;
   p.elbows[i].rotation.x=-.18+(i===0?-charge*.8-strike*.05:-charge*.1)*motion;
  }
