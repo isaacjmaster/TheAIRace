@@ -19,7 +19,7 @@ import {advanceTactical,planTactical} from '../shared/tactical-infiltration';
 import {commandOperation} from '../shared/infiltration';
 
 test('wall rows stop at corners and reject a group move atomically',()=>{
- const s=initialFoundation();s.walls=[{id:'a',position:[20,15],orientation:0},{id:'b',position:[22,15],orientation:0},{id:'c',position:[24,15],orientation:0},{id:'turn',position:[25,16],orientation:1}];
+ const s=initialFoundation();s.walls=[{id:'a',legacy:true,position:[20,15],orientation:0},{id:'b',legacy:true,position:[22,15],orientation:0},{id:'c',legacy:true,position:[24,15],orientation:0},{id:'turn',legacy:true,position:[25,16],orientation:1}];
  assert.deepEqual(connectedWallRow(s,'b').map(w=>w.id).sort(),['a','b','c']);
  const before=structuredClone(s);assert.throws(()=>moveWallRow(s,'b',[0,0]));assert.deepEqual(s,before);
  moveWallRow(s,'b',[22,20]);assert.deepEqual(s.walls.map(w=>w.position),[[20,20],[22,20],[24,20],[25,16]]);assert.equal(s.compute,before.compute);

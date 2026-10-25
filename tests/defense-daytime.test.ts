@@ -9,11 +9,11 @@ import {newSquadOperation,advanceSquad} from '../shared/squad-infiltration';
 import {commandOperation,infiltrationPath,targetBounds,type Vec} from '../shared/infiltration';
 import {planTactical,TACTICAL_BALANCE,LEGACY_TACTICAL_BALANCE,tacticalBalance} from '../shared/tactical-infiltration';
 const ready=():FoundationState=>Object.assign(initialFoundation(),{compute:900,builders:1,starterStation:'placed' as const,stationLayout:{position:[12,-12] as Vec,orientation:0 as const},landscape:{version:1 as const,epoch:'test',sequence:0,nextSpawnAt:1e15,items:[],pendingCompute:0}});
-test('closed perimeter permits owner builder routing but remains solid for hostiles; snap joins corner endpoints',()=>{
+test('closed perimeter permits owner builder routing but remains solid for hostiles; snap follows tile centers',()=>{
  const s=ready();let n=0;for(let x=-11;x<=1;x+=2)for(const z of [-8,6])buyWall(s,[x,z],0,'w'+n++);for(let z=-7;z<=5;z+=2)for(const x of [-12,2])buyWall(s,[x,z],1,'w'+n++);
  assert.equal(s.walls!.length,28);assert.ok(landscapeRoute(s,[-5,4.8],undefined,1.1).length);
  assert.equal(findPath([12,-12],[-5,4.8],ownedSecurityWalls(s),{minX:-35,maxX:39,minZ:-26,maxZ:32},.65).length,0);
- const one=ready();buyWall(one,[16,-12],0,'a');assert.deepEqual(snapWallPosition(one,[17.3,-10.8],1),[17,-11]);
+ const one=ready();buyWall(one,[16,-12],0,'a');assert.deepEqual(snapWallPosition(one,[17.3,-10.8],1),[17.5,-10.5]);
 });
 test('near and far obstacles complete exactly 15 seconds after acceptance with idempotent reward and immediate reassignment',()=>{
  for(const kind of ['tree','rock','scrap'] as const)for(const position of [[16,0],[-29,26]] as Vec[]){const s=ready();s.landscape!.items=[{id:'one',kind,position,variant:0},{id:'two',kind:'scrap',position:[20,20],variant:1}];clearObstacle(s,'one',1000);const j=structuredClone(s.landscape!.clearing!);assert.equal(j.clearedAt,16000);assert.ok(j.workAt<j.clearedAt);assert.throws(()=>clearObstacle(s,'two',2000),/busy/);const restored=structuredClone(s);advanceFoundation(restored,15999);assert.equal(restored.compute,900);advanceFoundation(restored,16000);assert.equal(restored.compute,900+LANDSCAPE.rewards[kind]);assert.equal(restored.buildersBusy,0);advanceFoundation(restored,16000);assert.equal(restored.compute,900+LANDSCAPE.rewards[kind]);const from=clearingPosition(j,16000);clearObstacle(restored,'two',16000);assert.deepEqual(restored.landscape!.clearing!.route[0],from);assert.equal(restored.landscape!.clearing!.clearedAt,31000);}

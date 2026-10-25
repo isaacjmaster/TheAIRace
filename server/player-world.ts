@@ -32,10 +32,10 @@ export function playerWorldStore(db:DatabaseSync,clock:()=>number,leaderboard:(i
  function view(id:string):{company:PublicCompany;base:PublicBase|null}|null{
   const row=db.prepare('SELECT p.save_id,s.state,u.username,x.total,x.floor_level FROM company_players p JOIN foundation_saves s ON s.id=p.save_id JOIN player_usernames u ON u.player_id=p.id LEFT JOIN company_xp x ON x.company_id=p.id WHERE p.id=?').get(id);if(!row)return null;
   let s:FoundationState;try{s=JSON.parse(String(row.state));}catch{return null;}if(!s||typeof s!=='object')return null;const now=clock(),base=publicBase(s,id,now);let onboarding=false;try{const a=db.prepare('SELECT progress FROM foundation_ava WHERE session=?').get(String(row.save_id));onboarding=!a||['complete','skipped'].includes(JSON.parse(String(a.progress)).status);}catch{}
-  const own=leaderboard(id).own,visitable=!!base&&onboarding&&hasBuilderStation(s);
+  const own=leaderboard(id).own,visitable=!!base&&onboarding&&hasBuilderStation(s)&&!s.buildingUpdate?.pending;
   const company:PublicCompany={id,name:String(row.username),level:xpProgress(Number(row.total??0),Number(row.floor_level??s.level??1)).level,hqLevel:base?.buildings.find(b=>b.id==='hq')?.level??1,influence:own?.influence??0,rank:own?.rank??null,visitable,...(!visitable?{message:'This founder is still preparing their campus. Check back soon.'}:{})};return {company,base:visitable?base:null};
  }
- function start(s:FoundationState,attacker:string,scoutId:string,now:number){
+ function start(s:FoundationState,attacker:string,scoutId:string,now:number){if(s.buildingUpdate?.pending)throw Error('Finish your replacement defenses before attacking players.');
   const scout=db.prepare('SELECT * FROM pvp_scouts WHERE id=? AND attacker_id=?').get(scoutId,attacker);if(!scout||Number(scout.expires_at)<=now)throw Error('This scouting session expired. Find another opponent.');
   if(db.prepare('SELECT 1 FROM pvp_battles WHERE scout_id=?').get(scoutId))throw Error('This scouting session already started a battle. Resume your operation.');
   const defender=String(scout.defender_id),target=view(defender);if(defender===attacker||!target?.base)throw Error('This campus is no longer available. Find another opponent.');if(shield(defender)>now)throw Error('This player has post-attack protection. Find another opponent.');if(db.prepare("SELECT 1 FROM pvp_battles WHERE defender_id=? AND status='active' AND finished_at IS NULL").get(defender))throw Error('This base is already under attack.');const id=randomUUID();

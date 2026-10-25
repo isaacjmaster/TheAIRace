@@ -9,5 +9,5 @@ export const founderDroneCapacity=(s:{founderHqLevel?:number})=>founderHqLevel(s
 
 export function founderUnlocks(from:1|2,to:1|2){return [{id:'rig' as const,name:'GPU Rig',count:gpuRigCapacity({founderHqLevel:to})-(from===to?0:gpuRigCapacity({founderHqLevel:from}))},{id:'builder' as const,name:'Builder Bot',count:founderBuilderCapacity({founderHqLevel:to})-(from===to?0:founderBuilderCapacity({founderHqLevel:from}))},{id:'securityDrone' as const,name:'Security Drone',count:founderDroneCapacity({founderHqLevel:to})-(from===to?0:founderDroneCapacity({founderHqLevel:from}))}].filter(u=>u.count>0);}
 
-export const WALL_CAPACITY_BY_HQ:Readonly<Record<number,number>>={1:200,2:200};
+export const WALL_CAPACITY_BY_HQ:Readonly<Record<number,number>>={1:100,2:100};
 export function wallCapacity(s:{founderHqLevel?:number}){return WALL_CAPACITY_BY_HQ[s.founderHqLevel??1]??0;}

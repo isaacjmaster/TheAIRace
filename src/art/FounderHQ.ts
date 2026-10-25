@@ -33,7 +33,7 @@ export function founderHQ(k:WorldKit,parent:THREE.Group,level:1|2=1):THREE.Group
  const polished=k.finish==='campus';
  const house=new THREE.Group();house.name='Founder HQ';house.position.set(-5,0,-1);parent.add(house);
  const box=(size:[number,number,number],pos:[number,number,number],color:string,r=.06,glow=false)=>k.box(house,size,pos,color,r,glow);
- box([8.8,.35,8],[0,.2,.6],'#d9e9df',.15);
+ box([8.6,.35,7.8],[0,.2,.5],'#8f9e91',.15);
  box([7.8,.18,6.5],[0,.45,0],c.cream);
  box([7.8,4.2,.3],[0,2.6,-3],c.cream);
  for(const x of [-3.75,3.75])box([.3,4.2,6],[x,2.6,0],c.cream);
@@ -151,7 +151,7 @@ function founderLaptop(k:WorldKit,house:THREE.Group,x:number){
 function founderHQLevel2(k:WorldKit,parent:THREE.Group){
  const house=new THREE.Group();house.name='Founder HQ Level 2';house.position.set(-5,0,-1);parent.add(house);
  const box=(size:[number,number,number],pos:[number,number,number],color:string,r=.06,glow=false)=>k.box(house,size,pos,color,r,glow);
- box([8.8,.35,8],[0,.2,.6],'#d9e9df',.15);box([8.2,.18,6.8],[0,.46,0],c.cream,.1);
+ box([8.6,.35,7.8],[0,.2,.5],'#8f9e91',.15);box([8.2,.18,6.8],[0,.46,0],c.cream,.1);
  // Taller main office occupies the left side; attached studio occupies the right.
  box([5.9,4.65,.24],[-1.1,2.86,-3],c.cream);box([.24,4.65,6.3],[-3.93,2.86,.1],c.cream);
  box([.23,4.65,6.3],[1.72,2.86,.1],c.cream);

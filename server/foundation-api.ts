@@ -1,3 +1,5 @@
+import {migrateBuildingUpdate} from './building-update';
+import {prepareBuildingUpdate} from '../shared/building-update';
 import {commitLayout} from '../shared/layout-draft';
 import {buildSentinel} from '../shared/cybersecurity';
 import {developmentInfluenceStore} from './development-influence';
@@ -25,9 +27,10 @@ import { z } from 'zod';
 import {setGuardPosition} from '../shared/security';
 import { reconcileBuilderHuts,moveBuilderHut,placeOwnedHangar,acknowledgeHangar,upgradeFounderHQ,establishBuilderStation,moveBuilding,rotateBuilding,buildFabricator,buildHangar,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
 /** Separate table and cookie: foundation resets never touch any previous game save. */
-export function registerFoundation(app:express.Express,db:DatabaseSync,options:{legacyRaids?:boolean;cookieName?:string;legacyPaths?:string[];clock?:()=>number;operationFactory?:(id:string,target:string,now:number)=>Operation}={}){
+export function registerFoundation(app:express.Express,db:DatabaseSync,options:{buildingGrid?:boolean;legacyRaids?:boolean;cookieName?:string;legacyPaths?:string[];clock?:()=>number;operationFactory?:(id:string,target:string,now:number)=>Operation}={}){
  db.exec('CREATE TABLE IF NOT EXISTS foundation_saves(id TEXT PRIMARY KEY,state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS foundation_actions(session TEXT,id TEXT,payload TEXT,amount INTEGER,PRIMARY KEY(session,id))');
  db.exec('CREATE TABLE IF NOT EXISTS foundation_ava(session TEXT PRIMARY KEY,progress TEXT NOT NULL)');
+ if(options.buildingGrid)migrateBuildingUpdate(db);
  const readAva=(id:string):AvaProgress=>{const row=db.prepare('SELECT progress FROM foundation_ava WHERE session=?').get(id);return row?JSON.parse(row.progress as string):legacyAva();};
  const saveAva=(id:string,p:AvaProgress)=>db.prepare('INSERT INTO foundation_ava VALUES(?,?) ON CONFLICT(session) DO UPDATE SET progress=excluded.progress').run(id,JSON.stringify(p));
  const observeAva=(id:string,state:FoundationState,now:number)=>{const old=readAva(id),next=reconcileAva(old,state,now);if(next.revision!==old.revision)saveAva(id,next);return next;};
@@ -43,7 +46,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   if(!player&&req.method==='GET'&&identities.hasCookie(req)){try{player=restoreLocalLegacy(req,res,db,identities,options.legacyPaths||[]);}catch{res.status(503).json({code:'SESSION_RESTORE_UNAVAILABLE',error:'We could not safely restore this local session. Your saved companies have not been replaced. Please retry or open the original preview.'});return;}}
   if(!player){
    if(req.method!=='GET'||identities.hasCookie(req)){const reason=identities.status(req);res.status(401).json({code:reason==='expired'?'SESSION_EXPIRED':reason==='invalid'?'SESSION_INVALID':'SESSION_UNRECOGNIZED',error:reason==='expired'?'This company session has expired. Recover Company restores access without changing your base.':reason==='invalid'?'This browser has an invalid company session. Your saved companies have not been changed.':'This preview does not recognize the company session in this browser. Your saved companies have not been changed.'});return;}
-   const id=randomUUID(),state=initialFoundation();db.exec('BEGIN IMMEDIATE');
+   const id=randomUUID(),state=initialFoundation();if(options.buildingGrid)prepareBuildingUpdate(state);db.exec('BEGIN IMMEDIATE');
    try{db.prepare('INSERT INTO foundation_saves VALUES (?,?)').run(id,JSON.stringify(state));saveAva(id,newAva());const enrolled=identities.enroll(id,res,req);player=enrolled.player;db.exec('COMMIT');identities.cookie(res,req,enrolled.credential);}catch(e){db.exec('ROLLBACK');throw e;}
   }
   if(req.method!=='GET'&&!identities.guard(req,res,player,true))return;
@@ -58,7 +61,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   if(req.body?.confirm!=='START SEPARATE COMPANY'){res.status(400).json({error:'Confirm starting a separate company first.'});return;}
   if(identities.authenticate(req,res)){res.status(409).json({error:'A company is already available. Retry loading it instead.',code:'SESSION_ACTIVE'});return;}
   if(!identities.rate(req,undefined,'guest-start',8)){res.status(429).json({error:'Please wait 15 minutes before starting another company.'});return;}
-  db.exec('BEGIN IMMEDIATE');try{const id=randomUUID(),state=initialFoundation();db.prepare('INSERT INTO foundation_saves VALUES(?,?)').run(id,JSON.stringify(state));saveAva(id,newAva());const enrolled=identities.enroll(id,res,req);db.exec('COMMIT');identities.cookie(res,req,enrolled.credential);res.json({started:true});}catch{db.exec('ROLLBACK');res.status(503).json({error:'Your new company could not be saved. Please retry.'});}
+  db.exec('BEGIN IMMEDIATE');try{const id=randomUUID(),state=initialFoundation();if(options.buildingGrid)prepareBuildingUpdate(state);db.prepare('INSERT INTO foundation_saves VALUES(?,?)').run(id,JSON.stringify(state));saveAva(id,newAva());const enrolled=identities.enroll(id,res,req);db.exec('COMMIT');identities.cookie(res,req,enrolled.credential);res.json({started:true});}catch{db.exec('ROLLBACK');res.status(503).json({error:'Your new company could not be saved. Please retry.'});}
  });
  app.post('/api/foundation/development/seen',(req,res)=>{
   const input=z.object({through:z.number().int().min(0).max(Number.MAX_SAFE_INTEGER)}).strict().safeParse(req.body);if(!input.success){res.status(400).json({error:'Invalid development notice.'});return;}
@@ -86,8 +89,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   res.json({ava:next});
  });
  const actionSchema=z.discriminatedUnion('action',[
-  z.object({action:z.literal('build'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional(),rig:z.enum(['rig','rig2']).optional(),requestId:z.string().uuid(),generation:z.number().int().min(0)}).strict(),
-  z.object({action:z.literal('move'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional(),rig:z.enum(['rig','rig2']).optional(),requestId:z.string().uuid(),generation:z.number().int().min(0)}).strict(),
+  z.object({action:z.literal('build'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional(),rig:z.enum(['rig','rig2']).optional(),requestId:z.string().uuid(),generation:z.number().int().min(0)}).strict(),
+  z.object({action:z.literal('move'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional(),rig:z.enum(['rig','rig2']).optional(),requestId:z.string().uuid(),generation:z.number().int().min(0)}).strict(),
   z.object({action:z.literal('collect'),rig:z.enum(['rig','rig2']).optional(),requestId:z.string().uuid(),generation:z.number().int().min(0)}).strict()
  ]);
  app.post('/api/foundation/rig',(req,res)=>{
@@ -105,31 +108,32 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
  const botAction=z.discriminatedUnion('action',[
   z.object({action:z.literal('commit-layout'),expected:z.string().max(100000),placements:z.array(z.object({id:z.string().min(1).max(100),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict()).max(800)}).strict(),
   z.object({action:z.literal('set-drone-guard'),drone:z.number().int().min(0).max(1).optional(),position:z.tuple([z.number().finite(),z.number().finite()])}).strict(),
+  z.object({action:z.literal('acknowledge-building-update')}).strict(),
   z.object({action:z.literal('acknowledge-hq'),id:z.string().min(1).max(100)}).strict(),
-  z.object({action:z.literal('buy-wall'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
-  z.object({action:z.literal('move-wall'),id:z.string().uuid(),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
-  z.object({action:z.literal('move-wall-row'),id:z.string().min(1).max(100),position:z.tuple([z.number().int(),z.number().int()])}).strict(),
-  z.object({action:z.literal('move-builder-hut'),id:z.string().min(1).max(100),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
-  z.object({action:z.literal('build-drone-station'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
-  z.object({action:z.literal('build-sentinel'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
+  z.object({action:z.literal('buy-wall'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('move-wall'),id:z.string().uuid(),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('move-wall-row'),id:z.string().min(1).max(100),position:z.tuple([z.number().finite(),z.number().finite()])}).strict(),
+  z.object({action:z.literal('move-builder-hut'),id:z.string().min(1).max(100),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('build-drone-station'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
+  z.object({action:z.literal('build-sentinel'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('infiltration-tutorial'),operationId:z.string().uuid(),result:z.enum(['complete','skipped'])}).strict(),
   z.object({action:z.literal('infiltration-search')}).strict(),
   z.object({action:z.literal('pvp-start'),scoutId:z.string().uuid()}).strict(),
   z.object({action:z.literal('infiltration-start'),targetId:z.enum(BASE_IDS)}).strict(),
   z.object({action:z.literal('infiltration-command'),operationId:z.string().uuid(),intent:z.discriminatedUnion('action',[z.object({action:z.literal('deploy'),position:z.tuple([z.number().finite(),z.number().finite()]).optional()}).strict(),z.object({action:z.literal('abandon')}).strict()])}).strict(),
-  z.object({action:z.literal('build-lab'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
+  z.object({action:z.literal('build-lab'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('collect-research')}).strict(),
   z.object({action:z.literal('upgrade-technology'),technology:z.enum(TECHNOLOGY_IDS),expectedLevel:z.number().int().min(0).max(2)}).strict(),
-  z.object({action:z.literal('buy-decoration'),kind:z.enum(['ornamental','cypress','flowers','planter']),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
-  z.object({action:z.literal('move-decoration'),id:z.string().uuid(),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('buy-decoration'),kind:z.enum(['ornamental','cypress','flowers','planter']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('move-decoration'),id:z.string().uuid(),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('remove-decoration'),id:z.string().uuid()}).strict(),
   z.object({action:z.literal('upgrade-hq')}).strict(),
-  z.object({action:z.literal('establish-station'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
+  z.object({action:z.literal('establish-station'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('clear-obstacle'),obstacleId:z.string().min(1).max(100)}).strict(),
   z.object({action:z.literal('acknowledge-hangar')}).strict(),
-  z.object({action:z.literal('place-owned-hangar'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
-  z.object({action:z.literal('build-hangar'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
-  z.object({action:z.literal('build'),position:z.tuple([z.number().int(),z.number().int()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
+  z.object({action:z.literal('place-owned-hangar'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
+  z.object({action:z.literal('build-hangar'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
+  z.object({action:z.literal('build'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('rotate'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel']),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('move'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('train'),count:z.number().int().min(1).max(10)}).strict(),
@@ -149,6 +153,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
    let amount=Number(cached?.amount??0);if(!cached){const c=input.command;
     if(c.action==='commit-layout'){if(db.prepare("SELECT 1 FROM pvp_battles WHERE defender_id=? AND status='active' AND finished_at IS NULL").get(player.company.playerId))throw Error('Your campus is under attack. Keep this draft and save after the battle.');commitLayout(state,c.expected,c.placements);}
     else if(c.action==='set-drone-guard')setGuardPosition(state,c.position,c.drone??0);
+    else if(c.action==='acknowledge-building-update'){if(state.buildingUpdate)state.buildingUpdate.acknowledged=true;}
     else if(c.action==='acknowledge-hq'){if(state.hqNotification?.id===c.id)state.hqNotification.acknowledged=true;}
     else if(c.action==='buy-wall')buyWall(state,c.position,c.orientation,input.requestId);
     else if(c.action==='move-builder-hut')moveBuilderHut(state,c.id,c.position,c.orientation);
@@ -190,6 +195,6 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   if(!input.success){res.status(400).json({error:'Confirm the reset before continuing.'});return;}
   const player=session(req,res);if(!player)return;const {id,state}=player;if(state.revision!==input.data.revision){res.status(409).json({error:'Progress changed. Reopen Settings and try again.'});return;}
   if(state.infiltration?.pvp&&['ready','active'].includes(state.infiltration.status)){res.status(409).json({error:'Finish or retreat from your PvP operation before resetting.'});return;}
-  const next=initialFoundation(state.revision+1);next.raidRecord=state.raidRecord||{wins:[],completeHistory:false};next.generation=(state.generation||0)+1;db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(next),id);saveAva(id,newAva(readAva(id).revision+1));res.json({state:next,ava:readAva(id),companyXp:xp.snapshot(player.company.playerId),infiltrationCooldowns:BASE_IDS.map(targetId=>({targetId,eligibleAt:infiltrations.eligible(player.company.playerId,targetId)}))});
+  const next=initialFoundation(state.revision+1);if(options.buildingGrid){prepareBuildingUpdate(next);next.buildingUpdate!.acknowledged=state.buildingUpdate?.acknowledged??false;}next.raidRecord=state.raidRecord||{wins:[],completeHistory:false};next.generation=(state.generation||0)+1;db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(next),id);saveAva(id,newAva(readAva(id).revision+1));res.json({state:next,ava:readAva(id),companyXp:xp.snapshot(player.company.playerId),infiltrationCooldowns:BASE_IDS.map(targetId=>({targetId,eligibleAt:infiltrations.eligible(player.company.playerId,targetId)}))});
  });
 }

@@ -4,7 +4,7 @@ import {districtBuilding} from './DistrictBuildings';
 import {DistrictTraffic} from './DistrictTraffic';
 import * as THREE from 'three';
 import {WorldKit} from './world';
-import {FOUNDATION_BUILDINGS,buildingLayout,footprint,type FoundationState} from '../../shared/foundation';
+import {FOUNDATION_BUILDINGS,buildingLayout,placementFootprint as footprint,type FoundationState} from '../../shared/foundation';
 
 /** Read-only presentation switch. No storage, identity or simulation state involved. */
 export function districtEnabled(){return typeof location==='undefined'||new URLSearchParams(location.search).get('landscape')!=='legacy';}
@@ -75,10 +75,10 @@ export class TechnologyDistrict{
  syncLots(state:FoundationState,placed?:Set<string>){if(this.kind!=='hq')return;const rects=FOUNDATION_BUILDINGS.filter(kind=>!placed||placed.has(kind)).flatMap(kind=>{const l=buildingLayout(state,kind);return l?[{kind,...footprint(kind,l)}]:[];});const key=JSON.stringify(rects);if(key===this.lotsKey)return;this.lotsKey=key;
   this.lotInstances?.dispose();this.lotEdges?.geometry.dispose();(this.lotEdges?.material as THREE.Material|undefined)?.dispose();this.lots.clear();
   const unit=this.geometries.get('1,1,1')??new THREE.BoxGeometry(1,1,1);this.geometries.set('1,1,1',unit);
-  this.lotInstances=new THREE.InstancedMesh(unit,this.k.mat(C.concrete),rects.length);this.lotInstances.receiveShadow=true;const pose=new THREE.Object3D(),lines:number[]=[];
-  for(let i=0;i<rects.length;i++){const a=rects[i],w=a.w+.35,d=a.d+.35;pose.position.set(a.x,-.095,a.z);pose.scale.set(w,.025,d);pose.updateMatrix();this.lotInstances.setMatrixAt(i,pose.matrix);const l=a.x-w/2,r=a.x+w/2,t=a.z-d/2,b=a.z+d/2;lines.push(l,-.077,t,r,-.077,t,r,-.077,t,r,-.077,b,r,-.077,b,l,-.077,b,l,-.077,b,l,-.077,t);}
+  this.lotInstances=new THREE.InstancedMesh(unit,this.k.mat('#ffffff'),rects.length);this.lotInstances.receiveShadow=true;const pose=new THREE.Object3D(),lines:number[]=[];
+  for(let i=0;i<rects.length;i++){const a=rects[i],w=a.w-.12,d=a.d-.12;pose.position.set(a.x,-.095,a.z);pose.scale.set(w,.025,d);pose.updateMatrix();this.lotInstances.setMatrixAt(i,pose.matrix);this.lotInstances.setColorAt(i,new THREE.Color(a.kind==='rig'||a.kind==='rig2'?'#697f79':a.kind==='hangar'?'#7e926e':a.kind==='hq'?'#8a9c79':'#82938a'));const l=a.x-w/2,r=a.x+w/2,t=a.z-d/2,b=a.z+d/2;lines.push(l,-.077,t,r,-.077,t,r,-.077,t,r,-.077,b,r,-.077,b,l,-.077,b,l,-.077,b,l,-.077,t);}
   this.lotInstances.instanceMatrix.needsUpdate=true;this.lotInstances.computeBoundingSphere();this.lots.add(this.lotInstances);
-  const edges=new THREE.BufferGeometry();edges.setAttribute('position',new THREE.Float32BufferAttribute(lines,3));this.lotEdges=new THREE.LineSegments(edges,new THREE.LineBasicMaterial({color:C.curb}));this.lots.add(this.lotEdges);this.noPicking(this.lots);
+  const edges=new THREE.BufferGeometry();edges.setAttribute('position',new THREE.Float32BufferAttribute(lines,3));this.lotEdges=new THREE.LineSegments(edges,new THREE.LineBasicMaterial({color:'#6d8373'}));this.lots.add(this.lotEdges);this.noPicking(this.lots);
  }
 
  private noPicking(parent:THREE.Object3D){parent.traverse(o=>{o.raycast=()=>{};o.userData.decorative=true;});}

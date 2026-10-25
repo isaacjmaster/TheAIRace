@@ -17,7 +17,7 @@ export const fabricatorModel=orbitalFabricator;
 export function hangarModel(k:WorldKit,bots:number,expanded:boolean|'compound'=false){
  if(expanded==='compound')return hangarCompound(k,bots);
  const g=new THREE.Group();g.name='Bot Hangar';const shell=new THREE.Group();g.add(shell);shell.name='hangar-structure';if(expanded)shell.scale.set(1.4,1.08,1.4);
- k.box(shell,[4,.22,3],[0,.15,0],c.dark,.12);k.box(shell,[3.88,.12,2.9],[0,.32,0],c.cream,.08);
+ k.box(shell,[4,.22,3],[0,.15,0],c.dark,.12);k.box(shell,[3.88,.12,2.9],[0,.32,0],'#8c9c91',.08);
  // Open four-sided charging pavilion: no opaque rear wall or preferred facade.
  for(const x of [-1.78,1.78])for(const z of [-1.22,1.22]){
   k.box(shell,[.28,1.75,.28],[x,1.26,z],c.dark,.07);
@@ -57,7 +57,7 @@ export function builderStationModel(k:WorldKit){
 
  const g=new THREE.Group();g.name='Builder Station';
 
- k.box(g,[2.7,.18,1.8],[0,.12,0],c.dark,.13);k.box(g,[2.55,.1,1.7],[0,.26,0],c.cream,.1);
+ k.box(g,[2.7,.18,1.8],[0,.12,0],c.dark,.13);k.box(g,[2.55,.1,1.7],[0,.26,0],'#8c9c91',.1);
 
  k.box(g,[1.35,.03,1.1],[0,.33,.13],c.slate,.08);k.box(g,[1,.025,.08],[0,.36,.61],c.cyan,.02,true);
 
