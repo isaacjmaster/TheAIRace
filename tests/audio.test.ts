@@ -217,3 +217,13 @@ test('official playlist persists across scenes and resumes after mute and backgr
   audio.visibility(false);await ready(audio);assert.equal(h.created(),1);assert.equal(h.data.get(MUTE_KEY),'false');
  }finally{audio.dispose();h.sound.dispose();}
 });
+
+import {COMBAT_CUES,COMBAT_VOICE_LIMIT,combatSamples,type CombatCue} from '../src/audio/combatCues';
+test('original combat buffers have distinct identities, finite bounded peaks and silent endpoints',()=>{
+ const fingerprints=new Set<string>();
+ for(const cue of Object.keys(COMBAT_CUES) as CombatCue[]){const a=combatSamples(cue,44100);assert.equal(a[0],0);assert.equal(a.at(-1),0);assert.ok(a.every(Number.isFinite));assert.ok(Math.max(...a.map(Math.abs))<.55);assert.ok(a.some(v=>Math.abs(v)>.01));assert.deepEqual(a,combatSamples(cue,44100));fingerprints.add(a.slice(100,120).join(','));}
+ assert.equal(fingerprints.size,Object.keys(COMBAT_CUES).length);
+});
+test('combat audio caps concurrent sources, reuses buffers and clears on mute',async()=>{
+ const h=harness();try{await ready(h.sound);const start=h.ctx.sources.length;for(let i=0;i<100;i++){h.ctx.currentTime+=.2;h.sound.cue('pulsewheel-fire');}assert.equal(h.ctx.sources.length-start,COMBAT_VOICE_LIMIT);assert.equal((h.sound as any).combatBuffers.size,1);const first=h.ctx.sources[start];h.ctx.currentTime+=1;h.sound.cue('building-shutdown');assert.equal((h.sound as any).combatVoices.size,COMBAT_VOICE_LIMIT);assert.equal(first.disconnected,true);assert.ok(first.stops>1);h.sound.setMuted(true);assert.equal((h.sound as any).combatVoices.size,0);const muted=h.ctx.sources.length;h.sound.cue('sentinel-fire');assert.equal(h.ctx.sources.length,muted);}finally{h.sound.dispose();}
+});

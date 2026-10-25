@@ -76,3 +76,6 @@
 .encounter-header .npc-base-name{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(21px,5.1vw,34px);font-weight:950;letter-spacing:.3px;color:#173d57;text-shadow:0 2px #effffc,0 3px 9px #d6fcff;border-bottom:2px solid #d6b36766;padding-bottom:5px}
 
 .mission-result h2.infiltration-failed{color:#b54c43;font-weight:900;}
+
+/* Current HP updates immediately; the pale trailing strip only marks recently lost HP. */
+.world-hack-progress .damage-echo{display:none}.world-hack-progress.has-damage-echo{background:#183f55f2}.has-damage-echo .damage-echo{display:block;position:absolute;left:5px;top:3px;height:6px;width:calc(100% - 10px);transform-origin:left;transform:scaleX(var(--damage-echo,0));background:#f7deb1;pointer-events:none}.has-damage-echo progress{position:relative;appearance:none;background:transparent}.has-damage-echo progress::-webkit-progress-bar{background:transparent}.has-damage-echo progress::-webkit-progress-value{background:#ee9677}.has-damage-echo progress::-moz-progress-bar{background:#ee9677}

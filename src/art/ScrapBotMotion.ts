@@ -10,8 +10,12 @@ export function animateScrapBot(bot:THREE.Object3D,dt:number,reduced=false,attac
  const moving=distance>1e-5&&distance<1.5;if(!reduced&&moving)p.wheel.rotation.x+=distance/(.44*Math.max(.001,Math.abs(p.scale.z)));
  p.activity+=(Number(moving&&!reduced)-p.activity)*(1-Math.exp(-dt*18));p.time+=dt;
  p.core.position.y=reduced?0:Math.sin(p.time*2)*.006*(1-p.activity)+idleBob*.15;
- p.core.position.z=reduced?0:-attack*.018;
- p.flash.visible=!!bot.userData.pulsewheelFiring;p.flash.scale.setScalar(reduced?1:1+Math.sin(p.time*35)*.15);
+ const shotAge=bot.userData.pulsewheelShotAge??Infinity,charge=bot.userData.pulsewheelCharge??0,hit=bot.userData.pulsewheelHit??0;
+ p.core.position.z=reduced?0:-attack*.018-(shotAge>=0&&shotAge<230?.085*Math.sin(shotAge/230*Math.PI):0)-charge*.025;
+ p.core.rotation.z=reduced?0:Math.sin(hit*Math.PI*3)*hit*.09;
+ p.core.position.y-=reduced?0:charge*.018;
+
+ p.flash.visible=!!bot.userData.pulsewheelFiring||charge>.1||hit>.1;p.flash.scale.setScalar(bot.userData.pulsewheelFiring?1.2:hit>.1?.65:.25+charge*.5);
  bot.userData.walkPhase=(p.wheel.rotation.x/(Math.PI*2))%1;bot.userData.walkActivity=p.activity;
 }
 export function handoffScrapPose(from:THREE.Object3D,to:THREE.Object3D){const a=poses.get(from),b=poses.get(to);if(!a||!b)return;b.wheel.rotation.x=a.wheel.rotation.x;b.initialized=false;}

@@ -1,3 +1,4 @@
+import type {CombatCue} from './combatCues';
 import type {InfiltrationCue} from './infiltrationCues';
 /** Original procedural composition: “Little Company, Big Plans”, The AI Race, 2026.
  * A buoyant adventure march: plucked strings, warm horn-like lead and light drums.
@@ -18,7 +19,7 @@ export const BUILDING_SOUNDS={
  'building-droneStation':{notes:[81,88,93],type:'sine',duration:.1,gap:.055},
  'building-station':{notes:[55,79],type:'triangle',duration:.1,gap:.075},
 } as const;
-export type Cue=InfiltrationCue|'hack'|'security-alert'|'extraction'|'clear-tree'|'clear-scrap'|keyof typeof BUILDING_SOUNDS|'tap'|'deploy'|'laser'|'impact'|'destroy'|'win'|'resources'|'upgrade';
+export type Cue=CombatCue|InfiltrationCue|'hack'|'security-alert'|'extraction'|'clear-tree'|'clear-scrap'|keyof typeof BUILDING_SOUNDS|'tap'|'deploy'|'laser'|'impact'|'destroy'|'win'|'resources'|'upgrade';
 export const MUTE_KEY='airace-audio-muted-v1';
 export const frequency=(midi:number)=>440*2**((midi-69)/12);
 export const MUSIC_BPM={hq:112,raid:128,infiltration:120} as const;

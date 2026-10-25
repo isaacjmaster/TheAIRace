@@ -1,0 +1,14 @@
+import {createRequire} from 'node:module';
+import {mkdirSync,writeFileSync} from 'node:fs';
+const {chromium}=createRequire('C:/Users/socce/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/check.cjs')('playwright');
+const out='output/Combat_Presentation_Review/walls';mkdirSync(out,{recursive:true});
+const browser=await chromium.launch({channel:'msedge',headless:true});const results=[];
+try{for(const [name,width,height]of[['desktop',1280,800],['mobile',390,844]]){const context=await browser.newContext({viewport:{width,height},isMobile:name==='mobile',hasTouch:name==='mobile'});try{
+ const page=await context.newPage();await page.goto('http://127.0.0.1:3069/simple-preview/hq?testAudio=off');await page.getByRole('button',{name:'Arrange buildings',exact:true}).waitFor({timeout:60000});
+ const replacement=page.getByRole('button',{name:'Replace Walls',exact:true});if(await replacement.isVisible())throw Error('Replacement must live inside arrangement');await page.screenshot({path:`${out}/${name}-own-base.png`});
+ await page.getByRole('button',{name:'Arrange buildings',exact:true}).click();await replacement.waitFor();await page.screenshot({path:`${out}/${name}-arrangement.png`});
+ const before=await page.evaluate(async()=> (await(await fetch('/api/foundation')).json()).state);await replacement.click();await page.getByText('Wall replacements remaining: 100',{exact:true}).waitFor();await page.screenshot({path:`${out}/${name}-replacement.png`});await page.getByRole('button',{name:'Cancel layout',exact:true}).click();
+ const after=await page.evaluate(async()=> (await(await fetch('/api/foundation')).json()).state);if(JSON.stringify(before.walls)!==JSON.stringify(after.walls)||JSON.stringify(before.buildingUpdate)!==JSON.stringify(after.buildingUpdate))throw Error('Cancel changed saved walls or entitlement');
+ await page.goto('http://127.0.0.1:3069/simple-preview/hq?testAudio=off&mission=lumen-labs');await page.getByRole('region',{name:'Infiltration operation'}).waitFor({timeout:60000});if(await replacement.count())throw Error('Replacement leaked into infiltration');await page.screenshot({path:`${out}/${name}-infiltration.png`});
+ await page.goto('http://127.0.0.1:3069/simple-preview/hq?testAudio=off&pending=false');await page.getByRole('button',{name:'Arrange buildings',exact:true}).waitFor({timeout:60000});await page.getByRole('button',{name:'Arrange buildings',exact:true}).click();if(await replacement.count())throw Error('Resolved entitlement still shown');results.push({viewport:name,ownBaseNoOverlay:true,arrangementOnly:true,remaining100:true,cancelPreserved:true,infiltrationAbsent:true,resolvedAbsent:true});
+ }finally{await context.close();}}writeFileSync(`${out}/checks.json`,JSON.stringify(results,null,2));console.log(results);}finally{await browser.close();}

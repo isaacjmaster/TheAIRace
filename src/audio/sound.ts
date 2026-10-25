@@ -1,3 +1,4 @@
+import {COMBAT_CUES,COMBAT_VOICE_LIMIT,combatSamples,type CombatCue} from './combatCues';
 import {MusicPlaylist,type PlaylistLoader} from './MusicPlaylist';
 import {HQAmbience,HQ_AUDIO} from './Ambience';
 import {INFILTRATION_CUES,type InfiltrationCue} from './infiltrationCues';
@@ -21,6 +22,7 @@ export class Soundscape {
  private audible=false;private epoch=0;private resuming?:AudioContext;private quiet?:Promise<void>;
  private autoplayAttempted=false;
  private effects=new Set<AudioBufferSourceNode>();
+ private combatBuffers=new Map<CombatCue,AudioBuffer>();private combatVoices=new Set<AudioBufferSourceNode>();
  private backgrounded(){return this.hidden||!!this.platform.isHidden?.();}
  private gainRamps=new Map<GainNode,{from:number;to:number;start:number;end:number}>();
  private listeners=new Set<()=>void>();private last=new Map<Cue,number>();private noise?:AudioBuffer;private cipherVoice=0;
@@ -68,7 +70,7 @@ export class Soundscape {
   const fade=ctx.state==='running'?.025:0,at=ctx.currentTime+(fade?fade+.005:0);
   if(this.master)this.ramp(this.master,0,fade);
   this.ambience?.stop(fade?fade+.005:0);this.synth?.stopAll(at);this.music?.stopAll(at);
-  for(const source of this.effects){try{source.stop(at);}catch{}}this.effects.clear();
+  for(const source of this.effects){try{source.stop(at);}catch{}}this.effects.clear();this.combatVoices.clear();
   this.playingMode=undefined;this.last.clear();this.fadeUntil={hq:0,raid:0,infiltration:0};
   const suspend=async()=>{try{if(this.ctx===ctx&&!this.audible&&ctx.state!=='closed')await ctx.suspend();}catch{}};
   const pending=fade?new Promise<void>(resolve=>setTimeout(()=>void suspend().then(resolve),40)):suspend();
@@ -105,8 +107,18 @@ export class Soundscape {
  }
  cue=(cue:Cue)=>{
   if(!this.ctx||this.ctx.state!=='running'||this.platform.silent||this.muted||!this.audible||this.backgrounded())return;const t=this.ctx.currentTime;
-  const gap=cue==='cipher-hacking'?.55:cue==='drone-laser'?.14:cue.startsWith('building-')?.16:cue==='laser'||cue==='impact'?.09:cue==='destroy'?.12:.04;if(t-(this.last.get(cue)??-10)<gap)return;this.last.set(cue,t);
+  const gap=cue in COMBAT_CUES?(cue.endsWith('charge')?.16:cue.endsWith('fire')?.065:.085):cue==='cipher-hacking'?.55:cue==='drone-laser'?.14:cue.startsWith('building-')?.16:cue==='laser'||cue==='impact'?.09:cue==='destroy'?.12:.04;if(t-(this.last.get(cue)??-10)<gap)return;this.last.set(cue,t);
   const out=this.master!;
+  if(cue in COMBAT_CUES){
+   if(this.combatVoices.size>=COMBAT_VOICE_LIMIT){
+    if(cue!=='unit-destroyed'&&cue!=='building-shutdown')return;
+    const oldest=this.combatVoices.values().next().value!;try{oldest.stop(t);}catch{}oldest.disconnect();this.effects.delete(oldest);this.combatVoices.delete(oldest);
+   }
+   const key=cue as CombatCue;let buffer=this.combatBuffers.get(key);
+   if(!buffer){const samples=combatSamples(key,this.ctx.sampleRate);buffer=this.ctx.createBuffer(1,samples.length,this.ctx.sampleRate);buffer.getChannelData(0).set(samples);this.combatBuffers.set(key,buffer);}
+   const source=this.ctx.createBufferSource();source.buffer=buffer;source.connect(out);this.effects.add(source);this.combatVoices.add(source);
+   source.onended=()=>{this.effects.delete(source);this.combatVoices.delete(source);source.disconnect();};source.start(t);source.stop(t+COMBAT_CUES[key].duration+.01);return;
+  }
   if(cue in INFILTRATION_CUES){const variation=cue==='cipher-deploy'?[-.5,0,.5,0][this.cipherVoice++%4]:0;for(const voice of INFILTRATION_CUES[cue as InfiltrationCue])this.note(voice.note+variation,t+voice.at,voice.duration,voice.gain,out,voice.type,.004,voice.end+variation);return;}
   if(cue==='hack'){[76,83,88].forEach((n,i)=>this.note(n,t+i*.06,.14,.085,out,'sine',.008));return;}if(cue==='security-alert'){this.note(74,t,.15,.1,out,'triangle',.012);this.note(70,t+.18,.16,.08,out,'triangle',.012);return;}if(cue==='extraction'){[69,76,81,88].forEach((n,i)=>this.note(n,t+i*.08,.4,.11,out,'sine',.012));return;}
   if(cue in BUILDING_SOUNDS){const voice=BUILDING_SOUNDS[cue as keyof typeof BUILDING_SOUNDS];voice.notes.forEach((note,i)=>this.note(note,t+i*voice.gap,voice.duration,cue.startsWith('ui-')?.045:.075,out,voice.type,.012));return;}
@@ -127,7 +139,7 @@ export class Soundscape {
   if(ctx)ctx.onstatechange=null;
   // Invalidate references immediately; asynchronous unlock/load cannot restart this graph.
   this.ctx=undefined;this.music=undefined;this.ambience=undefined;this.synth=undefined;
-  this.master=undefined;this.hq=undefined;this.raid=undefined;this.infiltration=undefined;this.noise=undefined;this.gainRamps.clear();
+  this.master=undefined;this.hq=undefined;this.raid=undefined;this.infiltration=undefined;this.noise=undefined;this.combatBuffers.clear();this.gainRamps.clear();
   void quiet.then(()=>{ambience?.dispose();music?.dispose();try{void ctx?.close().catch(()=>{});}catch{}});
  }
 
