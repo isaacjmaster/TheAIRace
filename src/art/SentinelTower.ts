@@ -52,7 +52,7 @@ export function animateSentinel(g:THREE.Group,state:SentinelState|undefined,now:
  const p=g.userData.sentinel as Parts;if(!p)return;
  const target=state?.yaw??g.rotation.y,difference=Math.atan2(Math.sin(target-g.rotation.y-p.yaw.rotation.y),Math.cos(target-g.rotation.y-p.yaw.rotation.y));
  p.yaw.rotation.y+=difference*Math.min(1,dt*14);
- p.pitch.rotation.x=state?.targetId ? .12 : 0;
+ p.pitch.rotation.x=active&&state?.targetId ? -.18 : 0;
  const age=active&&state?.lastShotAt!==undefined?now-state.lastShotAt:Infinity;
  p.recoil.position.z=age>=0&&age<220?-.12*Math.sin(age/220*Math.PI):0;
  const lock=active?Math.min(4,Math.max(0,(state?.lockShots??0)-1))/4:0;
@@ -62,17 +62,22 @@ export function animateSentinel(g:THREE.Group,state:SentinelState|undefined,now:
 /** One reusable bolt, core, muzzle and impact per tower; no lights or particle allocation per shot. */
 export class SentinelPulse{
  readonly group=new THREE.Group();private trail:THREE.Mesh;private core:THREE.Mesh;private flash:THREE.Mesh;private impact:THREE.Mesh;
- private k=new WorldKit();private start=new THREE.Vector3();private end=new THREE.Vector3();private direction=new THREE.Vector3();private up=new THREE.Vector3(0,1,0);
+ private k=new WorldKit();private start=new THREE.Vector3();private end=new THREE.Vector3();private direction=new THREE.Vector3();private up=new THREE.Vector3(0,1,0);private forward=new THREE.Vector3(0,0,1);
  constructor(){this.trail=this.k.cylinder(this.group,.09,1,[0,0,0],C.light);this.core=this.k.cylinder(this.group,.035,1,[0,0,0],C.core);this.flash=this.k.cylinder(this.group,.16,.24,[0,0,0],C.core);this.impact=this.k.ring(this.group,.25,.045,[0,0,0],C.light,true);
   for(const mesh of [this.trail,this.core,this.flash]){mesh.material=this.k.mat(mesh===this.trail?'#9eff34':C.core,true);mesh.castShadow=false;}const glow=this.trail.material as THREE.MeshStandardMaterial;glow.transparent=true;glow.opacity=.4;glow.depthWrite=false;this.group.visible=false;this.group.traverse(n=>{n.raycast=()=>{};});}
- update(model:THREE.Group,state:SentinelState|undefined,now:number,active:boolean){
+ update(model:THREE.Group,state:SentinelState|undefined,now:number,active:boolean,walls:readonly {x:number;z:number;w:number;d:number;height?:number}[]=[]){
   const age=state?.lastShotAt===undefined?Infinity:now-state.lastShotAt;
   this.group.visible=active&&!!state?.shotPosition&&age>=0&&age<340;if(!this.group.visible)return;
   const p=model.userData.sentinel as Parts;p.muzzle.getWorldPosition(this.start);this.end.set(state!.shotPosition![0],.7,state!.shotPosition![1]);
-  const distance=this.start.distanceTo(this.end),travel=Math.max(90,Math.min(230,distance*28)),t=Math.min(1,age/travel);this.direction.subVectors(this.end,this.start).normalize();
-  for(const mesh of [this.trail,this.core]){mesh.visible=t<1;mesh.position.lerpVectors(this.start,this.end,t);mesh.quaternion.setFromUnitVectors(this.up,this.direction);mesh.scale.y=Math.min(distance,.5+distance*.14)*(mesh===this.core?.8:1);}
+  // Lift only the visual bolt. Authoritative hits still use captured shotPosition.
+  // Compute clearance at both faces of every crossed panel (including walls near
+  // the target), rather than assuming a generic arc clears all layouts.
+  let lift=0;
+  for(const wall of walls){let lo=0,hi=1;for(const [a,b,c,h] of [[this.start.x,this.end.x,wall.x,wall.w/2+.12],[this.start.z,this.end.z,wall.z,wall.d/2+.12]]){const delta=b-a;if(Math.abs(delta)<1e-8){if(a<c-h||a>c+h){lo=2;break;}}else{const u=(c-h-a)/delta,v=(c+h-a)/delta;lo=Math.max(lo,Math.min(u,v));hi=Math.min(hi,Math.max(u,v));}}if(lo<=hi&&lo<1&&hi>0)for(const t of [Math.max(.001,lo),Math.min(.999,hi)]){const baseline=this.start.y+(this.end.y-this.start.y)*t;lift=Math.max(lift,((wall.height??1.3)+.45-baseline)/(4*t*(1-t)));}}
+  const distance=this.start.distanceTo(this.end),travel=Math.max(90,Math.min(230,distance*28)),t=Math.min(1,age/travel);this.direction.subVectors(this.end,this.start);this.direction.y+=4*lift*(1-2*t);this.direction.normalize();
+  for(const mesh of [this.trail,this.core]){mesh.visible=t<1;mesh.position.lerpVectors(this.start,this.end,t);mesh.position.y+=4*lift*t*(1-t);mesh.quaternion.setFromUnitVectors(this.up,this.direction);mesh.scale.y=Math.min(distance,.5+distance*.14)*(mesh===this.core?.8:1);}
   this.flash.visible=age<90;this.flash.position.copy(this.start);this.flash.quaternion.setFromUnitVectors(this.up,this.direction);
-  this.impact.visible=age>=travel;this.impact.position.copy(this.end);this.impact.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),this.direction);this.impact.scale.setScalar(1+(age-travel)/100);
+  this.impact.visible=age>=travel;this.impact.position.copy(this.end);this.impact.quaternion.setFromUnitVectors(this.forward,this.direction);this.impact.scale.setScalar(1+(age-travel)/100);
  }
  dispose(){this.group.removeFromParent();this.k.dispose();}
 }

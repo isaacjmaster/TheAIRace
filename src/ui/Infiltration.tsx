@@ -24,9 +24,9 @@ export function InfiltrationView({operation,stock,serverTime,busy,error,onComman
  useEffect(()=>{if(!hacking)return;const pulse=()=>{if(!document.hidden)sound.cue('cipher-hacking');};pulse();const timer=setInterval(pulse,650);return()=>clearInterval(timer);},[hacking,operation.id]);
  useEffect(()=>{if(done)setQuit(false);},[done]);
  useEffect(()=>{setSelected(false);setNotice('');lastEvent.current=operation.events.length;},[operation.id]);
- useEffect(()=>{let scene:InfiltrationScene|undefined,frame=0,last=performance.now();try{
+ useEffect(()=>{let scene:InfiltrationScene|undefined,frame=0,last=performance.now(),labelTime=0;try{
   scene=new InfiltrationScene(host.current!,operation);view.current=scene;
-  const draw=(time:number)=>{scene!.update(Math.min(.05,(time-last)/1000));for(const[id,node]of labels.current){const p=scene!.labelPoint(id),progress=scene!.hackingProgress(id);node.hidden=progress===null||p.z< -1||p.z>1||p.x<0||p.x>host.current!.clientWidth||p.y<0||p.y>host.current!.clientHeight;node.style.left=p.x+'px';node.style.top=p.y+'px';const bar=node.querySelector('progress');if(bar)bar.value=progress??0;}
+  const draw=(time:number)=>{scene!.update(Math.min(.05,(time-last)/1000));if(time-labelTime>=33){labelTime=time;for(const[id,node]of labels.current){const progress=scene!.hackingProgress(id);if(progress===null){node.hidden=true;continue;}const p=scene!.labelPoint(id);node.hidden=progress===null||p.z< -1||p.z>1||p.x<0||p.x>host.current!.clientWidth||p.y<0||p.y>host.current!.clientHeight;node.style.left=p.x+'px';node.style.top=p.y+'px';const bar=node.querySelector('progress');if(bar)bar.value=progress??0;}}
    last=time;frame=requestAnimationFrame(draw);
   };frame=requestAnimationFrame(draw);
  }catch{setFailed(true);}return()=>{cancelAnimationFrame(frame);scene?.dispose();view.current=null;};},[operation.id]);

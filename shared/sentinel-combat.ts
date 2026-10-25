@@ -9,7 +9,7 @@ export function advanceSentinels(o:Operation){
   let state=o.sentinels.find(s=>s.id===cfg.id);
   if(!state){state={id:cfg.id,yaw:0,lockShots:0};o.sentinels.push(state);}
   if(o.hacked.includes(cfg.id)){state.targetId=undefined;state.lockShots=0;continue;}
-  const target=squadTarget(o),solids=infiltrationSolids({...target,assets:target.assets.filter(a=>a.id!==cfg.id)});
+  const target=squadTarget(o),solids=infiltrationSolids({...target,walls:[],assets:target.assets.filter(a=>a.id!==cfg.id)});
   const distance=(p:[number,number])=>Math.hypot(p[0]-cfg.position[0],p[1]-cfg.position[1]);
   const eligible=o.squad.agents.filter(a=>a.state==='active'&&(a.health??0)>0&&distance(a.position)<=cfg.range&&segmentClear(cfg.position,a.position,solids,targetBounds(target),0));
   const bot=eligible.find(a=>a.id===state!.targetId)??eligible.sort((a,b)=>distance(a.position)-distance(b.position)||a.id.localeCompare(b.id))[0];
