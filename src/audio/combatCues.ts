@@ -1,5 +1,8 @@
 /** Original procedural weapon sounds. Cached mono buffers avoid oscillator graphs per hit. */
 export const COMBAT_CUES = {
+ 'breacher-charge':{duration:.25,from:95,to:280,gain:.17,grit:.15},
+ 'breacher-impact':{duration:.33,from:155,to:32,gain:.39,grit:.65},
+ 'breacher-step':{duration:.13,from:90,to:38,gain:.11,grit:.4},
  'pulsewheel-charge': {duration:.12, from:440, to:980, gain:.12, grit:.04},
  'pulsewheel-fire': {duration:.16, from:1250, to:320, gain:.28, grit:.09},
  'pulsewheel-impact': {duration:.13, from:780, to:190, gain:.18, grit:.35},

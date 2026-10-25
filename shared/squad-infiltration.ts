@@ -1,10 +1,11 @@
+import {TROOPS,type TroopKind} from './troops';
 import {craftCampusTarget} from './infiltration-bases';
 import {TACTICAL_BALANCE,advanceTactical,planTactical} from './tactical-infiltration';
 import {findPath,segmentClear,nearestOpen,pointClear} from './navigation';
 import {INFILTRATION,targetBounds,AGENT_CLEARANCE,DRONE_CLEARANCE,newOperation,infiltrationPath,infiltrationSolids,validDeployment,type Operation,type Vec,type InfiltrationCommand} from './infiltration';
 export const SQUAD_BALANCE={health:42,laserDamage:18,laserIntervalMs:750,hackWorkMultiplier:2.5,maxHackers:3,endGraceMs:3000,wallHealth:72,breachDps:18,breachDetour:6} as const;
-export type SquadAgent=Operation['agent']&{id:string;state:'active'|'extracted'|'lost';unitStatus:'reserved'|'returned'|'lost';work:number;workPosition?:Vec;unreachableDrone?:string;retryDroneAt?:number;blockedSince?:number;nextPlanAt?:number;wallTarget?:string;droneTarget?:string;lockedUntil?:number;lastShotAt?:number;shotPosition?:Vec;cargo:{compute:number;research:number;intel:boolean}};
-export type SquadState={version:1;balanceVersion?:2;undeployed?:number;rules?:'tactical-v1';agents:SquadAgent[];progress:Record<string,number>;wallDamage:Record<string,number>;breachedWalls:string[];idleSince?:number};
+export type SquadAgent=Operation['agent']&{id:string;troop?:TroopKind;state:'active'|'extracted'|'lost';unitStatus:'reserved'|'returned'|'lost';work:number;workPosition?:Vec;unreachableDrone?:string;retryDroneAt?:number;blockedSince?:number;nextPlanAt?:number;wallTarget?:string;droneTarget?:string;lockedUntil?:number;attackReadyAt?:number;lastShotAt?:number;shotPosition?:Vec;cargo:{compute:number;research:number;intel:boolean}};
+export type SquadState={version:1;balanceVersion?:2;undeployed?:number;undeployedBreacher?:number;rules?:'tactical-v1';agents:SquadAgent[];progress:Record<string,number>;wallDamage:Record<string,number>;breachedWalls:string[];idleSince?:number};
 /** New missions use captured layouts; older active operation snapshots are never rewritten. */
 export function newSquadOperation(id:string,targetId:string,now:number,spacious=true):Operation{
  const o=newOperation(id,targetId,now);o.squad={version:1,agents:[],progress:{},wallDamage:{},breachedWalls:[]};
@@ -51,11 +52,13 @@ export function commandSquad(o:Operation,c:InfiltrationCommand,now:number){
  advanceSquad(o,now);if(o.status!=='ready'&&o.status!=='active')throw Error('This operation has ended.');
  if(c.action==='abandon'){finish(o,'abandoned');(o.orders??=[]).push({at:now,intent:structuredClone(c)});return;}
  if(c.action!=='deploy')throw Error('Pulsewheels hack automatically.');
- if(o.squad!.undeployed!==undefined&&o.squad!.undeployed<=0)throw Error('No Pulsewheels available for this mission.');
+ const heavy=c.troop==='breacher';if(c.troop!==undefined&&c.troop!=='pulsewheel'&&!heavy)throw Error('Unknown troop.');
+ if(heavy&&!o.squad!.rules)throw Error('Breacher requires a current operation.');
+ const available=heavy?(o.squad!.undeployedBreacher??0):o.squad!.undeployed;if(available!==undefined&&available<=0)throw Error('No '+(heavy?'Breachers':'Pulsewheels')+' available for this mission.');
  const position=c.position??o.target.entry;if(!validDeployment(o.target,position))throw Error('Choose a highlighted perimeter tile.');
  // The Foundation command transaction owns the inventory deduction before this call.
- const a:SquadAgent={id:o.id+':'+o.squad!.agents.length,position:[...position],path:[],mode:'idle',hack:0,yaw:0,health:o.squad!.rules?TACTICAL_BALANCE.botHealth:SQUAD_BALANCE.health,state:'active',unitStatus:'reserved',work:0,cargo:{compute:0,research:0,intel:false}};
- o.squad!.agents.push(a);if(o.squad!.undeployed!==undefined)o.squad!.undeployed--;o.squad!.idleSince=undefined;if(o.status==='ready'){o.status='active';o.startedAt=now;o.lastTick=now;}if(o.squad!.rules)planTactical(o,a);else targetAgent(o,a);o.agent=o.squad!.agents[0];event(o,'deployed',a.id);(o.orders??=[]).push({at:now,intent:structuredClone(c)});
+ const a:SquadAgent={...(heavy?{troop:'breacher' as const}:{}),id:o.id+':'+o.squad!.agents.length,position:[...position],path:[],mode:'idle',hack:0,yaw:0,health:heavy?TROOPS.breacher.health:o.squad!.rules?TACTICAL_BALANCE.botHealth:SQUAD_BALANCE.health,state:'active',unitStatus:'reserved',work:0,cargo:{compute:0,research:0,intel:false}};
+ o.squad!.agents.push(a);if(heavy)o.squad!.undeployedBreacher!--;else if(o.squad!.undeployed!==undefined)o.squad!.undeployed--;o.squad!.idleSince=undefined;if(o.status==='ready'){o.status='active';o.startedAt=now;o.lastTick=now;}if(o.squad!.rules)planTactical(o,a);else targetAgent(o,a);o.agent=o.squad!.agents[0];event(o,'deployed',a.id);(o.orders??=[]).push({at:now,intent:structuredClone(c)});
 }
 /** Fixed server ticks. Shared building work is awarded only once; each worker extracts after its first successful objective. */
 export function advanceSquad(o:Operation,now:number){
@@ -84,7 +87,7 @@ export function advanceSquad(o:Operation,now:number){
    drone.mode=target?'pursuit':'patrol';drone.targetAgentId=target?.id;
    if(target&&o.lastTick-(drone.lastShotAt??-Infinity)>=SQUAD_BALANCE.laserIntervalMs){drone.lastShotAt=o.lastTick;drone.shotPosition=[...target.position];target.health=Math.max(0,target.health!-SQUAD_BALANCE.laserDamage);event(o,'laser',target.id);if(!target.health){target.state='lost';target.mode='idle';target.path=[];target.cargo={compute:0,research:0,intel:false};event(o,'agent-lost',target.id);}}
   }
-  if((squad.undeployed??0)===0&&squad.agents.every(a=>a.state!=='active')){squad.idleSince??=o.lastTick;if(o.lastTick-squad.idleSince>=SQUAD_BALANCE.endGraceMs)finish(o,squad.agents.some(a=>a.state==='extracted')?'extracted':'caught');}else squad.idleSince=undefined;
+  if((squad.undeployed??0)+(squad.undeployedBreacher??0)===0&&squad.agents.every(a=>a.state!=='active')){squad.idleSince??=o.lastTick;if(o.lastTick-squad.idleSince>=SQUAD_BALANCE.endGraceMs)finish(o,squad.agents.some(a=>a.state==='extracted')?'extracted':'caught');}else squad.idleSince=undefined;
  }
  o.agent=squad.agents[0]??o.agent;
  if(o.status==='active'&&now>=o.startedAt!+INFILTRATION.operationMs){o.lastTick=o.startedAt!+INFILTRATION.operationMs;finish(o,'timeout');}

@@ -1,3 +1,4 @@
+import {breacherModel,animateBreacher} from './Breacher';
 import {CAMPUS_CAMERA_OFFSET,campusProjection} from './campusCamera';
 import {DRONE_PATROL_RADIUS} from '../../shared/security';
 import {builderBotModel} from './BuilderBot';
@@ -265,7 +266,7 @@ export class HeadquartersScene {
   this.power.sync(preview?.kind==='hq'?this.rigPreview:this.founderHouse,rigs,layouts,campusSecurityWalls(state));
  }
  syncBots(state:FoundationState,now:number){
-  this.producing=!!state.training?.length;this.assemblyAt=this.lifeClock;this.assemblyProgress=this.producing?Math.max(0,Math.min(1,1-(state.training![0]-now)/5000)):0;
+  this.producing=!!state.training?.length;this.assemblyAt=this.lifeClock;this.assemblyProgress=this.producing?Math.max(0,Math.min(1,1-(state.training![0]-now)/(state.trainingDurations?.[0]??10000))):0;
   this.gpuActive=!!state.rig&&now>=state.rig.completesAt&&state.rig.stored<GPU_RIG.storage;this.gpu2Active=!!state.rig2&&now>=state.rig2.completesAt&&state.rig2.stored<GPU_RIG.storage;
   const f=state.fabricator,h=getHangar(state)?.unplaced?undefined:getHangar(state),ready=!!h&&now>=h.completesAt,bots=Math.min(h?.size==='compound'?8:10,(state.bots||0)+(!state.botRaid?.settled?(state.botRaid?.simulation.stock.scrap||0):0));
   const key=JSON.stringify([f?.position,h?.position,f?.orientation,h?.orientation,h?.size,ready]),reset=this.catchup||document.hidden||this.reduced;
@@ -278,7 +279,8 @@ export class HeadquartersScene {
 
   }
   if(ready&&this.botKit&&!reset)for(const slot of incoming){const points=dockingRoute(state,slot);if(!points.length)continue;const group=scrapBotModel(this.botKit);group.name='walking-scrapbot';const phaseRing=this.botKit.ring(group,.6,.04,[0,.2,0],c.cyan,true);phaseRing.name='friendly-phase';phaseRing.rotation.x=-Math.PI/2;phaseRing.visible=false;group.scale.setScalar(.7);group.position.set(...points[0]);group.visible=false;this.scene.add(group);this.walkers.push({slot,group,motion:new DeliveryMotion(points),delay:this.walkers.length*.35,settled:0,finished:false});}
-  const assembly=this.fabricatorGroup?.getObjectByName('assembly-bot');if(assembly)assembly.visible=this.producing;
+  if(this.fabricatorGroup&&this.botKit){const heavy=this.producing&&state.trainingKinds?.[0]==='breacher';this.fabricatorGroup.userData.heavyAssembly=heavy;let mech=this.fabricatorGroup.getObjectByName('assembly-breacher');if(heavy&&!mech){mech=breacherModel(this.botKit);mech.name='assembly-breacher';mech.scale.setScalar(.7);mech.position.y=.6;this.fabricatorGroup.add(mech);}if(mech)mech.visible=heavy;}const assembly=this.fabricatorGroup?.getObjectByName('assembly-bot');if(assembly)assembly.visible=this.producing&&!this.fabricatorGroup?.userData.heavyAssembly;
+  if(this.hangarGroup&&this.botKit){for(let i=0;i<4;i++){let mech=this.hangarGroup.getObjectByName('docked-breacher-'+i);if(!mech&&(state.breachers??0)>i){mech=breacherModel(this.botKit);mech.name='docked-breacher-'+i;mech.scale.setScalar(.7);const compound=h?.size==='compound';mech.position.set((i-1.5)*(compound?1.7:1),.25,compound?2.95:1.35);this.hangarGroup.add(mech);}if(mech)mech.visible=ready&&i<(state.breachers??0);}}
   this.syncDockVisibility();
  }
  syncBuildingVisuals(state:FoundationState,now:number){
@@ -293,9 +295,9 @@ export class HeadquartersScene {
  private animationProbe=new THREE.Vector3();
  private animationVisible(group:THREE.Object3D|undefined){if(!group||!group.visible||document.hidden)return false;this.animationProbe.copy(group.position).project(this.camera);return Math.abs(this.animationProbe.x)<1.3&&Math.abs(this.animationProbe.y)<1.3;}
  private animateBotLife(dt:number){
-  this.lifeClock+=dt;animateFabricator(this.animationVisible(this.fabricatorGroup)?this.fabricatorGroup:undefined,this.lifeClock,Math.min(1,this.assemblyProgress+(this.lifeClock-this.assemblyAt)/5),this.producing,this.reduced);this.security.group.visible=this.security.active;this.security.update(this.lifeClock,dt,this.reduced);this.renderer.domElement.dataset.securityDroneCount=String(this.security.count);this.renderer.domElement.dataset.securityDronePhase=this.security.phase;this.renderer.domElement.dataset.securityWalls=String(this.lastBotState?.walls?.length??0);animateResearchLab(this.labGroup,this.lifeClock,this.labActive,this.reduced);animateGpu(this.rigGroup,this.lifeClock,dt,this.gpuActive,this.reduced);animateGpu(this.rig2Group,this.lifeClock,dt,this.gpu2Active,this.reduced);
+  this.lifeClock+=dt;animateFabricator(this.animationVisible(this.fabricatorGroup)?this.fabricatorGroup:undefined,this.lifeClock,Math.min(1,this.assemblyProgress+(this.lifeClock-this.assemblyAt)/((this.lastBotState?.trainingDurations?.[0]??10000)/1000)),this.producing,this.reduced);this.security.group.visible=this.security.active;this.security.update(this.lifeClock,dt,this.reduced);this.renderer.domElement.dataset.securityDroneCount=String(this.security.count);this.renderer.domElement.dataset.securityDronePhase=this.security.phase;this.renderer.domElement.dataset.securityWalls=String(this.lastBotState?.walls?.length??0);animateResearchLab(this.labGroup,this.lifeClock,this.labActive,this.reduced);animateGpu(this.rigGroup,this.lifeClock,dt,this.gpuActive,this.reduced);animateGpu(this.rig2Group,this.lifeClock,dt,this.gpu2Active,this.reduced);
   for(let i=0;i<10;i++){const bot=this.hangarGroup?.getObjectByName('docked-bot-'+i);if(bot?.visible&&this.animationVisible(this.hangarGroup))animateDockedBot(bot,i,this.lifeClock,this.reduced,dt);}
-  if(this.animationVisible(this.hangarGroup))syncCompoundInstances(this.hangarGroup);
+  if(this.animationVisible(this.hangarGroup)){syncCompoundInstances(this.hangarGroup);for(let i=0;i<4;i++){const mech=this.hangarGroup?.getObjectByName('docked-breacher-'+i);if(mech?.visible)animateBreacher(mech,dt,this.reduced);}}
   for(let i=0;i<this.walkers.length;i++){
    const w=this.walkers[i],m=w.motion;w.delay-=dt;if(w.delay>0){w.group.visible=false;continue;}
    if(!w.group.visible&&this.walkers.some((leader,j)=>j<i&&leader.group.visible&&!leader.finished&&Math.hypot(leader.group.position.x-m.x,leader.group.position.z-m.z)<.85))continue;

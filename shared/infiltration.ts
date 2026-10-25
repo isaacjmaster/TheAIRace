@@ -1,3 +1,4 @@
+import type {TroopKind} from './troops';
 import type {SentinelDefense,SentinelState} from './sentinel-catalog';
 import {protectedAreas,insideProtected} from './deployment-boundary';
 import type {PublicBase} from './player-base';
@@ -133,6 +134,7 @@ export type Operation = {
 };
 export type InfiltrationCommand = {
     action: 'deploy';
+    troop?:TroopKind;
     position?:Vec;
 } | {
     action: 'abandon';

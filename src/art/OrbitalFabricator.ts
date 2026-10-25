@@ -58,5 +58,5 @@ export function animateOrbital(g:THREE.Object3D|undefined,time:number,progress:n
  const rotor=g.getObjectByName('orbital-inner');if(rotor)rotor.rotation.y=reduced?0:time*(active?.38:.10);
  const scan=g.getObjectByName('orbital-scan');if(scan){scan.visible=!reduced&&(active||time%12<2);scan.position.y=.65+(Math.sin(time*(active?2:1.2))*.5+.5)*1.05;scan.scale.setScalar(1+(reduced?0:Math.sin(time*2)*.045));}
  for(const side of [-1,1]){const arm=g.getObjectByName('orbital-arm-'+side);if(arm){arm.rotation.y=reduced?0:Math.sin(time*(active?1.7:.5)+side)*.09;const elbow=arm.getObjectByName('orbital-elbow');if(elbow)elbow.rotation.z=side*(.85+(reduced?0:Math.sin(time*(active?2:.6)+side)*.12));}}
- const bot=g.getObjectByName('assembly-bot');if(bot){bot.visible=active;const core=bot.getObjectByName('body-core');if(core)core.visible=progress>.25;bot.scale.setScalar(CAMPUS_BOT_SCALE);}
+ const bot=g.getObjectByName('assembly-bot');if(bot){bot.visible=active&&!g.userData.heavyAssembly;const core=bot.getObjectByName('body-core');if(core)core.visible=progress>.25;bot.scale.setScalar(CAMPUS_BOT_SCALE);}
 }

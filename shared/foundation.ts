@@ -1,10 +1,11 @@
+import {HANGAR_HOUSING,TROOPS,troopKind,troopHousing,type TroopKind} from './troops';
 import {onFootprintGrid,snapFootprint} from './placement-grid';
 import {productionPerMinute,trainingMilliseconds,advanceTechnology,type TechnologyUpgrade,type Technologies} from './technology';
 import {canPatrol} from './security';
 import {ownedSecurityWalls,type OwnedWall} from './security-catalog';
 import type {CompanySecurity} from './security';
 import {advanceOperation,type Operation} from './infiltration';
-import {ensureOwnedOperation,settleOwnedUnit,reservedAgent} from './infiltration-army';
+import {ensureOwnedOperation,settleOwnedUnit,reservedHousing} from './infiltration-army';
 import {advanceResearch,type ResearchLab} from './research';
 import {decorationFootprint,type Decoration} from './decoration-catalog';
 import {FOUNDATION_PLOT} from './foundation-plot';
@@ -27,9 +28,9 @@ export type Fabricator={hangarSize?:'expanded'|'compound';separateHangar?:boolea
 export type BotRaid={id:string;simulation:Raid;lastTick:number;started:boolean;settled:boolean;reward:number;companyId?:string;result?:{mapId:string;companyId?:string;combatVersion:number;victory:boolean;previouslyCompleted:boolean|null;destruction:number;survivors:number;reason:string;reward:number}};
 export const FABRICATOR={cost:50,buildSeconds:15,maxCount:1} as const;
 export const HANGAR={cost:0,buildSeconds:15,maxCount:1} as const;
-export const SCRAP_BOT={cost:5,trainSeconds:10,housing:1,capacity:10} as const;
+export const SCRAP_BOT={cost:5,trainSeconds:10,housing:1,capacity:HANGAR_HOUSING} as const;
 export type BuilderHut=BuildingLayout&{id:string;unplaced?:boolean};
-export type FoundationState = {buildingUpdate?:{version:1;acknowledged:boolean;replacementCount?:number;pending?:boolean};droneGuards?:[RigPosition?,RigPosition?];droneGuard?:RigPosition;hqNotification?:{id:string;acknowledged:boolean};builderHuts?:BuilderHut[];technologyUpgrade?:TechnologyUpgrade;technologies?:Technologies;trainingDurations?:number[];walls?:OwnedWall[];droneStation?:Hangar;sentinel?:Hangar;security?:CompanySecurity;infiltrationTutorial?:'complete'|'skipped';infiltration?:Operation;infiltrationReserve?:{compute:number;research:number};research?:number;researchCapacity?:number;lab?:ResearchLab;decorations?:Decoration[];founderHqLevel?:1|2;hqUpgrade?:FounderHQUpgrade;starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
+export type FoundationState = {buildingUpdate?:{version:1;acknowledged:boolean;replacementCount?:number;pending?:boolean};droneGuards?:[RigPosition?,RigPosition?];droneGuard?:RigPosition;hqNotification?:{id:string;acknowledged:boolean};builderHuts?:BuilderHut[];technologyUpgrade?:TechnologyUpgrade;technologies?:Technologies;trainingDurations?:number[];walls?:OwnedWall[];droneStation?:Hangar;sentinel?:Hangar;security?:CompanySecurity;infiltrationTutorial?:'complete'|'skipped';infiltration?:Operation;infiltrationReserve?:{compute:number;research:number};research?:number;researchCapacity?:number;lab?:ResearchLab;decorations?:Decoration[];founderHqLevel?:1|2;hqUpgrade?:FounderHQUpgrade;starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;breachers?:number;trainingKinds?:TroopKind[];training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
 export function initialFoundation(revision=0):FoundationState{return {version:1,revision,research:0,researchCapacity:500,founderHqLevel:1,companyName:'Garage Intelligence',level:1,compute:STARTING_COMPUTE,capacity:COMPUTE_CAPACITY,builders:0,starterStation:'unplaced',raidRecord:{wins:[],completeHistory:true}};}
 export const hasBuilderStation=(s:FoundationState)=>s.starterStation!=='unplaced';
 export function establishBuilderStation(s:FoundationState,position:RigPosition,orientation:Orientation=0){if(hasBuilderStation(s)){reconcileBuilderHuts(s);const hut=s.builderHuts?.find(h=>h.unplaced);if(!hut)throw new Error('All Builder Stations are already placed.');moveBuilderHut(s,hut.id,position,orientation);return;}const reason=validFoundationPosition(s,position,'station',orientation);if(reason)throw new Error(reason);s.stationLayout={position:[...position],orientation};s.starterStation='placed';s.builders=founderBuilderCapacity(s);s.buildersBusy=0;}
@@ -51,7 +52,11 @@ export function advanceFoundation(s:FoundationState,now=Date.now()){
  if(s.hqUpgrade&&now>=s.hqUpgrade.completesAt){if(founderHqLevel(s)<s.hqUpgrade.targetLevel)s.hqNotification={id:s.hqUpgrade.id,acknowledged:false};s.founderHqLevel=2;}
  if(hasBuilderStation(s)&&founderHqLevel(s)===2)s.builders=Math.max(s.builders,founderBuilderCapacity(s));
  if(jobs.length||clearing||s.hqUpgrade)s.buildersBusy=jobs.filter(b=>now<b.completesAt).length+Number(clearingActive(s,now))+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt);
- if(s.training){const completed=s.training.filter(t=>t<=now).length;s.bots=(s.bots||0)+completed;if(s.trainingDurations)s.trainingDurations=s.trainingDurations.slice(completed);s.training=s.training.filter(t=>t>now);}
+ if(s.training){
+  const pending:number[]=[],kinds:TroopKind[]=[],durations:number[]=[];
+  s.training.forEach((time,i)=>{const kind=troopKind(s.trainingKinds?.[i]);if(time<=now){if(kind==='breacher')s.breachers=(s.breachers??0)+1;else s.bots=(s.bots??0)+1;}else{pending.push(time);kinds.push(kind);durations.push(s.trainingDurations?.[i]??5000);}});
+  s.bots??=0;s.training=pending;if(s.trainingKinds)s.trainingKinds=kinds;if(s.trainingDurations)s.trainingDurations=durations;
+ }
  ensureOwnedOperation(s,now);if(s.infiltration)advanceOperation(s.infiltration,now);settleOwnedUnit(s);
  advanceResearch(s,now);advanceBotRaid(s,now);
  for(const r of rigs){const cursor=Math.max(r.lastProducedAt,r.completesAt);if(now>cursor){if(r.stored<GPU_RIG.storage)r.stored=Math.min(GPU_RIG.storage,r.stored+(now-cursor)*productionPerMinute(s)/60000);r.lastProducedAt=now;}}
@@ -79,7 +84,9 @@ export function collectRig(s:FoundationState,now=Date.now(),slot:'rig'|'rig2'='r
 }
 /** Available, fully fabricated inventory; queued and deployed units are separate. */
 export function availableBots(s:FoundationState){return (s.bots||0)+(!s.botRaid?.settled?(s.botRaid?.simulation.stock.scrap||0):0);}
-export function armyUsed(s:FoundationState){return reservedAgent(s.infiltration)+(s.bots||0)+(s.training?.length||0)+(!s.botRaid?.settled?(s.botRaid?.simulation.stock.scrap||0):0);}
+export function availableTroops(s:FoundationState,kind:TroopKind){return kind==='breacher'?(s.breachers??0):availableBots(s);}
+export function totalAvailableTroops(s:FoundationState){return availableBots(s)+(s.breachers??0);}
+export function armyUsed(s:FoundationState){return reservedHousing(s.infiltration)+availableBots(s)+(s.breachers??0)*TROOPS.breacher.housing+(s.training??[]).reduce((sum,_,i)=>sum+troopHousing(s.trainingKinds?.[i]),0);}
 /** Pure compatibility view: expand old Hangars only when the existing layout has room.
  * The candidate validation skips this Hangar, so this does not recurse through itself.
  * New purchases/moves persist the larger size; crowded old saves keep every coordinate. */
@@ -170,14 +177,18 @@ export function buildFabricator(s:FoundationState,p:RigPosition,now=Date.now(),o
 export function buildHangar(s:FoundationState,p:RigPosition,now=Date.now(),orientation:Orientation=0){
  advanceFoundation(s,now);if(getHangar(s))throw new Error('Bot Hangar — 1/1 Built');if(!hasBuilderStation(s)||s.builders<1)throw new Error('Place your free Builder Station first.');if((s.buildersBusy??0)>=s.builders)throw new Error('Your Builder Bot is busy.');const reason=validFoundationPosition(s,p,'hangar',orientation);if(reason)throw new Error(reason);s.hangar={size:'compound',position:[...p],orientation,startedAt:now,completesAt:now+HANGAR.buildSeconds*1000};s.buildersBusy=(s.buildersBusy??0)+1;s.bots??=0;
 }
-export function trainScrap(s:FoundationState,count:number,now=Date.now()){
+export function trainScrap(s:FoundationState,count:number,now=Date.now()){return trainTroop(s,'pulsewheel',count,now);}
+export function trainTroop(s:FoundationState,kind:TroopKind,count:number,now=Date.now()){
+ if(kind!=='pulsewheel'&&kind!=='breacher')throw new Error('Choose a valid troop.');
  advanceFoundation(s,now);if(!s.fabricator||now<s.fabricator.completesAt)throw new Error('Finish building your Bot Fabricator first.');if(!hangarReady(s,now))throw new Error('Build and finish a Bot Hangar first.');
- if(!Number.isInteger(count)||count<1||count>10)throw new Error('Choose 1 to 10 Pulsewheels.');
- if(armyUsed(s)+count>10)throw new Error('Hangar full — finish an operation or cancel waiting bots.');
- if(s.compute<count*5)throw new Error('Each Pulsewheel costs 5 Compute.');
- s.compute-=count*5;s.training??=[];
- s.trainingDurations??=s.training.map(()=>5000);const duration=trainingMilliseconds(s);
- let cursor=Math.max(now,s.training.at(-1)||0);for(let i=0;i<count;i++){cursor+=duration;s.training.push(cursor);s.trainingDurations.push(duration);}
+ const troop=TROOPS[kind];if(founderHqLevel(s)<troop.unlockHq)throw new Error('Upgrade Founder HQ to Level 2 to train Breachers.');
+ if(!Number.isInteger(count)||count<1||count>10)throw new Error('Choose 1 to 10 troops.');
+ if(armyUsed(s)+count*troop.housing>HANGAR_HOUSING)throw new Error('Hangar full — finish an operation before training more troops.');
+ if(s.compute<count*troop.cost)throw new Error(`Each ${troop.name} costs ${troop.cost} Compute.`);
+ s.compute-=count*troop.cost;s.training??=[];
+ s.trainingDurations??=s.training.map(()=>5000);s.trainingKinds=s.training.map((_,i)=>troopKind(s.trainingKinds?.[i]));
+ const duration=Math.round(trainingMilliseconds(s)*troop.trainSeconds/TROOPS.pulsewheel.trainSeconds);
+ let cursor=Math.max(now,s.training.at(-1)||0);for(let i=0;i<count;i++){cursor+=duration;s.training.push(cursor);s.trainingDurations.push(duration);s.trainingKinds.push(kind);}
 }
 export function startBotRaid(s:FoundationState,id:string,layout:number,now=Date.now()){
  advanceFoundation(s,now);if(s.botRaid&&!s.botRaid.settled)throw new Error('Resume your current raid.');

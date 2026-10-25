@@ -24,7 +24,7 @@ test('Fabricator grants one Hangar, reserves both footprints, and shares the one
  const t=initialFoundation();t.compute=200;buildRig(t,[6,0],epoch);buildFabricator(t,position,epoch+75000);assert.equal(collectRig(t,epoch+75000),10);
 });
 test('training is sequential, charges once, includes queued capacity, and survives clock rollback and offline time',()=>{
- const s=ready();trainScrap(s,5,epoch+15000);trainScrap(s,5,epoch+15000);assert.equal(s.compute,400);assert.equal(armyUsed(s),10);assert.throws(()=>trainScrap(s,1,epoch+15000),/full/);assert.equal(s.training!.at(-1),epoch+115000);
+ const s=ready();trainScrap(s,5,epoch+15000);trainScrap(s,5,epoch+15000);assert.equal(s.compute,400);assert.equal(armyUsed(s),10);const full=structuredClone(s);trainScrap(full,10,epoch+15000);assert.equal(armyUsed(full),20);assert.throws(()=>trainScrap(full,1,epoch+15000),/full/);assert.equal(s.training!.at(-1),epoch+115000);
  advanceFoundation(s,epoch+24999);assert.equal(s.bots,0);advanceFoundation(s,epoch+25000);assert.equal(s.bots,1);assert.equal(s.training!.length,9);advanceFoundation(s,epoch);assert.equal(s.bots,1);
  const restored=JSON.parse(JSON.stringify(s));advanceFoundation(restored,epoch+3600000);advanceFoundation(restored,epoch+7200000);assert.equal(restored.bots,10);assert.deepEqual(restored.training,[]);assert.equal(restored.compute,400);
  assert.throws(()=>trainScrap(ready(),0,epoch+25000));const poor=ready();poor.compute=4;assert.throws(()=>trainScrap(poor,1,epoch+25000),/5 Compute/);

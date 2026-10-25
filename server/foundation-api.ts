@@ -25,7 +25,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import {setGuardPosition} from '../shared/security';
-import { reconcileBuilderHuts,moveBuilderHut,placeOwnedHangar,acknowledgeHangar,upgradeFounderHQ,establishBuilderStation,moveBuilding,rotateBuilding,buildFabricator,buildHangar,trainScrap,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
+import { reconcileBuilderHuts,moveBuilderHut,placeOwnedHangar,acknowledgeHangar,upgradeFounderHQ,establishBuilderStation,moveBuilding,rotateBuilding,buildFabricator,buildHangar,trainTroop,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
 /** Separate table and cookie: foundation resets never touch any previous game save. */
 export function registerFoundation(app:express.Express,db:DatabaseSync,options:{buildingGrid?:boolean;legacyRaids?:boolean;cookieName?:string;legacyPaths?:string[];clock?:()=>number;operationFactory?:(id:string,target:string,now:number)=>Operation}={}){
  db.exec('CREATE TABLE IF NOT EXISTS foundation_saves(id TEXT PRIMARY KEY,state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS foundation_actions(session TEXT,id TEXT,payload TEXT,amount INTEGER,PRIMARY KEY(session,id))');
@@ -120,7 +120,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   z.object({action:z.literal('infiltration-search')}).strict(),
   z.object({action:z.literal('pvp-start'),scoutId:z.string().uuid()}).strict(),
   z.object({action:z.literal('infiltration-start'),targetId:z.enum(BASE_IDS)}).strict(),
-  z.object({action:z.literal('infiltration-command'),operationId:z.string().uuid(),intent:z.discriminatedUnion('action',[z.object({action:z.literal('deploy'),position:z.tuple([z.number().finite(),z.number().finite()]).optional()}).strict(),z.object({action:z.literal('abandon')}).strict()])}).strict(),
+  z.object({action:z.literal('infiltration-command'),operationId:z.string().uuid(),intent:z.discriminatedUnion('action',[z.object({action:z.literal('deploy'),troop:z.enum(['pulsewheel','breacher']).optional(),position:z.tuple([z.number().finite(),z.number().finite()]).optional()}).strict(),z.object({action:z.literal('abandon')}).strict()])}).strict(),
   z.object({action:z.literal('build-lab'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('collect-research')}).strict(),
   z.object({action:z.literal('upgrade-technology'),technology:z.enum(TECHNOLOGY_IDS),expectedLevel:z.number().int().min(0).max(2)}).strict(),
@@ -136,7 +136,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   z.object({action:z.literal('build'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('rotate'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel']),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('move'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
-  z.object({action:z.literal('train'),count:z.number().int().min(1).max(10)}).strict(),
+  z.object({action:z.literal('train'),troop:z.enum(['pulsewheel','breacher']).optional(),count:z.number().int().min(1).max(10)}).strict(),
   z.object({action:z.literal('start'),layout:z.number().int().min(0).max(1)}).strict(),
   z.object({action:z.literal('deploy'),raidId:z.string().uuid(),position:z.object({x:z.number().finite(),y:z.number().finite()}).strict()}).strict(),
   z.object({action:z.literal('retreat'),raidId:z.string().uuid()}).strict()
@@ -181,7 +181,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
     else if(c.action==='build-hangar')buildHangar(state,c.position,now,c.orientation);
     else if(c.action==='move')moveBuilding(state,c.building,c.position,c.orientation,now);
     else if(c.action==='rotate')rotateBuilding(state,c.building,c.orientation,now);
-    else if(c.action==='train')trainScrap(state,c.count,now);
+    else if(c.action==='train')trainTroop(state,c.troop??'pulsewheel',c.count,now);
     else if(c.action==='start'){if(!options.legacyRaids)throw new Error('Raids have been replaced by Infiltration. Reopen the game. Existing raids can still be resumed.');if(state.infiltration&&['ready','active'].includes(state.infiltration.status))throw new Error('Finish your infiltration first.');startBotRaid(state,randomUUID(),c.layout,now);state.botRaid!.companyId=player.company.playerId;influence.register(player.company.playerId,state,now);}
     else if(c.action==='deploy')deployScrap(state,c.raidId,c.position,now);
     else retreatBots(state,c.raidId,now);
