@@ -203,3 +203,17 @@ test('blocked startup autoplay never prevents first eligible interaction or repe
  h.ctx.resume=()=>{h.ctx.resumes++;return new Promise<void>(resolve=>{waiting.push(resolve);if(eligible){h.ctx.state='running';waiting.splice(0).forEach(done=>done());}});};
  try{const automatic=h.sound.tryAutoplay();assert.equal(h.ctx.resumes,1);assert.equal(await h.sound.tryAutoplay(),false);assert.equal(h.ctx.resumes,1);eligible=true;assert.equal(await h.sound.unlock(),true);await automatic;await (h.sound as any).activate('hq');h.sound.cue('tap');assert.equal(h.created(),1);assert.equal(h.ctx.sources.filter(n=>n.loop&&n.stops===0).length,1);assert.ok(h.ctx.sources.some(n=>!n.loop));}finally{h.sound.dispose();}
 });
+
+test('official playlist persists across scenes and resumes after mute and background without extra contexts',async()=>{
+ const h=harness(),loads:number[]=[],audio=new Soundscape({...h.platform,loadTrack:undefined,loadPlaylist:async(_ctx,index)=>{loads.push(index);return {duration:65} as AudioBuffer;}});
+ try{
+  await ready(audio);await new Promise(r=>setImmediate(r));assert.deepEqual(loads,[0,1]);assert.equal(h.ctx.sources.length,2);
+  const first=h.ctx.sources[0];
+  for(const mode of ['infiltration','raid','hq'] as const){audio.setMode(mode);await ready(audio);}
+  assert.equal(h.ctx.sources.length,2);assert.equal(first.stops,1,'only its scheduled natural ending');
+  h.ctx.currentTime=12;audio.setMuted(true);audio.setMuted(false);await ready(audio);await new Promise(r=>setImmediate(r));
+  assert.ok(h.ctx.sources[2].offsets[0]>=11.9,'resume existing track position');
+  audio.visibility(true);await (audio as any).quiet;assert.equal(h.ctx.state,'suspended');
+  audio.visibility(false);await ready(audio);assert.equal(h.created(),1);assert.equal(h.data.get(MUTE_KEY),'false');
+ }finally{audio.dispose();h.sound.dispose();}
+});

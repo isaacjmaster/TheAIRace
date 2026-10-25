@@ -1,9 +1,10 @@
+import {MusicPlaylist,type PlaylistLoader} from './MusicPlaylist';
 import {HQAmbience,HQ_AUDIO} from './Ambience';
 import {INFILTRATION_CUES,type InfiltrationCue} from './infiltrationCues';
 import {RecordedMusic,type TrackLoader} from './RecordedMusic';
-import {loadApprovedTrack,MUSIC_GAIN} from './tracks';
+import {MUSIC_GAIN} from './tracks';
 import { BUILDING_SOUNDS, MUTE_KEY, readMuted, writeMuted, type Cue, type MusicMode } from './score';
-export type SoundPlatform={storage?:Pick<Storage,'getItem'|'setItem'>;createContext:()=>AudioContext;silent?:boolean;ambience?:boolean;loadTrack?:TrackLoader;isHidden?:()=>boolean};
+export type SoundPlatform={storage?:Pick<Storage,'getItem'|'setItem'>;createContext:()=>AudioContext;silent?:boolean;ambience?:boolean;loadTrack?:TrackLoader;loadPlaylist?:PlaylistLoader;isHidden?:()=>boolean};
 /** Explicit opt-in for agent previews; standard automation is silent automatically. */
 export function testAudioDisabled(search:string,webdriver=false){return webdriver||new URLSearchParams(search).get('testAudio')==='off';}
 function browserPlatform():SoundPlatform {
@@ -16,7 +17,7 @@ import {MusicSynth} from './musicSynth';
 /** One best-effort startup attempt; supported user gestures can always retry. */
 export class Soundscape {
  private ambience?:HQAmbience;private ctx?:AudioContext;private master?:GainNode;private hq?:GainNode;private raid?:GainNode;private infiltration?:GainNode;
- private timer?:ReturnType<typeof setInterval>;private synth?:MusicSynth;private music?:RecordedMusic;private playingMode?:MusicMode;private hidden=false;private fadeUntil={hq:0,raid:0,infiltration:0};private mode:MusicMode='hq';
+ private timer?:ReturnType<typeof setInterval>;private synth?:MusicSynth;private music?:RecordedMusic|MusicPlaylist;private playingMode?:MusicMode;private hidden=false;private fadeUntil={hq:0,raid:0,infiltration:0};private mode:MusicMode='hq';
  private audible=false;private epoch=0;private resuming?:AudioContext;private quiet?:Promise<void>;
  private autoplayAttempted=false;
  private effects=new Set<AudioBufferSourceNode>();
@@ -45,7 +46,7 @@ export class Soundscape {
   const epoch=this.epoch;
   const attempt=(async()=>{try{
    if(epoch!==this.epoch||this.muted||this.backgrounded())return false;
-   if(!this.ctx){this.ctx=this.platform.createContext();this.synth=new MusicSynth(this.ctx);this.master=this.ctx.createGain();this.master.gain.value=0;this.master.connect(this.ctx.destination);this.hq=this.ctx.createGain();this.raid=this.ctx.createGain();this.infiltration=this.ctx.createGain();this.hq.connect(this.master);this.raid.connect(this.master);this.infiltration.connect(this.master);this.hq.gain.value=0;this.raid.gain.value=0;this.infiltration.gain.value=0;this.music=new RecordedMusic(this.ctx,{hq:this.hq,raid:this.raid,infiltration:this.infiltration},this.platform.loadTrack??loadApprovedTrack);
+   if(!this.ctx){this.ctx=this.platform.createContext();this.synth=new MusicSynth(this.ctx);this.master=this.ctx.createGain();this.master.gain.value=0;this.master.connect(this.ctx.destination);this.hq=this.ctx.createGain();this.raid=this.ctx.createGain();this.infiltration=this.ctx.createGain();this.hq.connect(this.master);this.raid.connect(this.master);this.infiltration.connect(this.master);this.hq.gain.value=0;this.raid.gain.value=0;this.infiltration.gain.value=0;this.music=this.platform.loadTrack?new RecordedMusic(this.ctx,{hq:this.hq,raid:this.raid,infiltration:this.infiltration},this.platform.loadTrack):new MusicPlaylist(this.ctx,this.hq,this.platform.loadPlaylist);
     const ctx=this.ctx;ctx.onstatechange=()=>{if(this.ctx!==ctx||this.resuming===ctx)return;if(ctx.state!=='running'&&this.audible||ctx.state==='running'&&(!this.audible||this.backgrounded()))void this.silence();};
    }
    const ctx=this.ctx;this.resuming=ctx;
@@ -75,6 +76,12 @@ export class Soundscape {
  }
  private async activate(mode:MusicMode){
   const ctx=this.ctx,music=this.music;if(!ctx||!music||!this.audible||this.muted||this.backgrounded()||ctx.state!=='running')return;const epoch=this.epoch;
+  if(music instanceof MusicPlaylist){
+   if(mode!=='hq')this.ambience?.stop();
+   try{await music.load();if(this.ctx!==ctx||epoch!==this.epoch||!this.audible||this.muted||this.backgrounded()||ctx.state!=='running')return;
+    if(!music.has()){music.start();this.ramp(this.hq!,MUSIC_GAIN*HQ_AUDIO.musicScale,1.1);}this.playingMode='hq';if(this.mode==='hq')this.ambience?.start();
+   }catch{/* A later gesture/tick retries without blocking gameplay. */}return;
+  }
   // Attack scenes are effects-only. Do not download or start a music buffer;
   // fade the outgoing HQ once, even when repeated gestures call activate again.
   if(mode!=='hq'){
@@ -93,6 +100,7 @@ export class Soundscape {
  private schedule(){
   if(!this.ctx||!this.music||this.ctx.state!=='running'||this.platform.silent||!this.audible||this.backgrounded())return;
   if(!this.muted&&this.mode==='hq')this.ambience?.tick();
+  if(this.music instanceof MusicPlaylist){this.music.tick();return;}
   for(const mode of ['hq','raid','infiltration'] as const)if(mode!==this.playingMode&&this.ctx.currentTime>=this.fadeUntil[mode])this.music.stop(mode);
  }
  cue=(cue:Cue)=>{
