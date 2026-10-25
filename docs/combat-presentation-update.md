@@ -16,10 +16,10 @@ Automated previews always use `testAudio=off`, isolated save data, and closed br
 
 ## Measured results
 
-565 automated tests pass, including audio voice limits/mute cleanup, shot retargeting, bounded effects, wall UI contexts and navigation invalidation; production build passes with the existing bundle-size advisory.
+566 automated tests pass, including audio voice limits/mute cleanup, shot retargeting, bounded effects, opaque projectile depth rendering, wall UI contexts and navigation invalidation; production build passes with the existing bundle-size advisory.
 
 Five-mission browser results were essentially unchanged at the host's approximately 75 FPS pacing limit. Mean draw calls increased by about 1.5. Small CPU differences between runs are noise, not a claimed rendering speedup.
 
-The enclosed player-base fixture exposed repeated exhaustive failed path searches. The existing bounded, geometry-keyed navigation cache now also retains fully explored disconnected components. Successful A* order is unchanged; wall breaches or clearance changes invalidate cached connectivity. Pure Node simulation took 47,531 ms before and 641 ms after, with worst tick 2,044 ms before and 106 ms after. Complete state hashes at every 100 ms tick matched baseline for that fixture and all five missions. Browser midbattle worst frame fell from 4,869 ms to 14.9 ms desktop and 4,962 ms to 16.3 ms mobile viewport in the sampled scenario. This is not a universal FPS guarantee: cold route searches can still hitch, and no physical iPhone was measured.
+The enclosed player-base fixture exposed repeated exhaustive failed path searches. The existing bounded, geometry-keyed navigation cache now also retains fully explored disconnected components. Successful A* order is unchanged; wall breaches or clearance changes invalidate cached connectivity. Pure Node simulation took 47,531 ms before and 641 ms after, with worst tick 2,044 ms before and 106 ms after. Complete state hashes at every 100 ms tick matched baseline for that fixture and all five missions. Browser midbattle worst frame fell from 4,869 ms to 15.6 ms desktop and 4,962 ms to 16.6 ms mobile viewport in the sampled scenario. This is not a universal FPS guarantee: cold route searches can still hitch, and no physical iPhone was measured.
 
 The reproducible comparison entry point is `scripts/check-combat-equivalence.ts`; pass `before` and the frozen baseline source directory, or `after`. Raw results and hashes are included in the visual review folder.

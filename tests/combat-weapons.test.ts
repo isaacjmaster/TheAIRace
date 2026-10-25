@@ -11,3 +11,5 @@ test('Sentinel energy intensifies only for captured damage bonus and shot origin
 
 import {sameShotPosition,shotAsset} from '../src/art/combatShotTarget';
 test('a killing shot retains its recorded structure after same-tick retarget and cannot follow a different nearby unit',()=>{const destroyed={id:'gpu',position:[2,3]},next={id:'hq',position:[5,6]},shot=[2,3],liveTarget=next;assert.equal(shotAsset([destroyed,next],shot),destroyed);assert.notEqual(shotAsset([destroyed,next],shot),liveTarget);assert.equal(sameShotPosition(shot,[2.001,3]),false);assert.equal(sameShotPosition(shot,[2,3]),true);assert.equal(sameShotPosition(shot,undefined),false);assert.equal(shotAsset([next],shot),undefined);});
+
+test('opaque pooled projectile surfaces write depth so later campus geometry cannot overwrite visible bolts',()=>{const fx=new CombatBolts();try{fx.group.traverse(n=>{if(n instanceof THREE.Mesh){const materials=Array.isArray(n.material)?n.material:[n.material];for(const m of materials)assert.ok(m.transparent||m.depthWrite,'opaque combat effects must write depth');}});}finally{fx.dispose();}});
