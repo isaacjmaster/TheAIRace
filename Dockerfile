@@ -8,6 +8,7 @@ COPY server ./server
 COPY shared ./shared
 COPY raid ./raid
 COPY tests ./tests
+COPY scripts ./scripts
 COPY public ./public
 RUN npm run build
 
