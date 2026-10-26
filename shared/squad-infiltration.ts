@@ -1,11 +1,12 @@
-import {TROOPS,type TroopKind} from './troops';
+import {COMBAT_BALANCE_V3,troopCombat} from './combat-balance';
+import {type TroopKind} from './troops';
 import {craftCampusTarget} from './infiltration-bases';
-import {TACTICAL_BALANCE,advanceTactical,planTactical} from './tactical-infiltration';
+import {advanceTactical,planTactical} from './tactical-infiltration';
 import {findPath,segmentClear,nearestOpen,pointClear} from './navigation';
 import {INFILTRATION,targetBounds,AGENT_CLEARANCE,DRONE_CLEARANCE,newOperation,infiltrationPath,infiltrationSolids,validDeployment,type Operation,type Vec,type InfiltrationCommand} from './infiltration';
 export const SQUAD_BALANCE={health:42,laserDamage:18,laserIntervalMs:750,hackWorkMultiplier:2.5,maxHackers:3,endGraceMs:3000,wallHealth:72,breachDps:18,breachDetour:6} as const;
 export type SquadAgent=Operation['agent']&{id:string;troop?:TroopKind;state:'active'|'extracted'|'lost';unitStatus:'reserved'|'returned'|'lost';work:number;workPosition?:Vec;unreachableDrone?:string;retryDroneAt?:number;blockedSince?:number;nextPlanAt?:number;wallTarget?:string;droneTarget?:string;lockedUntil?:number;attackReadyAt?:number;lastShotAt?:number;shotPosition?:Vec;cargo:{compute:number;research:number;intel:boolean}};
-export type SquadState={version:1;balanceVersion?:2;undeployed?:number;undeployedBreacher?:number;rules?:'tactical-v1';agents:SquadAgent[];progress:Record<string,number>;wallDamage:Record<string,number>;breachedWalls:string[];idleSince?:number};
+export type SquadState={version:1;balanceVersion?:2|3;undeployed?:number;undeployedBreacher?:number;rules?:'tactical-v1';agents:SquadAgent[];progress:Record<string,number>;wallDamage:Record<string,number>;breachedWalls:string[];idleSince?:number};
 /** New missions use captured layouts; older active operation snapshots are never rewritten. */
 export function newSquadOperation(id:string,targetId:string,now:number,spacious=true):Operation{
  const o=newOperation(id,targetId,now);o.squad={version:1,agents:[],progress:{},wallDamage:{},breachedWalls:[]};
@@ -20,11 +21,13 @@ export function newSquadOperation(id:string,targetId:string,now:number,spacious=
  for(const wall of o.target.walls){wall.x*=1.2;wall.z*=1.2;if(wall.w>wall.d)wall.w*=1.2;else wall.d*=1.2;}
  for(const defense of o.target.defenses)defense.route=defense.route.map(p=>p.map(v=>v*1.2) as Vec);
  }
- if(spacious){o.target=craftCampusTarget(targetId);o.breachRatingVersion=1;const hq=o.target.assets.find(a=>a.kind==='hq')!;hq.access=[hq.position[0],hq.position[1]+hq.size[1]/2+1.2];hq.hackSeconds=TACTICAL_BALANCE.hackSeconds.core;}
+ if(spacious){o.target=craftCampusTarget(targetId);o.breachRatingVersion=1;const hq=o.target.assets.find(a=>a.kind==='hq')!;hq.access=[hq.position[0],hq.position[1]+hq.size[1]/2+1.2];hq.hackSeconds=COMBAT_BALANCE_V3.hackSeconds.core;}
  const solids=infiltrationSolids(o.target);
  for(const defense of o.target.defenses){defense.radius+=.6;defense.warningSeconds=0;defense.route=defense.route.map(p=>nearestOpen(p,solids,targetBounds(o.target),DRONE_CLEARANCE,.5)??p);}
- if(spacious){o.squad.balanceVersion=2;o.squad.rules='tactical-v1';for(const a of o.target.assets)if(a.hackSeconds&&a.model!=='sentinel')a.hackSeconds=a.kind==='gpu'?TACTICAL_BALANCE.hackSeconds.gpu:a.kind==='lab'?TACTICAL_BALANCE.hackSeconds.lab:TACTICAL_BALANCE.hackSeconds.core;for(const d of o.target.defenses){d.radius=TACTICAL_BALANCE.droneDetection;d.warningSeconds=TACTICAL_BALANCE.droneWarmupMs/1000;}}
- o.drones=o.target.defenses.map(d=>({id:d.id,position:[...d.route[0]],segment:1,alert:0,lost:0,mode:'patrol'}));if(spacious)for(const d of o.drones)d.health=TACTICAL_BALANCE.droneHealth;return o;
+ if(spacious){o.squad.balanceVersion=3;o.squad.rules='tactical-v1';for(const a of o.target.assets)if(a.hackSeconds&&a.model!=='sentinel')a.hackSeconds=a.kind==='gpu'?COMBAT_BALANCE_V3.hackSeconds.gpu:a.kind==='lab'?COMBAT_BALANCE_V3.hackSeconds.lab:COMBAT_BALANCE_V3.hackSeconds.core;
+ // Freeze the previous effective NPC durability independently of future attacker damage tuning.
+ for(const a of o.target.assets)if(a.hackSeconds&&a.maxHealth===undefined)a.maxHealth=a.hackSeconds*9;for(const d of o.target.defenses){d.radius=COMBAT_BALANCE_V3.droneDetection;d.warningSeconds=COMBAT_BALANCE_V3.droneWarmupMs/1000;}}
+ o.drones=o.target.defenses.map(d=>({id:d.id,position:[...d.route[0]],segment:1,alert:0,lost:0,mode:'patrol'}));if(spacious)for(const d of o.drones)d.health=COMBAT_BALANCE_V3.droneHealth;return o;
 }
 export function squadTarget(o:Operation){return o.squad?{...o.target,...(o.pvp?{assets:o.target.assets.filter(a=>!o.hacked.includes(a.id))}:{}),walls:o.target.walls?.filter(w=>!o.squad!.breachedWalls.includes(w.id))}:o.target;}
 const distance=(a:Vec,b:Vec)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
@@ -57,7 +60,7 @@ export function commandSquad(o:Operation,c:InfiltrationCommand,now:number){
  const available=heavy?(o.squad!.undeployedBreacher??0):o.squad!.undeployed;if(available!==undefined&&available<=0)throw Error('No '+(heavy?'Breachers':'Pulsewheels')+' available for this mission.');
  const position=c.position??o.target.entry;if(!validDeployment(o.target,position))throw Error('Choose a highlighted perimeter tile.');
  // The Foundation command transaction owns the inventory deduction before this call.
- const a:SquadAgent={...(heavy?{troop:'breacher' as const}:{}),id:o.id+':'+o.squad!.agents.length,position:[...position],path:[],mode:'idle',hack:0,yaw:0,health:heavy?TROOPS.breacher.health:o.squad!.rules?TACTICAL_BALANCE.botHealth:SQUAD_BALANCE.health,state:'active',unitStatus:'reserved',work:0,cargo:{compute:0,research:0,intel:false}};
+ const a:SquadAgent={...(heavy?{troop:'breacher' as const}:{}),id:o.id+':'+o.squad!.agents.length,position:[...position],path:[],mode:'idle',hack:0,yaw:0,health:o.squad!.rules?troopCombat(o,heavy?'breacher':'pulsewheel').health:SQUAD_BALANCE.health,state:'active',unitStatus:'reserved',work:0,cargo:{compute:0,research:0,intel:false}};
  o.squad!.agents.push(a);if(heavy)o.squad!.undeployedBreacher!--;else if(o.squad!.undeployed!==undefined)o.squad!.undeployed--;o.squad!.idleSince=undefined;if(o.status==='ready'){o.status='active';o.startedAt=now;o.lastTick=now;}if(o.squad!.rules)planTactical(o,a);else targetAgent(o,a);o.agent=o.squad!.agents[0];event(o,'deployed',a.id);(o.orders??=[]).push({at:now,intent:structuredClone(c)});
 }
 /** Fixed server ticks. Shared building work is awarded only once; each worker extracts after its first successful objective. */

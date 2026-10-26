@@ -67,7 +67,7 @@ test('bots retarget through a reachable face when the saved approach is blocked,
  const o=newSquadOperation(randomUUID(),'lumen-labs',1000);o.pvp={attackerId:'a',defenderId:'d'} as typeof o.pvp;
  o.target.walls=[];o.target.defenses=[];o.drones=[];o.sentinels=[];
  o.target.assets=[{id:'first',kind:'gpu',name:'First',position:[-8,0],size:[2,2],access:[-8,2],hackSeconds:1,maxHealth:9,compute:0,research:0},{id:'second',kind:'gpu',name:'Second',position:[0,0],size:[2,2],access:[0,2],hackSeconds:1,maxHealth:9,compute:0,research:0},{id:'blocker',kind:'station',name:'Blocked approach',position:[0,2],size:[2,2],compute:0,research:0}];
- commandOperation(o,{action:'deploy'},1000);const a=o.squad!.agents[0];a.position=[-8,2];a.path=[];a.target='first';a.mode='hacking';a.nextPlanAt=100000;
+ commandOperation(o,{action:'deploy'},1000);const a=o.squad!.agents[0];a.position=[-8,2];a.workPosition=[-8,2];a.path=[];a.target='first';a.mode='hacking';a.nextPlanAt=100000;
  advanceTactical(o,1100);assert.ok(o.hacked.includes('first'));assert.equal(a.target,'second');assert.notDeepEqual(a.workPosition,[0,2]);assert.ok(a.path.length);
  advanceTactical(o,20000);assert.ok(o.hacked.includes('second'));assert.equal(o.status,'extracted');assert.deepEqual([SQUAD_BALANCE.wallHealth,SQUAD_BALANCE.breachDps],[72,18]);
 });

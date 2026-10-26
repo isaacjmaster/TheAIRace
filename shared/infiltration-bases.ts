@@ -1,3 +1,4 @@
+import {COMBAT_BALANCE_V3} from './combat-balance';
 import {SENTINEL} from './sentinel-catalog';
 import {DRONE_DETECTION_RADIUS} from './drone-balance';
 import type {TargetSnapshot,Asset,Vec,Defense} from './infiltration';
@@ -21,12 +22,12 @@ export function craftCampusTarget(id:string):TargetSnapshot{
  // Fixed defensive emplacements replace one mobile patrol per tower to retain a viable army budget.
  const towerPositions:Vec[]=rank===2?[[6,-2]]:rank===3?[[0,6]]:rank===4?[[-7,6],[11,-3]]:[];
  // Mission emplacements use a slower training-defense profile; owned PvP towers retain their balance.
- const sentinels=towerPositions.map((position,i)=>({id:'vanguard-'+i,position,range:SENTINEL.range,damage:SENTINEL.damage,lockStep:SENTINEL.lockStep,maxDamage:SENTINEL.maxDamage,intervalMs:2000,warmupMs:900}));
+ const sentinels=towerPositions.map((position,i)=>({id:'vanguard-'+i,position,range:SENTINEL.range,damage:SENTINEL.damage,lockStep:SENTINEL.lockStep,maxDamage:SENTINEL.maxDamage,...COMBAT_BALANCE_V3.missionSentinel}));
  for(const tower of sentinels)l.assets.push({id:tower.id,kind:'station',model:'sentinel',name:'Sentinel Tower',position:tower.position,size:[4,4],access:[tower.position[0],tower.position[1]+2.7],hackSeconds:15,maxHealth:SENTINEL.health,compute:0,research:0});
  const tech=l.assets.filter(a=>a.access);let c=reward.compute,r=reward.research;
  for(const [i,a]of tech.entries()){a.compute=i===tech.length-1?c:Math.floor(reward.compute/tech.length);a.research=i===tech.length-1?r:Math.floor(reward.research/tech.length);c-=a.compute;r-=a.research;}
  const walls=l.walls.flatMap(w=>{const horizontal=w.w>w.d,len=Math.max(w.w,w.d),n=Math.ceil(len/2),span=len/n;return Array.from({length:n},(_,i)=>({...w,id:w.id+'-'+i,x:w.x+(horizontal?-len/2+span*(i+.5):0),z:w.z+(horizontal?0:-len/2+span*(i+.5)),w:horizontal?span:w.w,d:horizontal?w.d:span}));});
- const defenses:Defense[]=l.routes.slice(0,l.routes.length-sentinels.length-(rank===4?1:0)).map((route,i)=>({id:'sentinel-'+(i+1),route:route as Vec[],aerial:true,fliesOverWalls:true,radius:DRONE_DETECTION_RADIUS,patrolSpeed:1.2,pursuitSpeed:2.1,warningSeconds:.35}));
+ const defenses:Defense[]=l.routes.slice(0,COMBAT_BALANCE_V3.missionDroneCounts[rank]).map((route,i)=>({id:'sentinel-'+(i+1),route:route as Vec[],aerial:true,fliesOverWalls:true,radius:DRONE_DETECTION_RADIUS,patrolSpeed:1.2,pursuitSpeed:2.1,warningSeconds:.35}));
  return {version:1,id,name:['Lumen Labs','Vector Works','Prism Systems','Orbit Research','Apex Compute'][rank],difficulty:['Startup','Developing','Established','Advanced','Elite'][rank],arena:'campus-v2',campusBounds:{minX:-l.half[0],maxX:l.half[0],minZ:-l.half[1],maxZ:l.half[1]},compound:l.compound as Vec,entry:l.entry as Vec,exit:l.entry as Vec,assets:l.assets,sentinels,defenses,walls,influence:reward.influence,navigationVersion:2,hqLevel:2};
 }
 /** Random within a progression-appropriate pool; HQ 2 and three successful missions unlock all tiers. */
