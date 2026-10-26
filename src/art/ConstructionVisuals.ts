@@ -5,14 +5,14 @@ import type {BuildingLayout,RotatableBuilding} from '../../shared/foundation';
 export type BuildStage='foundation'|'framework'|'finishing'|'finished';
 export const constructionProgress=(timer:{startedAt:number;completesAt:number},now:number)=>Math.max(0,Math.min(1,(now-timer.startedAt)/Math.max(1,timer.completesAt-timer.startedAt)));
 export const constructionStage=(progress:number):BuildStage=>progress>=1?'finished':progress>=.6?'finishing':progress>=.25?'framework':'foundation';
-const shapes={sentinel:[4,4,3.1],rig:[4,3,2.6],rig2:[4,3,2.6],lab:[4,3,2.8],fabricator:[4,3,3.5],hangar:[5.6,4.2,3.2],droneStation:[3,3,1.6],hq:[9,8,7],station:[3.6,2.6,2]} as const;
+const shapes={computeStorage:[4,4,3.3],researchStorage:[4,4,3.3],sentinel:[4,4,3.1],rig:[4,3,2.6],rig2:[4,3,2.6],lab:[4,3,2.8],fabricator:[4,3,3.5],hangar:[5.6,4.2,3.2],droneStation:[3,3,1.6],hq:[9,8,7],station:[3.6,2.6,2]} as const;
 type Entry={root:THREE.Object3D;proxy:THREE.Group;foundation:THREE.Group;frame:THREE.Group;future?:THREE.Group;plane:THREE.Plane;originals:Map<THREE.Mesh,THREE.Material|THREE.Material[]>;materials:THREE.Material[];lights:THREE.Light[]};
 /** Presentation only. Actual roots, timers and server capability checks remain authoritative. */
 export class ConstructionVisuals{
  private k=new WorldKit('campus');private entries=new Map<RotatableBuilding,Entry>();private effects:{group:THREE.Group;age:number}[]=[];
  readonly stages:Partial<Record<RotatableBuilding,BuildStage>>={};
  constructor(private scene:THREE.Scene){}
- private prepare(kind:RotatableBuilding,root:THREE.Object3D,layout:BuildingLayout):Entry{
+ private prepare(kind:RotatableBuilding,root:THREE.Object3D,layout:BuildingLayout,targetLevel:1|2|3=2):Entry{
   const [w,d,h]=shapes[kind],proxy=new THREE.Group(),foundation=new THREE.Group(),frame=new THREE.Group();proxy.name='construction-'+kind;proxy.position.set(...[layout.position[0],0,layout.position[1]] as [number,number,number]);proxy.rotation.y=layout.orientation*Math.PI/2;proxy.add(foundation,frame);this.scene.add(proxy);
   const machinery=kind==='rig'||kind==='rig2'||kind==='fabricator';this.k.box(foundation,[w,.22,d],[0,.12,0],machinery?C.slate:'#ddd8c5',.07);
   for(const x of [-w*.43,w*.43])for(const z of [-d*.43,d*.43]){this.k.box(foundation,[.18,.55,.18],[x,.4,z],C.slate,.025);this.k.box(frame,[.13,h*.82,.13],[x,h*.41+.2,z],C.slate,.025);}
@@ -25,15 +25,15 @@ export class ConstructionVisuals{
   else if(kind==='hangar')for(const x of [-w*.28,0,w*.28])this.k.box(frame,[.08,.04,d*.6],[x,.26,0],C.gold,.015);
   this.k.batchStatic(foundation,'foundation-'+kind);this.k.batchStatic(frame,'frame-'+kind);
   const e:Entry={root,proxy,foundation,frame,plane:new THREE.Plane(new THREE.Vector3(0,-1,0),h*.8),originals:new Map(),materials:[],lights:[]};
-  if(kind==='hq'){e.future=founderHQ(this.k,proxy,2);e.future.position.set(0,0,0);e.future.visible=false;}
+  if(kind==='hq'){e.future=founderHQ(this.k,proxy,targetLevel);e.future.position.set(0,0,0);e.future.visible=false;}
   const clones=new Map<THREE.Material,THREE.Material>();(e.future??root).traverse(n=>{if(n instanceof THREE.Mesh){e.originals.set(n,n.material);const clone=(m:THREE.Material)=>{if(!clones.has(m)){const copy=m.clone();copy.clippingPlanes=[e.plane];copy.clipShadows=true;if(copy instanceof THREE.MeshStandardMaterial)copy.emissiveIntensity=0;clones.set(m,copy);e.materials.push(copy);}return clones.get(m)!;};n.material=Array.isArray(n.material)?n.material.map(clone):clone(n.material);}if(n instanceof THREE.Light){e.lights.push(n);n.visible=false;}});root.traverse(n=>{if(n instanceof THREE.Light&&!e.lights.includes(n)){e.lights.push(n);n.visible=false;}});
   return e;
  }
- sync(kind:RotatableBuilding,root:THREE.Object3D|undefined,layout:BuildingLayout|undefined,timer:{startedAt:number;completesAt:number}|undefined,now:number){
+ sync(kind:RotatableBuilding,root:THREE.Object3D|undefined,layout:BuildingLayout|undefined,timer:{startedAt:number;completesAt:number;targetLevel?:1|2|3}|undefined,now:number){
   let e=this.entries.get(kind);if(!root||!layout||!timer){if(e)this.remove(kind,e);delete this.stages[kind];return;}
   const progress=constructionProgress(timer,now),stage=constructionStage(progress);this.stages[kind]=stage;
   if(stage==='finished'){if(e){this.remove(kind,e);this.complete(layout);}return;}
-  if(e&&e.root!==root){this.remove(kind,e);e=undefined;}if(!e){e=this.prepare(kind,root,layout);this.entries.set(kind,e);}
+  if(e&&e.root!==root){this.remove(kind,e);e=undefined;}if(!e){e=this.prepare(kind,root,layout,timer.targetLevel??2);this.entries.set(kind,e);}
   e.proxy.position.set(layout.position[0],0,layout.position[1]);e.proxy.rotation.y=layout.orientation*Math.PI/2;e.foundation.visible=true;e.frame.visible=stage!=='foundation';
   root.visible=stage==='finishing'&&kind!=='hq';if(e.future)e.future.visible=stage==='finishing';e.plane.constant=shapes[kind][2]*(.74+.22*Math.max(0,(progress-.6)/.4));
  }

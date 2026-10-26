@@ -25,7 +25,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import {setGuardPosition} from '../shared/security';
-import { reconcileBuilderHuts,moveBuilderHut,placeOwnedHangar,acknowledgeHangar,upgradeFounderHQ,establishBuilderStation,moveBuilding,rotateBuilding,buildFabricator,buildHangar,trainTroop,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
+import { buildStorage,upgradeBuildings,reconcileBuilderHuts,moveBuilderHut,placeOwnedHangar,acknowledgeHangar,upgradeFounderHQ,establishBuilderStation,moveBuilding,rotateBuilding,buildFabricator,buildHangar,trainTroop,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
 /** Separate table and cookie: foundation resets never touch any previous game save. */
 export function registerFoundation(app:express.Express,db:DatabaseSync,options:{buildingGrid?:boolean;legacyRaids?:boolean;cookieName?:string;legacyPaths?:string[];clock?:()=>number;operationFactory?:(id:string,target:string,now:number)=>Operation}={}){
  db.exec('CREATE TABLE IF NOT EXISTS foundation_saves(id TEXT PRIMARY KEY,state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS foundation_actions(session TEXT,id TEXT,payload TEXT,amount INTEGER,PRIMARY KEY(session,id))');
@@ -121,6 +121,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   z.object({action:z.literal('pvp-start'),scoutId:z.string().uuid()}).strict(),
   z.object({action:z.literal('infiltration-start'),targetId:z.enum(BASE_IDS)}).strict(),
   z.object({action:z.literal('infiltration-command'),operationId:z.string().uuid(),intent:z.discriminatedUnion('action',[z.object({action:z.literal('deploy'),troop:z.enum(['pulsewheel','breacher']).optional(),position:z.tuple([z.number().finite(),z.number().finite()]).optional()}).strict(),z.object({action:z.literal('abandon')}).strict()])}).strict(),
+  z.object({action:z.literal('upgrade-building'),ids:z.array(z.string().min(1).max(120)).min(1).max(100),expectedLevels:z.record(z.string(),z.number().int().min(1).max(3))}).strict(),
+  z.object({action:z.literal('build-storage'),kind:z.enum(['computeStorage','researchStorage']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build-lab'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('collect-research')}).strict(),
   z.object({action:z.literal('upgrade-technology'),technology:z.enum(TECHNOLOGY_IDS),expectedLevel:z.number().int().min(0).max(2)}).strict(),
@@ -134,8 +136,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   z.object({action:z.literal('place-owned-hangar'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build-hangar'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
-  z.object({action:z.literal('rotate'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel']),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
-  z.object({action:z.literal('move'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('rotate'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel','computeStorage','researchStorage']),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('move'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel','computeStorage','researchStorage']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('train'),troop:z.enum(['pulsewheel','breacher']).optional(),count:z.number().int().min(1).max(10)}).strict(),
   z.object({action:z.literal('start'),layout:z.number().int().min(0).max(1)}).strict(),
   z.object({action:z.literal('deploy'),raidId:z.string().uuid(),position:z.object({x:z.number().finite(),y:z.number().finite()}).strict()}).strict(),
@@ -166,6 +168,8 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
     else if(c.action==='infiltration-search'){const operationId=randomUUID(),targetId=chooseInfiltrationBase(state,parseInt(operationId.slice(0,8),16),Number(db.prepare("SELECT COUNT(*) n FROM infiltration_results WHERE company_id=? AND status='extracted'").get(player.company.playerId)?.n??0));startOwnedOperation(state,operationId,targetId,now,options.operationFactory??newSquadOperation);}
     else if(c.action==='infiltration-tutorial'){if(state.infiltration?.id!==c.operationId)throw new Error('This operation is no longer active.');state.infiltrationTutorial??=c.result;}
     else if(c.action==='infiltration-command'){if(state.infiltration?.id!==c.operationId)throw new Error('This operation is no longer active.');if(c.intent.action==='deploy')players.validateDeployment(state,now);commandOwnedOperation(state,c.intent,now);}
+    else if(c.action==='upgrade-building')upgradeBuildings(state,c.ids,c.expectedLevels,now,input.requestId);
+    else if(c.action==='build-storage')buildStorage(state,c.kind,c.position,now,c.orientation);
     else if(c.action==='build-lab')buildResearchLab(state,c.position,now,c.orientation);
     else if(c.action==='collect-research')amount=collectResearch(state,now);
     else if(c.action==='upgrade-technology')purchaseTechnology(state,c.technology,c.expectedLevel,now);

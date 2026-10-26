@@ -28,7 +28,8 @@ export function animateFounderIdle(house:THREE.Object3D|undefined,time:number,re
 }
 
 /** A closed cottage with a flush front window: the founder is real interior geometry. */
-export function founderHQ(k:WorldKit,parent:THREE.Group,level:1|2=1):THREE.Group{
+export function founderHQ(k:WorldKit,parent:THREE.Group,level:1|2|3=1):THREE.Group{
+ if(level===3)return founderHQLevel3(k,parent);
  if(level===2)return founderHQLevel2(k,parent);
  const polished=k.finish==='campus';
  const house=new THREE.Group();house.name='Founder HQ';house.position.set(-5,0,-1);parent.add(house);
@@ -85,12 +86,12 @@ export function founderHQ(k:WorldKit,parent:THREE.Group,level:1|2=1):THREE.Group
  addHqPowerBox(k,house,1);return house;
 }
 
-export type FoundationBuilding='hq'|'rig'|'rig2'|'fabricator'|'hangar'|'station'|'lab'|'droneStation'|'sentinel';
+export type FoundationBuilding='hq'|'rig'|'rig2'|'fabricator'|'hangar'|'station'|'lab'|'droneStation'|'sentinel'|'computeStorage'|'researchStorage';
 /** Resolve the nearest visible building mesh, never the old invisible campus lots. */
-export function pickFoundationBuilding(ray:THREE.Raycaster,hq:THREE.Object3D,rig?:THREE.Object3D,fabricator?:THREE.Object3D,hangar?:THREE.Object3D,station?:THREE.Object3D,rig2?:THREE.Object3D,lab?:THREE.Object3D,droneStation?:THREE.Object3D,sentinel?:THREE.Object3D):FoundationBuilding|undefined{
- const hit=ray.intersectObjects([hq,rig,fabricator,hangar,station,rig2,lab,droneStation,sentinel].filter((g):g is THREE.Object3D=>!!g),true)[0];
+export function pickFoundationBuilding(ray:THREE.Raycaster,hq:THREE.Object3D,rig?:THREE.Object3D,fabricator?:THREE.Object3D,hangar?:THREE.Object3D,station?:THREE.Object3D,rig2?:THREE.Object3D,lab?:THREE.Object3D,droneStation?:THREE.Object3D,sentinel?:THREE.Object3D,computeStorage?:THREE.Object3D,researchStorage?:THREE.Object3D):FoundationBuilding|undefined{
+ const hit=ray.intersectObjects([hq,rig,fabricator,hangar,station,rig2,lab,droneStation,sentinel,computeStorage,researchStorage].filter((g):g is THREE.Object3D=>!!g),true)[0];
  if(!hit)return;
- for(let node:THREE.Object3D|null=hit.object;node;node=node.parent){if(node===hq)return 'hq';if(node===rig)return 'rig';if(node===rig2)return 'rig2';if(node===fabricator)return 'fabricator';if(node===hangar)return 'hangar';if(node===station)return 'station';if(node===lab)return 'lab';if(node===sentinel)return 'sentinel';if(node===droneStation)return 'droneStation';}
+ for(let node:THREE.Object3D|null=hit.object;node;node=node.parent){if(node===computeStorage)return 'computeStorage';if(node===researchStorage)return 'researchStorage';if(node===hq)return 'hq';if(node===rig)return 'rig';if(node===rig2)return 'rig2';if(node===fabricator)return 'fabricator';if(node===hangar)return 'hangar';if(node===station)return 'station';if(node===lab)return 'lab';if(node===sentinel)return 'sentinel';if(node===droneStation)return 'droneStation';}
 }
 
 
@@ -182,4 +183,20 @@ function founderHQLevel2(k:WorldKit,parent:THREE.Group){
  box([2.55,.07,.07],[2.9,4.33,3.34],c.cyan,.025,true);box([1.65,.18,.8],[2.38,.48,3.82],c.slate,.05);
  for(const x of [-3.86,1.69,3.98])box([.12,3.7,.11],[x,2.5,3.25],'#fff8e6',.025);
  k.batchStatic(founder,'campus-founder-level2');k.batchStatic(house,'campus-house-level2');k.grounding(house,10,9,0,.4);addHqPowerBox(k,house,2);return house;
+}
+
+/** The original founder studio remains below a compact upper research wing. */
+function founderHQLevel3(k:WorldKit,parent:THREE.Group){
+ const house=founderHQLevel2(k,parent);house.name='Founder HQ Level 3';
+ const wing=new THREE.Group();wing.name='hq-elite-wing';house.add(wing);
+ k.box(wing,[2.7,.25,5.9],[2.75,4.63,.05],c.cream,.08);
+ k.box(wing,[2.55,2.0,5.65],[2.75,5.7,-.05],'#264a60',.08);
+ for(const z of [-2.7,2.7]){k.box(wing,[2.3,1.5,.045],[2.75,5.72,z],'#7dcfdc',.025);for(const x of [1.65,2.75,3.85])k.box(wing,[.1,1.65,.09],[x,5.73,z],c.cream,.015);k.box(wing,[2.45,.09,.1],[2.75,5.12,z],c.gold,.015);}
+ for(const z of [-1.8,0,1.8]){k.box(wing,[.05,1.5,1.55],[4.05,5.73,z],'#7dcfdc',.02);k.box(wing,[.09,1.7,.12],[4.1,5.73,z+.8],c.cream,.015);}
+ k.box(wing,[2.95,.25,6.15],[2.75,6.82,.05],'#155976',.07);k.box(wing,[2.7,.06,.12],[2.75,6.96,3.05],c.cyan,.015,true);
+ for(const x of [1.6,3.9])k.box(wing,[.24,2.5,.3],[x,5.78,-2.6],c.cream,.035);
+ k.box(wing,[1.35,.35,1.65],[2.75,7.04,-1.35],c.dark,.05);for(let i=0;i<4;i++)k.box(wing,[1.1,.035,.13],[2.75,7.24,-1.9+i*.35],c.slate,.01);
+ k.cylinder(wing,.12,1.1,[3.7,7.4,-2.5],c.gold);k.box(wing,[.7,.4,.15],[3.7,7.9,-2.5],c.dark);k.box(wing,[.5,.15,.035],[3.7,7.94,-2.4],c.cyan,.01,true);
+ k.box(wing,[5.8,.2,.65],[-1.1,4.7,3.35],c.cream,.045);k.box(wing,[5.25,.06,.035],[-1.1,4.62,3.69],c.cyan,.01,true);
+ k.batchStatic(wing,'hq-elite-wing');return house;
 }

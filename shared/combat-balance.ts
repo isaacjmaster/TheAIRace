@@ -26,7 +26,7 @@ export const COMBAT_BALANCE_V3={
 } as const;
 const CURRENT_PULSEWHEEL_BALANCE={health:COMBAT_BALANCE_V3.botHealth,damage:COMBAT_BALANCE_V3.botDamage,intervalMs:COMBAT_BALANCE_V3.botIntervalMs,speed:COMBAT_BALANCE_V3.botSpeed,range:COMBAT_BALANCE_V3.botRange,wallMultiplier:1};
 type CombatOperation=Pick<Operation,'squad'>;
-export const isCurrentCombat=(o:CombatOperation)=>o.squad?.balanceVersion===3;
+export const isCurrentCombat=(o:CombatOperation)=>o.squad?.balanceVersion===3||o.squad?.balanceVersion===4;
 export const breacherBalance=(o:CombatOperation)=>isCurrentCombat(o)?COMBAT_BALANCE_V3.breacher:LEGACY_BREACHER_BALANCE;
 export const wallBalance=(o:CombatOperation)=>isCurrentCombat(o)?COMBAT_BALANCE_V3.wall:LEGACY_WALL_BALANCE;
 /** Troop simulation values, including frozen historical Pulsewheel values. */
@@ -34,3 +34,6 @@ export function troopCombat(o:CombatOperation,kind?:TroopKind){
  if(kind==='breacher')return breacherBalance(o);
  return isCurrentCombat(o)?CURRENT_PULSEWHEEL_BALANCE:LEGACY_PULSEWHEEL_BALANCE;
 }
+
+/** Only v4 consumes level-aware, server-captured wall durability. */
+export const wallHealth=(o:Pick<Operation,'squad'|'target'>,id:string)=>o.squad?.balanceVersion===4?(o.target.walls?.find(w=>w.id===id)?.maxHealth??wallBalance(o).health):wallBalance(o).health;

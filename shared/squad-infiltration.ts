@@ -6,7 +6,7 @@ import {findPath,segmentClear,nearestOpen,pointClear} from './navigation';
 import {INFILTRATION,targetBounds,AGENT_CLEARANCE,DRONE_CLEARANCE,newOperation,infiltrationPath,infiltrationSolids,validDeployment,type Operation,type Vec,type InfiltrationCommand} from './infiltration';
 export const SQUAD_BALANCE={health:42,laserDamage:18,laserIntervalMs:750,hackWorkMultiplier:2.5,maxHackers:3,endGraceMs:3000,wallHealth:72,breachDps:18,breachDetour:6} as const;
 export type SquadAgent=Operation['agent']&{id:string;troop?:TroopKind;state:'active'|'extracted'|'lost';unitStatus:'reserved'|'returned'|'lost';work:number;workPosition?:Vec;unreachableDrone?:string;retryDroneAt?:number;blockedSince?:number;nextPlanAt?:number;wallTarget?:string;droneTarget?:string;lockedUntil?:number;attackReadyAt?:number;lastShotAt?:number;shotPosition?:Vec;cargo:{compute:number;research:number;intel:boolean}};
-export type SquadState={version:1;balanceVersion?:2|3;undeployed?:number;undeployedBreacher?:number;rules?:'tactical-v1';agents:SquadAgent[];progress:Record<string,number>;wallDamage:Record<string,number>;breachedWalls:string[];idleSince?:number};
+export type SquadState={version:1;balanceVersion?:2|3|4;undeployed?:number;undeployedBreacher?:number;rules?:'tactical-v1';agents:SquadAgent[];progress:Record<string,number>;wallDamage:Record<string,number>;breachedWalls:string[];idleSince?:number};
 /** New missions use captured layouts; older active operation snapshots are never rewritten. */
 export function newSquadOperation(id:string,targetId:string,now:number,spacious=true):Operation{
  const o=newOperation(id,targetId,now);o.squad={version:1,agents:[],progress:{},wallDamage:{},breachedWalls:[]};

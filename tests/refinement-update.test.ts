@@ -21,7 +21,7 @@ import {worldFixture} from './helpers/player-world-fixture';
 const ready=():FoundationState=>({...initialFoundation(),starterStation:'placed',builders:2,founderHqLevel:2,compute:1000,stationLayout:{position:[-18,-18],orientation:0},landscape:{version:1,legacyRocksRegistered:true,epoch:'refine',items:[],nextSpawnAt:1e15,sequence:0,pendingCompute:0}});
 test('100 individual walls at HQ 1 and 2; over-cap ownership and movement remain intact',()=>{
  for(const level of [1,2] as const){const s=ready();s.founderHqLevel=level;s.walls=Array.from({length:101},(_,i)=>({id:'w'+i,position:[-30,-24] as Vec,orientation:0}));assert.equal(wallCapacity(s),100);const before=structuredClone(s);assert.throws(()=>buyWall(s,[24,24],0,'new'),/limit/);assert.deepEqual(s,before);moveWall(s,'w0',[24,24],0);assert.equal(s.walls.length,101);s.walls=s.walls.slice(0,99);buyWall(s,[20,24],0,'new');assert.equal(s.walls.length,100);}
- assert.equal(wallCapacity({founderHqLevel:3}),0,'future levels require explicit configuration');
+ assert.equal(wallCapacity({founderHqLevel:3}),100);assert.equal(wallCapacity({founderHqLevel:4}),0,'future levels require explicit configuration');
 });
 test('two stable builder stations, correct menu count, concurrent jobs survive reload and complete independently',()=>{
  const s=ready();reconcileBuilderHuts(s);const hut=structuredClone(s.builderHuts![0]);reconcileBuilderHuts(s);assert.equal(s.builderHuts!.length,1);assert.equal(s.builders,2);assert.equal(founderBuilderCapacity(s),2);assert.deepEqual(s.builderHuts![0],hut);

@@ -1,3 +1,4 @@
+import {buildingLevel,buildingStats,buildingKind,housingCapacity,reconcileStorage,UPGRADE_COSTS,UPGRADE_TIMES,STORAGE_CATALOG,type BuildingLevel,type BuildingUpgrade} from './building-levels';
 import {HANGAR_HOUSING,TROOPS,troopKind,troopHousing,type TroopKind} from './troops';
 import {onFootprintGrid,snapFootprint} from './placement-grid';
 import {productionPerMinute,trainingMilliseconds,advanceTechnology,type TechnologyUpgrade,type Technologies} from './technology';
@@ -18,7 +19,7 @@ export const STARTING_COMPUTE = 100;
 export const COMPUTE_CAPACITY = 1000;
 export const GPU_RIG={cost:50,buildSeconds:15,perMinute:10,storage:100,maxCount:2,width:4,depth:3} as const;
 export type Orientation=0|1|2|3;
-export type RotatableBuilding='hq'|'station'|'rig'|'rig2'|'fabricator'|'hangar'|'lab'|'droneStation'|'sentinel';
+export type RotatableBuilding='hq'|'station'|'rig'|'rig2'|'fabricator'|'hangar'|'lab'|'droneStation'|'sentinel'|'computeStorage'|'researchStorage';
 export type BuildingLayout={position:RigPosition;orientation:Orientation;size?:'expanded'|'compound'};
 export const BUILDER_STATION_POSITION:RigPosition=[-1,4.8];
 export type RigPosition=[number,number];
@@ -30,7 +31,7 @@ export const FABRICATOR={cost:50,buildSeconds:15,maxCount:1} as const;
 export const HANGAR={cost:0,buildSeconds:15,maxCount:1} as const;
 export const SCRAP_BOT={cost:5,trainSeconds:10,housing:1,capacity:HANGAR_HOUSING} as const;
 export type BuilderHut=BuildingLayout&{id:string;unplaced?:boolean};
-export type FoundationState = {buildingUpdate?:{version:1;acknowledged:boolean;replacementCount?:number;pending?:boolean};droneGuards?:[RigPosition?,RigPosition?];droneGuard?:RigPosition;hqNotification?:{id:string;acknowledged:boolean};builderHuts?:BuilderHut[];technologyUpgrade?:TechnologyUpgrade;technologies?:Technologies;trainingDurations?:number[];walls?:OwnedWall[];droneStation?:Hangar;sentinel?:Hangar;security?:CompanySecurity;infiltrationTutorial?:'complete'|'skipped';infiltration?:Operation;infiltrationReserve?:{compute:number;research:number};research?:number;researchCapacity?:number;lab?:ResearchLab;decorations?:Decoration[];founderHqLevel?:1|2;hqUpgrade?:FounderHQUpgrade;starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;breachers?:number;trainingKinds?:TroopKind[];training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
+export type FoundationState = {buildingLevels?:Record<string,BuildingLevel>;buildingUpgrades?:Record<string,BuildingUpgrade>;storageBaseline?:{compute:number;research:number};computeStorage?:Hangar;researchStorage?:Hangar;buildingUpdate?:{version:1;acknowledged:boolean;replacementCount?:number;pending?:boolean};droneGuards?:[RigPosition?,RigPosition?];droneGuard?:RigPosition;hqNotification?:{id:string;acknowledged:boolean};builderHuts?:BuilderHut[];technologyUpgrade?:TechnologyUpgrade;technologies?:Technologies;trainingDurations?:number[];walls?:OwnedWall[];droneStation?:Hangar;sentinel?:Hangar;security?:CompanySecurity;infiltrationTutorial?:'complete'|'skipped';infiltration?:Operation;infiltrationReserve?:{compute:number;research:number};research?:number;researchCapacity?:number;lab?:ResearchLab;decorations?:Decoration[];founderHqLevel?:1|2|3;hqUpgrade?:FounderHQUpgrade;starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;breachers?:number;trainingKinds?:TroopKind[];training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
 export function initialFoundation(revision=0):FoundationState{return {version:1,revision,research:0,researchCapacity:500,founderHqLevel:1,companyName:'Garage Intelligence',level:1,compute:STARTING_COMPUTE,capacity:COMPUTE_CAPACITY,builders:0,starterStation:'unplaced',raidRecord:{wins:[],completeHistory:true}};}
 export const hasBuilderStation=(s:FoundationState)=>s.starterStation!=='unplaced';
 export function establishBuilderStation(s:FoundationState,position:RigPosition,orientation:Orientation=0){if(hasBuilderStation(s)){reconcileBuilderHuts(s);const hut=s.builderHuts?.find(h=>h.unplaced);if(!hut)throw new Error('All Builder Stations are already placed.');moveBuilderHut(s,hut.id,position,orientation);return;}const reason=validFoundationPosition(s,position,'station',orientation);if(reason)throw new Error(reason);s.stationLayout={position:[...position],orientation};s.starterStation='placed';s.builders=founderBuilderCapacity(s);s.buildersBusy=0;}
@@ -45,13 +46,14 @@ export function validRigPosition(position:RigPosition,orientation:Orientation=0)
  return null;
 }
 export function advanceFoundation(s:FoundationState,now=Date.now()){
+ const deadline=Math.min(...Object.values(s.buildingUpgrades??{}).map(j=>j.completesAt).filter(t=>t<now));if(Number.isFinite(deadline))advanceFoundation(s,deadline);
  // Split offline accrual at the research deadline so old production never receives a retroactive bonus.
  if(s.technologyUpgrade&&now>s.technologyUpgrade.completesAt)advanceFoundation(s,s.technologyUpgrade.completesAt);
- const rigs=[s.rig,s.rig2].filter((r):r is GpuRig=>!!r),jobs=[...rigs,s.fabricator,getHangar(s),s.lab,s.droneStation,s.sentinel].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
+ const rigs=[s.rig,s.rig2].filter((r):r is GpuRig=>!!r),jobs=[...rigs,s.fabricator,getHangar(s),s.lab,s.droneStation,s.sentinel,s.computeStorage,s.researchStorage].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
  const clearing=!!s.landscape?.clearing;advanceLandscape(s,now);
- if(s.hqUpgrade&&now>=s.hqUpgrade.completesAt){if(founderHqLevel(s)<s.hqUpgrade.targetLevel)s.hqNotification={id:s.hqUpgrade.id,acknowledged:false};s.founderHqLevel=2;}
- if(hasBuilderStation(s)&&founderHqLevel(s)===2)s.builders=Math.max(s.builders,founderBuilderCapacity(s));
- if(jobs.length||clearing||s.hqUpgrade)s.buildersBusy=jobs.filter(b=>now<b.completesAt).length+Number(clearingActive(s,now))+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt);
+ if(s.hqUpgrade&&now>=s.hqUpgrade.completesAt){if(founderHqLevel(s)<s.hqUpgrade.targetLevel)s.hqNotification={id:s.hqUpgrade.id,acknowledged:false};s.founderHqLevel=s.hqUpgrade.targetLevel;}
+ if(hasBuilderStation(s)&&founderHqLevel(s)>=2)s.builders=Math.max(s.builders,founderBuilderCapacity(s));
+ if(jobs.length||clearing||s.hqUpgrade||s.buildingUpgrades)s.buildersBusy=Object.values(s.buildingUpgrades??{}).filter(j=>now<j.completesAt).length+jobs.filter(b=>now<b.completesAt).length+Number(clearingActive(s,now))+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt);
  if(s.training){
   const pending:number[]=[],kinds:TroopKind[]=[],durations:number[]=[];
   s.training.forEach((time,i)=>{const kind=troopKind(s.trainingKinds?.[i]);if(time<=now){if(kind==='breacher')s.breachers=(s.breachers??0)+1;else s.bots=(s.bots??0)+1;}else{pending.push(time);kinds.push(kind);durations.push(s.trainingDurations?.[i]??5000);}});
@@ -59,15 +61,17 @@ export function advanceFoundation(s:FoundationState,now=Date.now()){
  }
  ensureOwnedOperation(s,now);if(s.infiltration)advanceOperation(s.infiltration,now);settleOwnedUnit(s);
  advanceResearch(s,now);advanceBotRaid(s,now);
- for(const r of rigs){const cursor=Math.max(r.lastProducedAt,r.completesAt);if(now>cursor){if(r.stored<GPU_RIG.storage)r.stored=Math.min(GPU_RIG.storage,r.stored+(now-cursor)*productionPerMinute(s)/60000);r.lastProducedAt=now;}}
+ for(const r of rigs){const stats=buildingStats('rig',buildingLevel(s,r===s.rig?'rig':'rig2'));const cursor=Math.max(r.lastProducedAt,r.completesAt);if(now>cursor){if(r.stored<stats.buffer)r.stored=Math.min(stats.buffer,r.stored+(now-cursor)*productionPerMinute(s)*stats.productionMultiplier/60000);r.lastProducedAt=now;}}
 
+ for(const [key,job] of Object.entries(s.buildingUpgrades??{}))if(now>=job.completesAt){s.buildingLevels??={};s.buildingLevels[key]=Math.max(buildingLevel(s,key),job.targetLevel) as BuildingLevel;delete s.buildingUpgrades![key];}
+ reconcileStorage(s,now);
  advanceTechnology(s,now);
  return s;
 }
 /** Same timestamp-based availability for server actions and the between-poll HUD. */
 export function builderBusyAt(s:FoundationState,now:number){
- const jobs=[s.rig,s.rig2,s.fabricator,getHangar(s),s.lab,s.droneStation,s.sentinel].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
- return jobs.length||s.landscape?.clearing||s.hqUpgrade?jobs.filter(b=>now<b.completesAt).length+Number(clearingActive(s,now))+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt):s.buildersBusy??0;
+ const jobs=[s.rig,s.rig2,s.fabricator,getHangar(s),s.lab,s.droneStation,s.sentinel,s.computeStorage,s.researchStorage].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
+ return jobs.length||s.landscape?.clearing||s.hqUpgrade||s.buildingUpgrades?Object.values(s.buildingUpgrades??{}).filter(j=>now<j.completesAt).length+jobs.filter(b=>now<b.completesAt).length+Number(clearingActive(s,now))+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt):s.buildersBusy??0;
 }
 export function buildRig(s:FoundationState,position:RigPosition,now=Date.now(),orientation:Orientation=0){
  advanceFoundation(s,now);const owned=Number(!!s.rig)+Number(!!s.rig2);if(owned>=gpuRigCapacity(s))throw new Error(owned>=2?'GPU Rig — 2/2 Built':'Upgrade Founder HQ to Level 2 for another GPU Rig.');
@@ -103,18 +107,19 @@ export function acknowledgeHangar(s:FoundationState){if(s.hangar)s.hangar.reloca
 export function hangarReady(s:FoundationState,now=Date.now()){const h=getHangar(s);return !!h&&now>=h.completesAt;}
 export function buildingFootprint(orientation:Orientation=0):[number,number]{return orientation%2?[3,4]:[4,3];}
 export function hangarPlacement(p:RigPosition,orientation:Orientation=0):RigPosition{const offsets:RigPosition[]=[[6,0],[0,-6],[-6,0],[0,6]];return [p[0]+offsets[orientation][0],p[1]+offsets[orientation][1]];}
-export const FOUNDATION_BUILDINGS:RotatableBuilding[]=['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel'];
+export const FOUNDATION_BUILDINGS:RotatableBuilding[]=['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel','computeStorage','researchStorage'];
 export function buildingLayout(s:FoundationState,kind:RotatableBuilding):BuildingLayout|undefined{
  if(kind==='hq')return s.hqLayout??{position:[-5,-1],orientation:0};
  if(kind==='station')return !hasBuilderStation(s)?undefined:s.stationLayout??{position:[...BUILDER_STATION_POSITION],orientation:0};
  if(kind==='rig'||kind==='rig2'){const r=s[kind];return r?{position:r.position,orientation:r.orientation??0}:undefined;}
- if(kind==='lab'||kind==='droneStation'||kind==='sentinel'){const l=s[kind];return l?{position:l.position,orientation:l.orientation??0}:undefined;}
+ if(kind==='lab'||kind==='droneStation'||kind==='sentinel'||kind==='computeStorage'||kind==='researchStorage'){const l=s[kind];return l?{position:l.position,orientation:l.orientation??0}:undefined;}
  if(kind==='hangar'){const h=getHangar(s);return h&&!h.unplaced?{position:h.position,orientation:h.orientation??0,...(h.size?{size:h.size}:{})}:undefined;}
  return s.fabricator?{position:s.fabricator.position,orientation:s.fabricator.orientation??0}:undefined;
 }
 export function buildingReady(s:FoundationState,kind:RotatableBuilding,now=Date.now()){
+ if(s.buildingUpgrades?.[kind]&&now<s.buildingUpgrades[kind].completesAt)return false;
  if(kind==='hq')return !s.hqUpgrade||now>=s.hqUpgrade.completesAt;
- if(kind==='lab'||kind==='droneStation'||kind==='sentinel')return !!s[kind]&&now>=s[kind]!.completesAt;
+ if(kind==='lab'||kind==='droneStation'||kind==='sentinel'||kind==='computeStorage'||kind==='researchStorage')return !!s[kind]&&now>=s[kind]!.completesAt;
  return kind==='station'||(kind==='rig'||kind==='rig2'?!!s[kind]&&now>=s[kind]!.completesAt:kind==='fabricator'?!!s.fabricator&&now>=s.fabricator.completesAt:hangarReady(s,now));
 }
 export function footprint(kind:RotatableBuilding,layout:BuildingLayout,reserved=false){
@@ -159,7 +164,7 @@ export function moveBuilding(s:FoundationState,kind:RotatableBuilding,position:R
  const layout:BuildingLayout={position:[...position],orientation};
  if(kind==='hq')s.hqLayout=layout;else if(kind==='station')s.stationLayout=layout;
  else if(kind==='rig'||kind==='rig2'){s[kind]!.position=layout.position;s[kind]!.orientation=orientation;}
- else if(kind==='lab'||kind==='droneStation'||kind==='sentinel'){s[kind]!.position=layout.position;s[kind]!.orientation=orientation;}
+ else if(kind==='lab'||kind==='droneStation'||kind==='sentinel'||kind==='computeStorage'||kind==='researchStorage'){s[kind]!.position=layout.position;s[kind]!.orientation=orientation;}
  else if(kind==='fabricator'){s.fabricator!.position=layout.position;s.fabricator!.orientation=orientation;}
  else if(s.hangar){s.hangar.position=layout.position;s.hangar.orientation=orientation;s.hangar.size=s.hangar.size==='compound'?'compound':'expanded';}else {s.fabricator!.hangarPosition=layout.position;s.fabricator!.hangarOrientation=orientation;s.fabricator!.hangarSize=s.fabricator!.hangarSize==='compound'?'compound':'expanded';}
 }
@@ -183,11 +188,11 @@ export function trainTroop(s:FoundationState,kind:TroopKind,count:number,now=Dat
  advanceFoundation(s,now);if(!s.fabricator||now<s.fabricator.completesAt)throw new Error('Finish building your Bot Fabricator first.');if(!hangarReady(s,now))throw new Error('Build and finish a Bot Hangar first.');
  const troop=TROOPS[kind];if(founderHqLevel(s)<troop.unlockHq)throw new Error('Upgrade Founder HQ to Level 2 to train Breachers.');
  if(!Number.isInteger(count)||count<1||count>10)throw new Error('Choose 1 to 10 troops.');
- if(armyUsed(s)+count*troop.housing>HANGAR_HOUSING)throw new Error('Hangar full — finish an operation before training more troops.');
+ if(armyUsed(s)+count*troop.housing>housingCapacity(s))throw new Error('Hangar full — finish an operation before training more troops.');
  if(s.compute<count*troop.cost)throw new Error(`Each ${troop.name} costs ${troop.cost} Compute.`);
  s.compute-=count*troop.cost;s.training??=[];
  s.trainingDurations??=s.training.map(()=>5000);s.trainingKinds=s.training.map((_,i)=>troopKind(s.trainingKinds?.[i]));
- const duration=Math.round(trainingMilliseconds(s)*troop.trainSeconds/TROOPS.pulsewheel.trainSeconds);
+ const duration=Math.round(trainingMilliseconds(s)*troop.trainSeconds/TROOPS.pulsewheel.trainSeconds*buildingStats('fabricator',buildingLevel(s,'fabricator')).trainingMultiplier);
  let cursor=Math.max(now,s.training.at(-1)||0);for(let i=0;i<count;i++){cursor+=duration;s.training.push(cursor);s.trainingDurations.push(duration);s.trainingKinds.push(kind);}
 }
 export function startBotRaid(s:FoundationState,id:string,layout:number,now=Date.now()){
@@ -226,13 +231,14 @@ export function founderHQWorkSites(s:FoundationState):RigPosition[]{
 }
 export function upgradeFounderHQ(s:FoundationState,now:number,id:string){
  advanceFoundation(s,now);
- if(founderHqLevel(s)>=FOUNDER_HQ.maxLevel)throw new Error('Founder HQ is already Level 2.');
+ if(founderHqLevel(s)>=FOUNDER_HQ.maxLevel)throw new Error('Founder HQ is already Level 3.');
  if(s.hqUpgrade&&now<s.hqUpgrade.completesAt)throw new Error('Founder HQ upgrade is already in progress.');
  if(!hasBuilderStation(s)||s.builders<1)throw new Error('Place your free Builder Station first.');
  if((s.buildersBusy||0)>=s.builders)throw new Error('Your Builder Bot is busy.');
- if(s.compute<FOUNDER_HQ.upgradeCost)throw new Error(`You need ${FOUNDER_HQ.upgradeCost} Compute.`);
+ const cost=UPGRADE_COSTS.hq[founderHqLevel(s)-1],duration=UPGRADE_TIMES.hq[founderHqLevel(s)-1];
+ if(s.compute<cost)throw new Error(`You need ${cost} Compute.`);
  if(!founderHQWorkSites(s).length)throw new Error('Clear a path from the Builder Station to Founder HQ first.');
- s.compute-=FOUNDER_HQ.upgradeCost;s.hqUpgrade={id,targetLevel:2,startedAt:now,completesAt:now+FOUNDER_HQ.upgradeMs};s.buildersBusy=(s.buildersBusy||0)+1;
+ s.compute-=cost;s.hqUpgrade={id,targetLevel:(founderHqLevel(s)+1) as 2|3,startedAt:now,completesAt:now+duration};s.buildersBusy=(s.buildersBusy||0)+1;
 }
 
 export function builderHutFootprints(s:FoundationState){return (s.builderHuts??[]).filter(h=>!h.unplaced).map(h=>(s.buildingUpdate?placementFootprint:footprint)('station',h));}
@@ -251,3 +257,31 @@ export function reconcileBuilderHuts(s:FoundationState){
  }
 }
 export function moveBuilderHut(s:FoundationState,id:string,p:RigPosition,o:Orientation){const h=s.builderHuts?.find(h=>h.id===id);if(!h)throw Error('Builder Hut not owned.');const reason=validBuilderHutPosition(s,id,p,o);if(reason)throw Error(reason);h.position=[...p];h.orientation=o;h.unplaced=false;}
+
+/** Read-only quote used by both UI and server validation. Buildings keep producing at their old level during work. */
+export function quoteBuildingUpgrade(s:FoundationState,id:string,now=Date.now()){
+ const kind=buildingKind(id),currentLevel=buildingLevel(s,id),nextLevel=currentLevel<3?(currentLevel+1) as 2|3:undefined;
+ const valid=Object.hasOwn(UPGRADE_COSTS,kind),wall=id.startsWith('wall:'),owned=wall?!!s.walls?.some(w=>w.id===id.slice(5)):FOUNDATION_BUILDINGS.includes(id as RotatableBuilding)&&!!buildingLayout(s,id as RotatableBuilding);
+ const job=id==='hq'?s.hqUpgrade:s.buildingUpgrades?.[id],active=job&&now<job.completesAt?job:undefined;
+ const requiredHq=id==='hq'?currentLevel:nextLevel??3,cost=valid&&nextLevel?UPGRADE_COSTS[kind][currentLevel-1]:0,durationMs=valid&&nextLevel?UPGRADE_TIMES[kind][currentLevel-1]:0;
+ const reason=!valid||!owned?'Build this structure first.':kind==='station'?'Builder Stations unlock through Founder HQ; additional levels are not needed.':!nextLevel?'MAX LEVEL':active?'Upgrade already in progress.':!wall&&!buildingReady(s,id as RotatableBuilding,now)?'Finish construction first.':founderHqLevel(s)<requiredHq?`Requires Founder HQ Level ${requiredHq}.`:!hasBuilderStation(s)||s.builders<1?'Place your Builder Station first.':!wall&&builderBusyAt(s,now)>=s.builders?'Your Builder Bots are busy.':s.compute<cost?`You need ${cost} Compute.`:undefined;
+ return {id,kind,currentLevel,nextLevel,current:buildingStats(kind,currentLevel),next:nextLevel?buildingStats(kind,nextLevel):undefined,cost,durationMs,requiredHq,reason,job:active};
+}
+/** All requested wall segments are validated before a single debit; ordinary buildings use one persisted builder job. */
+export function upgradeBuildings(s:FoundationState,ids:string[],expectedLevels:Record<string,number>,now:number,jobId:string){
+ advanceFoundation(s,now);
+ if(!ids.length||ids.length>100||new Set(ids).size!==ids.length)throw Error('Select unique buildings to upgrade.');
+ const walls=ids.every(id=>id.startsWith('wall:'));if(ids.length>1&&!walls)throw Error('Upgrade one building at a time.');
+ const quotes=ids.map(id=>quoteBuildingUpgrade(s,id,now));
+ for(const q of quotes){if(expectedLevels[q.id]!==q.currentLevel)throw Error('Building level changed. Review this upgrade again.');if(q.reason)throw Error(q.reason);}
+ const cost=quotes.reduce((n,q)=>n+q.cost,0);if(s.compute<cost)throw Error(`You need ${cost} Compute for the selected walls.`);
+ if(ids[0]==='hq'){upgradeFounderHQ(s,now,jobId);return;}
+ s.compute-=cost;s.buildingLevels??={};s.buildingUpgrades??={};
+ for(const q of quotes){if(walls)s.buildingLevels[q.id]=q.nextLevel!;else s.buildingUpgrades[q.id]={id:jobId,targetLevel:q.nextLevel!,startedAt:now,completesAt:now+q.durationMs};}
+ s.buildersBusy=builderBusyAt(s,now);
+}
+export function buildStorage(s:FoundationState,kind:'computeStorage'|'researchStorage',position:RigPosition,now:number,orientation:Orientation=0){
+ advanceFoundation(s,now);if(s[kind])throw Error('Storage — 1/1 Built');if(!hasBuilderStation(s)||s.builders<1)throw Error('Place your Builder Station first.');if(builderBusyAt(s,now)>=s.builders)throw Error('Your Builder Bots are busy.');
+ const reason=validFoundationPosition(s,position,kind,orientation);if(reason)throw Error(reason);const config=STORAGE_CATALOG[kind];if(s.compute<config.cost)throw Error(`You need ${config.cost} Compute.`);
+ s.compute-=config.cost;s[kind]={position:[...position],orientation,startedAt:now,completesAt:now+config.buildSeconds*1000};s.buildersBusy=builderBusyAt(s,now);
+}

@@ -1,3 +1,4 @@
+import {applyBuildingLevel,storageModel} from './BuildingLevels';
 import {breacherBalance,wallBalance} from '../../shared/combat-balance';
 import {breacherModel,animateBreacher,turnBreacher} from './Breacher';
 import {BreachImpact} from './BreachImpact';
@@ -97,6 +98,7 @@ export class InfiltrationScene {
             }
             else if (a.kind === 'gpu')
                 g = gpuRigModel(this.k);
+            else if(a.model==='computeStorage'||a.model==='researchStorage')g=storageModel(this.k,a.model,a.level??1);
             else if(a.model==='station')g=builderStationModel(this.k);
             else if(a.model==='fabricator')g=fabricatorModel(this.k);
             else if(a.model==='hangar')g=hangarModel(this.k,0,o.target.publicBase?.buildings.find(b=>b.id===a.id)?.size==='compound'?'compound':o.target.publicBase?.buildings.find(b=>b.id===a.id)?.size==='expanded');
@@ -110,6 +112,7 @@ export class InfiltrationScene {
                 this.k.box(g, [.9, 1.5, .65], [0, .9, 0], C.dark);
                 this.k.box(g, [.7, .65, .05], [0, 1.2, .36], C.purple, .03, true);
             }
+            const visualKind=a.kind==='gpu'?'rig':a.kind==='lab'?'lab':a.model??(a.kind==='station'?'droneStation':a.kind);applyBuildingLevel(this.k,g,visualKind,a.level??1);
             const pivot=a.visualPosition??a.position;g.position.set(pivot[0],0,pivot[1]);g.rotation.y=(a.orientation??0)*Math.PI/2;
             g.userData.assetId = a.id;
             this.scene.add(g);
