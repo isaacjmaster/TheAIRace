@@ -81,7 +81,7 @@ test('explicit disposal fades then closes playback and a normal player can resum
 test('every synthesized voice starts from silent initialization and ends at exact silence',async()=>{
  const h=harness();try{
   await ready(h.sound);for(const cue of ['tap','deploy','laser','impact','destroy','win','resources','upgrade'] as Cue[]){h.ctx.currentTime++;h.sound.cue(cue);}
-  for(const voice of h.ctx.gains.slice(4)){
+  for(const voice of h.ctx.gains.slice(5)){
    assert.equal(voice.gain.beforeFirstEvent,0,'unity gain must never precede the future attack event');
    assert.equal(voice.gain.value,0,'release must finish at exact zero before stop/disconnect');
    assert.ok(voice.gain.ramps.includes(.0001),'exponential decay has a positive floor');
@@ -116,7 +116,7 @@ test('HQ fades out for effects-only attacks, keeps its position and resumes with
  h.ctx.currentTime=7;s.schedule();assert.equal(h.ctx.sources[0].stops,1);h.ctx.currentTime=9;h.sound.setMode('hq');await s.activate('hq');assert.equal(h.ctx.sources.length,2);assert.ok(h.ctx.sources[1].offsets[0]>=7);h.sound.dispose();await (h.sound as any).quiet;for(const n of h.ctx.sources)n.onended?.();assert.ok(h.ctx.sources.every(n=>n.disconnected));assert.equal(s.timer,undefined);assert.equal(h.ctx.state,'closed');}finally{h.sound.dispose();}
 });
 
-test('crossfades anchor at transition time and rapid reversals preserve the current interpolated gain',async()=>{const h=harness();try{await ready(h.sound);h.ctx.currentTime=8;h.sound.setMode('raid');await (h.sound as any).activate('raid');assert.deepEqual(h.ctx.gains[1].gain.events.slice(-2),[{kind:'set',value:.84,time:8},{kind:'linear',value:0,time:9.1}]);assert.deepEqual(h.ctx.gains[2].gain.events.slice(-2),[{kind:'set',value:0,time:8},{kind:'linear',value:0,time:9.1}]);h.ctx.currentTime=8.55;h.sound.setMode('hq');await (h.sound as any).activate('hq');const anchored=h.ctx.gains[1].gain.events.at(-2)!;assert.equal(anchored.time,8.55);assert.ok(Math.abs(anchored.value-.42)<1e-9);h.sound.dispose();assert.equal((h.sound as any).gainRamps.size,0);}finally{h.sound.dispose();}});
+test('crossfades anchor at transition time and rapid reversals preserve the current interpolated gain',async()=>{const h=harness();try{await ready(h.sound);h.ctx.currentTime=8;h.sound.setMode('raid');await (h.sound as any).activate('raid');assert.deepEqual(h.ctx.gains[1].gain.events.slice(-2),[{kind:'set',value:.72,time:8},{kind:'linear',value:0,time:9.1}]);assert.deepEqual(h.ctx.gains[2].gain.events.slice(-2),[{kind:'set',value:0,time:8},{kind:'linear',value:0,time:9.1}]);h.ctx.currentTime=8.55;h.sound.setMode('hq');await (h.sound as any).activate('hq');const anchored=h.ctx.gains[1].gain.events.at(-2)!;assert.equal(anchored.time,8.55);assert.ok(Math.abs(anchored.value-.36)<1e-9);h.sound.dispose();assert.equal((h.sound as any).gainRamps.size,0);}finally{h.sound.dispose();}});
 
 
 test('late asset loads cannot start a disposed, hidden or wrong-mode track',async()=>{
@@ -209,7 +209,8 @@ test('official playlist persists across scenes and resumes after mute and backgr
  try{
   await ready(audio);await new Promise(r=>setImmediate(r));assert.deepEqual(loads,[0,1]);assert.equal(h.ctx.sources.length,2);
   const first=h.ctx.sources[0];
-  for(const mode of ['infiltration','raid','hq'] as const){audio.setMode(mode);await ready(audio);}
+  for(const mode of ['infiltration','raid','hq'] as const){h.ctx.currentTime+=2;audio.setMode(mode);await ready(audio);assert.equal(h.ctx.gains[1].gain.value,.72*(mode==='hq'?1:.55));}
+  assert.equal(h.ctx.gains[4].gain.value,1.12,'effects have their own modest boost');
   assert.equal(h.ctx.sources.length,2);assert.equal(first.stops,1,'only its scheduled natural ending');
   h.ctx.currentTime=12;audio.setMuted(true);audio.setMuted(false);await ready(audio);await new Promise(r=>setImmediate(r));
   assert.ok(h.ctx.sources[2].offsets[0]>=11.9,'resume existing track position');

@@ -17,7 +17,7 @@ import {voiceEnvelope} from './envelope';
 import {MusicSynth} from './musicSynth';
 /** One best-effort startup attempt; supported user gestures can always retry. */
 export class Soundscape {
- private ambience?:HQAmbience;private ctx?:AudioContext;private master?:GainNode;private hq?:GainNode;private raid?:GainNode;private infiltration?:GainNode;
+ private ambience?:HQAmbience;private ctx?:AudioContext;private master?:GainNode;private effectsBus?:GainNode;private hq?:GainNode;private raid?:GainNode;private infiltration?:GainNode;
  private timer?:ReturnType<typeof setInterval>;private synth?:MusicSynth;private music?:RecordedMusic|MusicPlaylist;private playingMode?:MusicMode;private hidden=false;private fadeUntil={hq:0,raid:0,infiltration:0};private mode:MusicMode='hq';
  private audible=false;private epoch=0;private resuming?:AudioContext;private quiet?:Promise<void>;
  private autoplayAttempted=false;
@@ -49,6 +49,7 @@ export class Soundscape {
   const attempt=(async()=>{try{
    if(epoch!==this.epoch||this.muted||this.backgrounded())return false;
    if(!this.ctx){this.ctx=this.platform.createContext();this.synth=new MusicSynth(this.ctx);this.master=this.ctx.createGain();this.master.gain.value=0;this.master.connect(this.ctx.destination);this.hq=this.ctx.createGain();this.raid=this.ctx.createGain();this.infiltration=this.ctx.createGain();this.hq.connect(this.master);this.raid.connect(this.master);this.infiltration.connect(this.master);this.hq.gain.value=0;this.raid.gain.value=0;this.infiltration.gain.value=0;this.music=this.platform.loadTrack?new RecordedMusic(this.ctx,{hq:this.hq,raid:this.raid,infiltration:this.infiltration},this.platform.loadTrack):new MusicPlaylist(this.ctx,this.hq,this.platform.loadPlaylist);
+    this.effectsBus=this.ctx.createGain();this.effectsBus.gain.value=1.12;this.effectsBus.connect(this.master);
     const ctx=this.ctx;ctx.onstatechange=()=>{if(this.ctx!==ctx||this.resuming===ctx)return;if(ctx.state!=='running'&&this.audible||ctx.state==='running'&&(!this.audible||this.backgrounded()))void this.silence();};
    }
    const ctx=this.ctx;this.resuming=ctx;
@@ -81,7 +82,11 @@ export class Soundscape {
   if(music instanceof MusicPlaylist){
    if(mode!=='hq')this.ambience?.stop();
    try{await music.load();if(this.ctx!==ctx||epoch!==this.epoch||!this.audible||this.muted||this.backgrounded()||ctx.state!=='running')return;
-    if(!music.has()){music.start();this.ramp(this.hq!,MUSIC_GAIN*HQ_AUDIO.musicScale,1.1);}this.playingMode='hq';if(this.mode==='hq')this.ambience?.start();
+    if(!music.has())music.start();
+    // Resolve the latest scene after loading; preserve playback through smooth mix changes.
+    const target=MUSIC_GAIN*HQ_AUDIO.musicScale*(this.mode==='hq'?1:.55);
+    if(this.gainRamps.get(this.hq!)?.to!==target)this.ramp(this.hq!,target,1.1);
+    this.playingMode='hq';if(this.mode==='hq')this.ambience?.start();
    }catch{/* A later gesture/tick retries without blocking gameplay. */}return;
   }
   // Attack scenes are effects-only. Do not download or start a music buffer;
@@ -108,7 +113,7 @@ export class Soundscape {
  cue=(cue:Cue)=>{
   if(!this.ctx||this.ctx.state!=='running'||this.platform.silent||this.muted||!this.audible||this.backgrounded())return;const t=this.ctx.currentTime;
   const gap=cue in COMBAT_CUES?(cue.endsWith('charge')?.16:cue.endsWith('fire')?.065:.085):cue==='cipher-hacking'?.55:cue==='drone-laser'?.14:cue.startsWith('building-')?.16:cue==='laser'||cue==='impact'?.09:cue==='destroy'?.12:.04;if(t-(this.last.get(cue)??-10)<gap)return;this.last.set(cue,t);
-  const out=this.master!;
+  const out=this.effectsBus!;
   if(cue in COMBAT_CUES){
    if(this.combatVoices.size>=COMBAT_VOICE_LIMIT){
     if(cue!=='unit-destroyed'&&cue!=='building-shutdown')return;
@@ -139,7 +144,7 @@ export class Soundscape {
   if(ctx)ctx.onstatechange=null;
   // Invalidate references immediately; asynchronous unlock/load cannot restart this graph.
   this.ctx=undefined;this.music=undefined;this.ambience=undefined;this.synth=undefined;
-  this.master=undefined;this.hq=undefined;this.raid=undefined;this.infiltration=undefined;this.noise=undefined;this.combatBuffers.clear();this.gainRamps.clear();
+  this.master=undefined;this.effectsBus=undefined;this.hq=undefined;this.raid=undefined;this.infiltration=undefined;this.noise=undefined;this.combatBuffers.clear();this.gainRamps.clear();
   void quiet.then(()=>{ambience?.dispose();music?.dispose();try{void ctx?.close().catch(()=>{});}catch{}});
  }
 
