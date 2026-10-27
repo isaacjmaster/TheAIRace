@@ -1,3 +1,4 @@
+import {clearingJobs} from './landscape';
 import {onFootprintGrid} from './placement-grid';
 import {builderHutFootprints} from './foundation';
 import {ownedSecurityWalls} from './security-catalog';
@@ -16,7 +17,7 @@ export function validDecorationPosition(s:FoundationState,kind:DecorationKind,po
  for(const o of s.landscape?.items||[]){const [w,d]=obstacleSize(o);if(overlapsRect(a,{x:o.position[0],z:o.position[1],w,d},.2))return 'Clear the obstacle first.';}
  for(const wall of ownedSecurityWalls(s))if(overlapsRect(a,wall))return 'Keep Security Walls clear.';
  for(const o of s.decorations||[])if(o.id!==ignoreId&&overlapsRect(a,decorationFootprint(o)))return 'Leave space between decorations.';
- if(s.landscape?.clearing?.route.some(([x,z])=>overlapsRect(a,{x,z,w:1,d:1},.2)))return 'Keep the Builder Bot’s route clear.';
+ if(clearingJobs(s).some(j=>j.route.some(([x,z])=>overlapsRect(a,{x,z,w:1,d:1},.2))))return 'Keep the Builder Bot’s route clear.';
  // Decorations require a valid footprint, not a route to every existing building.
  return null;
 }

@@ -1,3 +1,4 @@
+import {reconcileBuilderAssignments} from './builder-jobs';
 import {buildingLevel,buildingStats,buildingKind,housingCapacity,reconcileStorage,UPGRADE_COSTS,UPGRADE_TIMES,STORAGE_CATALOG,type BuildingLevel,type BuildingUpgrade} from './building-levels';
 import {HANGAR_HOUSING,TROOPS,troopKind,troopHousing,type TroopKind} from './troops';
 import {onFootprintGrid,snapFootprint} from './placement-grid';
@@ -11,7 +12,7 @@ import {advanceResearch,type ResearchLab} from './research';
 import {decorationFootprint,type Decoration} from './decoration-catalog';
 import {FOUNDATION_PLOT} from './foundation-plot';
 import {FOUNDER_HQ,founderHqLevel,founderBuilderCapacity,gpuRigCapacity,type FounderHQUpgrade} from './founder-hq';
-import {advanceLandscape,clearingActive,landscapeRoute,type Landscape,obstacleSize} from './landscape';
+import {advanceLandscape,clearingActive,activeClearingJobs,clearingJobs,landscapeRoute,type Landscape,obstacleSize} from './landscape';
 import {createStarterRaid} from '../raid/starter';
 import {deploy,tick,finish,STEP,destruction,type Raid,type Point} from '../raid/engine';
 import {OBSTACLES} from './campus-layout';
@@ -50,10 +51,10 @@ export function advanceFoundation(s:FoundationState,now=Date.now()){
  // Split offline accrual at the research deadline so old production never receives a retroactive bonus.
  if(s.technologyUpgrade&&now>s.technologyUpgrade.completesAt)advanceFoundation(s,s.technologyUpgrade.completesAt);
  const rigs=[s.rig,s.rig2].filter((r):r is GpuRig=>!!r),jobs=[...rigs,s.fabricator,getHangar(s),s.lab,s.droneStation,s.sentinel,s.computeStorage,s.researchStorage].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
- const clearing=!!s.landscape?.clearing;advanceLandscape(s,now);
+ const clearing=clearingJobs(s).length>0;advanceLandscape(s,now);
  if(s.hqUpgrade&&now>=s.hqUpgrade.completesAt){if(founderHqLevel(s)<s.hqUpgrade.targetLevel)s.hqNotification={id:s.hqUpgrade.id,acknowledged:false};s.founderHqLevel=s.hqUpgrade.targetLevel;}
  if(hasBuilderStation(s)&&founderHqLevel(s)>=2)s.builders=Math.max(s.builders,founderBuilderCapacity(s));
- if(jobs.length||clearing||s.hqUpgrade||s.buildingUpgrades)s.buildersBusy=Object.values(s.buildingUpgrades??{}).filter(j=>now<j.completesAt).length+jobs.filter(b=>now<b.completesAt).length+Number(clearingActive(s,now))+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt);
+ if(jobs.length||clearing||s.hqUpgrade||s.buildingUpgrades)s.buildersBusy=Object.values(s.buildingUpgrades??{}).filter(j=>now<j.completesAt).length+jobs.filter(b=>now<b.completesAt).length+activeClearingJobs(s,now).length+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt);
  if(s.training){
   const pending:number[]=[],kinds:TroopKind[]=[],durations:number[]=[];
   s.training.forEach((time,i)=>{const kind=troopKind(s.trainingKinds?.[i]);if(time<=now){if(kind==='breacher')s.breachers=(s.breachers??0)+1;else s.bots=(s.bots??0)+1;}else{pending.push(time);kinds.push(kind);durations.push(s.trainingDurations?.[i]??5000);}});
@@ -65,19 +66,19 @@ export function advanceFoundation(s:FoundationState,now=Date.now()){
 
  for(const [key,job] of Object.entries(s.buildingUpgrades??{}))if(now>=job.completesAt){s.buildingLevels??={};s.buildingLevels[key]=Math.max(buildingLevel(s,key),job.targetLevel) as BuildingLevel;delete s.buildingUpgrades![key];}
  reconcileStorage(s,now);
- advanceTechnology(s,now);
+ advanceTechnology(s,now);reconcileBuilderAssignments(s,now);
  return s;
 }
 /** Same timestamp-based availability for server actions and the between-poll HUD. */
 export function builderBusyAt(s:FoundationState,now:number){
  const jobs=[s.rig,s.rig2,s.fabricator,getHangar(s),s.lab,s.droneStation,s.sentinel,s.computeStorage,s.researchStorage].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
- return jobs.length||s.landscape?.clearing||s.hqUpgrade||s.buildingUpgrades?Object.values(s.buildingUpgrades??{}).filter(j=>now<j.completesAt).length+jobs.filter(b=>now<b.completesAt).length+Number(clearingActive(s,now))+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt):s.buildersBusy??0;
+ return jobs.length||s.landscape?.clearing||s.hqUpgrade||s.buildingUpgrades?Object.values(s.buildingUpgrades??{}).filter(j=>now<j.completesAt).length+jobs.filter(b=>now<b.completesAt).length+activeClearingJobs(s,now).length+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt):s.buildersBusy??0;
 }
 export function buildRig(s:FoundationState,position:RigPosition,now=Date.now(),orientation:Orientation=0){
  advanceFoundation(s,now);const owned=Number(!!s.rig)+Number(!!s.rig2);if(owned>=gpuRigCapacity(s))throw new Error(owned>=2?'GPU Rig — 2/2 Built':'Upgrade Founder HQ to Level 2 for another GPU Rig.');
  if((s.buildersBusy||0)>=s.builders)throw new Error('Your Builder Bot is busy.');
  const slot=s.rig?'rig2':'rig',reason=validFoundationPosition(s,position,slot,orientation);if(reason)throw new Error(reason);if(s.compute<GPU_RIG.cost)throw new Error('You need 50 Compute.');
- s.compute-=GPU_RIG.cost;s.buildersBusy=(s.buildersBusy||0)+1;s[slot]={orientation,position:[...position],startedAt:now,completesAt:now+GPU_RIG.buildSeconds*1000,lastProducedAt:now+GPU_RIG.buildSeconds*1000,stored:0};
+ s.compute-=GPU_RIG.cost;s.buildersBusy=(s.buildersBusy||0)+1;s[slot]={orientation,position:[...position],startedAt:now,completesAt:now+GPU_RIG.buildSeconds*1000,lastProducedAt:now+GPU_RIG.buildSeconds*1000,stored:0};reconcileBuilderAssignments(s,now);
 }
 export function moveRig(s:FoundationState,position:RigPosition,now=Date.now(),orientation?:Orientation,slot:'rig'|'rig2'='rig'){
  advanceFoundation(s,now);if(!s[slot])throw new Error('Build a GPU Rig first.');if(s.buildersBusy)throw new Error('Wait for construction to finish before moving.');const next=orientation??s[slot]!.orientation??0;const reason=validFoundationPosition(s,position,slot,next);if(reason)throw new Error(reason);s[slot]!.position=[...position];s[slot]!.orientation=next;
@@ -176,11 +177,11 @@ export function buildFabricator(s:FoundationState,p:RigPosition,now=Date.now(),o
  if(!hasBuilderStation(s)||s.builders<1)throw new Error('Place your free Builder Station first.');if((s.buildersBusy??0)>=s.builders)throw new Error('Your Builder Bot is busy.');
  const reason=validFoundationPosition(s,p,'fabricator',orientation,!independent);if(reason)throw new Error(reason);
  if(s.compute<FABRICATOR.cost)throw new Error('You need 50 Compute.');
- s.compute-=FABRICATOR.cost;s.fabricator={...(independent?{separateHangar:true}:{}),orientation,hangarOrientation:orientation,position:[...p],hangarPosition:hangarPlacement(p,orientation),startedAt:now,completesAt:now+15000};s.buildersBusy=(s.buildersBusy??0)+1;
+ s.compute-=FABRICATOR.cost;s.fabricator={...(independent?{separateHangar:true}:{}),orientation,hangarOrientation:orientation,position:[...p],hangarPosition:hangarPlacement(p,orientation),startedAt:now,completesAt:now+15000};s.buildersBusy=(s.buildersBusy??0)+1;reconcileBuilderAssignments(s,now);
  s.bots??=0;s.training??=[];
 }
 export function buildHangar(s:FoundationState,p:RigPosition,now=Date.now(),orientation:Orientation=0){
- advanceFoundation(s,now);if(getHangar(s))throw new Error('Bot Hangar — 1/1 Built');if(!hasBuilderStation(s)||s.builders<1)throw new Error('Place your free Builder Station first.');if((s.buildersBusy??0)>=s.builders)throw new Error('Your Builder Bot is busy.');const reason=validFoundationPosition(s,p,'hangar',orientation);if(reason)throw new Error(reason);s.hangar={size:'compound',position:[...p],orientation,startedAt:now,completesAt:now+HANGAR.buildSeconds*1000};s.buildersBusy=(s.buildersBusy??0)+1;s.bots??=0;
+ advanceFoundation(s,now);if(getHangar(s))throw new Error('Bot Hangar — 1/1 Built');if(!hasBuilderStation(s)||s.builders<1)throw new Error('Place your free Builder Station first.');if((s.buildersBusy??0)>=s.builders)throw new Error('Your Builder Bot is busy.');const reason=validFoundationPosition(s,p,'hangar',orientation);if(reason)throw new Error(reason);s.hangar={size:'compound',position:[...p],orientation,startedAt:now,completesAt:now+HANGAR.buildSeconds*1000};s.buildersBusy=(s.buildersBusy??0)+1;reconcileBuilderAssignments(s,now);s.bots??=0;
 }
 export function trainScrap(s:FoundationState,count:number,now=Date.now()){return trainTroop(s,'pulsewheel',count,now);}
 export function trainTroop(s:FoundationState,kind:TroopKind,count:number,now=Date.now()){
@@ -238,7 +239,7 @@ export function upgradeFounderHQ(s:FoundationState,now:number,id:string){
  const cost=UPGRADE_COSTS.hq[founderHqLevel(s)-1],duration=UPGRADE_TIMES.hq[founderHqLevel(s)-1];
  if(s.compute<cost)throw new Error(`You need ${cost} Compute.`);
  if(!founderHQWorkSites(s).length)throw new Error('Clear a path from the Builder Station to Founder HQ first.');
- s.compute-=cost;s.hqUpgrade={id,targetLevel:(founderHqLevel(s)+1) as 2|3,startedAt:now,completesAt:now+duration};s.buildersBusy=(s.buildersBusy||0)+1;
+ s.compute-=cost;s.hqUpgrade={id,targetLevel:(founderHqLevel(s)+1) as 2|3,startedAt:now,completesAt:now+duration};s.buildersBusy=(s.buildersBusy||0)+1;reconcileBuilderAssignments(s,now);
 }
 
 export function builderHutFootprints(s:FoundationState){return (s.builderHuts??[]).filter(h=>!h.unplaced).map(h=>(s.buildingUpdate?placementFootprint:footprint)('station',h));}
@@ -278,10 +279,10 @@ export function upgradeBuildings(s:FoundationState,ids:string[],expectedLevels:R
  if(ids[0]==='hq'){upgradeFounderHQ(s,now,jobId);return;}
  s.compute-=cost;s.buildingLevels??={};s.buildingUpgrades??={};
  for(const q of quotes){if(walls)s.buildingLevels[q.id]=q.nextLevel!;else s.buildingUpgrades[q.id]={id:jobId,targetLevel:q.nextLevel!,startedAt:now,completesAt:now+q.durationMs};}
- s.buildersBusy=builderBusyAt(s,now);
+ s.buildersBusy=builderBusyAt(s,now);reconcileBuilderAssignments(s,now);
 }
 export function buildStorage(s:FoundationState,kind:'computeStorage'|'researchStorage',position:RigPosition,now:number,orientation:Orientation=0){
  advanceFoundation(s,now);if(s[kind])throw Error('Storage — 1/1 Built');if(!hasBuilderStation(s)||s.builders<1)throw Error('Place your Builder Station first.');if(builderBusyAt(s,now)>=s.builders)throw Error('Your Builder Bots are busy.');
  const reason=validFoundationPosition(s,position,kind,orientation);if(reason)throw Error(reason);const config=STORAGE_CATALOG[kind];if(s.compute<config.cost)throw Error(`You need ${config.cost} Compute.`);
- s.compute-=config.cost;s[kind]={position:[...position],orientation,startedAt:now,completesAt:now+config.buildSeconds*1000};s.buildersBusy=builderBusyAt(s,now);
+ s.compute-=config.cost;s[kind]={position:[...position],orientation,startedAt:now,completesAt:now+config.buildSeconds*1000};s.buildersBusy=builderBusyAt(s,now);reconcileBuilderAssignments(s,now);
 }

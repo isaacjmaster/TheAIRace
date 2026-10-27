@@ -1,16 +1,31 @@
-/* One portrait composition on every screen, without cropping its title or battle. */
-.foundation-app .race-menu.ava-title-screen{--promo-h:min(100dvh,177.77778vw);--promo-w:min(100vw,56.25dvh);display:block;padding:0;background:radial-gradient(ellipse at center,#bbf3f8,#95e2f3);color:#203c55}
-.title-artwork{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:var(--promo-w);height:var(--promo-h);pointer-events:none}
+/* Preserve the original illustration; position live controls in viewport space. */
+.foundation-app .race-menu.ava-title-screen{display:block;padding:0;height:100dvh;background:radial-gradient(ellipse at 55% 45%,#baf3f7,#99e4f5);color:#203c55}
+.title-artwork{position:absolute;left:50%;top:max(0px,env(safe-area-inset-top));transform:translateX(-50%);width:min(100vw,56.25dvh);height:min(177.77778vw,calc(100dvh - env(safe-area-inset-top)));pointer-events:none;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
 .title-promo,.title-scene-fallback{display:block;width:100%;height:100%;object-fit:contain}
-/* The artwork preserves the reference lettering; retain the semantic title. */
+/* Portrait uses the lettering embedded in the untouched illustration. */
 .foundation-app .ava-title-screen .menu-title{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-.foundation-app .ava-title-screen .menu-copy{position:absolute;inset:auto;left:50%;top:calc(50% + var(--promo-h)*.292);transform:translateX(-50%);width:calc(var(--promo-w)*.875);margin:0;z-index:2;text-align:center}
-.foundation-app .ava-title-screen .campus-loading-track{height:clamp(28px,calc(var(--promo-h)*.047),60px);border-radius:40px;padding:4px;border-color:#75bec7;box-shadow:0 4px 0 #244f60,inset 0 2px 4px #071f2b}
-.foundation-app .ava-title-screen .campus-loading p{font-size:clamp(17px,calc(var(--promo-h)*.025),30px);margin:clamp(12px,calc(var(--promo-h)*.022),28px) 0 0;font-weight:800;letter-spacing:.045em}
-.foundation-app .ava-title-screen .menu-copy>p,.foundation-app .ava-title-screen .connection-error{color:#203c55;background:#fffbed;border:1px solid #a8cbd1;border-radius:12px;padding:10px;margin-top:10px;max-height:18dvh;overflow:auto;font-size:13px;touch-action:pan-y}
-.foundation-app.in-menu .menu-recover{position:fixed;left:50%;top:min(calc(50dvh + min(100dvh,177.77778vw)*.419),calc(100dvh - env(safe-area-inset-bottom) - 48px));bottom:auto;transform:translateX(-50%);height:44px;min-height:44px;padding:0 12px;display:flex;align-items:center;justify-content:center;font-size:clamp(13px,1.8dvh,22px);font-weight:500;color:#33596c;text-shadow:none;text-decoration:underline;background:none;border:0;box-shadow:none;white-space:nowrap}
+.foundation-app .ava-title-screen .menu-copy{position:absolute;inset:auto;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(86vw,430px);margin:0;z-index:2;text-align:center}
+.foundation-app .ava-title-screen .campus-loading-track{height:clamp(28px,4dvh,38px);border-radius:40px;padding:4px;border-color:#75bec7;box-shadow:0 4px 0 #244f60,inset 0 2px 4px #071f2b}
+.foundation-app .ava-title-screen .campus-loading p{font-size:clamp(17px,2.3dvh,22px);margin:14px 0 0;font-weight:800;letter-spacing:.045em}
+.foundation-app .ava-title-screen .menu-copy>p,.foundation-app .ava-title-screen .connection-error{color:#203c55;background:#fffbed;border:1px solid #a8cbd1;border-radius:12px;padding:10px;margin-top:10px;max-height:20dvh;overflow:auto;font-size:13px;touch-action:pan-y}
+.foundation-app.in-menu .menu-recover{position:fixed;left:50%;top:auto;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);height:44px;min-height:44px;padding:0 16px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#33596c;text-shadow:none;text-decoration:underline;background:none;border:0;box-shadow:none;white-space:nowrap}
 .foundation-app.in-menu .menu-recover:focus-visible{outline:2px solid #24465c;outline-offset:2px;border-radius:8px}
-.foundation-app.in-menu .audio-toggle{background:#fffbedbb;border:1px solid #fff7d9;box-shadow:0 3px 0 #436b7b28;border-radius:14px;min-width:44px;min-height:44px;justify-content:center;color:#24465c;font-size:20px}
-@media(orientation:landscape){.foundation-app .ava-title-screen .campus-loading-track{height:clamp(18px,4.7dvh,40px);padding:3px}.foundation-app .ava-title-screen .campus-loading p{font-size:clamp(12px,2.5dvh,24px);margin-top:1.5dvh}.foundation-app.in-menu .menu-recover{font-size:12px}}
-
-@media(orientation:landscape) and (max-height:500px){.foundation-app .ava-title-screen .menu-copy{top:calc(50% + var(--promo-h)*.27)}.foundation-app .ava-title-screen .campus-loading p{line-height:1.3;margin-top:4px}}
+.foundation-app.in-menu .audio-toggle{top:calc(8px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));background:#fffbeddd;border:1px solid #fff7d9;box-shadow:0 3px 0 #436b7b28;border-radius:14px;min-width:44px;min-height:44px;justify-content:center;color:#24465c;font-size:20px}
+/* Landscape separates branding and controls from a full-height crop of the same campus.
+   Object-fit crops empty sky/footer, never stretches the buildings or characters. */
+@media(min-aspect-ratio:6/5){
+ .foundation-app .race-menu.ava-title-screen{background:linear-gradient(115deg,#b8f0f4,#9ee8f2 50%,#8bd9e8)}
+ .title-artwork{left:38%;top:0;transform:none;width:62%;height:100dvh;mask-image:linear-gradient(90deg,transparent,#000 12%)}
+ .title-promo{object-fit:cover;object-position:50% 46%}
+ .foundation-app .ava-title-screen .menu-title{left:4%;top:23%;width:34%;height:auto;margin:0;overflow:visible;clip-path:none;white-space:normal;z-index:2}
+ .foundation-app .ava-title-screen .menu-title .ai-race-wordmark{display:block;width:100%;height:auto;filter:drop-shadow(0 2px 0 #e3fcf9)}
+ .foundation-app .ava-title-screen .menu-copy{left:21%;bottom:23%;width:29%;max-width:430px}
+ .foundation-app.in-menu .menu-recover{left:21%;bottom:calc(9% + env(safe-area-inset-bottom));font-size:16px}
+}
+@media(min-aspect-ratio:6/5) and (max-height:500px){
+ .foundation-app .ava-title-screen .menu-title{top:15%;left:4%;width:34%}
+ .foundation-app .ava-title-screen .menu-copy{bottom:24%;width:31%}
+ .foundation-app .ava-title-screen .campus-loading-track{height:26px;padding:3px}
+ .foundation-app .ava-title-screen .campus-loading p{font-size:16px;margin-top:10px;line-height:1.2}
+ .foundation-app.in-menu .menu-recover{bottom:calc(8px + env(safe-area-inset-bottom));font-size:14px}
+}

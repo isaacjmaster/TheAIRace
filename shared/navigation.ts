@@ -31,3 +31,26 @@ export function findPath(from:NavPoint,to:NavPoint,rects:readonly NavRect[],boun
  while(heap.length){const item=pop(),k=key(item.p);if(closed[k]!==0)continue;if(k===endKey)break;closed[k]=1;for(let direction=0;direction<8;direction++){const [dx,dz]=navSteps[direction];const q:NavPoint=[item.p[0]+dx,item.p[1]+dz],qk=key(q),next=item.cost+(direction<4?1:Math.SQRT2);if(closed[qk]!==0||next>=cost[qk]||!clearEdge(item.p,q,direction))continue;cost[qk]=next;prev[qk]=k;push({p:q,cost:next,score:next+Math.hypot(q[0]-end[0],q[1]-end[1])});}}
  if(prev[endKey]===-2){const component=grid.nextComponent++;for(let k=0;k<closed.length;k++)if(closed[k])grid.components.set(k,component);return [];}const path:NavPoint[]=[];for(let k=endKey;k!==-1;k=prev[k])path.unshift([(k%width+minX)*step,(Math.floor(k/width)+minZ)*step]);return smoothPath([[...from],...path,[...to]],rects,bounds,radius);
 }
+/** One A* search for a set of legal firing positions. Unlike serial endpoint
+ * searches, a distant wall opening is explored once for the entire perimeter. */
+export function findPathToAny(from:NavPoint,goals:{point:NavPoint;penalty:number}[],rects:readonly NavRect[],bounds:NavBounds,radius=.35,step=.5):NavPoint[]{
+ if(!goals.length||!pointClear(from,rects,bounds,radius))return [];
+ const minX=Math.floor(bounds.minX/step)-2,minZ=Math.floor(bounds.minZ/step)-2,width=Math.ceil(bounds.maxX/step)-minX+3,height=Math.ceil(bounds.maxZ/step)-minZ+3,key=(p:NavPoint)=>(p[1]-minZ)*width+p[0]-minX;
+ const world=(k:number):NavPoint=>[(k%width+minX)*step,(Math.floor(k/width)+minZ)*step];
+ const snap=(p:NavPoint)=>{const center=p.map(v=>Math.round(v/step)) as NavPoint,choices:NavPoint[]=[];for(let x=-1;x<=1;x++)for(let z=-1;z<=1;z++)choices.push([center[0]+x,center[1]+z]);return choices.filter(q=>segmentClear(p,[q[0]*step,q[1]*step],rects,bounds,radius)).sort((a,b)=>Math.hypot(a[0]*step-p[0],a[1]*step-p[1])-Math.hypot(b[0]*step-p[0],b[1]*step-p[1]));};
+ const start=snap(from)[0];if(!start)return [];const ends=new Map<number,{point:NavPoint;penalty:number;tail:number}>();
+ for(const goal of goals)for(const p of snap(goal.point)){const k=key(p),tail=Math.hypot(p[0]*step-goal.point[0],p[1]*step-goal.point[1]),old=ends.get(k);if(!old||tail+goal.penalty<old.tail+old.penalty)ends.set(k,{...goal,tail});}if(!ends.size)return [];
+ // Distance to the goal envelope is admissible and constant-time; evaluating
+ // every perimeter goal for every explored cell caused large swarm-planning spikes.
+ let goalMinX=Infinity,goalMaxX=-Infinity,goalMinZ=Infinity,goalMaxZ=-Infinity,minPenalty=Infinity;
+ for(const goal of goals){goalMinX=Math.min(goalMinX,goal.point[0]);goalMaxX=Math.max(goalMaxX,goal.point[0]);goalMinZ=Math.min(goalMinZ,goal.point[1]);goalMaxZ=Math.max(goalMaxZ,goal.point[1]);minPenalty=Math.min(minPenalty,goal.penalty);}
+ const heuristic=(p:NavPoint)=>{const x=p[0]*step,z=p[1]*step,dx=Math.max(0,goalMinX-x,x-goalMaxX),dz=Math.max(0,goalMinZ-z,z-goalMaxZ);return Math.sqrt(dx*dx+dz*dz)+minPenalty;};
+ type Item={k:number;p:NavPoint;score:number;cost:number};const heap:Item[]=[];
+ const push=(v:Item)=>{heap.push(v);let i=heap.length-1;while(i){const j=(i-1)>>1;if(heap[j].score<=v.score)break;heap[i]=heap[j];i=j;}heap[i]=v;};
+ const pop=()=>{const v=heap[0],last=heap.pop()!;if(heap.length){let i=0;while(i*2+1<heap.length){let j=i*2+1;if(j+1<heap.length&&heap[j+1].score<heap[j].score)j++;if(heap[j].score>=last.score)break;heap[i]=heap[j];i=j;}heap[i]=last;}return v;};
+ const size=width*height,prev=new Int32Array(size).fill(-2),cost=new Float64Array(size).fill(Infinity),closed=new Uint8Array(size),grid=clearanceCache(rects,bounds,radius,step);prev[key(start)]=-1;cost[key(start)]=0;push({k:key(start),p:start,cost:0,score:heuristic(start)});let best=Infinity,endKey=-1,endpoint:NavPoint|undefined;
+ while(heap.length){const item=pop(),k=item.k;if(item.score>=best)break;if(closed[k])continue;closed[k]=1;const end=ends.get(k);if(end&&item.cost+end.tail+end.penalty<best){best=item.cost+end.tail+end.penalty;endKey=k;endpoint=end.point;}
+  for(let direction=0;direction<8;direction++){const [dx,dz]=navSteps[direction],p:NavPoint=[item.p[0]+dx,item.p[1]+dz],q=key(p),next=item.cost+(direction<4?step:step*Math.SQRT2);if(q<0||q>=size||closed[q]||next>=cost[q])continue;const edge=k*8+direction;let clear=grid.edges.get(edge);if(clear===undefined){clear=segmentClear(world(k),world(q),rects,bounds,radius);if(grid.edges.size<100000)grid.edges.set(edge,clear);}if(!clear)continue;prev[q]=k;cost[q]=next;push({k:q,p,cost:next,score:next+heuristic(p)});}
+ }
+ if(endKey<0)return [];const path:NavPoint[]=[];for(let k=endKey;k!==-1;k=prev[k])path.unshift(world(k));return smoothPath([[...from],...path,[...endpoint!]],rects,bounds,radius);
+}

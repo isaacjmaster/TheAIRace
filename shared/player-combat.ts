@@ -21,6 +21,6 @@ export function playerTarget(base:PublicBase,company:PublicCompany):TargetSnapsh
  return t;
 }
 export function playerOperation(id:string,base:PublicBase,company:PublicCompany,attackerId:string,now:number):Operation{
- const o=operationFromSnapshot(id,playerTarget(base,company),now);o.pvp={attackerId,defenderId:company.id};o.squad={version:1,balanceVersion:4,rules:'tactical-v1',agents:[],progress:{},wallDamage:{},breachedWalls:[]};for(const d of o.drones)d.health=o.target.defenses.find(v=>v.id===d.id)?.maxHealth??COMBAT_BALANCE_V3.droneHealth;return o;
+ const o=operationFromSnapshot(id,playerTarget(base,company),now);o.pvp={attackerId,defenderId:company.id};o.squad={version:1,balanceVersion:4,behaviorVersion:1,rules:'tactical-v1',agents:[],progress:{},wallDamage:{},breachedWalls:[]};for(const d of o.drones)d.health=o.target.defenses.find(v=>v.id===d.id)?.maxHealth??COMBAT_BALANCE_V3.droneHealth;return o;
 }
 export const playerDestruction=(o:Operation)=>breachRating(o).destruction;

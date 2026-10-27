@@ -1,0 +1,4 @@
+import React,{useRef} from 'react';import{createRoot}from'react-dom/client';
+import '../src/ui/identity.css';import '../src/ui/foundation.css';import '../src/ui/company.css';import '../src/ui/campus-loading.css';import '../src/ui/title-screen.css';
+import{TitleArtwork}from'../src/ui/TitleArtwork';import{AIRaceWordmark}from'../src/ui/AIRaceWordmark';import{CampusLoading}from'../src/ui/CampusLoading';
+function Review(){const progress=useRef(0);return <div className="foundation-app in-menu"><main className="race-menu ava-title-screen"><h1 className="menu-title" aria-label="The AI Race"><AIRaceWordmark/></h1><TitleArtwork/><div className="menu-copy"><CampusLoading active ready={false} progress={progress} onComplete={()=>{}}/></div></main><button className="audio-toggle glass" aria-label="Unmute sound">♪̸</button><button className="menu-recover">Recover Company</button></div>};createRoot(document.getElementById('root')!).render(<Review/>);

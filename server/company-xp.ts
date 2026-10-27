@@ -10,6 +10,7 @@ export function companyXPStore(db:DatabaseSync,now:number){
  COMMIT;`);
  const events=(s:FoundationState,time:number)=>{const list:{key:string;amount:number}[]=[];
  for(const [kind,b] of [['rig',s.rig],['rig2',s.rig2],['fabricator',s.fabricator],['hangar',getHangar(s)]] as const)if(b&&time>=b.completesAt)list.push({key:'building:'+kind,amount:COMPANY_XP.construction});
+ for(const id of s.landscape?.completedClears??[])list.push({key:'clear:'+id,amount:COMPANY_XP.clearing});
  if(s.landscape?.lastClear)list.push({key:'clear:'+s.landscape.lastClear.id,amount:COMPANY_XP.clearing});
  if(s.botRaid?.settled)list.push({key:'raid:'+s.botRaid.id,amount:COMPANY_XP.raid[s.botRaid.simulation.layout]||0});return list;};
  function initialize(company:string,s:FoundationState,time:number){if(db.prepare('SELECT 1 FROM company_xp WHERE company_id=?').get(company))return;
