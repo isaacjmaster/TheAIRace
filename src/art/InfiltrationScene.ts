@@ -1,3 +1,4 @@
+import {animateGenerationEnergy} from './GenerationEnergy';
 import {ElectronicEffects} from './ElectronicEffects';
 import {disruptorModel,animateDisruptor,turnDisruptor} from './Disruptor';
 import {arcSpireModel,animateArcSpire} from './ArcSpire';
@@ -196,6 +197,7 @@ export class InfiltrationScene {
     for(const state of o.arcSpires??[]){const model=this.buildings.get(state.id);if(!model)continue;const now=this.visualNow(),active=o.status==='active'&&!o.hacked.includes(state.id)&&!((o.electronic?.statuses[state.id]?.disabledUntil??0)>now);if(!o.hacked.includes(state.id))animateArcSpire(model,state,now,dt,active);if(state.lastShotAt!==undefined&&now-state.lastShotAt<500&&this.newShot('arc:'+state.id,state.lastShotAt)){model.updateWorldMatrix(true,true);(model.getObjectByName('arc-muzzle')??model).getWorldPosition(this.shotStart);for(const hit of state.chain??[]){this.shotEnd.set(hit.position[0],.9,hit.position[1]);this.electronicEffects.fire('arc',this.shotStart,this.shotEnd,now);this.shotStart.copy(this.shotEnd);}this.cue('arc-fire');}}
     this.electronicEffects.update(this.visualNow(),this.reduced);
     for (const [id, g] of this.buildings) {this.power.setActive(id,!o.hacked.includes(id)&&!o.hacked.includes(o.target.assets.find(a=>a.kind==='hq')?.id??''));if(o.hacked.includes(id)){const at=o.events.find(e=>e.type==='hacked'&&e.detail===id)?.at;this.feedback.settle(g);this.hacks.apply(id,g,this.reduced||at===undefined?1200:Math.max(o.lastTick,this.server+(this.options.replay?0:Math.min(1100,performance.now()-this.anchor)))-at,(o.target.assets.find(a=>a.id===id)?.model==='arcSpire'?'arcSpire':o.target.assets.find(a=>a.id===id)?.model==='sentinel'?'sentinel':o.target.assets.find(a=>a.id===id)?.kind) as 'hq'|'gpu'|'lab'|'station');continue;}
+        animateGenerationEnergy(g,this.clock,this.reduced);
         if (o.target.assets.find(a=>a.id===id)?.kind === 'gpu')
             animateGpu(g, this.clock, dt, true, this.reduced);
         if (o.target.assets.find(a=>a.id===id)?.kind === 'lab')

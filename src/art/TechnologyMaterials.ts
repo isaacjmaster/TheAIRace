@@ -3,16 +3,16 @@ import {WorldKit} from './world';
 
 /** Dedicated surface recipes, shared per WorldKit and disposed with its scene. */
 export const technology=[
- {shell:'#b7b4a1',frame:'#46575a',metal:'#aa7955',glass:'#527b87'},
- {shell:'#7f99a2',frame:'#364e59',metal:'#c18b51',glass:'#498d9e'},
- {shell:'#283b51',frame:'#53677a',metal:'#d0ad65',glass:'#357f98'},
- {shell:'#e2e8dc',frame:'#53798b',metal:'#c7dadf',glass:'#69cbd7'},
- {shell:'#31364f',frame:'#d4e3e4',metal:'#e2bd77',glass:'#98e4e5'},
+ {shell:'#e6dfcf',frame:'#36434d',metal:'#c38b42',glass:'#527b87'},
+ {shell:'#a9b5ba',frame:'#33434e',metal:'#738894',glass:'#42b9da'},
+ {shell:'#d8a444',frame:'#263642',metal:'#f0c461',glass:'#41cddd'},
+ {shell:'#e2eaf0',frame:'#3c5369',metal:'#a9becd',glass:'#27aaff'},
+ {shell:'#242c42',frame:'#b88836',metal:'#edbb54',glass:'#aa65f2'},
 ] as const;
 export function technologyMaterials(k:WorldKit,level:number){
  const p=technology[Math.max(0,Math.min(4,level-1))];
  for(const [color,roughness,metalness] of [[p.shell,level===1?.83:level===2?.46:level===3?.34:level===4?.24:.28,level===4?.08:level===1?.12:.42],[p.frame,.31,.55],[p.metal,.24,.7],[p.glass,.17,.3]] as const){
-  const m=k.mat(color) as THREE.MeshStandardMaterial;m.roughness=roughness;m.metalness=metalness;
+  const m=k.mat(color) as THREE.MeshStandardMaterial;m.roughness=Math.max(.3,roughness);m.metalness=Math.min(.45,metalness);
  }
  return p;
 }

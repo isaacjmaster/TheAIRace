@@ -1,3 +1,4 @@
+import {applyBuildingLevel,progressionModel} from './BuildingLevels';
 import {animateCompoundBot,syncCompoundInstances} from './HangarCompound';
 import {sentinelModel,animateSentinel} from './SentinelTower';
 import {titleBuilderPose,TITLE_BUILDER_START} from './titleBuilderRoute';
@@ -43,12 +44,12 @@ export class TitleDiorama {
   this.house=founderHQ(k,this.campus,2);this.house.position.set(-7,.55,-5);this.house.scale.setScalar(.9);
   this.gpu=gpuRigModel(k);this.gpu.position.set(0,.55,-3);this.gpu.scale.setScalar(1.15);this.campus.add(this.gpu);
   this.research=researchLabModel(k);this.research.position.set(6,.55,-7);this.research.scale.setScalar(1.15);this.campus.add(this.research);
-  this.fabricator=fabricatorModel(k);this.fabricator.position.set(-7,.55,4.5);this.fabricator.scale.setScalar(1.2);this.campus.add(this.fabricator);
-  this.hangar=hangarModel(k,3,'compound');this.hangar.position.set(7,.55,4);this.campus.add(this.hangar);
+  this.fabricator=progressionModel(k,'fabricator',1);this.fabricator.position.set(-7,.55,4.5);this.fabricator.scale.setScalar(1.2);this.campus.add(this.fabricator);
+  this.hangar=hangarModel(k,3,'compound');applyBuildingLevel(k,this.hangar,'hangar',1);this.hangar.position.set(7,.55,4);this.campus.add(this.hangar);
   this.sentinel=sentinelModel(k);this.sentinel.position.set(-.5,.55,6.8);this.sentinel.scale.setScalar(1.2);this.campus.add(this.sentinel);
   this.scene.add(this.power.group);this.power.sync(this.house,[{id:'rig',model:this.gpu}],[{x:-7,z:-5,w:8.1,d:7.2},{x:0,z:-3,w:4.6,d:3.5},{x:6,z:-7,w:5,d:4}]);
   const station=builderStationModel(k);station.position.set(-11,.55,4.5);this.campus.add(station);
-  const dronePad=droneStationModel(k);dronePad.position.set(11,.55,-3);this.campus.add(dronePad);
+  const dronePad=progressionModel(k,'droneStation',1);dronePad.position.set(11,.55,-3);this.campus.add(dronePad);
   this.drone=securityDroneModel(k);this.drone.scale.setScalar(1.4);this.drone.position.set(9.3,10,-.2);this.campus.add(this.drone);
   this.walls=new SecurityWalls([{id:'west',x:-14,z:-1,w:.5,d:21,height:1.25},{id:'rear',x:0,z:-11.5,w:28,d:.5,height:1.25},{id:'front-left',x:-10,z:11.8,w:6,d:.5,height:1.15},{id:'front-right',x:8,z:11.8,w:10,d:.5,height:1.15}]);this.walls.group.position.y=.55;this.campus.add(this.walls.group);
   for(const [kind,x,z,scale] of [['cypress',-12.5,-8,.8],['ornamental',12,-8,.85],['planter',-7,-.2,.8],['flowers',-11,8,.8],['flowers',11,9,.8]] as const){const m=decorationModel(k,kind);m.position.set(x,.55,z);m.scale.setScalar(scale);this.campus.add(m);}
