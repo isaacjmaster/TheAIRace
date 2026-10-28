@@ -30,5 +30,5 @@ test('replacement layout is atomic, retains mixed levels, clears inventory and c
 });
 test('mixed wall straight lines, junctions and 200-cell perimeters stay inside one-tile envelopes',()=>{
  const configurations=[[[0,0]],[[0,0],[1,0],[2,0]],[[0,0],[1,0],[0,1]],[[0,0],[1,0],[-1,0],[0,1],[0,-1]],Array.from({length:200},(_,i)=>[i%50,Math.floor(i/50)])];
- for(const cells of configurations){const walls=cells.map(([x,z],i)=>({id:'w'+i,x,z,w:1,d:1,level:(i%5+1) as 1|2|3|4|5})),view=new SecurityWalls(walls);try{const b=new THREE.Box3().setFromObject(view.group);assert.ok(b.min.x>=Math.min(...cells.map(c=>c[0]))-.501&&b.max.x<=Math.max(...cells.map(c=>c[0]))+.501);assert.ok(b.min.z>=Math.min(...cells.map(c=>c[1]))-.501&&b.max.z<=Math.max(...cells.map(c=>c[1]))+.501);assert.ok(b.max.y<1.36);}finally{view.dispose();}}
+ for(const cells of configurations){const walls=cells.map(([x,z],i)=>({id:'w'+i,x,z,w:1,d:1,level:(i%5+1) as 1|2|3|4|5})),view=new SecurityWalls(walls);try{const b=new THREE.Box3().setFromObject(view.group);assert.ok(b.min.x>=Math.min(...cells.map(c=>c[0]))-.501&&b.max.x<=Math.max(...cells.map(c=>c[0]))+.501);assert.ok(b.min.z>=Math.min(...cells.map(c=>c[1]))-.501&&b.max.z<=Math.max(...cells.map(c=>c[1]))+.501);assert.ok(b.max.y<2.0,'decorative crystal finials remain bounded above unchanged barrier bodies');}finally{view.dispose();}}
 });

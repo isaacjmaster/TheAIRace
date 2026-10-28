@@ -62,6 +62,16 @@ export class WorldKit {
  cylinder(parent:THREE.Object3D,radius:number,height:number,position:[number,number,number],color:string){
   const mesh=new THREE.Mesh(this.geometry('cyl'+radius+','+height,()=>new THREE.CylinderGeometry(radius,radius,height,10)),this.mat(color));mesh.position.set(...position);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
  }
+ /** Eight flat triangular faces keep mounted energy crystals crisp without transparency. */
+ crystal(parent:THREE.Object3D,width:number,height:number,position:[number,number,number],color:string){
+  const geometry=this.geometry(`mounted-crystal-${width}-${height}`,()=>{
+   const r=width/2,y=height*.4,ring=[[r,y,0],[0,y,r],[-r,y,0],[0,y,-r]],vertices:number[]=[],colors:number[]=[];
+   for(let i=0;i<4;i++){const a=ring[i],b=ring[(i+1)%4];vertices.push(0,height,0,...b,...a,0,0,0,...a,...b);const shade=[1,.64,.84,.48][i];for(let j=0;j<6;j++)colors.push(shade,shade,shade);}
+   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.computeVertexNormals();return g;
+  });
+  const mat=this.mat(color,true) as THREE.MeshStandardMaterial;mat.vertexColors=true;
+  const mesh=new THREE.Mesh(geometry,mat);mesh.position.set(...position);mesh.castShadow=true;parent.add(mesh);return mesh;
+ }
  tree(parent:THREE.Object3D,x:number,z:number,scale=1){const g=new THREE.Group();g.position.set(x,0,z);g.scale.setScalar(scale);parent.add(g);this.cylinder(g,.15,1.1,[0,.55,0],'#ba9577');
   const top=new THREE.Mesh(this.geometry('foliage',()=>new THREE.DodecahedronGeometry(.85,0)),this.mat(x%3<1?'#5d9c7c':'#78af86'));top.position.y=1.5;top.scale.y=1.3;top.castShadow=true;g.add(top);const crown=top.clone();crown.scale.set(.72,.85,.72);crown.position.set(.25,2.22,-.12);g.add(crown);
  }

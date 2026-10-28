@@ -1,50 +1,111 @@
 import * as THREE from 'three';
-import {WorldKit,palette as C} from './world';
-import {technologyMaterials,armoredHull} from './TechnologyMaterials';
+import {WorldKit} from './world';
+import {armoredHull} from './TechnologyMaterials';
 import type {SecurityBarrier} from '../../shared/security-walls';
 const tier=(n:number)=>Math.max(1,Math.min(5,Math.trunc(n)));
-const HEIGHT=[1,1.04,1.08,1.09,1.12],ARMOR=['#e1ddca','#788d99','#20384e','#dbe7e5','#596978'],FRAME=['#355358','#455b6a','#142737','#26384e','#d2deda'];
-/** Main barrier stays within twelve percent across all tiers; collision remains authoritative. */
+const HEIGHT=[1,1.04,1.08,1.09,1.12];
+/** Barrier height is independent of the decorative mounted crystal. No collision changes. */
 export const wallVisualHeight=(level:number,height=1.2)=>height*HEIGHT[tier(level)-1];
-function wallPost(k:WorldKit,g:THREE.Group,x:number,z:number,height:number,level:number){
- const n=tier(level),h=wallVisualHeight(n,height),w=[.2,.3,.36,.34,.38][n-1];
- k.box(g,[w,h-.14,w],[x,(h-.14)/2,z],technologyMaterials(k,n).shell,.035);
-}
-/** Whole panel generations: laminate, steel, faceted armor, ceramic and platinum. */
-export function securityWallModel(k:WorldKit,length=1,height=1.2,level=1,endPosts=true){
- const n=tier(level),h=wallVisualHeight(n,height),panel=new THREE.Group(),frame=FRAME[n-1],armor=ARMOR[n-1],len=Math.max(.08,length);panel.name='Security Wall Level '+n;panel.userData.visualLevel=n;
- const p=technologyMaterials(k,n),depth=[.2,.34,.5,.52,.6][n-1];
- // An extruded armor profile runs continuously across owner-level half tiles.
- if(n===1)k.block(panel,[len,h-.12,depth],[0,h/2-.02,0],p.shell,.025);
- else {const hull=armoredHull(k,panel,depth,h-.12,len,[0,h/2,0],p.shell,n===2?.08:.16);hull.rotation.y=Math.PI/2;}
- k.block(panel,[len,.12,depth+.06],[0,.06,0],p.frame,.025);
- k.block(panel,[len,n>=3?.2:.14,depth+.12],[0,h-.1,0],p.frame,.035);
- if(n===2)for(const z of [-1,1]){k.block(panel,[len,.18,.055],[0,h*.3,z*.18],p.metal,.015);k.block(panel,[len,.07,.05],[0,h*.79,z*.18],p.metal,.015);}
- if(n===3)for(const z of [-1,1]){k.block(panel,[len,.22,.075],[0,h*.67,z*.255],p.metal,.025);k.block(panel,[len,.36,.06],[0,h*.36,z*.265],p.frame,.03);}
- if(n>=4)for(const z of [-1,1]){
-  k.block(panel,[len,.26,.07],[0,h*.58,z*(depth/2)],p.frame,.025);
-  k.block(panel,[len,.12,.08],[0,h*.58,z*(depth/2+.035)],p.glass,.02);
-  k.block(panel,[len,.035,.085],[0,h*.58,z*(depth/2+.045)],n===5?'#c9ffff':'#6ce1e6',.005,true);
-  if(n===5){const facet=armoredHull(k,panel,len,.36,.08,[0,h*.31,z*.3],p.glass,.1);facet.rotation.x=z*.14;k.block(panel,[len,.045,.07],[0,h*.83,z*.29],p.metal,.01);}
+const BASE='#202833',GOLD='#d99a35',GOLD_TOP='#ffe096';
+const RECIPES=[
+ {armor:'#c8b6a3',cap:'#e0cbb5',post:'#bcaa99',energy:'#19d9ef'},
+ {armor:'#92949f',cap:'#b9b8c2',post:'#4b4d5b',energy:'#19d9ef'},
+ {armor:'#ddd1bc',cap:'#f0e3cd',post:GOLD,energy:'#19d9ef'},
+ {armor:'#2863dc',cap:'#6da8ff',post:'#444c63',energy:'#20c9ff'},
+ {armor:'#d8d8d5',cap:'#efeeea',post:'#252b45',energy:'#a841ff'},
+] as const;
+type Clock={time:{value:number};motion:{value:number}};
+const clocks=new WeakMap<WorldKit,Clock>();
+function clock(k:WorldKit){let c=clocks.get(k);if(!c){c={time:{value:0},motion:{value:1}};clocks.set(k,c);}return c;}
+export function updateWallEnergy(k:WorldKit,timeSeconds:number,reduced=false){const c=clock(k);c.time.value=Number.isFinite(timeSeconds)?timeSeconds:0;c.motion.value=reduced?0:1;}
+/** Shared opaque emissive surfaces: no lights, particles, per-cell updates or transparency. */
+function energy(k:WorldKit,color:string,level:number,crystal=false){
+ const m=k.mat(color,true) as THREE.MeshStandardMaterial;
+ m.roughness=crystal?.23:.38;m.metalness=crystal?.26:.12;m.emissiveIntensity=crystal?.24:.55;
+ if(level>=4&&!m.userData.wallEnergy){
+  m.userData.wallEnergy=true;const c=clock(k);
+  m.onBeforeCompile=shader=>{
+   shader.uniforms.wallTime=c.time;shader.uniforms.wallMotion=c.motion;
+   shader.vertexShader='varying vec3 wallPosition;\n'+shader.vertexShader;
+   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nwallPosition=(modelMatrix*vec4(position,1.0)).xyz;');
+   shader.fragmentShader='varying vec3 wallPosition;\nuniform float wallTime;\nuniform float wallMotion;\n'+shader.fragmentShader;
+   shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
+    float phase=wallPosition.x*1.71+wallPosition.z*1.13;
+    float flow=pow(0.5+0.5*sin(phase-wallTime*1.25),6.0);
+    float shimmer=0.5+0.5*sin(wallTime*0.78+floor(phase)*2.4);
+    float activity=${level===5?'pow(0.5+0.5*sin(wallTime*0.52+floor(phase)*1.83),48.0)':'0.0'};
+    totalEmissiveRadiance*=1.0+wallMotion*(${crystal?'0.30*shimmer':'0.38*flow'}+0.16*activity);`);
+  };
+  m.customProgramCacheKey=()=>`wall-energy-v1-${level}-${crystal}`;
  }
- if(endPosts){for(const x of new Set([-Math.max(0,len/2-.22),Math.max(0,len/2-.22)]))wallPost(k,panel,x,0,height,n);}
- return panel;
+ return m;
 }
-/** One post per occupied cell, owner-level half connections, shared static material batches. */
+function finishes(k:WorldKit,n:number){const p=RECIPES[n-1];for(const color of [p.armor,p.cap,p.post,BASE]){const m=k.mat(color) as THREE.MeshStandardMaterial;m.roughness=n===1?.72:.43;m.metalness=n===1?.09:.38;}if(n===3||n===5)for(const color of [GOLD,GOLD_TOP]){const m=k.mat(color) as THREE.MeshStandardMaterial;m.roughness=.3;m.metalness=.4;}energy(k,p.energy,n);return p;}
+function bevel(k:WorldKit,g:THREE.Group,w:number,h:number,d:number,x:number,y:number,z:number,color:string,cut=.035){return armoredHull(k,g,w,h,d,[x,y,z],color,cut);}
+function light(k:WorldKit,g:THREE.Group,size:[number,number,number],pos:[number,number,number],n:number){return k.block(g,size,pos,RECIPES[n-1].energy,0,true);}
+function wallPost(k:WorldKit,g:THREE.Group,x:number,z:number,height:number,level:number,compact=false){
+ const n=tier(level),p=finishes(k,n),h=wallVisualHeight(n,height),w=compact?.28:n===1?.4:n===2?.48:.54,d=n===1?.44:n===2?.52:.6;
+ const post=new THREE.Group();post.position.set(x,0,z);post.name='wall-support-level-'+n;g.add(post);
+ bevel(k,post,w+.06,.16,d+.06,0,.08,0,BASE);
+ k.box(post,[w,h-.18,d],[0,h/2+.02,0],p.post,.045);
+ k.box(post,[w+.025,.16,d+.025],[0,h+.025,0],n===3?GOLD_TOP:n===4?'#b9b8c2':p.post,.035);
+ if(n>=2)for(const side of [-1,1]){
+  const front=side*(d/2+.008);
+  bevel(k,post,w*.53,h*.64,.045,0,h*.53,front,BASE,.025);
+  light(k,post,[w*.23,n>=4?h*.65:.13,.025],[0,n>=4?h*.53:h*.64,front+side*.027],n);
+  if(n===3||n===5)for(const a of [-1,1])bevel(k,post,w*.17,h*.83,.06,a*w*.41,h*.53,front,GOLD,.025);
+ }
+ if(n===3||n===5){bevel(k,post,w+.035,.2,d+.07,0,.22,0,GOLD,.045);for(const side of [-1,1])bevel(k,post,w*.24,.2,d+.045,side*w*.4,h-.035,0,GOLD,.03);}
+ if(n>=4){
+  bevel(k,post,w*.85,.1,d*.85,0,h+.13,0,p.post,.035);
+  const color=n===4?'#489dff':'#8072ff';energy(k,color,n,true);
+  const crystal=k.crystal(post,compact?.31:w*.85,n===4?.43:.48,[0,h+.16,0],color);crystal.name='mounted-wall-crystal';
+  const core=k.crystal(post,w*.32,.18,[0,h+.18,d*.12],n===4?'#8ce8ff':'#c4afff');(core.material as THREE.MeshStandardMaterial).emissiveIntensity=.18;
+ }
+}
+/** One-tile production model, also the source for every menu and placement preview. */
+export function securityWallModel(k:WorldKit,length=1,height=1.2,level=1,endPosts=true){
+ const n=tier(level),h=wallVisualHeight(n,height),p=finishes(k,n),g=new THREE.Group(),len=Math.max(.08,length),depth=n===1?.29:n===2?.34:.39;
+ g.name='Security Wall Level '+n;g.userData.visualLevel=n;
+ bevel(k,g,len,.17,depth+.09,0,.085,0,BASE,.025);
+ k.block(g,[len,h-.22,depth*.72],[0,(h-.22)/2+.15,0],BASE);
+ const courses=n===1?1:2,count=n===1?1:Math.max(1,Math.ceil(len/.6)),bottom=.32,top=h-.09;
+ for(let row=0;row<courses;row++)for(let i=0;i<count;i++){
+  const bw=len/count-.012,bh=(top-bottom)/courses-.012,x=-len/2+(i+.5)*len/count,y=bottom+(row+.5)*(top-bottom)/courses;
+  bevel(k,g,bw,bh,depth,x,y,0,n===4&&((i+row)%2)?p.cap:p.armor,n===1?.035:.045);
+  if(n===4){
+   // Angular split faces give the blue infill a crystalline cut rather than painted metal bricks.
+   const s=new THREE.Shape();s.moveTo(-bw*.38,-bh*.36);s.lineTo(bw*.38,-bh*.36);s.lineTo(bw*.2,bh*.36);s.closePath();
+   for(const side of [-1,1]){const face=k.extrusion(g,`wall-crystal-facet-${bw}-${bh}`,s,.006,[x,y,side*(depth/2+.002)],(i+row)%2?p.armor:p.cap,true);face.rotation.y=side<0?Math.PI:0;}
+  }
+ }
+ bevel(k,g,len,.12,depth+.025,0,h-.06,0,p.cap,.025);
+ for(const z of [-1,1]){
+  k.block(g,[len,.12,.035],[0,.25,z*(depth/2+.01)],BASE);
+  light(k,g,[len,.055,.02],[0,.25,z*(depth/2+.032)],n);
+  if(n===2)k.block(g,[len,.055,.04],[0,.39,z*(depth/2+.01)],p.post);
+ }
+ if(endPosts){const compact=len<=1.2,inset=Math.min(compact?.18:.32,len/2),xs=new Set([-len/2+inset,len/2-inset]);for(const x of xs)wallPost(k,g,x,0,height,n,compact);}
+ return g;
+}
+/** Owner-level half panels preserve mixed joins. Supports only at ends, turns and spaced piers. */
 export class SecurityWalls{
  readonly group=new THREE.Group();private k=new WorldKit('campus');
  constructor(walls:readonly SecurityBarrier[]){
   this.group.name='Campus security walls';const cells=new Map(walls.filter(w=>w.w===1&&w.d===1).map(w=>[w.x+','+w.z,w]));
-  for(const w of walls){const level=(w as SecurityBarrier & {level?:number}).level??1,height=w.height??1.2;
+  for(const w of walls){const level=w.level??1,height=w.height??1.2;
    if(w.w===1&&w.d===1){const neighbors=([[1,0],[-1,0],[0,1],[0,-1]] as const).filter(([dx,dz])=>cells.has((w.x+dx)+','+(w.z+dz)));
-    // Continuous panels meet at cell edges; avoid a bulky post interrupting every straight tile.
-    if(neighbors.length!==2||neighbors[0][0]!==-neighbors[1][0]||neighbors[0][1]!==-neighbors[1][1])wallPost(this.k,this.group,w.x,w.z,height,level);
-    if(!neighbors.length){const p=securityWallModel(this.k,1,height,level,false);p.position.set(w.x,0,w.z);this.group.add(p);}
-    for(const[dx,dz]of neighbors){const p=securityWallModel(this.k,.5,height,level,false);p.position.set(w.x+dx*.25,0,w.z+dz*.25);p.rotation.y=dx?0:Math.PI/2;this.group.add(p);}
+    const straight=neighbors.length===2&&neighbors[0][0]===-neighbors[1][0]&&neighbors[0][1]===-neighbors[1][1];
+    const pier=straight&&Math.abs(Math.floor(neighbors[0][0]?w.x:w.z))%3===0;
+    if(!neighbors.length){const p=securityWallModel(this.k,1,height,level);p.position.set(w.x,0,w.z);this.group.add(p);}
+    else {
+     if(!straight||pier)wallPost(this.k,this.group,w.x,w.z,height,level);
+     for(const[dx,dz]of neighbors){const p=securityWallModel(this.k,.5,height,level,false);p.position.set(w.x+dx*.25,0,w.z+dz*.25);p.rotation.y=dx?0:Math.PI/2;this.group.add(p);}
+    }
    }else{const horizontal=w.w>w.d,length=Math.max(w.w,w.d),count=Math.max(1,Math.ceil(length/2.6)),span=length/count;for(let i=0;i<count;i++){const p=securityWallModel(this.k,span,height,level);p.position.set(w.x,0,w.z);p.rotation.y=horizontal?0:Math.PI/2;p.translateX(-length/2+span*(i+.5));this.group.add(p);}}
   }
-  // Transform once, then render large mixed-level layouts in material batches.
-  const meshes:THREE.Mesh[]=[];this.group.updateMatrixWorld(true);this.group.traverse(o=>{if(o instanceof THREE.Mesh)meshes.push(o);});for(const mesh of meshes){mesh.applyMatrix4(mesh.parent!.matrixWorld);this.group.add(mesh);}for(const child of [...this.group.children])if(child instanceof THREE.Group)this.group.remove(child);this.k.batchStatic(this.group,'all-five-tier-security-panels');
+  const meshes:THREE.Mesh[]=[];this.group.updateMatrixWorld(true);this.group.traverse(o=>{if(o instanceof THREE.Mesh)meshes.push(o);});for(const mesh of meshes){mesh.applyMatrix4(mesh.parent!.matrixWorld);this.group.add(mesh);}for(const child of [...this.group.children])if(child instanceof THREE.Group)this.group.remove(child);this.k.batchStatic(this.group,'approved-security-walls');
  }
+ update(timeSeconds:number,reduced=false){updateWallEnergy(this.k,timeSeconds,reduced);}
  dispose(){this.k.dispose();}
 }
