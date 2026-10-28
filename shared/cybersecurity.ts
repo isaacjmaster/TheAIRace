@@ -1,3 +1,4 @@
+import {ARC_SPIRE} from './electronic-catalog';
 import {reconcileBuilderAssignments} from './builder-jobs';
 import {snapFootprint,onFootprintGrid} from './placement-grid';
 import {builderHutFootprints} from './foundation';
@@ -59,4 +60,17 @@ export function buildSentinel(s:FoundationState,p:RigPosition,now:number,o:Orien
  const building={position:[...p] as RigPosition,orientation:o,startedAt:now,completesAt:now+SENTINEL.buildSeconds*1000},trial={...s,sentinel:building};
  if(!landscapeRoute(trial,door(trial,'sentinel'),undefined,1.1).length)throw Error('Leave a path for your Builder Bot.');
  s.compute-=SENTINEL.cost;s.sentinel=building;s.buildersBusy=(s.buildersBusy??0)+1;reconcileBuilderAssignments(s,now);
+}
+
+/** First-tier electrical defense; shares the normal construction and arrangement workflow. */
+export function buildArcSpire(s:FoundationState,p:RigPosition,now:number,o:Orientation=0){
+ advanceFoundation(s,now);if(s.arcSpire)throw Error('Arc Spire - 1/1 Built');
+ if(founderHqLevel(s)<ARC_SPIRE.hqLevel)throw Error('Requires Founder HQ Level '+ARC_SPIRE.hqLevel+'.');
+ if(!hasBuilderStation(s)||s.builders<1)throw Error('Place your Builder Station first.');
+ if((s.buildersBusy??0)>=s.builders)throw Error('Your Builder Bots are busy.');
+ const reason=validFoundationPosition(s,p,'arcSpire',o);if(reason)throw Error(reason);
+ if(s.compute<ARC_SPIRE.cost)throw Error('You need '+ARC_SPIRE.cost+' Compute.');
+ const building={position:[...p] as RigPosition,orientation:o,startedAt:now,completesAt:now+ARC_SPIRE.buildSeconds*1000},trial={...s,arcSpire:building};
+ if(!landscapeRoute(trial,door(trial,'arcSpire'),undefined,1.1).length)throw Error('Leave a path for your Builder Bot.');
+ s.compute-=ARC_SPIRE.cost;s.arcSpire=building;s.buildersBusy=(s.buildersBusy??0)+1;reconcileBuilderAssignments(s,now);
 }

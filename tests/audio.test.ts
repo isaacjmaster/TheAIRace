@@ -99,8 +99,8 @@ test('voice envelope clamps short attacks and schedules a zero tail before the s
 
 
 import {BUILDING_SOUNDS} from '../src/audio/score';
-test('building interactions have twelve distinct quiet original cues and obey mute/test policies',async()=>{
- assert.equal(new Set(Object.values(BUILDING_SOUNDS).map(p=>JSON.stringify(p))).size,12);
+test('building interactions have distinct quiet original cues for every building and obey mute/test policies',async()=>{
+ assert.equal(new Set(Object.values(BUILDING_SOUNDS).map(p=>JSON.stringify(p))).size,Object.keys(BUILDING_SOUNDS).length);
  const h=harness();try{await ready(h.sound);for(const cue of Object.keys(BUILDING_SOUNDS) as (keyof typeof BUILDING_SOUNDS)[]){h.ctx.currentTime++;const before=h.ctx.sources.length;h.sound.cue(cue);assert.equal(h.ctx.sources.length-before,BUILDING_SOUNDS[cue].notes.length);h.sound.cue(cue);assert.equal(h.ctx.sources.length-before,BUILDING_SOUNDS[cue].notes.length);}
  h.sound.setMuted(true);const count=h.ctx.sources.length;for(const cue of Object.keys(BUILDING_SOUNDS) as Cue[])h.sound.cue(cue);assert.equal(h.ctx.sources.length,count);
  }finally{h.sound.dispose();}

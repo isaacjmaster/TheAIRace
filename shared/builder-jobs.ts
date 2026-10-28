@@ -1,6 +1,6 @@
 import type {FoundationState} from './foundation';
 import {clearingJobs} from './landscape';
-export const BUILDER_KINDS=['hq','rig','rig2','fabricator','hangar','lab','droneStation','sentinel','computeStorage','researchStorage'] as const;
+export const BUILDER_KINDS=['hq','rig','rig2','fabricator','hangar','lab','droneStation','sentinel','arcSpire','computeStorage','researchStorage'] as const;
 type Job={builderIndex?:number;completesAt:number};
 /** Stable slots are persisted on work records; return travel never owns a slot. */
 export function builderAssignments(s:FoundationState,now:number){

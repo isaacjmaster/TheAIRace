@@ -37,7 +37,7 @@ export function tacticalRoute(o:Operation,t:TargetSnapshot,asset:Asset,a:SquadAg
  const surface:Vec=[Math.max(asset.position[0]-asset.size[0]/2,Math.min(asset.position[0]+asset.size[0]/2,free.point[0])),Math.max(asset.position[1]-asset.size[1]/2,Math.min(asset.position[1]+asset.size[1]/2,free.point[1]))];
  const walls=t.walls.filter(w=>!segmentClear(free.point,surface,[w],targetBounds(t),.05)||free.path.some((p,i)=>i>0&&!segmentClear(free.path[i-1],p,[w],targetBounds(t),AGENT_CLEARANCE)));
  if(!walls.length)return {around};
- const breakSeconds=walls.reduce((seconds,w)=>{const hp=Math.max(0,wallHealth(o,w.id)-(o.squad!.wallDamage[w.id]??0));return seconds+(a.troop==='breacher'?Math.ceil(hp/(troop.damage*troop.wallMultiplier))*troop.intervalMs/1000:hp/(wallBalance(o).breachDps*(o.cipherDamageMultiplier??1)));},0);
+ const breakSeconds=walls.reduce((seconds,w)=>{const hp=Math.max(0,wallHealth(o,w.id)-(o.squad!.wallDamage[w.id]??0));return seconds+(a.troop==='breacher'?Math.ceil(hp/(troop.damage*troop.wallMultiplier))*troop.intervalMs/1000:hp/((a.troop==='disruptor'?troop.damage*1000/troop.intervalMs:wallBalance(o).breachDps*(o.cipherDamageMultiplier??1))));},0);
  // A ten percent advantage commits a breach, preventing marginal route churn.
  if(around&&free.length/troop.speed+breakSeconds>=around.length/troop.speed*.9)return {around};
  const candidates=walls.slice().sort((x,y)=>distance(a.position,[x.x,x.z])-distance(a.position,[y.x,y.z])||x.id.localeCompare(y.id));

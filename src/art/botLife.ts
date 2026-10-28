@@ -24,7 +24,7 @@ export function dockingRoute(s:FoundationState,slot:number,clearance=.46):WalkPo
 export class BotArrivals{
  private previous?:{count:number;training:number[];generation:number;layout:string};
  sync(s:FoundationState,now:number,reset=false){
- const count=(s.bots||0)+(!s.botRaid?.settled?(s.botRaid?.simulation.stock.scrap||0):0),training=(s.training||[]).filter((_,i)=>s.trainingKinds?.[i]!=='breacher'),generation=s.generation||0,layout=JSON.stringify([s.fabricator,getHangar(s)]),old=this.previous;
+ const count=(s.bots||0)+(!s.botRaid?.settled?(s.botRaid?.simulation.stock.scrap||0):0),training=(s.training||[]).filter((_,i)=>(s.trainingKinds?.[i]??'pulsewheel')==='pulsewheel'),generation=s.generation||0,layout=JSON.stringify([s.fabricator,getHangar(s)]),old=this.previous;
  this.previous={count,training,generation,layout};
  if(reset||!old||old.generation!==generation||old.layout!==layout||count<=old.count)return [];
  const due=old.training.filter(t=>t<=now&&!training.includes(t)).length,n=Math.min(10,count-old.count,due);

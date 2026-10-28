@@ -5,7 +5,7 @@ import type {BuildingLayout,RotatableBuilding} from '../../shared/foundation';
 export type BuildStage='foundation'|'framework'|'finishing'|'finished';
 export const constructionProgress=(timer:{startedAt:number;completesAt:number},now:number)=>Math.max(0,Math.min(1,(now-timer.startedAt)/Math.max(1,timer.completesAt-timer.startedAt)));
 export const constructionStage=(progress:number):BuildStage=>progress>=1?'finished':progress>=.6?'finishing':progress>=.25?'framework':'foundation';
-const shapes={computeStorage:[4,4,3.3],researchStorage:[4,4,3.3],sentinel:[4,4,3.1],rig:[4,3,2.6],rig2:[4,3,2.6],lab:[4,3,2.8],fabricator:[4,3,3.5],hangar:[5.6,4.2,3.2],droneStation:[3,3,1.6],hq:[9,8,7],station:[3.6,2.6,2]} as const;
+const shapes={arcSpire:[4,4,3.3],computeStorage:[4,4,3.3],researchStorage:[4,4,3.3],sentinel:[4,4,3.1],rig:[4,3,2.6],rig2:[4,3,2.6],lab:[4,3,2.8],fabricator:[4,3,3.5],hangar:[5.6,4.2,3.2],droneStation:[3,3,1.6],hq:[9,8,7],station:[3.6,2.6,2]} as const;
 type Entry={root:THREE.Object3D;proxy:THREE.Group;foundation:THREE.Group;frame:THREE.Group;future?:THREE.Group;plane:THREE.Plane;originals:Map<THREE.Mesh,THREE.Material|THREE.Material[]>;materials:THREE.Material[];lights:THREE.Light[]};
 /** Presentation only. Actual roots, timers and server capability checks remain authoritative. */
 export class ConstructionVisuals{

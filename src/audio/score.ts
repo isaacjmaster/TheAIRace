@@ -15,6 +15,7 @@ export const BUILDING_SOUNDS={
  'ui-close':{notes:[79,72],type:'sine',duration:.07,gap:.035},
  'ui-tab':{notes:[83],type:'sine',duration:.06,gap:0},
  'ui-confirm':{notes:[72,79,84],type:'sine',duration:.12,gap:.04},
+ 'building-arcSpire':{notes:[50,57,62],type:'sine',duration:.15,gap:.04},
  'building-sentinel':{notes:[38,45,50],type:'triangle',duration:.18,gap:.05},
  'building-droneStation':{notes:[81,88,93],type:'sine',duration:.1,gap:.055},
  'building-station':{notes:[55,79],type:'triangle',duration:.1,gap:.075},

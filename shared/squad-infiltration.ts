@@ -1,3 +1,4 @@
+import {initializeElectronics} from './electronic-combat';
 import {COMBAT_BALANCE_V3,troopCombat} from './combat-balance';
 import {type TroopKind} from './troops';
 import {craftCampusTarget} from './infiltration-bases';
@@ -5,8 +6,8 @@ import {advanceTactical,planTactical} from './tactical-infiltration';
 import {findPath,segmentClear,nearestOpen,pointClear} from './navigation';
 import {INFILTRATION,targetBounds,AGENT_CLEARANCE,DRONE_CLEARANCE,newOperation,infiltrationPath,infiltrationSolids,validDeployment,type Operation,type Vec,type InfiltrationCommand} from './infiltration';
 export const SQUAD_BALANCE={health:42,laserDamage:18,laserIntervalMs:750,hackWorkMultiplier:2.5,maxHackers:3,endGraceMs:3000,wallHealth:72,breachDps:18,breachDetour:6} as const;
-export type SquadAgent=Operation['agent']&{id:string;troop?:TroopKind;state:'active'|'extracted'|'lost';unitStatus:'reserved'|'returned'|'lost';work:number;workPosition?:Vec;unreachableDrone?:string;retryDroneAt?:number;blockedSince?:number;nextPlanAt?:number;lastProgressAt?:number;progressPosition?:Vec;routeRevision?:number;wallTarget?:string;droneTarget?:string;lockedUntil?:number;attackReadyAt?:number;lastShotAt?:number;shotPosition?:Vec;cargo:{compute:number;research:number;intel:boolean}};
-export type SquadState={version:1;balanceVersion?:2|3|4;behaviorVersion?:1;undeployed?:number;undeployedBreacher?:number;rules?:'tactical-v1';agents:SquadAgent[];progress:Record<string,number>;wallDamage:Record<string,number>;breachedWalls:string[];idleSince?:number};
+export type SquadAgent=Operation['agent']&{id:string;troop?:TroopKind;state:'active'|'extracted'|'lost';unitStatus:'reserved'|'returned'|'lost';work:number;workPosition?:Vec;lastEmpAt?:number;empChargeAt?:number;empPendingTargetId?:string;empPendingPosition?:Vec;empTargetId?:string;empPosition?:Vec;unreachableDrone?:string;retryDroneAt?:number;blockedSince?:number;nextPlanAt?:number;lastProgressAt?:number;progressPosition?:Vec;routeRevision?:number;wallTarget?:string;droneTarget?:string;lockedUntil?:number;attackReadyAt?:number;lastShotAt?:number;shotPosition?:Vec;cargo:{compute:number;research:number;intel:boolean}};
+export type SquadState={version:1;balanceVersion?:2|3|4;behaviorVersion?:1;abilityVersion?:1;undeployed?:number;undeployedBreacher?:number;undeployedDisruptor?:number;rules?:'tactical-v1';agents:SquadAgent[];progress:Record<string,number>;wallDamage:Record<string,number>;breachedWalls:string[];idleSince?:number};
 /** New missions use captured layouts; older active operation snapshots are never rewritten. */
 export function newSquadOperation(id:string,targetId:string,now:number,spacious=true):Operation{
  const o=newOperation(id,targetId,now);o.squad={version:1,agents:[],progress:{},wallDamage:{},breachedWalls:[]};
@@ -24,10 +25,10 @@ export function newSquadOperation(id:string,targetId:string,now:number,spacious=
  if(spacious){o.target=craftCampusTarget(targetId);o.breachRatingVersion=1;const hq=o.target.assets.find(a=>a.kind==='hq')!;hq.access=[hq.position[0],hq.position[1]+hq.size[1]/2+1.2];hq.hackSeconds=COMBAT_BALANCE_V3.hackSeconds.core;}
  const solids=infiltrationSolids(o.target);
  for(const defense of o.target.defenses){defense.radius+=.6;defense.warningSeconds=0;defense.route=defense.route.map(p=>nearestOpen(p,solids,targetBounds(o.target),DRONE_CLEARANCE,.5)??p);}
- if(spacious){o.squad.balanceVersion=3;o.squad.behaviorVersion=1;o.squad.rules='tactical-v1';for(const a of o.target.assets)if(a.hackSeconds&&a.model!=='sentinel')a.hackSeconds=a.kind==='gpu'?COMBAT_BALANCE_V3.hackSeconds.gpu:a.kind==='lab'?COMBAT_BALANCE_V3.hackSeconds.lab:COMBAT_BALANCE_V3.hackSeconds.core;
+ if(spacious){o.squad.balanceVersion=3;o.squad.behaviorVersion=1;o.squad.abilityVersion=1;o.squad.rules='tactical-v1';for(const a of o.target.assets)if(a.hackSeconds&&a.model!=='sentinel')a.hackSeconds=a.kind==='gpu'?COMBAT_BALANCE_V3.hackSeconds.gpu:a.kind==='lab'?COMBAT_BALANCE_V3.hackSeconds.lab:COMBAT_BALANCE_V3.hackSeconds.core;
  // Freeze the previous effective NPC durability independently of future attacker damage tuning.
  for(const a of o.target.assets)if(a.hackSeconds&&a.maxHealth===undefined)a.maxHealth=a.hackSeconds*9;for(const d of o.target.defenses){d.radius=COMBAT_BALANCE_V3.droneDetection;d.warningSeconds=COMBAT_BALANCE_V3.droneWarmupMs/1000;}}
- o.drones=o.target.defenses.map(d=>({id:d.id,position:[...d.route[0]],segment:1,alert:0,lost:0,mode:'patrol'}));if(spacious)for(const d of o.drones)d.health=COMBAT_BALANCE_V3.droneHealth;return o;
+ o.drones=o.target.defenses.map(d=>({id:d.id,position:[...d.route[0]],segment:1,alert:0,lost:0,mode:'patrol'}));if(spacious)for(const d of o.drones)d.health=COMBAT_BALANCE_V3.droneHealth;initializeElectronics(o);return o;
 }
 export function squadTarget(o:Operation){return o.squad?{...o.target,...(o.pvp?{assets:o.target.assets.filter(a=>!o.hacked.includes(a.id))}:{}),walls:o.target.walls?.filter(w=>!o.squad!.breachedWalls.includes(w.id))}:o.target;}
 const distance=(a:Vec,b:Vec)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
@@ -55,13 +56,14 @@ export function commandSquad(o:Operation,c:InfiltrationCommand,now:number){
  advanceSquad(o,now);if(o.status!=='ready'&&o.status!=='active')throw Error('This operation has ended.');
  if(c.action==='abandon'){finish(o,'abandoned');(o.orders??=[]).push({at:now,intent:structuredClone(c)});return;}
  if(c.action!=='deploy')throw Error('Pulsewheels hack automatically.');
- const heavy=c.troop==='breacher';if(c.troop!==undefined&&c.troop!=='pulsewheel'&&!heavy)throw Error('Unknown troop.');
- if(heavy&&!o.squad!.rules)throw Error('Breacher requires a current operation.');
- const available=heavy?(o.squad!.undeployedBreacher??0):o.squad!.undeployed;if(available!==undefined&&available<=0)throw Error('No '+(heavy?'Breachers':'Pulsewheels')+' available for this mission.');
+ const heavy=c.troop==='breacher',support=c.troop==='disruptor';if(c.troop!==undefined&&c.troop!=='pulsewheel'&&!heavy&&!support)throw Error('Unknown troop.');
+ if((heavy||support)&&!o.squad!.rules)throw Error('Breacher requires a current operation.');
+ if(support&&o.squad!.abilityVersion!==1)throw Error('Disruptor requires a new operation.');initializeElectronics(o);
+ const available=support?(o.squad!.undeployedDisruptor??0):heavy?(o.squad!.undeployedBreacher??0):o.squad!.undeployed;if(available!==undefined&&available<=0)throw Error('No '+(support?'Disruptors':heavy?'Breachers':'Pulsewheels')+' available for this mission.');
  const position=c.position??o.target.entry;if(!validDeployment(o.target,position))throw Error('Choose a highlighted perimeter tile.');
  // The Foundation command transaction owns the inventory deduction before this call.
- const a:SquadAgent={...(heavy?{troop:'breacher' as const}:{}),id:o.id+':'+o.squad!.agents.length,position:[...position],path:[],mode:'idle',hack:0,yaw:0,health:o.squad!.rules?troopCombat(o,heavy?'breacher':'pulsewheel').health:SQUAD_BALANCE.health,state:'active',unitStatus:'reserved',work:0,cargo:{compute:0,research:0,intel:false}};
- o.squad!.agents.push(a);if(heavy)o.squad!.undeployedBreacher!--;else if(o.squad!.undeployed!==undefined)o.squad!.undeployed--;o.squad!.idleSince=undefined;if(o.status==='ready'){o.status='active';o.startedAt=now;o.lastTick=now;}if(o.squad!.rules)planTactical(o,a);else targetAgent(o,a);o.agent=o.squad!.agents[0];event(o,'deployed',a.id);(o.orders??=[]).push({at:now,intent:structuredClone(c)});
+ const a:SquadAgent={...(support?{troop:'disruptor' as const}:heavy?{troop:'breacher' as const}:{}),id:o.id+':'+o.squad!.agents.length,position:[...position],path:[],mode:'idle',hack:0,yaw:0,health:o.squad!.rules?troopCombat(o,support?'disruptor':heavy?'breacher':'pulsewheel').health:SQUAD_BALANCE.health,state:'active',unitStatus:'reserved',work:0,cargo:{compute:0,research:0,intel:false}};
+ o.squad!.agents.push(a);if(support)o.squad!.undeployedDisruptor!--;else if(heavy)o.squad!.undeployedBreacher!--;else if(o.squad!.undeployed!==undefined)o.squad!.undeployed--;o.squad!.idleSince=undefined;if(o.status==='ready'){o.status='active';o.startedAt=now;o.lastTick=now;}if(o.squad!.rules)planTactical(o,a);else targetAgent(o,a);o.agent=o.squad!.agents[0];event(o,'deployed',a.id);(o.orders??=[]).push({at:now,intent:structuredClone(c)});
 }
 /** Fixed server ticks. Shared building work is awarded only once; each worker extracts after its first successful objective. */
 export function advanceSquad(o:Operation,now:number){
@@ -90,7 +92,7 @@ export function advanceSquad(o:Operation,now:number){
    drone.mode=target?'pursuit':'patrol';drone.targetAgentId=target?.id;
    if(target&&o.lastTick-(drone.lastShotAt??-Infinity)>=SQUAD_BALANCE.laserIntervalMs){drone.lastShotAt=o.lastTick;drone.shotPosition=[...target.position];target.health=Math.max(0,target.health!-SQUAD_BALANCE.laserDamage);event(o,'laser',target.id);if(!target.health){target.state='lost';target.mode='idle';target.path=[];target.cargo={compute:0,research:0,intel:false};event(o,'agent-lost',target.id);}}
   }
-  if((squad.undeployed??0)+(squad.undeployedBreacher??0)===0&&squad.agents.every(a=>a.state!=='active')){squad.idleSince??=o.lastTick;if(o.lastTick-squad.idleSince>=SQUAD_BALANCE.endGraceMs)finish(o,squad.agents.some(a=>a.state==='extracted')?'extracted':'caught');}else squad.idleSince=undefined;
+  if((squad.undeployed??0)+(squad.undeployedBreacher??0)+(squad.undeployedDisruptor??0)===0&&squad.agents.every(a=>a.state!=='active')){squad.idleSince??=o.lastTick;if(o.lastTick-squad.idleSince>=SQUAD_BALANCE.endGraceMs)finish(o,squad.agents.some(a=>a.state==='extracted')?'extracted':'caught');}else squad.idleSince=undefined;
  }
  o.agent=squad.agents[0]??o.agent;
  if(o.status==='active'&&now>=o.startedAt!+INFILTRATION.operationMs){o.lastTick=o.startedAt!+INFILTRATION.operationMs;finish(o,'timeout');}

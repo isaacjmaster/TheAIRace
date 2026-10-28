@@ -20,7 +20,7 @@ export const STARTING_COMPUTE = 100;
 export const COMPUTE_CAPACITY = 1000;
 export const GPU_RIG={cost:50,buildSeconds:15,perMinute:10,storage:100,maxCount:2,width:4,depth:3} as const;
 export type Orientation=0|1|2|3;
-export type RotatableBuilding='hq'|'station'|'rig'|'rig2'|'fabricator'|'hangar'|'lab'|'droneStation'|'sentinel'|'computeStorage'|'researchStorage';
+export type RotatableBuilding='hq'|'station'|'rig'|'rig2'|'fabricator'|'hangar'|'lab'|'droneStation'|'sentinel'|'arcSpire'|'computeStorage'|'researchStorage';
 export type BuildingLayout={position:RigPosition;orientation:Orientation;size?:'expanded'|'compound'};
 export const BUILDER_STATION_POSITION:RigPosition=[-1,4.8];
 export type RigPosition=[number,number];
@@ -32,7 +32,7 @@ export const FABRICATOR={cost:50,buildSeconds:15,maxCount:1} as const;
 export const HANGAR={cost:0,buildSeconds:15,maxCount:1} as const;
 export const SCRAP_BOT={cost:5,trainSeconds:10,housing:1,capacity:HANGAR_HOUSING} as const;
 export type BuilderHut=BuildingLayout&{id:string;unplaced?:boolean};
-export type FoundationState = {buildingLevels?:Record<string,BuildingLevel>;buildingUpgrades?:Record<string,BuildingUpgrade>;storageBaseline?:{compute:number;research:number};computeStorage?:Hangar;researchStorage?:Hangar;buildingUpdate?:{version:1;acknowledged:boolean;replacementCount?:number;pending?:boolean};droneGuards?:[RigPosition?,RigPosition?];droneGuard?:RigPosition;hqNotification?:{id:string;acknowledged:boolean};builderHuts?:BuilderHut[];technologyUpgrade?:TechnologyUpgrade;technologies?:Technologies;trainingDurations?:number[];walls?:OwnedWall[];droneStation?:Hangar;sentinel?:Hangar;security?:CompanySecurity;infiltrationTutorial?:'complete'|'skipped';infiltration?:Operation;infiltrationReserve?:{compute:number;research:number};research?:number;researchCapacity?:number;lab?:ResearchLab;decorations?:Decoration[];founderHqLevel?:1|2|3;hqUpgrade?:FounderHQUpgrade;starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;breachers?:number;trainingKinds?:TroopKind[];training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
+export type FoundationState = {buildingLevels?:Record<string,BuildingLevel>;buildingUpgrades?:Record<string,BuildingUpgrade>;storageBaseline?:{compute:number;research:number};computeStorage?:Hangar;researchStorage?:Hangar;buildingUpdate?:{version:1;acknowledged:boolean;replacementCount?:number;pending?:boolean};droneGuards?:[RigPosition?,RigPosition?];droneGuard?:RigPosition;hqNotification?:{id:string;acknowledged:boolean};builderHuts?:BuilderHut[];technologyUpgrade?:TechnologyUpgrade;technologies?:Technologies;trainingDurations?:number[];walls?:OwnedWall[];droneStation?:Hangar;sentinel?:Hangar;arcSpire?:Hangar;security?:CompanySecurity;infiltrationTutorial?:'complete'|'skipped';infiltration?:Operation;infiltrationReserve?:{compute:number;research:number};research?:number;researchCapacity?:number;lab?:ResearchLab;decorations?:Decoration[];founderHqLevel?:1|2|3;hqUpgrade?:FounderHQUpgrade;starterStation?:'unplaced'|'placed';landscape?:Landscape;version:1;revision:number;companyName:string;level:number;compute:number;capacity:number;builders:number;buildersBusy?:number;rig?:GpuRig;rig2?:GpuRig;hangar?:Hangar;generation?:number;hqLayout?:BuildingLayout;stationLayout?:BuildingLayout;fabricator?:Fabricator;bots?:number;breachers?:number;disruptors?:number;trainingKinds?:TroopKind[];training?:number[];botRaid?:BotRaid;raidRecord?:{wins:number[];completeHistory:boolean}};
 export function initialFoundation(revision=0):FoundationState{return {version:1,revision,research:0,researchCapacity:500,founderHqLevel:1,companyName:'Garage Intelligence',level:1,compute:STARTING_COMPUTE,capacity:COMPUTE_CAPACITY,builders:0,starterStation:'unplaced',raidRecord:{wins:[],completeHistory:true}};}
 export const hasBuilderStation=(s:FoundationState)=>s.starterStation!=='unplaced';
 export function establishBuilderStation(s:FoundationState,position:RigPosition,orientation:Orientation=0){if(hasBuilderStation(s)){reconcileBuilderHuts(s);const hut=s.builderHuts?.find(h=>h.unplaced);if(!hut)throw new Error('All Builder Stations are already placed.');moveBuilderHut(s,hut.id,position,orientation);return;}const reason=validFoundationPosition(s,position,'station',orientation);if(reason)throw new Error(reason);s.stationLayout={position:[...position],orientation};s.starterStation='placed';s.builders=founderBuilderCapacity(s);s.buildersBusy=0;}
@@ -50,14 +50,14 @@ export function advanceFoundation(s:FoundationState,now=Date.now()){
  const deadline=Math.min(...Object.values(s.buildingUpgrades??{}).map(j=>j.completesAt).filter(t=>t<now));if(Number.isFinite(deadline))advanceFoundation(s,deadline);
  // Split offline accrual at the research deadline so old production never receives a retroactive bonus.
  if(s.technologyUpgrade&&now>s.technologyUpgrade.completesAt)advanceFoundation(s,s.technologyUpgrade.completesAt);
- const rigs=[s.rig,s.rig2].filter((r):r is GpuRig=>!!r),jobs=[...rigs,s.fabricator,getHangar(s),s.lab,s.droneStation,s.sentinel,s.computeStorage,s.researchStorage].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
+ const rigs=[s.rig,s.rig2].filter((r):r is GpuRig=>!!r),jobs=[...rigs,s.fabricator,getHangar(s),s.lab,s.droneStation,s.sentinel,s.arcSpire,s.computeStorage,s.researchStorage].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
  const clearing=clearingJobs(s).length>0;advanceLandscape(s,now);
  if(s.hqUpgrade&&now>=s.hqUpgrade.completesAt){if(founderHqLevel(s)<s.hqUpgrade.targetLevel)s.hqNotification={id:s.hqUpgrade.id,acknowledged:false};s.founderHqLevel=s.hqUpgrade.targetLevel;}
  if(hasBuilderStation(s)&&founderHqLevel(s)>=2)s.builders=Math.max(s.builders,founderBuilderCapacity(s));
  if(jobs.length||clearing||s.hqUpgrade||s.buildingUpgrades)s.buildersBusy=Object.values(s.buildingUpgrades??{}).filter(j=>now<j.completesAt).length+jobs.filter(b=>now<b.completesAt).length+activeClearingJobs(s,now).length+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt);
  if(s.training){
   const pending:number[]=[],kinds:TroopKind[]=[],durations:number[]=[];
-  s.training.forEach((time,i)=>{const kind=troopKind(s.trainingKinds?.[i]);if(time<=now){if(kind==='breacher')s.breachers=(s.breachers??0)+1;else s.bots=(s.bots??0)+1;}else{pending.push(time);kinds.push(kind);durations.push(s.trainingDurations?.[i]??5000);}});
+  s.training.forEach((time,i)=>{const kind=troopKind(s.trainingKinds?.[i]);if(time<=now){if(kind==='disruptor')s.disruptors=(s.disruptors??0)+1;else if(kind==='breacher')s.breachers=(s.breachers??0)+1;else s.bots=(s.bots??0)+1;}else{pending.push(time);kinds.push(kind);durations.push(s.trainingDurations?.[i]??5000);}});
   s.bots??=0;s.training=pending;if(s.trainingKinds)s.trainingKinds=kinds;if(s.trainingDurations)s.trainingDurations=durations;
  }
  ensureOwnedOperation(s,now);if(s.infiltration)advanceOperation(s.infiltration,now);settleOwnedUnit(s);
@@ -71,7 +71,7 @@ export function advanceFoundation(s:FoundationState,now=Date.now()){
 }
 /** Same timestamp-based availability for server actions and the between-poll HUD. */
 export function builderBusyAt(s:FoundationState,now:number){
- const jobs=[s.rig,s.rig2,s.fabricator,getHangar(s),s.lab,s.droneStation,s.sentinel,s.computeStorage,s.researchStorage].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
+ const jobs=[s.rig,s.rig2,s.fabricator,getHangar(s),s.lab,s.droneStation,s.sentinel,s.arcSpire,s.computeStorage,s.researchStorage].filter((b):b is GpuRig|Fabricator|Hangar=>!!b);
  return jobs.length||s.landscape?.clearing||s.hqUpgrade||s.buildingUpgrades?Object.values(s.buildingUpgrades??{}).filter(j=>now<j.completesAt).length+jobs.filter(b=>now<b.completesAt).length+activeClearingJobs(s,now).length+Number(!!s.hqUpgrade&&now<s.hqUpgrade.completesAt):s.buildersBusy??0;
 }
 export function buildRig(s:FoundationState,position:RigPosition,now=Date.now(),orientation:Orientation=0){
@@ -89,9 +89,9 @@ export function collectRig(s:FoundationState,now=Date.now(),slot:'rig'|'rig2'='r
 }
 /** Available, fully fabricated inventory; queued and deployed units are separate. */
 export function availableBots(s:FoundationState){return (s.bots||0)+(!s.botRaid?.settled?(s.botRaid?.simulation.stock.scrap||0):0);}
-export function availableTroops(s:FoundationState,kind:TroopKind){return kind==='breacher'?(s.breachers??0):availableBots(s);}
-export function totalAvailableTroops(s:FoundationState){return availableBots(s)+(s.breachers??0);}
-export function armyUsed(s:FoundationState){return reservedHousing(s.infiltration)+availableBots(s)+(s.breachers??0)*TROOPS.breacher.housing+(s.training??[]).reduce((sum,_,i)=>sum+troopHousing(s.trainingKinds?.[i]),0);}
+export function availableTroops(s:FoundationState,kind:TroopKind){return kind==='disruptor'?(s.disruptors??0):kind==='breacher'?(s.breachers??0):availableBots(s);}
+export function totalAvailableTroops(s:FoundationState){return availableBots(s)+(s.breachers??0)+(s.disruptors??0);}
+export function armyUsed(s:FoundationState){return reservedHousing(s.infiltration)+availableBots(s)+(s.breachers??0)*TROOPS.breacher.housing+(s.disruptors??0)*TROOPS.disruptor.housing+(s.training??[]).reduce((sum,_,i)=>sum+troopHousing(s.trainingKinds?.[i]),0);}
 /** Pure compatibility view: expand old Hangars only when the existing layout has room.
  * The candidate validation skips this Hangar, so this does not recurse through itself.
  * New purchases/moves persist the larger size; crowded old saves keep every coordinate. */
@@ -108,23 +108,23 @@ export function acknowledgeHangar(s:FoundationState){if(s.hangar)s.hangar.reloca
 export function hangarReady(s:FoundationState,now=Date.now()){const h=getHangar(s);return !!h&&now>=h.completesAt;}
 export function buildingFootprint(orientation:Orientation=0):[number,number]{return orientation%2?[3,4]:[4,3];}
 export function hangarPlacement(p:RigPosition,orientation:Orientation=0):RigPosition{const offsets:RigPosition[]=[[6,0],[0,-6],[-6,0],[0,6]];return [p[0]+offsets[orientation][0],p[1]+offsets[orientation][1]];}
-export const FOUNDATION_BUILDINGS:RotatableBuilding[]=['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel','computeStorage','researchStorage'];
+export const FOUNDATION_BUILDINGS:RotatableBuilding[]=['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel','arcSpire','computeStorage','researchStorage'];
 export function buildingLayout(s:FoundationState,kind:RotatableBuilding):BuildingLayout|undefined{
  if(kind==='hq')return s.hqLayout??{position:[-5,-1],orientation:0};
  if(kind==='station')return !hasBuilderStation(s)?undefined:s.stationLayout??{position:[...BUILDER_STATION_POSITION],orientation:0};
  if(kind==='rig'||kind==='rig2'){const r=s[kind];return r?{position:r.position,orientation:r.orientation??0}:undefined;}
- if(kind==='lab'||kind==='droneStation'||kind==='sentinel'||kind==='computeStorage'||kind==='researchStorage'){const l=s[kind];return l?{position:l.position,orientation:l.orientation??0}:undefined;}
+ if(kind==='lab'||kind==='droneStation'||kind==='sentinel'||kind==='arcSpire'||kind==='computeStorage'||kind==='researchStorage'){const l=s[kind];return l?{position:l.position,orientation:l.orientation??0}:undefined;}
  if(kind==='hangar'){const h=getHangar(s);return h&&!h.unplaced?{position:h.position,orientation:h.orientation??0,...(h.size?{size:h.size}:{})}:undefined;}
  return s.fabricator?{position:s.fabricator.position,orientation:s.fabricator.orientation??0}:undefined;
 }
 export function buildingReady(s:FoundationState,kind:RotatableBuilding,now=Date.now()){
  if(s.buildingUpgrades?.[kind]&&now<s.buildingUpgrades[kind].completesAt)return false;
  if(kind==='hq')return !s.hqUpgrade||now>=s.hqUpgrade.completesAt;
- if(kind==='lab'||kind==='droneStation'||kind==='sentinel'||kind==='computeStorage'||kind==='researchStorage')return !!s[kind]&&now>=s[kind]!.completesAt;
+ if(kind==='lab'||kind==='droneStation'||kind==='sentinel'||kind==='arcSpire'||kind==='computeStorage'||kind==='researchStorage')return !!s[kind]&&now>=s[kind]!.completesAt;
  return kind==='station'||(kind==='rig'||kind==='rig2'?!!s[kind]&&now>=s[kind]!.completesAt:kind==='fabricator'?!!s.fabricator&&now>=s.fabricator.completesAt:hangarReady(s,now));
 }
 export function footprint(kind:RotatableBuilding,layout:BuildingLayout,reserved=false){
- let [w,d]=kind==='sentinel'?[4,4]:kind==='droneStation'?[3,3]:kind==='hq'?(reserved?[14,10]:[9,8]):kind==='station'?(reserved?[4,3]:[2.7,1.8]):kind==='hangar'&&layout.size==='compound'?[8,7]:kind==='hangar'&&layout.size==='expanded'?[5.6,4.2]:[4,3];
+ let [w,d]=kind==='sentinel'||kind==='arcSpire'?[4,4]:kind==='droneStation'?[3,3]:kind==='hq'?(reserved?[14,10]:[9,8]):kind==='station'?(reserved?[4,3]:[2.7,1.8]):kind==='hangar'&&layout.size==='compound'?[8,7]:kind==='hangar'&&layout.size==='expanded'?[5.6,4.2]:[4,3];
  if(layout.orientation%2)[w,d]=[d,w];
  const [x,z]=layout.position;
  // The house's foundation extends 0.6 forward from its rotation pivot.
@@ -165,7 +165,7 @@ export function moveBuilding(s:FoundationState,kind:RotatableBuilding,position:R
  const layout:BuildingLayout={position:[...position],orientation};
  if(kind==='hq')s.hqLayout=layout;else if(kind==='station')s.stationLayout=layout;
  else if(kind==='rig'||kind==='rig2'){s[kind]!.position=layout.position;s[kind]!.orientation=orientation;}
- else if(kind==='lab'||kind==='droneStation'||kind==='sentinel'||kind==='computeStorage'||kind==='researchStorage'){s[kind]!.position=layout.position;s[kind]!.orientation=orientation;}
+ else if(kind==='lab'||kind==='droneStation'||kind==='sentinel'||kind==='arcSpire'||kind==='computeStorage'||kind==='researchStorage'){s[kind]!.position=layout.position;s[kind]!.orientation=orientation;}
  else if(kind==='fabricator'){s.fabricator!.position=layout.position;s.fabricator!.orientation=orientation;}
  else if(s.hangar){s.hangar.position=layout.position;s.hangar.orientation=orientation;s.hangar.size=s.hangar.size==='compound'?'compound':'expanded';}else {s.fabricator!.hangarPosition=layout.position;s.fabricator!.hangarOrientation=orientation;s.fabricator!.hangarSize=s.fabricator!.hangarSize==='compound'?'compound':'expanded';}
 }
@@ -185,9 +185,9 @@ export function buildHangar(s:FoundationState,p:RigPosition,now=Date.now(),orien
 }
 export function trainScrap(s:FoundationState,count:number,now=Date.now()){return trainTroop(s,'pulsewheel',count,now);}
 export function trainTroop(s:FoundationState,kind:TroopKind,count:number,now=Date.now()){
- if(kind!=='pulsewheel'&&kind!=='breacher')throw new Error('Choose a valid troop.');
+ if(kind!=='pulsewheel'&&kind!=='breacher'&&kind!=='disruptor')throw new Error('Choose a valid troop.');
  advanceFoundation(s,now);if(!s.fabricator||now<s.fabricator.completesAt)throw new Error('Finish building your Bot Fabricator first.');if(!hangarReady(s,now))throw new Error('Build and finish a Bot Hangar first.');
- const troop=TROOPS[kind];if(founderHqLevel(s)<troop.unlockHq)throw new Error('Upgrade Founder HQ to Level 2 to train Breachers.');
+ const troop=TROOPS[kind];if(founderHqLevel(s)<troop.unlockHq)throw new Error(`Upgrade Founder HQ to Level ${troop.unlockHq} to train ${troop.name}s.`);
  if(!Number.isInteger(count)||count<1||count>10)throw new Error('Choose 1 to 10 troops.');
  if(armyUsed(s)+count*troop.housing>housingCapacity(s))throw new Error('Hangar full — finish an operation before training more troops.');
  if(s.compute<count*troop.cost)throw new Error(`Each ${troop.name} costs ${troop.cost} Compute.`);
@@ -261,11 +261,11 @@ export function moveBuilderHut(s:FoundationState,id:string,p:RigPosition,o:Orien
 
 /** Read-only quote used by both UI and server validation. Buildings keep producing at their old level during work. */
 export function quoteBuildingUpgrade(s:FoundationState,id:string,now=Date.now()){
- const kind=buildingKind(id),currentLevel=buildingLevel(s,id),nextLevel=currentLevel<3?(currentLevel+1) as 2|3:undefined;
+ const kind=buildingKind(id),currentLevel=buildingLevel(s,id),nextLevel=id!=='arcSpire'&&currentLevel<3?(currentLevel+1) as 2|3:undefined;
  const valid=Object.hasOwn(UPGRADE_COSTS,kind),wall=id.startsWith('wall:'),owned=wall?!!s.walls?.some(w=>w.id===id.slice(5)):FOUNDATION_BUILDINGS.includes(id as RotatableBuilding)&&!!buildingLayout(s,id as RotatableBuilding);
  const job=id==='hq'?s.hqUpgrade:s.buildingUpgrades?.[id],active=job&&now<job.completesAt?job:undefined;
  const requiredHq=id==='hq'?currentLevel:nextLevel??3,cost=valid&&nextLevel?UPGRADE_COSTS[kind][currentLevel-1]:0,durationMs=valid&&nextLevel?UPGRADE_TIMES[kind][currentLevel-1]:0;
- const reason=!valid||!owned?'Build this structure first.':kind==='station'?'Builder Stations unlock through Founder HQ; additional levels are not needed.':!nextLevel?'MAX LEVEL':active?'Upgrade already in progress.':!wall&&!buildingReady(s,id as RotatableBuilding,now)?'Finish construction first.':founderHqLevel(s)<requiredHq?`Requires Founder HQ Level ${requiredHq}.`:!hasBuilderStation(s)||s.builders<1?'Place your Builder Station first.':!wall&&builderBusyAt(s,now)>=s.builders?'Your Builder Bots are busy.':s.compute<cost?`You need ${cost} Compute.`:undefined;
+ const reason=id==='arcSpire'?'Arc Spire is at its current maximum level.':!valid||!owned?'Build this structure first.':kind==='station'?'Builder Stations unlock through Founder HQ; additional levels are not needed.':!nextLevel?'MAX LEVEL':active?'Upgrade already in progress.':!wall&&!buildingReady(s,id as RotatableBuilding,now)?'Finish construction first.':founderHqLevel(s)<requiredHq?`Requires Founder HQ Level ${requiredHq}.`:!hasBuilderStation(s)||s.builders<1?'Place your Builder Station first.':!wall&&builderBusyAt(s,now)>=s.builders?'Your Builder Bots are busy.':s.compute<cost?`You need ${cost} Compute.`:undefined;
  return {id,kind,currentLevel,nextLevel,current:buildingStats(kind,currentLevel),next:nextLevel?buildingStats(kind,nextLevel):undefined,cost,durationMs,requiredHq,reason,job:active};
 }
 /** All requested wall segments are validated before a single debit; ordinary buildings use one persisted builder job. */

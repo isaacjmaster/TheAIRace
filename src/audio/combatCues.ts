@@ -1,5 +1,8 @@
 /** Original procedural weapon sounds. Cached mono buffers avoid oscillator graphs per hit. */
 export const COMBAT_CUES = {
+ 'disruptor-charge':{duration:.16,from:420,to:1420,gain:.10,grit:.04},
+ 'disruptor-fire':{duration:.24,from:1250,to:110,gain:.23,grit:.32},
+ 'arc-fire':{duration:.25,from:2350,to:170,gain:.28,grit:.7},
  'breacher-charge':{duration:.25,from:95,to:280,gain:.17,grit:.15},
  'breacher-impact':{duration:.33,from:155,to:32,gain:.39,grit:.65},
  'breacher-step':{duration:.13,from:90,to:38,gain:.11,grit:.4},

@@ -1,7 +1,7 @@
 import {migrateBuildingUpdate} from './building-update';
 import {prepareBuildingUpdate} from '../shared/building-update';
 import {commitLayout} from '../shared/layout-draft';
-import {buildSentinel} from '../shared/cybersecurity';
+import {buildSentinel,buildArcSpire} from '../shared/cybersecurity';
 import {developmentInfluenceStore} from './development-influence';
 import {playerWorldStore} from './player-world';
 import {purchaseTechnology,TECHNOLOGY_IDS} from '../shared/technology';
@@ -115,12 +115,13 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   z.object({action:z.literal('move-wall-row'),id:z.string().min(1).max(100),position:z.tuple([z.number().finite(),z.number().finite()])}).strict(),
   z.object({action:z.literal('move-builder-hut'),id:z.string().min(1).max(100),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('build-drone-station'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
+  z.object({action:z.literal('build-arc-spire'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build-sentinel'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('infiltration-tutorial'),operationId:z.string().uuid(),result:z.enum(['complete','skipped'])}).strict(),
   z.object({action:z.literal('infiltration-search')}).strict(),
   z.object({action:z.literal('pvp-start'),scoutId:z.string().uuid()}).strict(),
   z.object({action:z.literal('infiltration-start'),targetId:z.enum(BASE_IDS)}).strict(),
-  z.object({action:z.literal('infiltration-command'),operationId:z.string().uuid(),intent:z.discriminatedUnion('action',[z.object({action:z.literal('deploy'),troop:z.enum(['pulsewheel','breacher']).optional(),position:z.tuple([z.number().finite(),z.number().finite()]).optional()}).strict(),z.object({action:z.literal('abandon')}).strict()])}).strict(),
+  z.object({action:z.literal('infiltration-command'),operationId:z.string().uuid(),intent:z.discriminatedUnion('action',[z.object({action:z.literal('deploy'),troop:z.enum(['pulsewheel','breacher','disruptor']).optional(),position:z.tuple([z.number().finite(),z.number().finite()]).optional()}).strict(),z.object({action:z.literal('abandon')}).strict()])}).strict(),
   z.object({action:z.literal('upgrade-building'),ids:z.array(z.string().min(1).max(120)).min(1).max(100),expectedLevels:z.record(z.string(),z.number().int().min(1).max(3))}).strict(),
   z.object({action:z.literal('build-storage'),kind:z.enum(['computeStorage','researchStorage']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build-lab'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
@@ -136,9 +137,9 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   z.object({action:z.literal('place-owned-hangar'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build-hangar'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
-  z.object({action:z.literal('rotate'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel','computeStorage','researchStorage']),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
-  z.object({action:z.literal('move'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel','computeStorage','researchStorage']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
-  z.object({action:z.literal('train'),troop:z.enum(['pulsewheel','breacher']).optional(),count:z.number().int().min(1).max(10)}).strict(),
+  z.object({action:z.literal('rotate'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel','arcSpire','computeStorage','researchStorage']),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('move'),building:z.enum(['hq','station','rig','rig2','fabricator','hangar','lab','droneStation','sentinel','arcSpire','computeStorage','researchStorage']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
+  z.object({action:z.literal('train'),troop:z.enum(['pulsewheel','breacher','disruptor']).optional(),count:z.number().int().min(1).max(10)}).strict(),
   z.object({action:z.literal('start'),layout:z.number().int().min(0).max(1)}).strict(),
   z.object({action:z.literal('deploy'),raidId:z.string().uuid(),position:z.object({x:z.number().finite(),y:z.number().finite()}).strict()}).strict(),
   z.object({action:z.literal('retreat'),raidId:z.string().uuid()}).strict()
@@ -161,6 +162,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
     else if(c.action==='move-builder-hut')moveBuilderHut(state,c.id,c.position,c.orientation);
     else if(c.action==='move-wall-row')moveWallRow(state,c.id,c.position);
     else if(c.action==='move-wall')moveWall(state,c.id,c.position,c.orientation);
+    else if(c.action==='build-arc-spire')buildArcSpire(state,c.position,now,c.orientation);
     else if(c.action==='build-sentinel')buildSentinel(state,c.position,now,c.orientation);
     else if(c.action==='build-drone-station')buildDroneStation(state,c.position,now,c.orientation);
     else if(c.action==='pvp-start')players.start(state,player.company.playerId,c.scoutId,now);

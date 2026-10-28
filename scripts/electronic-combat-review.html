@@ -1,0 +1,34 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#b5eafa}#host{width:100vw;height:100vh}#caption{position:fixed;bottom:12px;left:12px;right:12px;padding:10px 13px;border:1px solid #b8d6d1;border-radius:12px;background:#fffceeea;color:#234354;font:600 13px system-ui;pointer-events:none}#caption small{display:block;font-size:11px;font-weight:400;margin-top:3px}</style></head><body><div id="host"></div><div id="caption"></div><script type="module">
+import {InfiltrationScene} from '/src/art/InfiltrationScene.ts';
+import {commandSquad,advanceSquad} from '/shared/squad-infiltration.ts';
+import {playerOperation} from '/shared/player-combat.ts';
+let view,op;
+const caption=document.querySelector('#caption');
+function setup(kind,wide=false){view?.dispose();const target=kind==='emp-sentinel'?'sentinel':kind==='emp-drone'?'droneStation':'arcSpire',combined=kind==='combined'||kind==='baseline';
+ const buildings=combined?[['hq',[-8,-7]],['rig',[4,-7]],['sentinel',[-6,2]],['droneStation',[6,2]],...(kind==='combined'?[['arcSpire',[0,1]]]:[])]:[['hq',[-11,-10]],[target,[0,0]]];
+ const base={version:1,companyId:'isolated-electronic-defender',capturedAt:1000,buildings:buildings.map(([id,position])=>({id,position,orientation:0,level:id==='hq'?3:1,complete:true})),walls:[],decorations:[],scenery:[],droneGuard:[0,3]};
+ op=playerOperation('isolated-'+kind,base,{id:base.companyId,name:'Electronic warfare fixture',level:3,hqLevel:3,influence:0,rank:null,visitable:true},'isolated-reviewer',1000);
+ op.squad.undeployed=kind==='chain'?3:combined?10:0;op.squad.undeployedBreacher=kind==='isolated'?1:kind.startsWith('emp')?1:combined?2:0;op.squad.undeployedDisruptor=kind.startsWith('emp')?1:kind==='combined'?3:0;
+ let positions=[];
+ if(kind==='chain')positions=[['pulsewheel',[0,6]],['pulsewheel',[-1,6.6]],['pulsewheel',[1,6.6]]];
+ if(kind==='isolated')positions=[['breacher',[0,4.2]]];
+ if(kind.startsWith('emp'))positions=[['breacher',[0,3.6]],['disruptor',[1.8,5.7]]];
+ if(combined){positions=[['breacher',[-3,6]],['breacher',[3,6]],...Array.from({length:10},(_,i)=>['pulsewheel',[-4+(i%5)*2,8+Math.floor(i/5)*1.1]]),...(kind==='combined'?[['disruptor',[-3,10]],['disruptor',[0,10]],['disruptor',[3,10]]]:[])];}
+ for(const [troop,position]of positions){commandSquad(op,{action:'deploy',troop,position:op.target.entry},1000);const agent=op.squad.agents.at(-1);agent.position=[...position];agent.path=[];agent.target=undefined;agent.droneTarget=undefined;agent.mode='idle';agent.nextPlanAt=1000;}
+ if(kind==='emp-drone'){op.target.defenses=op.target.defenses.slice(0,1);op.drones=op.drones.slice(0,1);op.drones[0].position=[0,3.5];}
+ view=new InfiltrationScene(document.querySelector('#host'),op,{replay:true});
+ if(!wide){view.observer.disconnect();view.camera.clearViewOffset();const aspect=innerWidth/innerHeight,span=combined?12:innerWidth<600?8.8:6.3,focus=combined?[0,2]:[0,2.4];Object.assign(view.camera,{left:-span*aspect,right:span*aspect,top:span,bottom:-span});view.camera.position.set(focus[0]+45,48,focus[1]+60);view.camera.lookAt(focus[0],1,focus[1]);view.camera.zoom=1.05;view.camera.updateProjectionMatrix();view.camera.updateMatrixWorld();}
+ caption.innerHTML=kind.replaceAll('-',' ').toUpperCase()+'<small>Staged isolated test positions · real authoritative combat and game renderer · silent capture</small>';
+ return op;
+}
+window.electronicCombatPlay=async(kind,duration=5000)=>{window.electronicPaused=false;window.electronicResume=undefined;setup(kind,innerWidth<600&&kind==='combined');let elapsed=0,last=performance.now(),firstEvent,paused=false;const cpu=[],frame=[],calls=[],triangles=[];
+ while(elapsed<duration){await new Promise(requestAnimationFrame);const now=performance.now(),dt=Math.min(100,now-last);last=now;elapsed+=dt;const start=performance.now();advanceSquad(op,1000+elapsed);view.sync(op,op.lastTick);view.update(dt/1000);cpu.push(performance.now()-start);frame.push(dt);calls.push(view.renderer.info.render.calls);triangles.push(view.renderer.info.render.triangles);
+  const event=op.events.find(e=>e.type===(kind.startsWith('emp')?'emp':'arc-discharge'));
+  if(event&&!firstEvent)firstEvent=structuredClone(event);
+  if(firstEvent&&!paused&&op.lastTick>=firstEvent.at+100){window.electronicCaptured={kind,event:firstEvent,chain:op.arcSpires?.[0]?.chain,statuses:op.electronic?.statuses,agents:op.squad.agents.map(a=>({troop:a.troop??'pulsewheel',health:a.health,position:a.position})),at:op.lastTick};window.electronicPaused=true;await new Promise(resolve=>window.electronicResume=resolve);window.electronicPaused=false;paused=true;last=performance.now();}
+ }
+ const mean=v=>v.reduce((a,b)=>a+b,0)/v.length,p95=v=>[...v].sort((a,b)=>a-b)[Math.floor(v.length*.95)];return {kind,stagedPositions:true,events:op.events.filter(e=>['emp','arc-discharge','agent-lost'].includes(e.type)),status:op.status,metrics:{frames:frame.length,meanFrameMs:mean(frame),p95FrameMs:p95(frame),meanUpdateMs:mean(cpu),p95UpdateMs:p95(cpu),drawCalls:mean(calls),triangles:mean(triangles)}};
+};
+window.electronicMeasure=async(kind)=>{setup(kind);let elapsed=0,last=performance.now();const cpu=[],frame=[],calls=[];for(let i=0;i<120;i++){await new Promise(requestAnimationFrame);const now=performance.now(),dt=now-last;last=now;elapsed+=dt;const start=performance.now();advanceSquad(op,1000+elapsed);view.sync(op,op.lastTick);view.update(Math.min(dt/1000,.1));cpu.push(performance.now()-start);frame.push(dt);calls.push(view.renderer.info.render.calls);}const mean=a=>a.reduce((s,v)=>s+v,0)/a.length;return {kind,averageFrameMs:mean(frame),averageUpdateMs:mean(cpu),averageDrawCalls:mean(calls),frames:120};};
+window.electronicCombatCleanup=()=>{view?.dispose();view=undefined;};window.electronicCombatReady=true;
+</script></body></html>

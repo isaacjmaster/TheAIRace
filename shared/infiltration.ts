@@ -1,3 +1,4 @@
+import type {ArcSpireDefense,ArcSpireState,ElectronicState} from './electronic-catalog';
 import type {TroopKind} from './troops';
 import type {SentinelDefense,SentinelState} from './sentinel-catalog';
 import {protectedAreas,insideProtected} from './deployment-boundary';
@@ -36,7 +37,7 @@ export type Defense = {
     warningSeconds: number;
 };
 export type TargetSnapshot = {
-    sentinels?:SentinelDefense[];
+    sentinels?:SentinelDefense[];arcSpires?:ArcSpireDefense[];
     version: 1;
     arena?:'campus-v2';
     hqLevel?:1|2|3;
@@ -68,7 +69,7 @@ for(const target of INFILTRATION_TARGETS){target.navigationVersion=2;target.entr
 for(const id of BASE_IDS.slice(2))INFILTRATION_TARGETS.push(craftCampusTarget(id));
 export const npcBaseName=(id:string)=>INFILTRATION_TARGETS.find(t=>t.id===id)?.name??'Rival campus';
 export type DroneState = {
-    lastShotAt?:number;health?:number;acquiredAt?:number;
+    lastShotAt?:number;resumeFireAt?:number;health?:number;acquiredAt?:number;
     targetAgentId?:string;shotPosition?:Vec;
     id: string;
     path?:Vec[];
@@ -86,7 +87,7 @@ export type InfiltrationEvent = {
     detail?: string;
 };
 export type Operation = {
-    sentinels?:SentinelState[];
+    sentinels?:SentinelState[];arcSpires?:ArcSpireState[];electronic?:ElectronicState;
     breachRatingVersion?:1;
     pvp?:{attackerId:string;defenderId:string};
     squad?:SquadState;
