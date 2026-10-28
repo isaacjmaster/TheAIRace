@@ -32,7 +32,7 @@ import * as THREE from 'three';
 import { WorldKit, lightWorld, palette as C } from './world';
 import {InfiltrationDistrict} from './InfiltrationDistrict';
 import {frameInfiltration,infiltrationZoomLimits} from './infiltrationCamera';
-import { founderHQ, animateFounderIdle } from './FounderHQ';
+import { founderHQ, animateFounderIdle, animateFounderHQEnergy } from './FounderHQ';
 import { gpuRigModel, animateGpu } from './GpuRig';
 import { researchLabModel, animateResearchLab } from './ResearchLab';
 import { builderStationModel,fabricatorModel,hangarModel,scrapBotModel } from './BotBuildings';
@@ -64,6 +64,7 @@ export class InfiltrationScene {
     private sentinelPulses=new Map<string,SentinelPulse>();
     private buildings = new Map<string, THREE.Group>();
     private buildingLabelHeights = new Map<string,number>();
+    private founderHouses = new Map<string,THREE.Group>();
     private op: Operation;
     private anchor = 0;
     private server = 0;
@@ -99,6 +100,7 @@ export class InfiltrationScene {
                 g = new THREE.Group();
                 const h = founderHQ(this.k, g, a.level??o.target.hqLevel??(o.target.id === 'lumen-labs' ? 1 : 2));
                 h.position.set(0, 0, 0);
+                this.founderHouses.set(a.id,h);
                 g.scale.setScalar(o.pvp?1:.65);
             }
             else if (a.kind === 'gpu')
@@ -198,8 +200,11 @@ export class InfiltrationScene {
             animateGpu(g, this.clock, dt, true, this.reduced);
         if (o.target.assets.find(a=>a.id===id)?.kind === 'lab')
             animateResearchLab(g, this.clock, true, this.reduced);
-        if (o.target.assets.find(a=>a.id===id)?.kind === 'hq')
-            animateFounderIdle(g, this.clock, this.reduced);
+        if (o.target.assets.find(a=>a.id===id)?.kind === 'hq') {
+            const house=this.founderHouses.get(id);
+            animateFounderIdle(house, this.clock, this.reduced);
+            animateFounderHQEnergy(house, this.clock, this.reduced);
+        }
     } for(const e of o.events){if(e.type!=='hacked'&&e.type!=='agent-lost'&&e.type!=='drone-disabled')continue;const key=e.type+':'+e.detail+':'+e.at;if(this.cueEvents.has(key))continue;this.cueEvents.add(key);if(this.visualNow()-e.at<500)this.cue(e.type==='hacked'?'building-shutdown':'unit-destroyed');}this.heavyImpacts.update(this.visualNow(),this.camera,this.reduced);this.feedback.update(this.visualNow());this.bolts.update(this.visualNow(),this.reduced);this.renderer.domElement.dataset.combatBolts=String(this.bolts.active);this.renderer.render(this.scene, this.camera); this.renderer.domElement.dataset.agentPosition=this.agent.position.x+','+this.agent.position.z;this.renderer.domElement.dataset.agentMode=a.mode;this.renderer.domElement.dataset.walkActivity=String(this.agent.userData.walkActivity??0);this.renderer.domElement.dataset.laserActive=String([...this.drones.values()].some(d=>d.laser.visible));this.renderer.domElement.dataset.cameraSpan=String(this.span);this.renderer.domElement.dataset.cameraCenter=this.center.x+','+this.center.z;this.renderer.domElement.dataset.deployment=this.deploymentPosition.join(',');this.renderer.domElement.dataset.drawCalls = String(this.renderer.info.render.calls); this.renderer.domElement.dataset.triangles = String(this.renderer.info.render.triangles); }
     private updateSquad(dt:number){const o=this.op,squad=o.squad!;
         const wallVersion=squad.breachedWalls.join(',');const solidVersion=wallVersion+(o.pvp?'|'+o.hacked.join(','):'');if(solidVersion!==this.solidVersion){this.solidVersion=solidVersion;this.solids=infiltrationSolids(squadTarget(o));}if(wallVersion!==this.wallVersion){this.wallVersion=wallVersion;this.walls?.group.removeFromParent();this.walls?.dispose();this.walls=new SecurityWalls(squadTarget(o).walls??[]);this.scene.add(this.walls.group);this.solids=infiltrationSolids(squadTarget(o));}

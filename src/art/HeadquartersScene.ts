@@ -36,7 +36,7 @@ import type {ClearingJob,LandscapeObstacle} from '../../shared/landscape';
 import {BotArrivals,dockingRoute,DeliveryMotion} from './botLife';
 import * as THREE from 'three';
 import {portraitCampusSpan} from './portraitCamera';
-import {animateFounderIdle,founderHQ,pickFoundationBuilding,type FoundationBuilding} from './FounderHQ';
+import {animateFounderIdle,animateFounderHQEnergy,founderHQ,pickFoundationBuilding,type FoundationBuilding} from './FounderHQ';
 import {fabricatorModel,hangarModel,builderStationModel,scrapBotModel,animateDockedBot,animateFabricator} from './BotBuildings';
 import {animateGpu,gpuRigModel} from './GpuRig';
 import {GPU_RIG,FOUNDATION_BUILDINGS,footprint,getHangar,BUILDER_STATION_POSITION,buildingLayout,buildingFootprint,type RotatableBuilding,type Orientation,type FoundationState,type RigPosition} from '../../shared/foundation';
@@ -437,6 +437,7 @@ export class HeadquartersScene {
   this.mapBoundary?.update(dt,this.reduced);
   this.animateBotLife(dt);
   animateFounderIdle(this.founderHouse,this.lifeClock,this.reduced||document.hidden);
+  animateFounderHQEnergy(this.founderHouse,this.lifeClock,this.reduced||document.hidden);
   const lamp=this.fabricatorGroup?.getObjectByName('production-light');if(lamp)lamp.visible=!this.producing||this.reduced||Math.sin(this.clock*5)>-.4;
   for(const item of this.clearing){item.time+=dt;item.group.scale.setScalar(Math.max(0,1-item.time/.65));item.group.rotation.y=item.time*2;item.group.position.y=item.time*.5;if(item.time>=.65)this.scene.remove(item.group);}this.clearing=this.clearing.filter(item=>item.time<.65);
   this.animateExtraBuilder(dt);

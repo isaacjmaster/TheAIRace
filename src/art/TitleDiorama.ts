@@ -5,7 +5,7 @@ import {PowerConnections} from './PowerConnections';
 import * as THREE from 'three';
 import {titlePixelRatio} from './titleQuality';
 import {WorldKit,palette as c} from './world';
-import {founderHQ,animateFounderIdle} from './FounderHQ';
+import {founderHQ,animateFounderIdle,animateFounderHQEnergy} from './FounderHQ';
 import {researchLabModel,animateResearchLab} from './ResearchLab';
 import {fabricatorModel,hangarModel,animateFabricator,builderStationModel} from './BotBuildings';
 import {droneStationModel} from './DroneStation';
@@ -80,7 +80,7 @@ export class TitleDiorama {
  private render=()=>{this.renderer.render(this.scene,this.camera);this.renderer.domElement.dataset.drawCalls=String(this.renderer.info.render.calls);this.renderer.domElement.dataset.triangles=String(this.renderer.info.render.triangles);};
  private tick=(now:number)=>{this.frame=0;if(this.disposed||!this.active||document.hidden||this.motion.matches)return;
   if(now-this.last>=1000/30){const dt=Math.min((now-this.last)/1000,.05);this.last=now;this.elapsed+=dt;
-   const p=this.startupProgress();animateGpu(this.gpu,this.elapsed,dt,p>=.18);animateResearchLab(this.research,this.elapsed,p>=.65,false);animateFounderIdle(this.house,this.elapsed);animateSecurityDrone(this.drone,this.elapsed,false);this.drone.position.set(9.3+Math.sin(this.elapsed*.3)*.6,8.6+Math.sin(this.elapsed*1.6)*.09,-.2+Math.cos(this.elapsed*.3)*.5);this.drone.rotation.y=.5+Math.sin(this.elapsed*.3)*.2;this.bot.position.y=.56+Math.sin(this.elapsed*2)*.035;this.bot.rotation.y=Math.sin(this.elapsed*.8)*.12;
+   const p=this.startupProgress();animateGpu(this.gpu,this.elapsed,dt,p>=.18);animateResearchLab(this.research,this.elapsed,p>=.65,false);animateFounderIdle(this.house,this.elapsed);animateFounderHQEnergy(this.house,this.elapsed);animateSecurityDrone(this.drone,this.elapsed,false);this.drone.position.set(9.3+Math.sin(this.elapsed*.3)*.6,8.6+Math.sin(this.elapsed*1.6)*.09,-.2+Math.cos(this.elapsed*.3)*.5);this.drone.rotation.y=.5+Math.sin(this.elapsed*.3)*.2;this.bot.position.y=.56+Math.sin(this.elapsed*2)*.035;this.bot.rotation.y=Math.sin(this.elapsed*.8)*.12;
    for(let i=0;i<3;i++){const bot=this.hangar.getObjectByName('docked-bot-'+i);if(bot)animateCompoundBot(bot,i,this.elapsed,false,dt);}syncCompoundInstances(this.hangar);
    animateFabricator(this.fabricator,this.elapsed,(this.elapsed%5)/5,true,false);animateSentinel(this.sentinel,{id:'showcase',yaw:Math.sin(this.elapsed*.22)*.65,lockShots:0},0,dt);
    this.powerOn(p);
@@ -89,7 +89,7 @@ export class TitleDiorama {
   }this.frame=requestAnimationFrame(this.tick);
  };
  private updateActivity=()=>{cancelAnimationFrame(this.frame);this.frame=0;if(this.disposed)return;
-  if(this.active&&!document.hidden&&!this.motion.matches){this.last=performance.now();this.frame=requestAnimationFrame(this.tick);}else{animateGpu(this.gpu,0,0,true,true);animateResearchLab(this.research,0,true,true);animateFounderIdle(this.house,0,true);animateSecurityDrone(this.drone,0,true);this.drone.position.set(9.3,8.6,-.2);this.bot.position.y=.56;this.bot.rotation.y=0;this.render();}
+  if(this.active&&!document.hidden&&!this.motion.matches){this.last=performance.now();this.frame=requestAnimationFrame(this.tick);}else{animateGpu(this.gpu,0,0,true,true);animateResearchLab(this.research,0,true,true);animateFounderIdle(this.house,0,true);animateFounderHQEnergy(this.house,0,true);animateSecurityDrone(this.drone,0,true);this.drone.position.set(9.3,8.6,-.2);this.bot.position.y=.56;this.bot.rotation.y=0;this.render();}
  };
  private contextLost=(event:Event)=>{event.preventDefault();cancelAnimationFrame(this.frame);this.frame=0;this.active=false;this.onFailure();};
  setStartupProgress(read:()=>number){this.startupProgress=read;if(this.motion.matches){this.powerOn(1);this.render();}}

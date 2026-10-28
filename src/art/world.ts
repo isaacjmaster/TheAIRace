@@ -25,6 +25,8 @@ export class WorldKit {
  private materials=new Map<string,THREE.Material>();
  private textures:THREE.Texture[]=[];
  private instances:THREE.InstancedMesh[]=[];
+ /** Register instance-local animated materials without leaking them on scene teardown. */
+ ownMaterial<T extends THREE.Material>(mat:T):T{this.materials.set('owned:'+mat.uuid,mat);return mat;}
  instanced(parent:THREE.Object3D,geometry:THREE.BufferGeometry,mat:THREE.Material,count:number){const mesh=new THREE.InstancedMesh(geometry,mat,count);mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);mesh.frustumCulled=false;mesh.castShadow=true;mesh.receiveShadow=true;this.instances.push(mesh);parent.add(mesh);return mesh;}
  mat(color:string,glow=false){const key=color+glow;if(!this.materials.has(key)){
   const mat=material(color,glow);if(this.finish==='campus'){
@@ -34,6 +36,11 @@ export class WorldKit {
  }return this.materials.get(key)!;}
 
  private geometry(key:string,make:()=>THREE.BufferGeometry){if(!this.geometries.has(key))this.geometries.set(key,make());return this.geometries.get(key)!;}
+ /** Custom architectural silhouettes share geometry and the kit's disposal lifecycle. */
+ cachedMesh(parent:THREE.Object3D,key:string,createGeometry:()=>THREE.BufferGeometry,position:[number,number,number],color:string,glow=false){
+  const mesh=new THREE.Mesh(this.geometry('custom:'+key,createGeometry),this.mat(color,glow));
+  mesh.position.set(...position);mesh.castShadow=!glow;mesh.receiveShadow=true;parent.add(mesh);return mesh;
+ }
  box(parent:THREE.Object3D,size:[number,number,number],position:[number,number,number],color:string,radius=.06,glow=false){
   const mesh=new THREE.Mesh(this.geometry('box'+size.join()+radius,()=>new RoundedBoxGeometry(...size,1,radius)),this.mat(color,glow));
   mesh.position.set(...position);mesh.castShadow=!glow&&size[1]>.15;mesh.receiveShadow=true;parent.add(mesh);return mesh;
