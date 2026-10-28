@@ -26,6 +26,29 @@ test('real layout API retries are idempotent and stale tabs cannot overwrite a p
  const stale=await f.command(owner,{...command,placements:placements(s,1)});assert.notEqual(stale.status,200);assert.equal(f.read(owner).walls!.length,60);assert.equal(f.read(owner).wallRebuild!.inventory.length,40);
  }finally{await f.close();}
 });
+
+test('layout HTTP accepts old editor metadata from hangars, huts and stored drafts without changing ownership',async()=>{
+ const f=await worldFixture();try{
+  const owner=await f.fresh('MetadataWalls'),s=pending();
+  s.hangar={position:[14,-12],orientation:0,size:'expanded',startedAt:1,completesAt:2};
+  s.builderHuts=[{id:'builder-hut-2',position:[-16,-12],orientation:0,unplaced:false}];
+  f.save(owner,s);
+  const oldEditor=layoutInventory(s).map(i=>({id:i.id,...i.layout}));
+  assert.equal(oldEditor.find(p=>p.id==='hangar')!.size,'expanded');
+  oldEditor.find(p=>p.id==='hangar')!.size='compound'; // Client metadata must never resize the owned Hangar.
+  const requestId=randomUUID(),command={action:'commit-layout',expected:layoutFingerprint(s),placements:oldEditor};
+  const result=await f.command(owner,command,requestId);
+  assert.equal(result.status,200,JSON.stringify(result.data));
+  assert.equal(f.read(owner).walls!.length,100);
+  assert.equal(f.read(owner).wallRebuild!.inventory.length,0);
+  assert.equal(f.read(owner).hangar!.size,'expanded');
+  assert.deepEqual(f.read(owner).buildingLevels,s.buildingLevels);
+  assert.equal((await f.command(owner,command,requestId)).status,200);
+  const current=f.read(owner),bad=oldEditor.map(p=>p.id==='hangar'?{...p,orientation:9}:p);
+  assert.equal((await f.command(owner,{action:'commit-layout',expected:layoutFingerprint(current),placements:bad})).status,400);
+  assert.equal(f.read(owner).walls!.length,100);
+ }finally{await f.close();}
+});
 test('migration defense uses exact original snapshot then switches on first committed replacement without extending shields',async()=>{
  const f=await worldFixture();try{const owner=await f.fresh('WallDefense'),s=pending(),original=structuredClone(s);original.walls=structuredClone(s.wallRebuild!.inventory);delete original.wallRebuild;delete original.buildingUpdate;
  f.db.exec('CREATE TABLE IF NOT EXISTS wall_rebuild_v1_snapshots(save_id TEXT PRIMARY KEY,state TEXT NOT NULL,inventory_audit TEXT NOT NULL,created_at INTEGER NOT NULL)');

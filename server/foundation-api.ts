@@ -117,7 +117,9 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
  });
  const botAction=z.discriminatedUnion('action',[
   z.object({action:z.literal('finish-now'),jobId:z.string().min(1).max(500),maxCost:z.number().int().min(0).max(Number.MAX_SAFE_INTEGER)}).strict(),
-  z.object({action:z.literal('commit-layout'),expected:z.string().max(100000),placements:z.array(z.object({id:z.string().min(1).max(100),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict()).max(800)}).strict(),
+  // Older editors/recovered drafts spread owned building metadata (size, unplaced, etc.).
+  // Accept their coordinates while stripping metadata; only the saved account determines ownership/size.
+  z.object({action:z.literal('commit-layout'),expected:z.string().max(100000),placements:z.array(z.object({id:z.string().min(1).max(100),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strip()).max(800)}).strict(),
   z.object({action:z.literal('set-drone-guard'),drone:z.number().int().min(0).max(1).optional(),position:z.tuple([z.number().finite(),z.number().finite()])}).strict(),
   z.object({action:z.literal('acknowledge-building-update')}).strict(),
   z.object({action:z.literal('acknowledge-hq'),id:z.string().min(1).max(100)}).strict(),
