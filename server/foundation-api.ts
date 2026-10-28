@@ -167,7 +167,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
    catalysts.sync(id,state,now);ensureLandscape(state,now,randomUUID());players.record(state);advanceFoundation(state,now);reconcileBuilderHuts(state);influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);
    let amount=Number(cached?.amount??0);if(!cached){const c=input.command;
     if(c.action==='finish-now')amount=catalysts.spend(id,state,c.jobId,c.maxCost,input.requestId,now);
-    else if(c.action==='commit-layout'){if(db.prepare("SELECT 1 FROM pvp_battles WHERE defender_id=? AND status='active' AND finished_at IS NULL").get(player.company.playerId))throw Error('Your campus is under attack. Keep this draft and save after the battle.');commitLayout(state,c.expected,c.placements);}
+    else if(c.action==='commit-layout'){if(db.prepare("SELECT 1 FROM pvp_battles WHERE defender_id=? AND status='active' AND finished_at IS NULL").get(player.company.playerId))throw Error('Your campus is under attack. Keep this draft and save after the battle.');commitLayout(state,c.expected,c.placements,now);}
     else if(c.action==='set-drone-guard')setGuardPosition(state,c.position,c.drone??0);
     else if(c.action==='acknowledge-building-update'){if(state.buildingUpdate)state.buildingUpdate.acknowledged=true;}
     else if(c.action==='acknowledge-hq'){if(state.hqNotification?.id===c.id)state.hqNotification.acknowledged=true;}

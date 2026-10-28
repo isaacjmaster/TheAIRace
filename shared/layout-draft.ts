@@ -2,7 +2,7 @@ import {buildingLevel} from './building-levels';
 import {replacementLayout} from './building-update';
 import {onFootprintGrid} from './placement-grid';
 import {FOUNDATION_BUILDINGS,buildingLayout,placementFootprint as footprint,getHangar,type FoundationState,type BuildingLayout,type RotatableBuilding} from './foundation';
-import {wallFootprint,wallEnds} from './security-catalog';
+import {wallFootprint} from './security-catalog';
 import {decorationFootprint,overlapsRect,DECORATIONS,type DecorationKind} from './decoration-catalog';
 import {securitySolids} from './security';
 import {FOUNDATION_PLOT as P} from './foundation-plot';
@@ -10,11 +10,31 @@ export type LayoutItem={id:string;kind:RotatableBuilding|'wall'|'decoration'|'hu
 export type LayoutPlacement=BuildingLayout&{id:string};
 const names={hq:'Founder HQ',station:'Builder Station',rig:'GPU Rig',rig2:'GPU Rig',fabricator:'Bot Fabricator',hangar:'Bot Hangar',lab:'Research Lab',droneStation:'Security Drone Station',sentinel:'Sentinel Tower',arcSpire:'Arc Spire',computeStorage:'Compute Storage',researchStorage:'Research Storage'};
 export function layoutInventory(s:FoundationState):LayoutItem[]{s=replacementLayout(s);return [...FOUNDATION_BUILDINGS.flatMap(kind=>{const layout=kind==='hangar'?getHangar(s):buildingLayout(s,kind);return layout?[{id:kind,kind,name:names[kind],layout:{position:[...layout.position],orientation:layout.orientation??0,...('size' in layout?{size:layout.size}:{})}} as LayoutItem]:[];}),...(s.builderHuts??[]).map(h=>({id:h.id,kind:'hut' as const,name:'Builder Hut',layout:h})),...(s.walls??[]).map(w=>({id:w.id,kind:'wall' as const,name:'Security Wall - Level '+buildingLevel(s,'wall:'+w.id),layout:w})),...(s.decorations??[]).map(d=>({id:d.id,kind:'decoration' as const,name:DECORATIONS[d.kind].name,decoration:d.kind,layout:d}))];}
-export const layoutFingerprint=(s:FoundationState)=>JSON.stringify(layoutInventory(s).map(i=>[i.id,i.kind,i.layout.position,i.layout.orientation,i.layout.size,s.buildingLevels?.['wall:'+i.id],s.wallRebuild?.completed]).sort((a,b)=>String(a[0]).localeCompare(String(b[0]))));
+/** Ignore passive production/revision changes, but detect ownership, level and placement conflicts. */
+export const layoutFingerprint=(s:FoundationState)=>JSON.stringify({items:layoutInventory(s).map(i=>[i.id,i.kind,i.layout.position,i.layout.orientation,i.layout.size,buildingLevel(s,i.kind==='wall'?'wall:'+i.id:i.id)]).sort((a,b)=>String(a[0]).localeCompare(String(b[0]))),stored:(s.wallRebuild?.inventory??[]).map(w=>w.id).sort(),pending:!!s.buildingUpdate?.pending,firstCommittedAt:s.wallRebuild?.firstCommittedAt??null});
 export function layoutRect(item:LayoutItem,p:BuildingLayout){const l={...item.layout,...p};return item.kind==='wall'?wallFootprint({...l,legacy:false}):item.kind==='decoration'?decorationFootprint({...l,kind:item.decoration!}):footprint(item.kind==='hut'?'station':item.kind,l);}
 export function layoutPlacementReason(s:FoundationState,placements:LayoutPlacement[],p:LayoutPlacement){const items=layoutInventory(s),byId=new Map(items.map(i=>[i.id,i])),item=byId.get(p.id);if(!item)return 'This item is no longer owned.';if(!p.position.every(Number.isFinite)||!Number.isInteger(p.orientation)||p.orientation<0||p.orientation>3)return 'Choose a valid position and rotation.';const a=layoutRect(item,p);if(s.buildingUpdate&&!onFootprintGrid(p.position,a.w,a.d)&&(item.kind==='wall'||!(p.position[0]===item.layout.position[0]&&p.position[1]===item.layout.position[1]&&p.orientation===item.layout.orientation)))return 'Snap the structure to the grid.';if(a.x-a.w/2<P.minX||a.x+a.w/2>P.maxX||a.z-a.d/2<P.minZ||a.z+a.d/2>P.maxZ)return 'Keep the entire structure inside the campus.';
  const blank={...s,starterStation:'unplaced' as const,builderHuts:[],walls:[],decorations:[],rig:undefined,rig2:undefined,lab:undefined,droneStation:undefined,sentinel:undefined,arcSpire:undefined,computeStorage:undefined,researchStorage:undefined,fabricator:undefined,hangar:undefined};const scenery=securitySolids(blank).slice(1);if(scenery.some(b=>overlapsRect(a,b)))return 'Clear this environmental obstacle first.';
  for(const q of placements){if(q.id===p.id)continue;const other=byId.get(q.id);if(!other)continue;if(overlapsRect(a,layoutRect(other,q)))return 'Leave space between structures.';}return null;}
-/** Mutates coordinates only, after complete validation. Timers, inventory and production remain untouched. */
-export function commitLayout(s:FoundationState,expected:string,placements:LayoutPlacement[]){if(layoutFingerprint(s)!==expected)throw Error('Your base changed while editing. Cancel and start a fresh layout.');const items=layoutInventory(s);if(placements.length!==items.length||new Set(placements.map(p=>p.id)).size!==items.length||items.some(i=>!placements.some(p=>p.id===i.id)))throw Error('Place every owned structure before saving.');for(const p of placements){const reason=layoutPlacementReason(s,placements,p);if(reason)throw Error(reason);}if(s.buildingUpdate?.pending){s.walls=replacementLayout(s).walls;s.buildingUpdate.pending=false;s.buildingUpdate.replacementCount=0;if(s.wallRebuild){s.wallRebuild.inventory=[];s.wallRebuild.completed=true;s.wallRebuild.completedAt=Date.now();}}applyLayoutPositions(s,placements);}
+/** Validate the complete request before changing any authoritative ownership or coordinates. */
+export function commitLayout(s:FoundationState,expected:string,placements:LayoutPlacement[],now=Date.now()){
+ if(layoutFingerprint(s)!==expected)throw Error('Your campus changed in another session. Keep this draft, reload the campus, and review a fresh layout before saving.');
+ const items=layoutInventory(s),ids=new Set(placements.map(p=>p.id)),ownedIds=new Set(items.map(i=>i.id));
+ if(ownedIds.size!==items.length)throw Error('Wall ownership needs reconciliation. Your saved campus was not changed.');
+ if(ids.size!==placements.length)throw Error('A structure appears more than once in this layout.');
+ if(placements.some(p=>!ownedIds.has(p.id)))throw Error('This layout includes an item that is no longer owned.');
+ if(items.some(i=>!ids.has(i.id)&&(i.kind!=='wall'||!s.buildingUpdate?.pending)))throw Error('Place every owned building and decoration before saving.');
+ for(const p of placements){const reason=layoutPlacementReason(s,placements,p);if(reason)throw Error(reason);}
+ if(s.buildingUpdate?.pending){
+  const walls=replacementLayout(s).walls??[],placed=walls.filter(w=>ids.has(w.id)),stored=walls.filter(w=>!ids.has(w.id));
+  s.walls=structuredClone(placed);
+  s.wallRebuild??={version:1,inventory:[],completed:false,migratedAt:now};
+  s.wallRebuild.inventory=structuredClone(stored);
+  s.wallRebuild.completed=stored.length===0;
+  if(placed.length)s.wallRebuild.firstCommittedAt??=now;
+  if(!stored.length)s.wallRebuild.completedAt=now;
+  s.buildingUpdate.pending=stored.length>0;s.buildingUpdate.replacementCount=stored.length;
+ }
+ applyLayoutPositions(s,placements);
+}
 export function applyLayoutPositions(s:FoundationState,placements:LayoutPlacement[]){for(const p of placements){const l={position:[...p.position] as [number,number],orientation:p.orientation};if(p.id==='hq')s.hqLayout=l;else if(p.id==='station')s.stationLayout=l;else if(p.id==='hangar'){if(s.hangar)Object.assign(s.hangar,l,{unplaced:false,relocationNotice:false});else if(s.fabricator){s.fabricator.hangarPosition=l.position;s.fabricator.hangarOrientation=l.orientation;}}else if(FOUNDATION_BUILDINGS.includes(p.id as RotatableBuilding)){Object.assign(s[p.id as 'rig']!,l);}else {const owned=[...(s.builderHuts??[]),...(s.walls??[]),...(s.decorations??[])].find(i=>i.id===p.id);if(owned){if('legacy' in owned)delete owned.legacy;Object.assign(owned,l,...('unplaced' in owned?[{unplaced:false}]:[]));}}}}

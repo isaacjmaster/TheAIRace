@@ -1,6 +1,6 @@
 import {useEffect,useState} from 'react';
 import type {AvaPose as Pose} from '../../shared/ava';
-export const AVA_SPRITES={welcome:'/characters/ava/full-body-v1.webp',thinking:'/characters/ava/thinking-full-v1.webp',encourage:'/characters/ava/encourage-full-v1.webp',tablet:'/characters/ava/tablet-full-v1.webp'} as const;
+export const AVA_SPRITES={welcome:'/characters/ava/welcome-full-v2.webp',thinking:'/characters/ava/thinking-full-v2.webp',encourage:'/characters/ava/encourage-full-v2.webp',tablet:'/characters/ava/tablet-full-v2.webp'} as const;
 const cache=new Map<Pose,{src?:string;pending:Promise<string|null>}>();
 /** Keep one decoded, versioned portrait per pose for this app session. */
 export function preloadAvaPortrait(pose:Pose):Promise<string|null>{
