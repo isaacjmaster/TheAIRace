@@ -1,3 +1,4 @@
+import {FinishNowButton} from './Catalysts';
 import {buildingLevel} from '../../shared/building-levels';
 import {useState} from 'react';
 import {TROOP_RESEARCH} from '../../shared/technology';
@@ -23,6 +24,6 @@ export function ResearchPanel({state,now,busy,error,onUpgrade,onClose,onBuilding
  <div className="troop-research-stats"><span>Health <b>{fromStats.health}{showChange&&` → ${toStats.health}`}</b></span><span>Damage <b>{fromStats.damage}{showChange&&` → ${toStats.damage}`}</b></span>{selected==='disruptor'&&<span>EMP <b>{fromStats.empDurationMs/1000}s{showChange&&` → ${toStats.empDurationMs/1000}s`}</b></span>}</div>
  {justCompleted&&<p role="status">{current.name} Level {level} unlocked — all your {current.name}s are upgraded.</p>}
  {justCompleted?<button className="technology-upgrade" onClick={()=>setDismissedCompletion(notice!.completedAt)}>{level<3?'View next upgrade':'Continue'}</button>:job?<div className="research-active" role="status"><strong>{TROOPS[job.troop].name} · Level {job.level}</strong><TaskCountdown clock name="Troop upgrade" startedAt={job.startedAt} completesAt={job.completesAt} now={now}/></div>:cfg?<><div className="troop-research-cost"><span><ResearchIcon/>{cfg.cost} / {Math.floor(state.research??0)} available</span><span>{cfg.durationMs/60000} min · Lab Lv. {cfg.requiredLab}</span></div><button className="technology-upgrade" disabled={busy||!ready||locked||unavailable||!affordable} onClick={()=>onUpgrade(selected,level)}>{!ready?'Finish Research Lab':unavailable?`Requires HQ Level ${TROOPS[selected].unlockHq}`:locked?`Requires Lab Level ${cfg.requiredLab}`:!affordable?`Need ${cfg.cost-(state.research??0)} more Research`:`Upgrade ${current.name}`}</button></>:<div className="technology-max">MAX LEVEL</div>}
- {error&&<p role="alert">{error}</p>}<small className="troop-research-note">One troop upgrade at a time. Current battles keep their starting troop levels.</small>
+ <FinishNowButton kind="research"/>{error&&<p role="alert">{error}</p>}<small className="troop-research-note">One troop upgrade at a time. Current battles keep their starting troop levels.</small>
  </section></div>;
 }
