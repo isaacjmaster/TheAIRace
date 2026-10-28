@@ -87,10 +87,13 @@ export type InfiltrationEvent = {
     detail?: string;
 };
 export type Operation = {
+    raidLoot?:import('./raid-loot').RaidLoot;
     sentinels?:SentinelState[];arcSpires?:ArcSpireState[];electronic?:ElectronicState;
     breachRatingVersion?:1;
     pvp?:{attackerId:string;defenderId:string};
     squad?:SquadState;
+    troopLevels?:import('./troops').TroopLevels;
+    troopStats?:Record<import('./troops').TroopKind,import('./troops').TroopCombatStats>;
     cipherDamageMultiplier?:number;
     unit?:{kind:'scrap';reservationId:string;status:'reserved'|'returned'|'lost'};
     ownershipRequired?:boolean;

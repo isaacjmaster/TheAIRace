@@ -15,7 +15,7 @@ export function animateScrapBot(bot:THREE.Object3D,dt:number,reduced=false,attac
  p.core.rotation.z=reduced?0:Math.sin(hit*Math.PI*3)*hit*.09;
  p.core.position.y-=reduced?0:charge*.018;
 
- p.flash.visible=!!bot.userData.pulsewheelFiring||charge>.1||hit>.1;p.flash.scale.setScalar(bot.userData.pulsewheelFiring?1.2:hit>.1?.65:.25+charge*.5);
+ p.flash.visible=!!bot.userData.pulsewheelFiring||charge>.1||hit>.1;p.flash.scale.setScalar((1+((bot.userData.troopLevel??1)-1)*.1)*(bot.userData.pulsewheelFiring?1.2:hit>.1?.65:.25+charge*.5));
  bot.userData.walkPhase=(p.wheel.rotation.x/(Math.PI*2))%1;bot.userData.walkActivity=p.activity;
 }
 export function handoffScrapPose(from:THREE.Object3D,to:THREE.Object3D){const a=poses.get(from),b=poses.get(to);if(!a||!b)return;b.wheel.rotation.x=a.wheel.rotation.x;b.initialized=false;}

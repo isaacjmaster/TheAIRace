@@ -4,7 +4,7 @@ import {buyWall,snapWallPosition} from '../shared/cybersecurity';
 import {landscapeRoute,clearObstacle,LANDSCAPE,clearingPosition} from '../shared/landscape';
 import {ownedSecurityWalls} from '../shared/security-catalog';
 import {findPath,segmentClear} from '../shared/navigation';
-import {BASE_IDS,chooseInfiltrationBase,craftCampusTarget} from '../shared/infiltration-bases';
+import {BASE_IDS,MISSION_CATALOG,chooseInfiltrationBase,craftCampusTarget} from '../shared/infiltration-bases';
 import {COMBAT_BALANCE_V3} from '../shared/combat-balance';
 import {newSquadOperation,advanceSquad} from '../shared/squad-infiltration';
 import {commandOperation,infiltrationPath,targetBounds,type Vec} from '../shared/infiltration';
@@ -30,10 +30,10 @@ test('every live bot leaves a completed shared target, including a moving follow
  for(const a of o.squad!.agents.slice(1))a.target=undefined;planTactical(o,o.squad!.agents[0]);assert.ok(o.squad!.agents[0].path.length>0);
  const restored=structuredClone(o);advanceSquad(o,30000);advanceSquad(restored,30000);assert.deepEqual(restored,o);assert.ok((o.squad!.progress.gpu??0)>0);
 });
-test('five handcrafted campuses have increasing footprint, defenses and rewards; all objectives have legitimate ground paths',()=>{
- let area=0,award=0;for(const [i,id]of BASE_IDS.entries()){const t=craftCampusTarget(id),b=targetBounds(t),a=(b.maxX-b.minX)*(b.maxZ-b.minZ);assert.ok(a>area);area=a;assert.equal(t.defenses.length+(t.sentinels?.length??0),COMBAT_BALANCE_V3.missionDroneCounts[i]+(t.sentinels?.length??0));assert.ok(t.influence>award);award=t.influence;
+test('ten handcrafted campuses have increasing footprint, defenses and rewards; all objectives have legitimate ground paths',()=>{
+ let area=0,award=0;for(const [i,id]of BASE_IDS.entries()){const t=craftCampusTarget(id),b=targetBounds(t),a=(b.maxX-b.minX)*(b.maxZ-b.minZ);assert.ok(a>area);area=a;assert.equal(t.defenses.length+(t.sentinels?.length??0),MISSION_CATALOG[i].droneCount+(t.sentinels?.length??0));assert.ok(t.influence>award);award=t.influence;
   for(const obj of t.assets.filter(a=>a.access)){const path=infiltrationPath({...t,walls:[]},t.entry,obj.access!);assert.ok(path.length,`${id}/${obj.id} reachable`);for(let j=1;j<path.length;j++)assert.ok(segmentClear(path[j-1],path[j],[],b,.65));}
  }
- const s=initialFoundation();s.bots=1;for(let i=0;i<30;i++)assert.equal(chooseInfiltrationBase(s,i),BASE_IDS[0]);s.founderHqLevel=2;s.bots=10;assert.equal(new Set(Array.from({length:50},(_,i)=>chooseInfiltrationBase(s,i,3))).size,5);
+ const s=initialFoundation();s.bots=1;for(let i=0;i<30;i++)assert.equal(chooseInfiltrationBase(s,i),BASE_IDS[0]);s.founderHqLevel=2;s.bots=10;assert.equal(new Set(Array.from({length:50},(_,i)=>chooseInfiltrationBase(s,i,3))).size,4);
 });
 test('new drone balance is captured without changing legacy mission tuning',()=>{const o=newSquadOperation('new','lumen-labs',0);assert.equal(tacticalBalance(o),COMBAT_BALANCE_V3);const v2=structuredClone(o);v2.squad!.balanceVersion=2;assert.equal(tacticalBalance(v2),TACTICAL_BALANCE);const old=structuredClone(o);delete old.squad!.balanceVersion;assert.equal(tacticalBalance(old),LEGACY_TACTICAL_BALANCE);assert.ok(TACTICAL_BALANCE.droneHealth>LEGACY_TACTICAL_BALANCE.droneHealth);});

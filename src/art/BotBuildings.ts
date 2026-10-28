@@ -11,11 +11,11 @@ import {WorldKit,palette as c} from './world';
 
 /** Presentation only: shared silhouette, named limbs retained for existing animations. */
 
-export function scrapBotModel(k:WorldKit){return cipherBotModel(k);}
+export function scrapBotModel(k:WorldKit,level=1){return cipherBotModel(k,level);}
 export const fabricatorModel=orbitalFabricator;
 
-export function hangarModel(k:WorldKit,bots:number,expanded:boolean|'compound'=false){
- if(expanded==='compound')return hangarCompound(k,bots);
+export function hangarModel(k:WorldKit,bots:number,expanded:boolean|'compound'=false,troopLevel=1){
+ if(expanded==='compound')return hangarCompound(k,bots,troopLevel);
  const g=new THREE.Group();g.name='Bot Hangar';const shell=new THREE.Group();g.add(shell);shell.name='hangar-structure';if(expanded)shell.scale.set(1.4,1.08,1.4);
  k.box(shell,[4,.22,3],[0,.15,0],c.dark,.12);k.box(shell,[3.88,.12,2.9],[0,.32,0],'#8c9c91',.08);
  // Open four-sided charging pavilion: no opaque rear wall or preferred facade.
@@ -40,7 +40,7 @@ export function hangarModel(k:WorldKit,bots:number,expanded:boolean|'compound'=f
  }
  for(let i=0;i<10;i++){const x=-1.46+(i%5)*.73,z=i<5?-.65:.65;
   k.box(shell,[.62,.025,.91],[x,.405,z],c.slate,.04);k.box(shell,[.46,.03,.06],[x,.43,z+.4],c.cyan,.01,true);
-  if(i<bots){const bot=scrapBotModel(k);bot.scale.setScalar(CAMPUS_BOT_SCALE);const bay=hangarBay(i,expanded);bot.position.set(...bay);bot.userData.bay=bay;bot.name='docked-bot-'+i;g.add(bot);}
+  if(i<bots){const bot=scrapBotModel(k,troopLevel);bot.scale.setScalar(CAMPUS_BOT_SCALE);const bay=hangarBay(i,expanded);bot.position.set(...bay);bot.userData.bay=bay;bot.name='docked-bot-'+i;g.add(bot);}
  }
  for(const z of [-1.44,1.44])k.box(shell,[2.8,.06,.08],[0,.4,z],c.cyan,.02,true);
  for(const x of [-1.88,1.88]){

@@ -6,7 +6,7 @@ import {CAMPUS_BOT_SCALE} from '../../shared/bot-presentation';
 const navy='#183345',metal='#39515c';
 function ring(k:WorldKit,g:THREE.Object3D,r:number,t:number,y:number,color:string,glow=false){const m=k.ring(g,r,t,[0,y,0],color,glow);m.rotation.x=Math.PI/2;return m;}
 function cassette(k:WorldKit,g:THREE.Object3D,outer:number,inner:number,y:number,depth:number,color:string){const shape=new THREE.Shape(),hole=new THREE.Path();for(let i=0;i<=32;i++){const a=i*Math.PI/16;const fn=i?'lineTo':'moveTo';shape[fn](Math.cos(a)*outer,Math.sin(a)*outer);hole[fn](Math.cos(-a)*inner,Math.sin(-a)*inner);}shape.holes.push(hole);const m=k.extrusion(g,`orbital-${outer}-${inner}`,shape,depth,[0,y,0],color);m.rotation.x=Math.PI/2;return m;}
-export function orbitalFabricator(k:WorldKit){
+export function orbitalFabricator(k:WorldKit,troopLevel=1){
  const g=new THREE.Group();g.name='Bot Fabricator';const fixed=new THREE.Group();g.add(fixed);
  k.box(fixed,[4,.2,3],[0,.1,0],c.cream,.1);k.box(fixed,[3.8,.16,2.8],[0,.28,0],navy,.1);
  k.cylinder(fixed,1.12,.18,[0,.45,0],metal);ring(k,fixed,.94,.055,.56,'#3edee9',true);k.cylinder(fixed,.82,.08,[0,.54,0],navy);ring(k,fixed,.61,.025,.59,c.cyan,true);
@@ -49,7 +49,7 @@ export function orbitalFabricator(k:WorldKit){
  }
  for(const side of [-1,1]){const arrow=k.box(fixed,[.065,.025,.26],[side*.08,.365,1.14],c.cyan,.01,true);arrow.rotation.y=side*.65;}
  k.batchStatic(fixed,'orbital-shell-v2');
- const bot=cipherBotModel(k);bot.name='assembly-bot';bot.scale.setScalar(CAMPUS_BOT_SCALE);bot.position.y=.6;g.add(bot);
+ const bot=cipherBotModel(k,troopLevel);bot.name='assembly-bot';bot.scale.setScalar(CAMPUS_BOT_SCALE);bot.position.y=.6;g.add(bot);
  const scan=new THREE.Group();scan.name='orbital-scan';ring(k,scan,.47,.016,0,c.cyan,true);g.add(scan);
  return g;
 }

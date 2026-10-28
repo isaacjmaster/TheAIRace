@@ -26,4 +26,4 @@ export function baseVisualState(b:PublicBase):FoundationState{
 }
 export const publicFootprint=(v:PublicBuilding)=>footprint(v.id,v);
 export type PlayerScout={id:string;company:PublicCompany;base:PublicBase;eligibleAt:number;expiresAt:number;serverTime:number};
-export type PvPHistory={replayAvailable?:boolean;breachTokens?:boolean[];id:string;opponent:PublicCompany;outcome:string;destruction:number;influence:number;finishedAt:number};
+export type PvPHistory={compute?:number;research?:number;replayAvailable?:boolean;breachTokens?:boolean[];id:string;opponent:PublicCompany;outcome:string;destruction:number;influence:number;finishedAt:number};

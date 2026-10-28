@@ -1,3 +1,4 @@
+import {armoredHull} from './TechnologyMaterials';
 import * as THREE from 'three';
 import {WorldKit} from './world';
 
@@ -5,9 +6,11 @@ const navy='#253950',white='#edf0e6',joint='#182936',steel='#506574',orange='#ff
 type Pose={rig:THREE.Group;body:THREE.Group;head:THREE.Group;arms:THREE.Group[];elbows:THREE.Group[];legs:THREE.Group[];knees:THREE.Group[];glow:THREE.Mesh;last:THREE.Vector3;point:THREE.Vector3;phase:number;time:number;activity:number;initialized:boolean};
 const poses=new WeakMap<THREE.Object3D,Pose>();
 /** Reference-led, native stylized heavy assault mech. Forward +Z; all resources belong to WorldKit. */
-export function breacherModel(k:WorldKit){
+export function breacherModel(k:WorldKit,level=1){
+ const navy=level>=3?'#1d2d47':level===2?'#334d63':'#253950',white=level>=3?'#f5f1e3':level===2?'#cad7d8':'#edf0e6',steel=level>=3?'#adbbc9':level===2?'#728b9a':'#506574';
+ if(level>1)for(const color of [navy,white,steel]){const m=k.mat(color) as THREE.MeshStandardMaterial;m.metalness=color===white?.25:.6;m.roughness=.3;}
  const root=new THREE.Group(),rig=new THREE.Group(),body=new THREE.Group(),head=new THREE.Group();
- root.name='Breacher';rig.scale.setScalar(1.38);rig.position.y=-.138;rig.name='breacher-rig';body.name='breacher-torso';head.name='breacher-head';root.add(rig);rig.add(body);body.position.y=1.14;
+ root.name='Breacher';root.userData.troopLevel=level;rig.scale.setScalar(1.38);rig.position.y=-.138;rig.name='breacher-rig';body.name='breacher-torso';head.name='breacher-head';root.add(rig);rig.add(body);body.position.y=1.14;
  const arms:THREE.Group[]=[],elbows:THREE.Group[]=[],legs:THREE.Group[]=[],knees:THREE.Group[]=[];
  // Compact layered torso, exposed waist machinery, and a broad angled breastplate.
  k.box(body,[.56,.21,.42],[0,-.08,0],joint,.04);
@@ -46,8 +49,9 @@ export function breacherModel(k:WorldKit){
   k.box(forearm,[heavy?.43:.31,.37,heavy?.4:.3],[0,-.21,.065],navy,.06);
   k.box(forearm,[heavy?.34:.25,.24,.08],[0,-.19,heavy?.29:.23],white,.035);
   if(heavy){
-   const socket=k.cylinder(forearm,.135,.028,[0,-.19,.339],joint);socket.rotation.x=Math.PI/2;
-   k.ring(forearm,.109,.018,[0,-.19,.362],orange,true);
+   const socket=k.cylinder(forearm,level>=3?.177:level===2?.151:.135,.028,[0,-.19,.339],joint);socket.rotation.x=Math.PI/2;
+   k.ring(forearm,level>=3?.15:level===2?.126:.109,level>=3?.027:.018,[0,-.19,.362],orange,true);
+   if(level>=3)for(const side of [-1,1])armoredHull(k,forearm,.09,.33,.1,[side*.18,-.19,.32],steel,.025);
    const hub=k.cylinder(forearm,.069,.035,[0,-.19,.366],steel);hub.rotation.x=Math.PI/2;
    k.box(forearm,[.045,.065,.012],[0,-.19,.39],orange,.005,true);
   }else k.box(forearm,[.065,.22,.03],[0,-.19,.278],cyan,.01,true);
@@ -63,6 +67,11 @@ export function breacherModel(k:WorldKit){
    const ring=k.ring(fist,.21,.025,[0,.1,0],orange,true);ring.rotation.x=Math.PI/2;
    const contact=new THREE.Object3D();contact.name='breacher-impact';contact.position.set(0,-.21,0);fist.add(contact);
    const alias=new THREE.Object3D();alias.name='cipher-muzzle';contact.add(alias);
+  }
+  if(level>=2){armoredHull(k,arm,.44,.18,.49,[side*.09,.26,.01],white,.06);armoredHull(k,forearm,heavy?.49:.34,.28,heavy?.46:.34,[0,-.18,.06],navy,.07);}
+  if(level>=3){
+   armoredHull(k,arm,.4,.25,.15,[side*.09,.1,.25],white,.07);
+   if(heavy){for(const x of [-.16,0,.16]){armoredHull(k,fist,.14,.12,.4,[x,-.16,.015],steel,.035);k.box(fist,[.035,.025,.3],[x,-.225,.015],orange,.006,true);}for(const side of [-1,1]){const piston=k.cylinder(forearm,.055,.38,[side*.24,-.23,.08],steel);piston.rotation.x=-.12;k.box(forearm,[.035,.2,.04],[side*.24,-.2,.19],orange,.008,true);}}
   }
   k.batchStatic(fist,'breacher-fist-'+side);k.batchStatic(forearm,'breacher-forearm-'+side);k.batchStatic(arm,'breacher-shoulder-'+side);
  }
@@ -80,10 +89,14 @@ export function breacherModel(k:WorldKit){
   k.box(shin,[.36,.18,.47],[0,-.48,.095],joint,.035);
   k.box(shin,[.32,.1,.23],[0,-.42,.11],white,.025);
   for(const x of [-.115,0,.115])k.box(shin,[.1,.1,.12],[x,-.51,.33],steel,.015);
+  if(level>=2)armoredHull(k,shin,.3,.31,.1,[0,-.24,.205],white,.05);
+  if(level>=3){const support=k.cylinder(leg,.046,.31,[side*.17,-.17,.08],steel);support.rotation.z=-side*.14;armoredHull(k,shin,.32,.17,.12,[0,-.065,.22],navy,.05);}
   k.batchStatic(shin,'breacher-shin-'+side);k.batchStatic(leg,'breacher-thigh-'+side);
  }
+ if(level>=2)armoredHull(k,body,.61,.24,.11,[0,.27,.34],white,.07);
+ if(level>=3){armoredHull(k,body,.43,.14,.14,[0,.12,.36],navy,.05);for(const side of [-1,1]){const rail=k.box(body,[.06,.25,.045],[side*.25,.25,.415],orange,.009,true);rail.rotation.z=-side*.25;}}
  k.batchStatic(body,'breacher-body');
- const glow=k.ring(elbows[0],.22,.018,[0,-.46,.14],orange,true);glow.rotation.x=Math.PI/2;glow.name='breacher-charge';glow.visible=false;
+ const glow=k.ring(elbows[0],.22,.018,[0,-.46,.14],orange,true);glow.rotation.x=Math.PI/2;glow.name='breacher-charge';glow.visible=false;glow.scale.setScalar(1+(level-1)*.12);
  poses.set(root,{rig,body,head,arms,elbows,legs,knees,glow,last:new THREE.Vector3(),point:new THREE.Vector3(),phase:0,time:0,activity:0,initialized:false});
  return root;
 }
@@ -109,7 +122,7 @@ export function animateBreacher(bot:THREE.Object3D,dt:number,reduced=false,attac
   p.arms[i].rotation.z=(i===0?.12:-.09)+Math.sin(p.time*1.6)*.01*motion;
   p.elbows[i].rotation.x=-.18+(i===0?-charge*.8-strike*.05:-charge*.1)*motion;
  }
- p.glow.visible=death===0&&(charge>.05||strike>.1);p.glow.scale.setScalar(1+charge*.2+strike*.3);
+ p.glow.visible=death===0&&(charge>.05||strike>.1);p.glow.scale.setScalar((1+((bot.userData.troopLevel??1)-1)*.12)*(1+charge*.2+strike*.3));
  bot.userData.walkPhase=(p.phase/(Math.PI*2))%1;bot.userData.walkActivity=p.activity;
  bot.userData.breacherFootstep=Math.floor(p.phase/Math.PI);
 }

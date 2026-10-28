@@ -1,0 +1,3653 @@
+{
+  "source": "92dd909 (same mission/combat constructors as f9afe3b; visual-only release)",
+  "operations": {
+    "lumen-labs": {
+      "version": 1,
+      "id": "historical",
+      "target": {
+        "version": 1,
+        "id": "lumen-labs",
+        "name": "Lumen Labs",
+        "difficulty": "Startup",
+        "arena": "campus-v2",
+        "campusBounds": {
+          "minX": -15,
+          "maxX": 15,
+          "minZ": -12,
+          "maxZ": 12
+        },
+        "compound": [
+          11,
+          7
+        ],
+        "entry": [
+          -12,
+          9
+        ],
+        "exit": [
+          -12,
+          9
+        ],
+        "assets": [
+          {
+            "id": "hq",
+            "kind": "hq",
+            "name": "Founder HQ",
+            "position": [
+              0,
+              -2
+            ],
+            "size": [
+              7,
+              6
+            ],
+            "access": [
+              0,
+              2.2
+            ],
+            "hackSeconds": 22,
+            "compute": 0,
+            "research": 0,
+            "maxHealth": 198
+          },
+          {
+            "id": "gpu",
+            "kind": "gpu",
+            "name": "GPU Rig",
+            "position": [
+              -6,
+              2
+            ],
+            "size": [
+              4,
+              3
+            ],
+            "access": [
+              -6,
+              4.3
+            ],
+            "hackSeconds": 12,
+            "compute": 10,
+            "research": 6,
+            "maxHealth": 108
+          },
+          {
+            "id": "lab",
+            "kind": "lab",
+            "name": "Research Lab",
+            "position": [
+              6,
+              2
+            ],
+            "size": [
+              3.8,
+              2.8
+            ],
+            "access": [
+              6,
+              4.4
+            ],
+            "hackSeconds": 16,
+            "compute": 10,
+            "research": 6,
+            "maxHealth": 144
+          },
+          {
+            "id": "terminal",
+            "kind": "terminal",
+            "name": "Core terminal",
+            "position": [
+              7,
+              -4
+            ],
+            "size": [
+              1.6,
+              1.4
+            ],
+            "access": [
+              7,
+              -2.5
+            ],
+            "hackSeconds": 22,
+            "compute": 10,
+            "research": 8,
+            "maxHealth": 198
+          }
+        ],
+        "sentinels": [],
+        "defenses": [
+          {
+            "id": "sentinel-1",
+            "route": [
+              [
+                2,
+                4
+              ],
+              [
+                2.5,
+                4
+              ],
+              [
+                7,
+                -1
+              ]
+            ],
+            "aerial": true,
+            "fliesOverWalls": true,
+            "radius": 10.2,
+            "patrolSpeed": 1.2,
+            "pursuitSpeed": 2.1,
+            "warningSeconds": 0.4
+          }
+        ],
+        "walls": [
+          {
+            "id": "back-0",
+            "x": -9.545454545454545,
+            "z": -6,
+            "w": 1.9090909090909092,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-1",
+            "x": -7.636363636363637,
+            "z": -6,
+            "w": 1.9090909090909092,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-2",
+            "x": -5.727272727272727,
+            "z": -6,
+            "w": 1.9090909090909092,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-3",
+            "x": -3.8181818181818183,
+            "z": -6,
+            "w": 1.9090909090909092,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-4",
+            "x": -1.9090909090909083,
+            "z": -6,
+            "w": 1.9090909090909092,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-5",
+            "x": 0,
+            "z": -6,
+            "w": 1.9090909090909092,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-6",
+            "x": 1.90909090909091,
+            "z": -6,
+            "w": 1.9090909090909092,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-7",
+            "x": 3.8181818181818183,
+            "z": -6,
+            "w": 1.9090909090909092,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-8",
+            "x": 5.727272727272727,
+            "z": -6,
+            "w": 1.9090909090909092,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-9",
+            "x": 7.636363636363637,
+            "z": -6,
+            "w": 1.9090909090909092,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-10",
+            "x": 9.545454545454547,
+            "z": -6,
+            "w": 1.9090909090909092,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "left-0",
+            "x": -10.5,
+            "z": -5,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-1",
+            "x": -10.5,
+            "z": -3,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-2",
+            "x": -10.5,
+            "z": -1,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-3",
+            "x": -10.5,
+            "z": 1,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-4",
+            "x": -10.5,
+            "z": 3,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-0",
+            "x": 10.5,
+            "z": -5,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-1",
+            "x": 10.5,
+            "z": -3,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-2",
+            "x": 10.5,
+            "z": -1,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-3",
+            "x": 10.5,
+            "z": 1,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-4",
+            "x": 10.5,
+            "z": 3,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "front-0",
+            "x": -3,
+            "z": 6,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-1",
+            "x": -1,
+            "z": 6,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-2",
+            "x": 1,
+            "z": 6,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-3",
+            "x": 3,
+            "z": 6,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-4",
+            "x": 5,
+            "z": 6,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-5",
+            "x": 7,
+            "z": 6,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          }
+        ],
+        "influence": 25,
+        "navigationVersion": 2,
+        "hqLevel": 2
+      },
+      "automationVersion": 1,
+      "defenseVersion": 2,
+      "createdAt": 1000,
+      "lastTick": 1000,
+      "status": "ready",
+      "orders": [],
+      "agent": {
+        "health": 100,
+        "position": [
+          -11,
+          13
+        ],
+        "path": [],
+        "mode": "idle",
+        "hack": 0,
+        "yaw": 0
+      },
+      "drones": [
+        {
+          "id": "sentinel-1",
+          "position": [
+            2,
+            4
+          ],
+          "segment": 1,
+          "alert": 0,
+          "lost": 0,
+          "mode": "patrol",
+          "health": 240
+        }
+      ],
+      "hacked": [],
+      "carried": {
+        "compute": 0,
+        "research": 0,
+        "intel": false
+      },
+      "events": [
+        {
+          "at": 1000,
+          "type": "prepared"
+        }
+      ],
+      "squad": {
+        "version": 1,
+        "agents": [],
+        "progress": {},
+        "wallDamage": {},
+        "breachedWalls": [],
+        "balanceVersion": 3,
+        "behaviorVersion": 1,
+        "abilityVersion": 1,
+        "rules": "tactical-v1"
+      },
+      "breachRatingVersion": 1,
+      "electronic": {
+        "version": 1,
+        "disruptor": {
+          "name": "Disruptor",
+          "housing": 3,
+          "cost": 15,
+          "trainSeconds": 30,
+          "health": 54,
+          "damage": 2.25,
+          "intervalMs": 1000,
+          "speed": 2.38,
+          "range": 4.6,
+          "wallMultiplier": 1,
+          "unlockHq": 3,
+          "description": "Fragile support · temporarily suppresses defensive weapons",
+          "empDurationMs": 1500,
+          "empCooldownMs": 6000,
+          "empImmunityMs": 4500,
+          "engagementRange": 10
+        },
+        "statuses": {}
+      }
+    },
+    "vector-works": {
+      "version": 1,
+      "id": "historical",
+      "target": {
+        "version": 1,
+        "id": "vector-works",
+        "name": "Vector Works",
+        "difficulty": "Developing",
+        "arena": "campus-v2",
+        "campusBounds": {
+          "minX": -19,
+          "maxX": 19,
+          "minZ": -13,
+          "maxZ": 13
+        },
+        "compound": [
+          14,
+          8
+        ],
+        "entry": [
+          -16,
+          10
+        ],
+        "exit": [
+          -16,
+          10
+        ],
+        "assets": [
+          {
+            "id": "hq",
+            "kind": "hq",
+            "name": "Founder HQ",
+            "position": [
+              -4,
+              -3
+            ],
+            "size": [
+              7,
+              6
+            ],
+            "access": [
+              -4,
+              1.2
+            ],
+            "hackSeconds": 22,
+            "compute": 0,
+            "research": 0,
+            "maxHealth": 198
+          },
+          {
+            "id": "gpu",
+            "kind": "gpu",
+            "name": "GPU Rig",
+            "position": [
+              -10,
+              3
+            ],
+            "size": [
+              4,
+              3
+            ],
+            "access": [
+              -10,
+              5.3
+            ],
+            "hackSeconds": 12,
+            "compute": 16,
+            "research": 10,
+            "maxHealth": 108
+          },
+          {
+            "id": "lab",
+            "kind": "lab",
+            "name": "Research Lab",
+            "position": [
+              7,
+              1
+            ],
+            "size": [
+              3.8,
+              2.8
+            ],
+            "access": [
+              7,
+              3.4
+            ],
+            "hackSeconds": 16,
+            "compute": 16,
+            "research": 10,
+            "maxHealth": 144
+          },
+          {
+            "id": "terminal",
+            "kind": "terminal",
+            "name": "Core terminal",
+            "position": [
+              11,
+              -5
+            ],
+            "size": [
+              1.6,
+              1.4
+            ],
+            "access": [
+              11,
+              -3.5
+            ],
+            "hackSeconds": 22,
+            "compute": 18,
+            "research": 12,
+            "maxHealth": 198
+          }
+        ],
+        "sentinels": [],
+        "defenses": [
+          {
+            "id": "sentinel-1",
+            "route": [
+              [
+                -6.5,
+                5
+              ],
+              [
+                -3,
+                4
+              ],
+              [
+                1,
+                3
+              ]
+            ],
+            "aerial": true,
+            "fliesOverWalls": true,
+            "radius": 10.2,
+            "patrolSpeed": 1.2,
+            "pursuitSpeed": 2.1,
+            "warningSeconds": 0.4
+          },
+          {
+            "id": "sentinel-2",
+            "route": [
+              [
+                8,
+                4
+              ],
+              [
+                11,
+                1
+              ],
+              [
+                10,
+                -2
+              ]
+            ],
+            "aerial": true,
+            "fliesOverWalls": true,
+            "radius": 10.2,
+            "patrolSpeed": 1.2,
+            "pursuitSpeed": 2.1,
+            "warningSeconds": 0.4
+          }
+        ],
+        "walls": [
+          {
+            "id": "back-0",
+            "x": -12,
+            "z": -7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-1",
+            "x": -10,
+            "z": -7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-2",
+            "x": -8,
+            "z": -7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-3",
+            "x": -6,
+            "z": -7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-4",
+            "x": -4,
+            "z": -7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-5",
+            "x": -2,
+            "z": -7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-6",
+            "x": 0,
+            "z": -7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-7",
+            "x": 2,
+            "z": -7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-8",
+            "x": 4,
+            "z": -7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-9",
+            "x": 6,
+            "z": -7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-10",
+            "x": 8,
+            "z": -7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-11",
+            "x": 10,
+            "z": -7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-12",
+            "x": 12,
+            "z": -7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "left-0",
+            "x": -13,
+            "z": -6,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-1",
+            "x": -13,
+            "z": -4,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-2",
+            "x": -13,
+            "z": -2,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-3",
+            "x": -13,
+            "z": 0,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-4",
+            "x": -13,
+            "z": 2,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-5",
+            "x": -13,
+            "z": 4,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-0",
+            "x": 13,
+            "z": -6,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-1",
+            "x": 13,
+            "z": -4,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-2",
+            "x": 13,
+            "z": -2,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-3",
+            "x": 13,
+            "z": 0,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-4",
+            "x": 13,
+            "z": 2,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-5",
+            "x": 13,
+            "z": 4,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-0",
+            "x": -12,
+            "z": 7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-1",
+            "x": -10,
+            "z": 7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-2",
+            "x": -8,
+            "z": 7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-3",
+            "x": -6,
+            "z": 7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-4",
+            "x": -4,
+            "z": 7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-0",
+            "x": 6,
+            "z": 7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-1",
+            "x": 8,
+            "z": 7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-2",
+            "x": 10,
+            "z": 7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-3",
+            "x": 12,
+            "z": 7,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "wing-0",
+            "x": 3,
+            "z": -5,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "wing-1",
+            "x": 3,
+            "z": -3,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "wing-2",
+            "x": 3,
+            "z": -1,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          }
+        ],
+        "influence": 40,
+        "navigationVersion": 2,
+        "hqLevel": 2
+      },
+      "automationVersion": 1,
+      "defenseVersion": 2,
+      "createdAt": 1000,
+      "lastTick": 1000,
+      "status": "ready",
+      "orders": [],
+      "agent": {
+        "health": 100,
+        "position": [
+          -11,
+          13
+        ],
+        "path": [],
+        "mode": "idle",
+        "hack": 0,
+        "yaw": 0
+      },
+      "drones": [
+        {
+          "id": "sentinel-1",
+          "position": [
+            -6.5,
+            5
+          ],
+          "segment": 1,
+          "alert": 0,
+          "lost": 0,
+          "mode": "patrol",
+          "health": 240
+        },
+        {
+          "id": "sentinel-2",
+          "position": [
+            8,
+            4
+          ],
+          "segment": 1,
+          "alert": 0,
+          "lost": 0,
+          "mode": "patrol",
+          "health": 240
+        }
+      ],
+      "hacked": [],
+      "carried": {
+        "compute": 0,
+        "research": 0,
+        "intel": false
+      },
+      "events": [
+        {
+          "at": 1000,
+          "type": "prepared"
+        }
+      ],
+      "squad": {
+        "version": 1,
+        "agents": [],
+        "progress": {},
+        "wallDamage": {},
+        "breachedWalls": [],
+        "balanceVersion": 3,
+        "behaviorVersion": 1,
+        "abilityVersion": 1,
+        "rules": "tactical-v1"
+      },
+      "breachRatingVersion": 1,
+      "electronic": {
+        "version": 1,
+        "disruptor": {
+          "name": "Disruptor",
+          "housing": 3,
+          "cost": 15,
+          "trainSeconds": 30,
+          "health": 54,
+          "damage": 2.25,
+          "intervalMs": 1000,
+          "speed": 2.38,
+          "range": 4.6,
+          "wallMultiplier": 1,
+          "unlockHq": 3,
+          "description": "Fragile support · temporarily suppresses defensive weapons",
+          "empDurationMs": 1500,
+          "empCooldownMs": 6000,
+          "empImmunityMs": 4500,
+          "engagementRange": 10
+        },
+        "statuses": {}
+      }
+    },
+    "prism-systems": {
+      "version": 1,
+      "id": "historical",
+      "target": {
+        "version": 1,
+        "id": "prism-systems",
+        "name": "Prism Systems",
+        "difficulty": "Established",
+        "arena": "campus-v2",
+        "campusBounds": {
+          "minX": -20,
+          "maxX": 20,
+          "minZ": -17,
+          "maxZ": 17
+        },
+        "compound": [
+          15,
+          12
+        ],
+        "entry": [
+          -17,
+          14
+        ],
+        "exit": [
+          -17,
+          14
+        ],
+        "assets": [
+          {
+            "id": "hq",
+            "kind": "hq",
+            "name": "Founder HQ",
+            "position": [
+              -7,
+              -5
+            ],
+            "size": [
+              7,
+              6
+            ],
+            "access": [
+              -7,
+              -0.8
+            ],
+            "hackSeconds": 22,
+            "compute": 0,
+            "research": 0,
+            "maxHealth": 198
+          },
+          {
+            "id": "gpu",
+            "kind": "gpu",
+            "name": "GPU Rig",
+            "position": [
+              -8,
+              6
+            ],
+            "size": [
+              4,
+              3
+            ],
+            "access": [
+              -8,
+              8.3
+            ],
+            "hackSeconds": 12,
+            "compute": 13,
+            "research": 8,
+            "maxHealth": 108
+          },
+          {
+            "id": "lab",
+            "kind": "lab",
+            "name": "Research Lab",
+            "position": [
+              7,
+              5
+            ],
+            "size": [
+              3.8,
+              2.8
+            ],
+            "access": [
+              7,
+              7.4
+            ],
+            "hackSeconds": 16,
+            "compute": 13,
+            "research": 8,
+            "maxHealth": 144
+          },
+          {
+            "id": "terminal",
+            "kind": "terminal",
+            "name": "Core terminal",
+            "position": [
+              9,
+              -7
+            ],
+            "size": [
+              1.6,
+              1.4
+            ],
+            "access": [
+              9,
+              -8.5
+            ],
+            "hackSeconds": 22,
+            "compute": 13,
+            "research": 8,
+            "maxHealth": 198
+          },
+          {
+            "id": "gpu-2",
+            "kind": "gpu",
+            "name": "GPU Rig",
+            "position": [
+              1,
+              -6
+            ],
+            "size": [
+              4,
+              3
+            ],
+            "access": [
+              1,
+              -3.7
+            ],
+            "hackSeconds": 12,
+            "compute": 13,
+            "research": 8,
+            "maxHealth": 108
+          },
+          {
+            "id": "vanguard-0",
+            "kind": "station",
+            "model": "sentinel",
+            "name": "Sentinel Tower",
+            "position": [
+              6,
+              -2
+            ],
+            "size": [
+              4,
+              4
+            ],
+            "access": [
+              6,
+              0.7000000000000002
+            ],
+            "hackSeconds": 15,
+            "maxHealth": 420,
+            "compute": 13,
+            "research": 12
+          }
+        ],
+        "sentinels": [
+          {
+            "id": "vanguard-0",
+            "position": [
+              6,
+              -2
+            ],
+            "range": 12,
+            "damage": 18,
+            "lockStep": 2,
+            "maxDamage": 30,
+            "intervalMs": 2000,
+            "warmupMs": 900
+          }
+        ],
+        "defenses": [
+          {
+            "id": "sentinel-1",
+            "route": [
+              [
+                -11.5,
+                6
+              ],
+              [
+                -4.5,
+                8
+              ],
+              [
+                -4,
+                4
+              ]
+            ],
+            "aerial": true,
+            "fliesOverWalls": true,
+            "radius": 10.2,
+            "patrolSpeed": 1.2,
+            "pursuitSpeed": 2.1,
+            "warningSeconds": 0.4
+          },
+          {
+            "id": "sentinel-2",
+            "route": [
+              [
+                5,
+                8
+              ],
+              [
+                10.5,
+                7
+              ],
+              [
+                11,
+                2
+              ]
+            ],
+            "aerial": true,
+            "fliesOverWalls": true,
+            "radius": 10.2,
+            "patrolSpeed": 1.2,
+            "pursuitSpeed": 2.1,
+            "warningSeconds": 0.4
+          }
+        ],
+        "walls": [
+          {
+            "id": "back-0",
+            "x": -13,
+            "z": -11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-1",
+            "x": -11,
+            "z": -11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-2",
+            "x": -9,
+            "z": -11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-3",
+            "x": -7,
+            "z": -11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-4",
+            "x": -5,
+            "z": -11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-5",
+            "x": -3,
+            "z": -11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-6",
+            "x": -1,
+            "z": -11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-7",
+            "x": 1,
+            "z": -11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-8",
+            "x": 3,
+            "z": -11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-9",
+            "x": 5,
+            "z": -11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "left-0",
+            "x": -14,
+            "z": -10,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-1",
+            "x": -14,
+            "z": -8,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-2",
+            "x": -14,
+            "z": -6,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-3",
+            "x": -14,
+            "z": -4,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-4",
+            "x": -14,
+            "z": -2,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-5",
+            "x": -14,
+            "z": 0,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-6",
+            "x": -14,
+            "z": 2,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-7",
+            "x": -14,
+            "z": 4,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-8",
+            "x": -14,
+            "z": 6,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-9",
+            "x": -14,
+            "z": 8,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "elbow-0",
+            "x": 6,
+            "z": -10,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "elbow-1",
+            "x": 6,
+            "z": -8,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "elbow-2",
+            "x": 6,
+            "z": -6,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "shoulder-0",
+            "x": 7,
+            "z": -5,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "shoulder-1",
+            "x": 9,
+            "z": -5,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "shoulder-2",
+            "x": 11,
+            "z": -5,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "shoulder-3",
+            "x": 13,
+            "z": -5,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "right-0",
+            "x": 14,
+            "z": -4,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-1",
+            "x": 14,
+            "z": -2,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-2",
+            "x": 14,
+            "z": 0,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-3",
+            "x": 14,
+            "z": 2,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-4",
+            "x": 14,
+            "z": 4,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-5",
+            "x": 14,
+            "z": 6,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-6",
+            "x": 14,
+            "z": 8,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-0",
+            "x": -13,
+            "z": 10,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-1",
+            "x": -11,
+            "z": 10,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-2",
+            "x": -9,
+            "z": 10,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-3",
+            "x": -7,
+            "z": 10,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-4",
+            "x": -5,
+            "z": 10,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-0",
+            "x": 5,
+            "z": 10,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-1",
+            "x": 7,
+            "z": 10,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-2",
+            "x": 9,
+            "z": 10,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-3",
+            "x": 11,
+            "z": 10,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-4",
+            "x": 13,
+            "z": 10,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "inner-0",
+            "x": -2,
+            "z": 0.375,
+            "w": 0.5,
+            "d": 1.75,
+            "height": 1.2
+          },
+          {
+            "id": "inner-1",
+            "x": -2,
+            "z": 2.125,
+            "w": 0.5,
+            "d": 1.75,
+            "height": 1.2
+          },
+          {
+            "id": "inner-2",
+            "x": -2,
+            "z": 3.875,
+            "w": 0.5,
+            "d": 1.75,
+            "height": 1.2
+          },
+          {
+            "id": "inner-3",
+            "x": -2,
+            "z": 5.625,
+            "w": 0.5,
+            "d": 1.75,
+            "height": 1.2
+          }
+        ],
+        "influence": 55,
+        "navigationVersion": 2,
+        "hqLevel": 2
+      },
+      "automationVersion": 1,
+      "defenseVersion": 2,
+      "createdAt": 1000,
+      "lastTick": 1000,
+      "status": "ready",
+      "orders": [],
+      "agent": {
+        "health": 100,
+        "position": [
+          -11,
+          13
+        ],
+        "path": [],
+        "mode": "idle",
+        "hack": 0,
+        "yaw": 0
+      },
+      "drones": [
+        {
+          "id": "sentinel-1",
+          "position": [
+            -11.5,
+            6
+          ],
+          "segment": 1,
+          "alert": 0,
+          "lost": 0,
+          "mode": "patrol",
+          "health": 240
+        },
+        {
+          "id": "sentinel-2",
+          "position": [
+            5,
+            8
+          ],
+          "segment": 1,
+          "alert": 0,
+          "lost": 0,
+          "mode": "patrol",
+          "health": 240
+        }
+      ],
+      "hacked": [],
+      "carried": {
+        "compute": 0,
+        "research": 0,
+        "intel": false
+      },
+      "events": [
+        {
+          "at": 1000,
+          "type": "prepared"
+        }
+      ],
+      "squad": {
+        "version": 1,
+        "agents": [],
+        "progress": {},
+        "wallDamage": {},
+        "breachedWalls": [],
+        "balanceVersion": 3,
+        "behaviorVersion": 1,
+        "abilityVersion": 1,
+        "rules": "tactical-v1"
+      },
+      "breachRatingVersion": 1,
+      "electronic": {
+        "version": 1,
+        "disruptor": {
+          "name": "Disruptor",
+          "housing": 3,
+          "cost": 15,
+          "trainSeconds": 30,
+          "health": 54,
+          "damage": 2.25,
+          "intervalMs": 1000,
+          "speed": 2.38,
+          "range": 4.6,
+          "wallMultiplier": 1,
+          "unlockHq": 3,
+          "description": "Fragile support · temporarily suppresses defensive weapons",
+          "empDurationMs": 1500,
+          "empCooldownMs": 6000,
+          "empImmunityMs": 4500,
+          "engagementRange": 10
+        },
+        "statuses": {}
+      }
+    },
+    "orbit-research": {
+      "version": 1,
+      "id": "historical",
+      "target": {
+        "version": 1,
+        "id": "orbit-research",
+        "name": "Orbit Research",
+        "difficulty": "Advanced",
+        "arena": "campus-v2",
+        "campusBounds": {
+          "minX": -22,
+          "maxX": 22,
+          "minZ": -18,
+          "maxZ": 18
+        },
+        "compound": [
+          17,
+          13
+        ],
+        "entry": [
+          -19,
+          15
+        ],
+        "exit": [
+          -19,
+          15
+        ],
+        "assets": [
+          {
+            "id": "hq",
+            "kind": "hq",
+            "name": "Founder HQ",
+            "position": [
+              0,
+              -6
+            ],
+            "size": [
+              7,
+              6
+            ],
+            "access": [
+              0,
+              -1.8
+            ],
+            "hackSeconds": 22,
+            "compute": 0,
+            "research": 0,
+            "maxHealth": 198
+          },
+          {
+            "id": "gpu",
+            "kind": "gpu",
+            "name": "GPU Rig",
+            "position": [
+              -11,
+              4
+            ],
+            "size": [
+              4,
+              3
+            ],
+            "access": [
+              -11,
+              6.3
+            ],
+            "hackSeconds": 12,
+            "compute": 16,
+            "research": 11,
+            "maxHealth": 108
+          },
+          {
+            "id": "lab",
+            "kind": "lab",
+            "name": "Research Lab",
+            "position": [
+              10,
+              4
+            ],
+            "size": [
+              3.8,
+              2.8
+            ],
+            "access": [
+              10,
+              6.4
+            ],
+            "hackSeconds": 16,
+            "compute": 16,
+            "research": 11,
+            "maxHealth": 144
+          },
+          {
+            "id": "terminal",
+            "kind": "terminal",
+            "name": "Core terminal",
+            "position": [
+              10,
+              -7
+            ],
+            "size": [
+              1.6,
+              1.4
+            ],
+            "access": [
+              10,
+              -5.5
+            ],
+            "hackSeconds": 22,
+            "compute": 16,
+            "research": 11,
+            "maxHealth": 198
+          },
+          {
+            "id": "gpu-2",
+            "kind": "gpu",
+            "name": "GPU Rig",
+            "position": [
+              -10,
+              -6
+            ],
+            "size": [
+              4,
+              3
+            ],
+            "access": [
+              -10,
+              -3.7
+            ],
+            "hackSeconds": 12,
+            "compute": 16,
+            "research": 11,
+            "maxHealth": 108
+          },
+          {
+            "id": "vanguard-0",
+            "kind": "station",
+            "model": "sentinel",
+            "name": "Sentinel Tower",
+            "position": [
+              0,
+              6
+            ],
+            "size": [
+              4,
+              4
+            ],
+            "access": [
+              0,
+              8.7
+            ],
+            "hackSeconds": 15,
+            "maxHealth": 420,
+            "compute": 16,
+            "research": 12
+          }
+        ],
+        "sentinels": [
+          {
+            "id": "vanguard-0",
+            "position": [
+              0,
+              6
+            ],
+            "range": 12,
+            "damage": 18,
+            "lockStep": 2,
+            "maxDamage": 30,
+            "intervalMs": 2000,
+            "warmupMs": 900
+          }
+        ],
+        "defenses": [
+          {
+            "id": "sentinel-1",
+            "route": [
+              [
+                -13,
+                8
+              ],
+              [
+                -8,
+                7
+              ],
+              [
+                -5,
+                4
+              ]
+            ],
+            "aerial": true,
+            "fliesOverWalls": true,
+            "radius": 10.2,
+            "patrolSpeed": 1.2,
+            "pursuitSpeed": 2.1,
+            "warningSeconds": 0.4
+          },
+          {
+            "id": "sentinel-2",
+            "route": [
+              [
+                7,
+                8
+              ],
+              [
+                13,
+                7
+              ],
+              [
+                13.5,
+                3
+              ]
+            ],
+            "aerial": true,
+            "fliesOverWalls": true,
+            "radius": 10.2,
+            "patrolSpeed": 1.2,
+            "pursuitSpeed": 2.1,
+            "warningSeconds": 0.4
+          },
+          {
+            "id": "sentinel-3",
+            "route": [
+              [
+                -12,
+                -3
+              ],
+              [
+                -10,
+                -9
+              ],
+              [
+                -7,
+                -9
+              ]
+            ],
+            "aerial": true,
+            "fliesOverWalls": true,
+            "radius": 10.2,
+            "patrolSpeed": 1.2,
+            "pursuitSpeed": 2.1,
+            "warningSeconds": 0.4
+          }
+        ],
+        "walls": [
+          {
+            "id": "back-0",
+            "x": -15,
+            "z": -12,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-1",
+            "x": -13,
+            "z": -12,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-2",
+            "x": -11,
+            "z": -12,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-3",
+            "x": -9,
+            "z": -12,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-4",
+            "x": -7,
+            "z": -12,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-5",
+            "x": -5,
+            "z": -12,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-6",
+            "x": -3,
+            "z": -12,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-7",
+            "x": -1,
+            "z": -12,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-8",
+            "x": 1,
+            "z": -12,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-9",
+            "x": 3,
+            "z": -12,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-10",
+            "x": 5,
+            "z": -12,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-11",
+            "x": 7,
+            "z": -12,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-12",
+            "x": 9,
+            "z": -12,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-13",
+            "x": 11,
+            "z": -12,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-14",
+            "x": 13,
+            "z": -12,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-15",
+            "x": 15,
+            "z": -12,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "left-0",
+            "x": -16,
+            "z": -11,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-1",
+            "x": -16,
+            "z": -9,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-2",
+            "x": -16,
+            "z": -7,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-3",
+            "x": -16,
+            "z": -5,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-4",
+            "x": -16,
+            "z": -3,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-5",
+            "x": -16,
+            "z": -1,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-6",
+            "x": -16,
+            "z": 1,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-7",
+            "x": -16,
+            "z": 3,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-8",
+            "x": -16,
+            "z": 5,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-9",
+            "x": -16,
+            "z": 7,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-0",
+            "x": 16,
+            "z": -11,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-1",
+            "x": 16,
+            "z": -9,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-2",
+            "x": 16,
+            "z": -7,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-3",
+            "x": 16,
+            "z": -5,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-4",
+            "x": 16,
+            "z": -3,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-5",
+            "x": 16,
+            "z": -1,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-6",
+            "x": 16,
+            "z": 1,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-7",
+            "x": 16,
+            "z": 3,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-8",
+            "x": 16,
+            "z": 5,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-9",
+            "x": 16,
+            "z": 7,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-0",
+            "x": -15,
+            "z": 11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-1",
+            "x": -13,
+            "z": 11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-2",
+            "x": -11,
+            "z": 11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-3",
+            "x": -9,
+            "z": 11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-4",
+            "x": -7,
+            "z": 11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-5",
+            "x": -5,
+            "z": 11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-0",
+            "x": 5,
+            "z": 11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-1",
+            "x": 7,
+            "z": 11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-2",
+            "x": 9,
+            "z": 11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-3",
+            "x": 11,
+            "z": 11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-4",
+            "x": 13,
+            "z": 11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-5",
+            "x": 15,
+            "z": 11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-0",
+            "x": -13,
+            "z": 1,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-1",
+            "x": -11,
+            "z": 1,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-2",
+            "x": -9,
+            "z": 1,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-3",
+            "x": -7,
+            "z": 1,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-4",
+            "x": -5,
+            "z": 1,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-5",
+            "x": -3,
+            "z": 1,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-6",
+            "x": -1,
+            "z": 1,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-7",
+            "x": 1,
+            "z": 1,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-8",
+            "x": 3,
+            "z": 1,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-b-0",
+            "x": 9,
+            "z": 1,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-b-1",
+            "x": 11,
+            "z": 1,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-b-2",
+            "x": 13,
+            "z": 1,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-b-3",
+            "x": 15,
+            "z": 1,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "core-a-0",
+            "x": -5,
+            "z": -8.625,
+            "w": 0.5,
+            "d": 1.75,
+            "height": 1.2
+          },
+          {
+            "id": "core-a-1",
+            "x": -5,
+            "z": -6.875,
+            "w": 0.5,
+            "d": 1.75,
+            "height": 1.2
+          },
+          {
+            "id": "core-a-2",
+            "x": -5,
+            "z": -5.125,
+            "w": 0.5,
+            "d": 1.75,
+            "height": 1.2
+          },
+          {
+            "id": "core-a-3",
+            "x": -5,
+            "z": -3.375,
+            "w": 0.5,
+            "d": 1.75,
+            "height": 1.2
+          },
+          {
+            "id": "core-b-0",
+            "x": 5,
+            "z": -8.625,
+            "w": 0.5,
+            "d": 1.75,
+            "height": 1.2
+          },
+          {
+            "id": "core-b-1",
+            "x": 5,
+            "z": -6.875,
+            "w": 0.5,
+            "d": 1.75,
+            "height": 1.2
+          },
+          {
+            "id": "core-b-2",
+            "x": 5,
+            "z": -5.125,
+            "w": 0.5,
+            "d": 1.75,
+            "height": 1.2
+          },
+          {
+            "id": "core-b-3",
+            "x": 5,
+            "z": -3.375,
+            "w": 0.5,
+            "d": 1.75,
+            "height": 1.2
+          }
+        ],
+        "influence": 70,
+        "navigationVersion": 2,
+        "hqLevel": 2
+      },
+      "automationVersion": 1,
+      "defenseVersion": 2,
+      "createdAt": 1000,
+      "lastTick": 1000,
+      "status": "ready",
+      "orders": [],
+      "agent": {
+        "health": 100,
+        "position": [
+          -11,
+          13
+        ],
+        "path": [],
+        "mode": "idle",
+        "hack": 0,
+        "yaw": 0
+      },
+      "drones": [
+        {
+          "id": "sentinel-1",
+          "position": [
+            -13,
+            8
+          ],
+          "segment": 1,
+          "alert": 0,
+          "lost": 0,
+          "mode": "patrol",
+          "health": 240
+        },
+        {
+          "id": "sentinel-2",
+          "position": [
+            7,
+            8
+          ],
+          "segment": 1,
+          "alert": 0,
+          "lost": 0,
+          "mode": "patrol",
+          "health": 240
+        },
+        {
+          "id": "sentinel-3",
+          "position": [
+            -12,
+            -3
+          ],
+          "segment": 1,
+          "alert": 0,
+          "lost": 0,
+          "mode": "patrol",
+          "health": 240
+        }
+      ],
+      "hacked": [],
+      "carried": {
+        "compute": 0,
+        "research": 0,
+        "intel": false
+      },
+      "events": [
+        {
+          "at": 1000,
+          "type": "prepared"
+        }
+      ],
+      "squad": {
+        "version": 1,
+        "agents": [],
+        "progress": {},
+        "wallDamage": {},
+        "breachedWalls": [],
+        "balanceVersion": 3,
+        "behaviorVersion": 1,
+        "abilityVersion": 1,
+        "rules": "tactical-v1"
+      },
+      "breachRatingVersion": 1,
+      "electronic": {
+        "version": 1,
+        "disruptor": {
+          "name": "Disruptor",
+          "housing": 3,
+          "cost": 15,
+          "trainSeconds": 30,
+          "health": 54,
+          "damage": 2.25,
+          "intervalMs": 1000,
+          "speed": 2.38,
+          "range": 4.6,
+          "wallMultiplier": 1,
+          "unlockHq": 3,
+          "description": "Fragile support · temporarily suppresses defensive weapons",
+          "empDurationMs": 1500,
+          "empCooldownMs": 6000,
+          "empImmunityMs": 4500,
+          "engagementRange": 10
+        },
+        "statuses": {}
+      }
+    },
+    "apex-compute": {
+      "version": 1,
+      "id": "historical",
+      "target": {
+        "version": 1,
+        "id": "apex-compute",
+        "name": "Apex Compute",
+        "difficulty": "Elite",
+        "arena": "campus-v2",
+        "campusBounds": {
+          "minX": -24,
+          "maxX": 24,
+          "minZ": -20,
+          "maxZ": 20
+        },
+        "compound": [
+          19,
+          15
+        ],
+        "entry": [
+          -21,
+          17
+        ],
+        "exit": [
+          -21,
+          17
+        ],
+        "assets": [
+          {
+            "id": "hq",
+            "kind": "hq",
+            "name": "Founder HQ",
+            "position": [
+              0,
+              -7
+            ],
+            "size": [
+              7,
+              6
+            ],
+            "access": [
+              0,
+              -2.8
+            ],
+            "hackSeconds": 22,
+            "compute": 0,
+            "research": 0,
+            "maxHealth": 198
+          },
+          {
+            "id": "gpu",
+            "kind": "gpu",
+            "name": "GPU Rig",
+            "position": [
+              -12,
+              6
+            ],
+            "size": [
+              4,
+              3
+            ],
+            "access": [
+              -12,
+              8.3
+            ],
+            "hackSeconds": 12,
+            "compute": 14,
+            "research": 10,
+            "maxHealth": 108
+          },
+          {
+            "id": "lab",
+            "kind": "lab",
+            "name": "Research Lab",
+            "position": [
+              11,
+              6
+            ],
+            "size": [
+              3.8,
+              2.8
+            ],
+            "access": [
+              11,
+              8.4
+            ],
+            "hackSeconds": 16,
+            "compute": 14,
+            "research": 10,
+            "maxHealth": 144
+          },
+          {
+            "id": "terminal",
+            "kind": "terminal",
+            "name": "Core terminal",
+            "position": [
+              13,
+              -8
+            ],
+            "size": [
+              1.6,
+              1.4
+            ],
+            "access": [
+              13,
+              -6.5
+            ],
+            "hackSeconds": 22,
+            "compute": 14,
+            "research": 10,
+            "maxHealth": 198
+          },
+          {
+            "id": "gpu-2",
+            "kind": "gpu",
+            "name": "GPU Rig",
+            "position": [
+              -11,
+              -7
+            ],
+            "size": [
+              4,
+              3
+            ],
+            "access": [
+              -11,
+              -4.7
+            ],
+            "hackSeconds": 12,
+            "compute": 14,
+            "research": 10,
+            "maxHealth": 108
+          },
+          {
+            "id": "lab-2",
+            "kind": "lab",
+            "name": "Research Lab",
+            "position": [
+              1,
+              4
+            ],
+            "size": [
+              3.8,
+              2.8
+            ],
+            "access": [
+              1,
+              6.4
+            ],
+            "hackSeconds": 16,
+            "compute": 14,
+            "research": 10,
+            "maxHealth": 144
+          },
+          {
+            "id": "vanguard-0",
+            "kind": "station",
+            "model": "sentinel",
+            "name": "Sentinel Tower",
+            "position": [
+              -7,
+              6
+            ],
+            "size": [
+              4,
+              4
+            ],
+            "access": [
+              -7,
+              8.7
+            ],
+            "hackSeconds": 15,
+            "maxHealth": 420,
+            "compute": 14,
+            "research": 10
+          },
+          {
+            "id": "vanguard-1",
+            "kind": "station",
+            "model": "sentinel",
+            "name": "Sentinel Tower",
+            "position": [
+              11,
+              -3
+            ],
+            "size": [
+              4,
+              4
+            ],
+            "access": [
+              11,
+              -0.2999999999999998
+            ],
+            "hackSeconds": 15,
+            "maxHealth": 420,
+            "compute": 16,
+            "research": 10
+          }
+        ],
+        "sentinels": [
+          {
+            "id": "vanguard-0",
+            "position": [
+              -7,
+              6
+            ],
+            "range": 12,
+            "damage": 18,
+            "lockStep": 2,
+            "maxDamage": 30,
+            "intervalMs": 2000,
+            "warmupMs": 900
+          },
+          {
+            "id": "vanguard-1",
+            "position": [
+              11,
+              -3
+            ],
+            "range": 12,
+            "damage": 18,
+            "lockStep": 2,
+            "maxDamage": 30,
+            "intervalMs": 2000,
+            "warmupMs": 900
+          }
+        ],
+        "defenses": [
+          {
+            "id": "sentinel-1",
+            "route": [
+              [
+                -14,
+                10
+              ],
+              [
+                -9,
+                10
+              ],
+              [
+                -10.5,
+                3
+              ]
+            ],
+            "aerial": true,
+            "fliesOverWalls": true,
+            "radius": 10.2,
+            "patrolSpeed": 1.2,
+            "pursuitSpeed": 2.1,
+            "warningSeconds": 0.4
+          },
+          {
+            "id": "sentinel-2",
+            "route": [
+              [
+                7,
+                10
+              ],
+              [
+                12,
+                10
+              ],
+              [
+                14.5,
+                5
+              ]
+            ],
+            "aerial": true,
+            "fliesOverWalls": true,
+            "radius": 10.2,
+            "patrolSpeed": 1.2,
+            "pursuitSpeed": 2.1,
+            "warningSeconds": 0.4
+          },
+          {
+            "id": "sentinel-3",
+            "route": [
+              [
+                -14,
+                -3
+              ],
+              [
+                -12,
+                -11
+              ],
+              [
+                -8,
+                -10
+              ]
+            ],
+            "aerial": true,
+            "fliesOverWalls": true,
+            "radius": 10.2,
+            "patrolSpeed": 1.2,
+            "pursuitSpeed": 2.1,
+            "warningSeconds": 0.4
+          }
+        ],
+        "walls": [
+          {
+            "id": "back-0",
+            "x": -17,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-1",
+            "x": -15,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-2",
+            "x": -13,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-3",
+            "x": -11,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-4",
+            "x": -9,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-5",
+            "x": -7,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-6",
+            "x": -5,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-7",
+            "x": -3,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-8",
+            "x": -1,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-9",
+            "x": 1,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-10",
+            "x": 3,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-11",
+            "x": 5,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-12",
+            "x": 7,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-13",
+            "x": 9,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-14",
+            "x": 11,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-15",
+            "x": 13,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-16",
+            "x": 15,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "back-17",
+            "x": 17,
+            "z": -14,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "left-0",
+            "x": -18,
+            "z": -13,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-1",
+            "x": -18,
+            "z": -11,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-2",
+            "x": -18,
+            "z": -9,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-3",
+            "x": -18,
+            "z": -7,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-4",
+            "x": -18,
+            "z": -5,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-5",
+            "x": -18,
+            "z": -3,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-6",
+            "x": -18,
+            "z": -1,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-7",
+            "x": -18,
+            "z": 1,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-8",
+            "x": -18,
+            "z": 3,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-9",
+            "x": -18,
+            "z": 5,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "left-10",
+            "x": -18,
+            "z": 7,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-a-0",
+            "x": 18,
+            "z": -13,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-a-1",
+            "x": 18,
+            "z": -11,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-a-2",
+            "x": 18,
+            "z": -9,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-a-3",
+            "x": 18,
+            "z": -7,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-a-4",
+            "x": 18,
+            "z": -5,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-a-5",
+            "x": 18,
+            "z": -3,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-b-0",
+            "x": 16,
+            "z": 5,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-b-1",
+            "x": 16,
+            "z": 7,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-b-2",
+            "x": 16,
+            "z": 9,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "right-b-3",
+            "x": 16,
+            "z": 11,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "step-0",
+            "x": 17,
+            "z": 2,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-0",
+            "x": -17,
+            "z": 13,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-1",
+            "x": -15,
+            "z": 13,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-2",
+            "x": -13,
+            "z": 13,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-3",
+            "x": -11,
+            "z": 13,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-4",
+            "x": -9,
+            "z": 13,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-a-5",
+            "x": -7,
+            "z": 13,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-0",
+            "x": 3,
+            "z": 13,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-1",
+            "x": 5,
+            "z": 13,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-2",
+            "x": 7,
+            "z": 13,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-3",
+            "x": 9,
+            "z": 13,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-4",
+            "x": 11,
+            "z": 13,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-5",
+            "x": 13,
+            "z": 13,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "front-b-6",
+            "x": 15,
+            "z": 13,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-0",
+            "x": -17,
+            "z": 0,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-1",
+            "x": -15,
+            "z": 0,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-2",
+            "x": -13,
+            "z": 0,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-3",
+            "x": -11,
+            "z": 0,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-4",
+            "x": -9,
+            "z": 0,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-5",
+            "x": -7,
+            "z": 0,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-6",
+            "x": -5,
+            "z": 0,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-7",
+            "x": -3,
+            "z": 0,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-8",
+            "x": -1,
+            "z": 0,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-9",
+            "x": 1,
+            "z": 0,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-a-10",
+            "x": 3,
+            "z": 0,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-b-0",
+            "x": 11,
+            "z": 0,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-b-1",
+            "x": 13,
+            "z": 0,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-b-2",
+            "x": 15,
+            "z": 0,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "divide-b-3",
+            "x": 17,
+            "z": 0,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "core-left-0",
+            "x": -5,
+            "z": -10,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "core-left-1",
+            "x": -5,
+            "z": -8,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "core-left-2",
+            "x": -5,
+            "z": -6,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "core-left-3",
+            "x": -5,
+            "z": -4,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "core-right-0",
+            "x": 5,
+            "z": -10,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "core-right-1",
+            "x": 5,
+            "z": -8,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "core-right-2",
+            "x": 5,
+            "z": -6,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "core-right-3",
+            "x": 5,
+            "z": -4,
+            "w": 0.5,
+            "d": 2,
+            "height": 1.2
+          },
+          {
+            "id": "core-back-0",
+            "x": -4,
+            "z": -11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "core-back-1",
+            "x": -2,
+            "z": -11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "core-back-2",
+            "x": 0,
+            "z": -11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "core-back-3",
+            "x": 2,
+            "z": -11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          },
+          {
+            "id": "core-back-4",
+            "x": 4,
+            "z": -11,
+            "w": 2,
+            "d": 0.5,
+            "height": 1.2
+          }
+        ],
+        "influence": 90,
+        "navigationVersion": 2,
+        "hqLevel": 2
+      },
+      "automationVersion": 1,
+      "defenseVersion": 2,
+      "createdAt": 1000,
+      "lastTick": 1000,
+      "status": "ready",
+      "orders": [],
+      "agent": {
+        "health": 100,
+        "position": [
+          -11,
+          13
+        ],
+        "path": [],
+        "mode": "idle",
+        "hack": 0,
+        "yaw": 0
+      },
+      "drones": [
+        {
+          "id": "sentinel-1",
+          "position": [
+            -14,
+            10
+          ],
+          "segment": 1,
+          "alert": 0,
+          "lost": 0,
+          "mode": "patrol",
+          "health": 240
+        },
+        {
+          "id": "sentinel-2",
+          "position": [
+            7,
+            10
+          ],
+          "segment": 1,
+          "alert": 0,
+          "lost": 0,
+          "mode": "patrol",
+          "health": 240
+        },
+        {
+          "id": "sentinel-3",
+          "position": [
+            -14,
+            -3
+          ],
+          "segment": 1,
+          "alert": 0,
+          "lost": 0,
+          "mode": "patrol",
+          "health": 240
+        }
+      ],
+      "hacked": [],
+      "carried": {
+        "compute": 0,
+        "research": 0,
+        "intel": false
+      },
+      "events": [
+        {
+          "at": 1000,
+          "type": "prepared"
+        }
+      ],
+      "squad": {
+        "version": 1,
+        "agents": [],
+        "progress": {},
+        "wallDamage": {},
+        "breachedWalls": [],
+        "balanceVersion": 3,
+        "behaviorVersion": 1,
+        "abilityVersion": 1,
+        "rules": "tactical-v1"
+      },
+      "breachRatingVersion": 1,
+      "electronic": {
+        "version": 1,
+        "disruptor": {
+          "name": "Disruptor",
+          "housing": 3,
+          "cost": 15,
+          "trainSeconds": 30,
+          "health": 54,
+          "damage": 2.25,
+          "intervalMs": 1000,
+          "speed": 2.38,
+          "range": 4.6,
+          "wallMultiplier": 1,
+          "unlockHq": 3,
+          "description": "Fragile support · temporarily suppresses defensive weapons",
+          "empDurationMs": 1500,
+          "empCooldownMs": 6000,
+          "empImmunityMs": 4500,
+          "engagementRange": 10
+        },
+        "statuses": {}
+      }
+    }
+  }
+}

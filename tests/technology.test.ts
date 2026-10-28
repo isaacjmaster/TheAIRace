@@ -1,75 +1,26 @@
-import test from 'node:test';import assert from 'node:assert/strict';import {DatabaseSync} from 'node:sqlite';import express from 'express';import {randomUUID} from 'node:crypto';import {mkdtempSync,rmSync} from 'node:fs';import {tmpdir} from 'node:os';import {join} from 'node:path';
-import {initialFoundation,advanceFoundation,trainScrap,collectRig,GPU_RIG,type FoundationState} from '../shared/foundation';
-import {TECHNOLOGY_DURATIONS_MS,TECHNOLOGY_IDS,purchaseTechnology,technologyLevel,productionPerMinute,trainingMilliseconds} from '../shared/technology';
-import {registerFoundation} from '../server/foundation-api';import {identityHeaders,saveIdForCookie} from './helpers/identity';
-import {startOwnedOperation,commandOwnedOperation} from '../shared/infiltration-army';import {newSquadOperation,advanceSquad} from '../shared/squad-infiltration';
+import test from 'node:test';import assert from 'node:assert/strict';
+import {initialFoundation,advanceFoundation,trainScrap,type FoundationState} from '../shared/foundation';
+import {TECHNOLOGY_IDS,purchaseTechnology,productionPerMinute,trainingMilliseconds,reconcileTroopResearch,purchaseTroopResearch,TROOP_RESEARCH} from '../shared/technology';
+import {troopLevel,troopStats,captureTroopProgression,type TroopKind} from '../shared/troops';
+import {newSquadOperation,advanceSquad} from '../shared/squad-infiltration';
+import {startOwnedOperation,commandOwnedOperation} from '../shared/infiltration-army';
+import {troopCombat} from '../shared/combat-balance';
 import {taskSeconds} from '../src/ui/TaskCountdown';
 import {loadingProgress,CAMPUS_LOADING_MS,CAMPUS_FADE_MS} from '../src/ui/loadingTiming';
-const ready=(now=100000):FoundationState=>({...initialFoundation(),research:500,lab:{position:[12,-6],orientation:0,startedAt:0,completesAt:0,lastProducedAt:now,stored:0}});
-
-test('three technologies each cost 50/125/250, cap at three, and preserve legacy data',()=>{
- for(const id of TECHNOLOGY_IDS){const s=ready();const old=JSON.stringify(s);assert.equal(technologyLevel(s,id),0);assert.equal(JSON.stringify(s),old);
- for(let level=0;level<3;level++){const now=100000+level*900000,duration=[300000,600000,900000][level];assert.equal(TECHNOLOGY_DURATIONS_MS[level],duration);purchaseTechnology(s,id,level,now);assert.equal(technologyLevel(s,id),level);assert.equal(s.research,[450,325,75][level]);assert.equal(s.technologyUpgrade!.completesAt,now+duration);advanceFoundation(s,now+duration-1);assert.equal(technologyLevel(s,id),level);advanceFoundation(s,now+duration);assert.equal(technologyLevel(s,id),level+1);assert.equal(s.technologyUpgrade,undefined);}
- assert.throws(()=>purchaseTechnology(s,id,2,100000),/MAX LEVEL/);assert.equal(s.research,75);for(const other of TECHNOLOGY_IDS.filter(t=>t!==id))assert.equal(technologyLevel(s,other),0);
- }
- const s=ready();delete s.lab;assert.throws(()=>purchaseTechnology(s,'gpuOptimization',0,100000),/Finish/);s.lab=ready().lab;s.lab!.completesAt=100001;assert.throws(()=>purchaseTechnology(s,'gpuOptimization',0,100000),/Finish/);s.lab!.completesAt=0;s.research=49;assert.throws(()=>purchaseTechnology(s,'gpuOptimization',0,100000),/50 Research/);assert.equal(s.research,49);
+const ready=(now=100000):FoundationState=>({...initialFoundation(),founderHqLevel:3,buildingLevels:{lab:3},research:500,lab:{position:[12,-6],orientation:0,startedAt:0,completesAt:0,lastProducedAt:now,stored:0}});
+test('all troops have two paid upgrades, lab gates, exact configured cost and idempotent offline completion',()=>{
+ for(const kind of ['pulsewheel','breacher','disruptor'] as TroopKind[])for(const next of [2,3] as const){let s=ready();s.troopLevels={[kind]:(next-1) as 1|2};const cfg=TROOP_RESEARCH[kind][next];purchaseTroopResearch(s,kind,next-1,100000);assert.equal(s.research,500-cfg.cost);assert.equal(s.troopResearch?.completesAt,100000+cfg.durationMs);assert.equal(taskSeconds(s.troopResearch!.completesAt,100000),cfg.durationMs/1000);assert.throws(()=>purchaseTroopResearch(s,kind,next-1,100001),/already researching/);s=JSON.parse(JSON.stringify(s));advanceFoundation(s,100000+cfg.durationMs-1);assert.equal(troopLevel(s,kind),next-1);advanceFoundation(s,100000+cfg.durationMs);assert.equal(troopLevel(s,kind),next);assert.equal(s.troopResearch,undefined);advanceFoundation(s,100000+cfg.durationMs+1);assert.equal(s.research,500-cfg.cost);}
+ const s=ready();s.buildingLevels={lab:1};assert.throws(()=>purchaseTroopResearch(s,'pulsewheel',1,100000),/Level 2/);s.buildingLevels.lab=3;s.research=99;assert.throws(()=>purchaseTroopResearch(s,'pulsewheel',1,100000),/100 Research/);s.troopLevels={pulsewheel:3};assert.throws(()=>purchaseTroopResearch(s,'pulsewheel',3,100000),/MAX LEVEL/);
 });
-test('GPU bonus uses baseline rates and accrues pre-upgrade time at its original rate; each rig holds 100',()=>{
- for(let level=0;level<=3;level++){const s=ready(0);s.technologies={gpuOptimization:level};s.rig={position:[6,0],startedAt:0,completesAt:0,lastProducedAt:0,stored:0};s.rig2={...s.rig,position:[12,0]};advanceFoundation(s,60000);assert.equal(s.rig.stored,10+level);assert.equal(s.rig2.stored,10+level);assert.equal(productionPerMinute(s),10+level);advanceFoundation(s,1e8);assert.equal(s.rig.stored,100);assert.equal(s.rig2.stored,100);assert.equal(GPU_RIG.storage,100);assert.equal(collectRig(s,1e8),100);assert.equal(s.rig.stored,0);assert.equal(s.rig2.stored,100);assert.equal(s.capacity,1000);}
- const s=ready(0);s.rig={position:[6,0],startedAt:0,completesAt:0,lastProducedAt:0,stored:0};advanceFoundation(s,60000);purchaseTechnology(s,'gpuOptimization',0,60000);advanceFoundation(s,120000);assert.equal(s.rig.stored,20);s.rig.stored=0;s.rig.lastProducedAt=300000;advanceFoundation(s,420000);assert.equal(s.rig.stored,21);assert.equal(technologyLevel(s,'gpuOptimization'),1);
-});
-test('training improvements only affect new sequential orders, retaining active deadlines and exact unit counts',()=>{
- const s=ready();s.fabricator={position:[6,0],startedAt:0,completesAt:0,hangarPosition:[12,0],separateHangar:true};s.hangar={position:[12,0],startedAt:0,completesAt:0};s.training=[105000,110000];s.bots=0;
- purchaseTechnology(s,'trainingEfficiency',0,102000);assert.deepEqual(s.training,[105000,110000]);trainScrap(s,2,102000);assert.deepEqual(s.training,[105000,110000,120000,130000]);assert.deepEqual(s.trainingDurations,[5000,5000,10000,10000]);advanceFoundation(s,105000);assert.equal(s.bots,1);assert.equal(s.trainingDurations![0],5000);advanceFoundation(s,130000);advanceFoundation(s,130000);assert.equal(s.bots,4);assert.deepEqual(s.training,[]);advanceFoundation(s,1002000);trainScrap(s,2,1002000);assert.deepEqual(s.training,[1011000,1020000]);assert.deepEqual(s.trainingDurations,[9000,9000]);
- for(let level=0;level<=3;level++){s.technologies={trainingEfficiency:level};assert.equal(trainingMilliseconds(s),10000-level*1000);}
-});
-test('Cipher Engineering increases actual drone damage and snapshots it per mission',()=>{
- for(let level=0;level<=3;level++){const s=ready();s.bots=1;s.technologies={cipherEngineering:level};startOwnedOperation(s,'damage-'+level,'lumen-labs',100000,newSquadOperation);const o=s.infiltration!;assert.equal(o.cipherDamageMultiplier,1+level/10);s.technologies.cipherEngineering=3;assert.equal(o.cipherDamageMultiplier,1+level/10);
- o.target.walls=[];o.target.assets=[{id:'far',kind:'gpu',name:'GPU',position:[10,-7],size:[2,2],access:[10,-5],hackSeconds:100,compute:1,research:0}];o.target.defenses=o.target.defenses.slice(0,1);o.target.defenses[0].route=[[0,0],[.1,0]];o.drones=o.drones.slice(0,1);o.drones[0].position=[0,0];commandOwnedOperation(s,{action:'deploy',position:o.target.entry},100000);const a=o.squad!.agents[0];a.position=[0,3];a.path=[];a.droneTarget=o.drones[0].id;a.nextPlanAt=1e9;const before=o.drones[0].health!;advanceSquad(o,100100);assert.ok(Math.abs((before-o.drones[0].health!)-9*(1+level/10))<1e-8);
- }
-});
-test('API validates eligibility/identity and serializes duplicate and concurrent upgrades across persistent reloads',async()=>{
- const folder=mkdtempSync(join(tmpdir(),'airace-technology-')),path=join(folder,'test.sqlite');let now=100000;let db=new DatabaseSync(path);let app=express();app.use(express.json());registerFoundation(app,db,{clock:()=>now});let server=app.listen(0,'127.0.0.1');await new Promise<void>(r=>server.once('listening',r));let url=`http://127.0.0.1:${(server.address() as {port:number}).port}`;
- try{const fresh=await fetch(url+'/api/foundation'),cookie=fresh.headers.get('set-cookie')!.split(';')[0];const save=saveIdForCookie(db,cookie),headers=identityHeaders(db,cookie);const post=(body:unknown,h:Record<string,string>=headers)=>fetch(url+'/api/foundation/bots',{method:'POST',headers:h,body:JSON.stringify(body)});const command=(expectedLevel:number,requestId=randomUUID())=>({generation:0,requestId,command:{action:'upgrade-technology',technology:'gpuOptimization',expectedLevel}});
- assert.equal((await post(command(0),{'content-type':'application/json'})).status,401);assert.equal((await post(command(0))).status,400);
- db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(ready()),save);
- const requestId=randomUUID(),same=await Promise.all([post(command(0,requestId)),post(command(0,requestId))]);assert.ok(same.every(r=>r.status===200));let s=(await(await fetch(url+'/api/foundation',{headers})).json()).state;assert.equal(s.research,450);assert.equal(s.technologies?.gpuOptimization??0,0);assert.equal(s.technologyUpgrade.completesAt,400000);
- const competing=await Promise.all([post(command(0)),post(command(0))]);assert.deepEqual(competing.map(r=>r.status).sort(),[400,400]);
- await new Promise<void>(r=>server.close(()=>r()));db.close();db=new DatabaseSync(path);app=express();app.use(express.json());registerFoundation(app,db,{clock:()=>now});server=app.listen(0,'127.0.0.1');await new Promise<void>(r=>server.once('listening',r));url=`http://127.0.0.1:${(server.address() as {port:number}).port}`;s=(await(await fetch(url+'/api/foundation',{headers})).json()).state;assert.equal(s.technologyUpgrade.completesAt,400000);assert.equal(s.research,450);now=400000;s=(await(await fetch(url+'/api/foundation',{headers})).json()).state;assert.equal(s.technologies.gpuOptimization,1);assert.equal(s.technologyUpgrade,undefined);const after=await Promise.all([post(command(1)),post(command(1))]);assert.deepEqual(after.map(r=>r.status).sort(),[200,400]);s=(await(await fetch(url+'/api/foundation',{headers})).json()).state;assert.equal(s.research,325);assert.equal(s.technologyUpgrade.level,2);assert.equal(s.technologyUpgrade.completesAt-now,600000);assert.equal(s.compute,100);assert.equal(s.lab.position[0],12);
- }finally{await new Promise<void>(r=>server.close(()=>r()));db.close();rmSync(folder,{recursive:true,force:true});}
-});
+test('legacy non-troop bonuses and purchases are retired without refunds or unrelated changes',()=>{const s=ready();s.technologies={gpuOptimization:3,trainingEfficiency:2,cipherEngineering:1};s.technologyUpgrade={technology:'gpuOptimization',level:3,startedAt:1,completesAt:999999};const research=s.research,compute=s.compute;reconcileTroopResearch(s,100);assert.equal(s.research,research);assert.equal(s.compute,compute);assert.equal(s.technologies,undefined);assert.equal(s.technologyUpgrade,undefined);assert.equal(troopLevel(s,'pulsewheel'),2);assert.equal(s.researchMigration?.knownResearchSpent,900);const audit=JSON.stringify(s.researchMigration);s.technologies={gpuOptimization:3};reconcileTroopResearch(s,200);assert.equal(JSON.stringify(s.researchMigration),audit);assert.equal(s.technologies,undefined);assert.equal(productionPerMinute(s),10);assert.equal(trainingMilliseconds(s),10000);for(const id of TECHNOLOGY_IDS)assert.throws(()=>purchaseTechnology(s,id,0,200),/retired/);});
+test('legacy engineering mapping never reduces existing attack damage and paid active engineering keeps its deadline',()=>{for(let old=0;old<=3;old++){const s=ready();s.technologies={cipherEngineering:old};reconcileTroopResearch(s,1);assert.ok(troopStats('pulsewheel',troopLevel(s,'pulsewheel')).damage>=9*(1+old/10));}const s=ready();s.technologies={cipherEngineering:1};s.technologyUpgrade={technology:'cipherEngineering',level:2,startedAt:1,completesAt:400000};advanceFoundation(s,200000);assert.equal(s.troopResearch?.completesAt,400000);assert.equal(troopLevel(s,'pulsewheel'),2);advanceFoundation(s,400000);assert.equal(troopLevel(s,'pulsewheel'),3);assert.equal(s.research,500);});
+test('troop research captures stats and tier immutably; historical operations stay unchanged',()=>{const old=newSquadOperation('old','lumen-labs',1),base=troopCombat(old,'breacher').health;const s=ready();s.troopLevels={pulsewheel:3,breacher:3,disruptor:3};const o=newSquadOperation('new','lumen-labs',1);captureTroopProgression(o,s);s.troopLevels.pulsewheel=1;assert.equal(troopCombat(o,'pulsewheel').health,84);assert.equal(troopCombat(o,'breacher').health,672);assert.equal(troopCombat(old,'breacher').health,base);assert.equal(o.electronic?.disruptor.empDurationMs,1800);assert.equal(o.electronic?.disruptor.empImmunityMs,4500);assert.equal(o.electronic?.disruptor.empCooldownMs,6000);});
+test('upgraded Pulsewheel applies captured damage to drones, never a live or double engineering multiplier',()=>{const s=ready();s.bots=1;s.troopLevels={pulsewheel:3};startOwnedOperation(s,'damage','lumen-labs',100000,newSquadOperation);const o=s.infiltration!;o.target.walls=[];o.target.assets=[{id:'far',kind:'gpu',name:'GPU',position:[10,-7],size:[2,2],access:[10,-5],hackSeconds:100,compute:1,research:0}];o.target.defenses=o.target.defenses.slice(0,1);o.target.defenses[0].route=[[0,0],[.1,0]];o.drones=o.drones.slice(0,1);o.drones[0].position=[0,0];commandOwnedOperation(s,{action:'deploy',position:o.target.entry},100000);const a=o.squad!.agents[0];assert.equal(a.troopLevel,3);assert.equal(a.health,84);a.position=[0,3];a.path=[];a.droneTarget=o.drones[0].id;a.nextPlanAt=1e9;const before=o.drones[0].health!;advanceSquad(o,100100);assert.equal(before-o.drones[0].health!,13);});
+test('retiring training bonuses preserves paid training deadlines and inventory',()=>{const s=ready();s.training=[105000,110000];s.trainingKinds=['pulsewheel','breacher'];s.technologies={trainingEfficiency:3};advanceFoundation(s,106000);assert.equal(s.bots,1);assert.deepEqual(s.training,[110000]);advanceFoundation(s,110000);advanceFoundation(s,110001);assert.equal(s.breachers,1);assert.equal(s.bots,1);});
 test('loading timing is linear at 3.15 seconds, caps before readiness and uses Ascent’s 350ms fade',()=>{assert.equal(CAMPUS_LOADING_MS,3150);assert.equal(CAMPUS_FADE_MS,350);assert.equal(loadingProgress(1575,true),.5);assert.equal(loadingProgress(3150,false),.94);assert.equal(loadingProgress(9000,false),.94);assert.equal(loadingProgress(3150,true),1);});
 
 import {RESEARCH,collectResearch} from '../shared/research';
 test('Lab holds 50 offline, keeps the 500 wallet and preserves existing overflow',()=>{
- const s=ready(0);s.research=0;advanceFoundation(s,3600000);assert.equal(RESEARCH.lab.storage,50);assert.equal(s.lab!.stored,50);assert.equal(s.researchCapacity,500);assert.equal(collectResearch(s,3600000),50);advanceFoundation(s,3660000);assert.equal(s.lab!.stored,2);
+ const s=ready(0);s.buildingLevels={lab:1};s.research=0;advanceFoundation(s,3600000);assert.equal(RESEARCH.lab.storage,50);assert.equal(s.lab!.stored,50);assert.equal(s.researchCapacity,500);assert.equal(collectResearch(s,3600000),50);advanceFoundation(s,3660000);assert.equal(s.lab!.stored,2);
  s.lab!.stored=67;advanceFoundation(s,9e6);assert.equal(s.lab!.stored,67);assert.equal(collectResearch(s,9e6),67);assert.equal(s.research,117);
-});
-test('research job blocks other technologies without touching completed upgrades or builders',()=>{
- const s=ready();s.technologies={cipherEngineering:2};s.buildersBusy=0;purchaseTechnology(s,'gpuOptimization',0,100000);assert.throws(()=>purchaseTechnology(s,'trainingEfficiency',0,100001),/already researching/);assert.equal(s.research,450);assert.equal(s.buildersBusy,0);advanceFoundation(s,1e9);assert.equal(s.technologies!.cipherEngineering,2);assert.equal(s.technologies!.gpuOptimization,1);assert.equal(s.research,450);advanceFoundation(s,1e9+1);assert.equal(s.technologies!.gpuOptimization,1);
-});
-
-
-test('legacy active research keeps its original deadline across serialization and offline completion',()=>{
- for(const technology of TECHNOLOGY_IDS){
-  for(let level=1;level<=3;level++){
-   let s=ready(100000);s.technologies={[technology]:level-1};s.research=75;
-   s.technologyUpgrade={technology,level,startedAt:100000,completesAt:1000000};
-   const original=structuredClone(s.technologyUpgrade);
-   advanceFoundation(s,400000);assert.deepEqual(s.technologyUpgrade,original);assert.equal(technologyLevel(s,technology),level-1);
-   s=JSON.parse(JSON.stringify(s));advanceFoundation(s,999999);assert.deepEqual(s.technologyUpgrade,original);assert.equal(s.research,75);
-   advanceFoundation(s,1600000);assert.equal(technologyLevel(s,technology),level);assert.equal(s.technologyUpgrade,undefined);
-   advanceFoundation(s,1600001);assert.equal(technologyLevel(s,technology),level);assert.equal(s.research,75);
-  }
- }
-});
-
-test('all newly started technology levels expose the correct saved countdown and finish after reconnecting',()=>{
- for(const technology of TECHNOLOGY_IDS)for(let level=1;level<=3;level++){
-  let s=ready();s.technologies={[technology]:level-1};purchaseTechnology(s,technology,level-1,100000);
-  const job=s.technologyUpgrade!,seconds=level*300;
-  assert.equal(taskSeconds(job.completesAt,job.startedAt),seconds);
-  s=JSON.parse(JSON.stringify(s));advanceFoundation(s,job.completesAt-1);assert.equal(technologyLevel(s,technology),level-1);
-  advanceFoundation(s,job.completesAt+60000);assert.equal(technologyLevel(s,technology),level);assert.equal(s.technologyUpgrade,undefined);
- }
 });

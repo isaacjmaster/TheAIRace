@@ -26,12 +26,13 @@ export const COMBAT_BALANCE_V3={
  buildingHealth:{hq:216,ordinary:108,sentinel:CURRENT_SENTINEL.health}
 } as const;
 const CURRENT_PULSEWHEEL_BALANCE={health:COMBAT_BALANCE_V3.botHealth,damage:COMBAT_BALANCE_V3.botDamage,intervalMs:COMBAT_BALANCE_V3.botIntervalMs,speed:COMBAT_BALANCE_V3.botSpeed,range:COMBAT_BALANCE_V3.botRange,wallMultiplier:1};
-type CombatOperation=Pick<Operation,'squad'|'electronic'>;
+type CombatOperation=Pick<Operation,'squad'|'electronic'|'troopStats'>;
 export const isCurrentCombat=(o:CombatOperation)=>o.squad?.balanceVersion===3||o.squad?.balanceVersion===4;
-export const breacherBalance=(o:CombatOperation)=>isCurrentCombat(o)?COMBAT_BALANCE_V3.breacher:LEGACY_BREACHER_BALANCE;
+export const breacherBalance=(o:CombatOperation)=>o.troopStats?.breacher??(isCurrentCombat(o)?COMBAT_BALANCE_V3.breacher:LEGACY_BREACHER_BALANCE);
 export const wallBalance=(o:CombatOperation)=>isCurrentCombat(o)?COMBAT_BALANCE_V3.wall:LEGACY_WALL_BALANCE;
 /** Troop simulation values, including frozen historical Pulsewheel values. */
 export function troopCombat(o:CombatOperation,kind?:TroopKind){
+ if(o.troopStats)return o.troopStats[kind??'pulsewheel'];
  if(kind==='disruptor')return o.electronic?.disruptor??DISRUPTOR;
  if(kind==='breacher')return breacherBalance(o);
  return isCurrentCombat(o)?CURRENT_PULSEWHEEL_BALANCE:LEGACY_PULSEWHEEL_BALANCE;

@@ -37,8 +37,9 @@ export class SecurityWalls{
   this.group.name='Campus security walls';const cells=new Map(walls.filter(w=>w.w===1&&w.d===1).map(w=>[w.x+','+w.z,w]));
   for(const w of walls){const level=(w as SecurityBarrier & {level?:number}).level??1,height=w.height??1.2;
    if(w.w===1&&w.d===1){const neighbors=([[1,0],[-1,0],[0,1],[0,-1]] as const).filter(([dx,dz])=>cells.has((w.x+dx)+','+(w.z+dz)));
-    wallPost(this.k,this.group,w.x,w.z,height,level);
-    if(!neighbors.length){const p=securityWallModel(this.k,.92,height,level,false);p.position.set(w.x,0,w.z);this.group.add(p);}
+    // Continuous panels meet at cell edges; avoid a bulky post interrupting every straight tile.
+    if(neighbors.length!==2||neighbors[0][0]!==-neighbors[1][0]||neighbors[0][1]!==-neighbors[1][1])wallPost(this.k,this.group,w.x,w.z,height,level);
+    if(!neighbors.length){const p=securityWallModel(this.k,1,height,level,false);p.position.set(w.x,0,w.z);this.group.add(p);}
     for(const[dx,dz]of neighbors){const p=securityWallModel(this.k,.5,height,level,false);p.position.set(w.x+dx*.25,0,w.z+dz*.25);p.rotation.y=dx?0:Math.PI/2;this.group.add(p);}
    }else{const horizontal=w.w>w.d,length=Math.max(w.w,w.d),count=Math.max(1,Math.ceil(length/2.6)),span=length/count;for(let i=0;i<count;i++){const p=securityWallModel(this.k,span,height,level);p.position.set(w.x,0,w.z);p.rotation.y=horizontal?0:Math.PI/2;p.translateX(-length/2+span*(i+.5));this.group.add(p);}}
   }

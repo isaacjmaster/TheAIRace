@@ -5,7 +5,7 @@ import {animateScrapBot,turnScrapBot} from './ScrapBotMotion';
 import {compoundBotPose,compoundBay,COMPOUND_BOT_LIMIT} from '../../shared/hangar-presentation';
 
 const navy='#203746',metal='#48616b';
-export function hangarCompound(k:WorldKit,bots:number){
+export function hangarCompound(k:WorldKit,bots:number,troopLevel=1){
  const g=new THREE.Group();g.name='Bot Hangar';g.userData.compound=true;const shell=new THREE.Group();shell.name='hangar-structure';g.add(shell);
  k.box(shell,[8,.16,7],[0,.08,0],c.cream,.1);k.box(shell,[7.65,.06,6.65],[0,.19,0],'#8ca468',.04);
  // Paved service lanes remain open; vegetation is confined to the edges.
@@ -47,7 +47,7 @@ export function hangarCompound(k:WorldKit,bots:number){
  }
  k.batchStatic(shell,'compound-shell-v2');
  const residents:THREE.Group[]=[];
- for(let i=0;i<Math.min(COMPOUND_BOT_LIMIT,bots);i++){const bot=cipherBotModel(k);bot.name='docked-bot-'+i;bot.scale.setScalar(.7);bot.position.set(...compoundBay(i));bot.userData.compound=true;g.add(bot);residents.push(bot);}
+ for(let i=0;i<Math.min(COMPOUND_BOT_LIMIT,bots);i++){const bot=cipherBotModel(k,troopLevel);bot.name='docked-bot-'+i;bot.scale.setScalar(.7);bot.position.set(...compoundBay(i));bot.userData.compound=true;g.add(bot);residents.push(bot);}
  // Animate the existing skeletons, but render repeated parts with shared instanced draws.
  const pieces=new Map<string,{geometry:THREE.BufferGeometry;material:THREE.Material;parts:{mesh:THREE.Mesh;bot:THREE.Group}[]}>();
  for(const bot of residents)bot.traverse(o=>{if(o instanceof THREE.Mesh&&!Array.isArray(o.material)){const key=o.geometry.uuid+o.material.uuid;let entry=pieces.get(key);if(!entry){entry={geometry:o.geometry,material:o.material,parts:[]};pieces.set(key,entry);}entry.parts.push({mesh:o,bot});o.visible=false;}});

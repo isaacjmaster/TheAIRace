@@ -1,10 +1,12 @@
+import {migrateTroopResearch,preflightTroopResearch} from './troop-research-migration';
+import {migrateWallRebuild} from './wall-rebuild';
 import {migrateBuildingUpdate} from './building-update';
 import {prepareBuildingUpdate} from '../shared/building-update';
 import {commitLayout} from '../shared/layout-draft';
 import {buildSentinel,buildArcSpire} from '../shared/cybersecurity';
 import {developmentInfluenceStore} from './development-influence';
 import {playerWorldStore} from './player-world';
-import {purchaseTechnology,TECHNOLOGY_IDS} from '../shared/technology';
+import {purchaseTroopResearch,purchaseTechnology,TECHNOLOGY_IDS} from '../shared/technology';
 import {BASE_IDS,chooseInfiltrationBase} from '../shared/infiltration-bases';
 import {newSquadOperation} from '../shared/squad-infiltration';
 import type {Operation} from '../shared/infiltration';
@@ -30,7 +32,7 @@ import { buildStorage,upgradeBuildings,reconcileBuilderHuts,moveBuilderHut,place
 export function registerFoundation(app:express.Express,db:DatabaseSync,options:{buildingGrid?:boolean;legacyRaids?:boolean;cookieName?:string;legacyPaths?:string[];clock?:()=>number;operationFactory?:(id:string,target:string,now:number)=>Operation}={}){
  db.exec('CREATE TABLE IF NOT EXISTS foundation_saves(id TEXT PRIMARY KEY,state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS foundation_actions(session TEXT,id TEXT,payload TEXT,amount INTEGER,PRIMARY KEY(session,id))');
  db.exec('CREATE TABLE IF NOT EXISTS foundation_ava(session TEXT PRIMARY KEY,progress TEXT NOT NULL)');
- if(options.buildingGrid)migrateBuildingUpdate(db);
+ if(options.buildingGrid){preflightTroopResearch(db,options.clock?.()??Date.now());migrateBuildingUpdate(db);const wallMigration=migrateWallRebuild(db,options.clock?.()??Date.now()),researchMigration=migrateTroopResearch(db,options.clock?.()??Date.now());console.log('Gameplay expansion migrations verified',JSON.stringify({walls:wallMigration,research:researchMigration}));}
  const readAva=(id:string):AvaProgress=>{const row=db.prepare('SELECT progress FROM foundation_ava WHERE session=?').get(id);return row?JSON.parse(row.progress as string):legacyAva();};
  const saveAva=(id:string,p:AvaProgress)=>db.prepare('INSERT INTO foundation_ava VALUES(?,?) ON CONFLICT(session) DO UPDATE SET progress=excluded.progress').run(id,JSON.stringify(p));
  const observeAva=(id:string,state:FoundationState,now:number)=>{const old=readAva(id),next=reconcileAva(old,state,now);if(next.revision!==old.revision)saveAva(id,next);return next;};
@@ -127,10 +129,11 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   z.object({action:z.literal('pvp-start'),scoutId:z.string().uuid()}).strict(),
   z.object({action:z.literal('infiltration-start'),targetId:z.enum(BASE_IDS)}).strict(),
   z.object({action:z.literal('infiltration-command'),operationId:z.string().uuid(),intent:z.discriminatedUnion('action',[z.object({action:z.literal('deploy'),troop:z.enum(['pulsewheel','breacher','disruptor']).optional(),position:z.tuple([z.number().finite(),z.number().finite()]).optional()}).strict(),z.object({action:z.literal('abandon')}).strict()])}).strict(),
-  z.object({action:z.literal('upgrade-building'),ids:z.array(z.string().min(1).max(120)).min(1).max(140),expectedLevels:z.record(z.string(),z.number().int().min(1).max(5))}).strict(),
+  z.object({action:z.literal('upgrade-building'),ids:z.array(z.string().min(1).max(120)).min(1).max(200),expectedLevels:z.record(z.string(),z.number().int().min(1).max(5))}).strict(),
   z.object({action:z.literal('build-storage'),kind:z.enum(['computeStorage','researchStorage']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build-lab'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('collect-research')}).strict(),
+  z.object({action:z.literal('upgrade-troop'),troop:z.enum(['pulsewheel','breacher','disruptor']),expectedLevel:z.number().int().min(1).max(2)}).strict(),
   z.object({action:z.literal('upgrade-technology'),technology:z.enum(TECHNOLOGY_IDS),expectedLevel:z.number().int().min(0).max(2)}).strict(),
   z.object({action:z.literal('buy-decoration'),kind:z.enum(['ornamental','cypress','flowers','planter']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
   z.object({action:z.literal('move-decoration'),id:z.string().uuid(),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)])}).strict(),
@@ -179,6 +182,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
     else if(c.action==='build-storage')buildStorage(state,c.kind,c.position,now,c.orientation);
     else if(c.action==='build-lab')buildResearchLab(state,c.position,now,c.orientation);
     else if(c.action==='collect-research')amount=collectResearch(state,now);
+    else if(c.action==='upgrade-troop')purchaseTroopResearch(state,c.troop,c.expectedLevel,now);
     else if(c.action==='upgrade-technology')purchaseTechnology(state,c.technology,c.expectedLevel,now);
     else if(c.action==='buy-decoration')purchaseDecoration(state,c.kind,c.position,c.orientation,input.requestId);
     else if(c.action==='move-decoration')moveDecoration(state,c.id,c.position,c.orientation);
