@@ -5,10 +5,10 @@ import {FOUNDATION_PLOT} from './foundation-plot';
 import {DECORATIONS,type Decoration} from './decoration-catalog';
 import type {OwnedWall} from './security-catalog';
 import type {LandscapeObstacle} from './landscape';
-export type PublicCompany={id:string;name:string;level:number;hqLevel:1|2|3;influence:number;rank:number|null;visitable:boolean;message?:string};
-export type PublicBuilding=BuildingLayout&{id:RotatableBuilding;level:1|2|3;complete:boolean};
+export type PublicCompany={id:string;name:string;level:number;hqLevel:1|2|3|4|5;influence:number;rank:number|null;visitable:boolean;message?:string};
+export type PublicBuilding=BuildingLayout&{id:RotatableBuilding;level:1|2|3|4|5;complete:boolean};
 /** Only visual geometry leaves the server. Never include the owner's save, resources or credentials. */
-export type PublicBase={droneGuards?:[[number,number]?,[number,number]?];droneGuard?:[number,number];builderHuts?:BuilderHut[];version:1;companyId:string;capturedAt:number;buildings:PublicBuilding[];walls:(OwnedWall&{level?:1|2|3})[];decorations:Decoration[];scenery:LandscapeObstacle[]};
+export type PublicBase={droneGuards?:[[number,number]?,[number,number]?];droneGuard?:[number,number];builderHuts?:BuilderHut[];version:1;companyId:string;capturedAt:number;buildings:PublicBuilding[];walls:(OwnedWall&{level?:1|2|3|4|5})[];decorations:Decoration[];scenery:LandscapeObstacle[]};
 const position=(p:unknown):p is [number,number]=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite)&&p[0]>=FOUNDATION_PLOT.minX&&p[0]<=FOUNDATION_PLOT.maxX&&p[1]>=FOUNDATION_PLOT.minZ&&p[1]<=FOUNDATION_PLOT.maxZ;
 const layout=(b:BuildingLayout)=>position(b.position)&&Number.isInteger(b.orientation)&&b.orientation>=0&&b.orientation<=3;
 export function publicBase(s:FoundationState,companyId:string,now:number):PublicBase|null{

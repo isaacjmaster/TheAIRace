@@ -63,6 +63,11 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   if(!identities.rate(req,undefined,'guest-start',8)){res.status(429).json({error:'Please wait 15 minutes before starting another company.'});return;}
   db.exec('BEGIN IMMEDIATE');try{const id=randomUUID(),state=initialFoundation();if(options.buildingGrid)prepareBuildingUpdate(state);db.prepare('INSERT INTO foundation_saves VALUES(?,?)').run(id,JSON.stringify(state));saveAva(id,newAva());const enrolled=identities.enroll(id,res,req);db.exec('COMMIT');identities.cookie(res,req,enrolled.credential);res.json({started:true});}catch{db.exec('ROLLBACK');res.status(503).json({error:'Your new company could not be saved. Please retry.'});}
  });
+ // Acknowledge persisted completion notices against the latest save; never accept client state.
+ app.post('/api/foundation/upgrades/seen',(req,res)=>{
+  const parsed=z.object({ids:z.array(z.string().min(1).max(160)).max(40)}).strict().safeParse(req.body);if(!parsed.success){res.status(400).json({error:'Invalid upgrade notices.'});return;}
+  const player=session(req,res);if(!player)return;db.exec('BEGIN IMMEDIATE');try{const state=JSON.parse(String(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(player.id)!.state)) as FoundationState;let changed=false;for(const n of state.completedUpgradeNotices??[])if(!n.acknowledged&&parsed.data.ids.includes(n.id)){n.acknowledged=true;changed=true;}if(changed){state.revision++;save(player.id,state);}db.exec('COMMIT');res.json({ok:true});}catch(e){db.exec('ROLLBACK');res.status(503).json({error:'Could not acknowledge upgrade notices.'});}
+ });
  app.post('/api/foundation/development/seen',(req,res)=>{
   const input=z.object({through:z.number().int().min(0).max(Number.MAX_SAFE_INTEGER)}).strict().safeParse(req.body);if(!input.success){res.status(400).json({error:'Invalid development notice.'});return;}
   const player=session(req,res);if(!player)return;development.acknowledge(player.company.playerId,input.data.through);res.json({ok:true});
@@ -122,7 +127,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   z.object({action:z.literal('pvp-start'),scoutId:z.string().uuid()}).strict(),
   z.object({action:z.literal('infiltration-start'),targetId:z.enum(BASE_IDS)}).strict(),
   z.object({action:z.literal('infiltration-command'),operationId:z.string().uuid(),intent:z.discriminatedUnion('action',[z.object({action:z.literal('deploy'),troop:z.enum(['pulsewheel','breacher','disruptor']).optional(),position:z.tuple([z.number().finite(),z.number().finite()]).optional()}).strict(),z.object({action:z.literal('abandon')}).strict()])}).strict(),
-  z.object({action:z.literal('upgrade-building'),ids:z.array(z.string().min(1).max(120)).min(1).max(100),expectedLevels:z.record(z.string(),z.number().int().min(1).max(3))}).strict(),
+  z.object({action:z.literal('upgrade-building'),ids:z.array(z.string().min(1).max(120)).min(1).max(140),expectedLevels:z.record(z.string(),z.number().int().min(1).max(5))}).strict(),
   z.object({action:z.literal('build-storage'),kind:z.enum(['computeStorage','researchStorage']),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('build-lab'),position:z.tuple([z.number().finite(),z.number().finite()]),orientation:z.union([z.literal(0),z.literal(1),z.literal(2),z.literal(3)]).optional()}).strict(),
   z.object({action:z.literal('collect-research')}).strict(),

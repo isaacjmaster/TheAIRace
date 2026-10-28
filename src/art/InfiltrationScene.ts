@@ -3,7 +3,7 @@ import {disruptorModel,animateDisruptor,turnDisruptor} from './Disruptor';
 import {arcSpireModel,animateArcSpire} from './ArcSpire';
 import {troopCombat} from '../../shared/combat-balance';
 import {applyBuildingLevel,storageModel} from './BuildingLevels';
-import {breacherBalance,wallBalance} from '../../shared/combat-balance';
+import {breacherBalance,wallBalance,wallHealth} from '../../shared/combat-balance';
 import {breacherModel,animateBreacher,turnBreacher} from './Breacher';
 import {BreachImpact} from './BreachImpact';
 import {sameShotPosition,shotAsset} from './combatShotTarget';
@@ -27,7 +27,7 @@ import {lightCampus} from './CampusFinish';
 import {CampusLawn} from './CampusLawn';
 import {segmentClear} from '../../shared/navigation';
 import {AGENT_CLEARANCE,targetBounds,infiltrationSolids,deploymentGround,validDeployment} from '../../shared/infiltration';
-import {SecurityWalls} from './SecurityWalls';
+import {SecurityWalls,wallVisualHeight} from './SecurityWalls';
 import * as THREE from 'three';
 import { WorldKit, lightWorld, palette as C } from './world';
 import {InfiltrationDistrict} from './InfiltrationDistrict';
@@ -63,6 +63,7 @@ export class InfiltrationScene {
     private electronicEffects=new ElectronicEffects();
     private sentinelPulses=new Map<string,SentinelPulse>();
     private buildings = new Map<string, THREE.Group>();
+    private buildingLabelHeights = new Map<string,number>();
     private op: Operation;
     private anchor = 0;
     private server = 0;
@@ -122,6 +123,7 @@ export class InfiltrationScene {
             g.userData.assetId = a.id;
             this.scene.add(g);
             this.buildings.set(a.id, g);
+            g.updateWorldMatrix(true,true);this.buildingLabelHeights.set(a.id,new THREE.Box3().setFromObject(g).max.y+.45);
         }
         const hqAsset=o.target.assets.find(a=>a.kind==='hq'),house=hqAsset&&this.buildings.get(hqAsset.id);
         this.scene.add(this.electronicEffects.group);this.scene.add(this.power.group);this.power.sync(house,o.target.assets.filter(a=>a.kind==='gpu').map(a=>({id:a.id,model:this.buildings.get(a.id)!})),o.target.assets.map(a=>{const p=a.visualPosition??a.position;const odd=(a.orientation??0)%2;let w=a.kind==='hq'?8.1:4,d=a.kind==='hq'?6.8:a.model==='sentinel'?4:3;if(a.kind==='hq'&&!o.pvp){w*=.65;d*=.65;}return {x:p[0],z:p[1],w:odd?d:w,d:odd?w:d};}),o.target.walls??[]);
@@ -162,14 +164,14 @@ export class InfiltrationScene {
         if(!this.options.replay&&!this.options.preview){const limits=hqZoomLimits(matchMedia('(hover: hover) and (pointer: fine)').matches);this.zoomBounds={min:1/limits.max,max:1/limits.min,default:1};if(!this.framed){const b=targetBounds(this.op.target);this.center.set((b.minX+b.maxX)/2,0,(b.minZ+b.maxZ)/2);this.span=1;this.framed=true;}this.camera.clearViewOffset();campusProjection(this.camera,w,h);this.camera.zoom=1/this.span;this.camera.position.copy(this.center).addScaledVector(CAMPUS_CAMERA_OFFSET,3);this.camera.lookAt(this.center);this.camera.near=.1;this.camera.far=500;this.camera.updateProjectionMatrix();this.camera.updateMatrixWorld();return;}
         const limits=infiltrationZoomLimits(w,h,reserved,targetBounds(this.op.target));this.zoomBounds=this.op.pvp?{min:limits.min,max:1.15,default:this.options.replay?this.replayZoom:.9}:limits;if(!this.framed){this.span=this.zoomBounds.default;this.framed=true;}this.span=THREE.MathUtils.clamp(this.span,this.zoomBounds.min,this.zoomBounds.max);frameInfiltration(this.camera,w,h,reserved,this.center,this.span,targetBounds(this.op.target));this.renderer.domElement.dataset.zoomLimits=JSON.stringify(this.zoomBounds);this.renderer.domElement.dataset.cameraInsets=JSON.stringify(reserved);this.renderer.domElement.dataset.arenaBounds=JSON.stringify(targetBounds(this.op.target));}
     isJammed(id:string){return !this.op.hacked.includes(id)&&(this.op.electronic?.statuses[id]?.disabledUntil??0)>this.visualNow();}
-    hackingProgress(id:string){const o=this.op,unit=o.squad?.agents.find(a=>a.id===id);if(unit){const max=troopCombat(o,unit.troop).health;return o.status==='active'&&unit.state==='active'&&unit.health!<max?unit.health!/max:null;}const drone=o.drones.find(d=>d.id===id);if(drone)return o.status==='active'&&drone.health!==undefined&&drone.health>0&&drone.health<tacticalBalance(o).droneHealth?drone.health/tacticalBalance(o).droneHealth:null;if(o.squad&&o.target.walls?.some(w=>w.id===id)){return o.squad.agents.some(a=>a.state==='active'&&a.wallTarget===id&&a.mode==='breaching'&&!a.path.length)?Math.min(1,(o.squad.wallDamage[id]??0)/wallBalance(o).health):null;}const asset=o.target.assets.find(a=>a.id===id);if(!asset?.hackSeconds)return null;if(o.squad){const workers=o.squad.agents.some(a=>a.state==='active'&&a.mode==='hacking'&&a.target===id);return workers?(o.pvp?Math.max(0,1-(o.squad.progress[id]??0)/(asset.maxHealth??asset.hackSeconds)):Math.min(1,(o.squad.progress[id]??0)/asset.hackSeconds)):null;}return o.agent.mode==='hacking'&&o.agent.target===id?o.agent.hack/asset.hackSeconds:null;}
+    hackingProgress(id:string){const o=this.op,unit=o.squad?.agents.find(a=>a.id===id);if(unit){const max=troopCombat(o,unit.troop).health;return o.status==='active'&&unit.state==='active'&&unit.health!<max?unit.health!/max:null;}const drone=o.drones.find(d=>d.id===id);if(drone){const max=o.squad?.balanceVersion===4?(o.target.defenses.find(d=>d.id===id)?.maxHealth??tacticalBalance(o).droneHealth):tacticalBalance(o).droneHealth;return o.status==='active'&&drone.health!==undefined&&drone.health>0&&drone.health<max?drone.health/max:null;}if(o.squad&&o.target.walls?.some(w=>w.id===id)){return o.squad.agents.some(a=>a.state==='active'&&a.wallTarget===id&&a.mode==='breaching'&&!a.path.length)?Math.min(1,(o.squad.wallDamage[id]??0)/wallHealth(o,id)):null;}const asset=o.target.assets.find(a=>a.id===id);if(!asset?.hackSeconds)return null;if(o.squad){const workers=o.squad.agents.some(a=>a.state==='active'&&a.mode==='hacking'&&a.target===id);return workers?(o.pvp?Math.max(0,1-(o.squad.progress[id]??0)/(asset.maxHealth??asset.hackSeconds)):Math.min(1,(o.squad.progress[id]??0)/asset.hackSeconds)):null;}return o.agent.mode==='hacking'&&o.agent.target===id?o.agent.hack/asset.hackSeconds:null;}
     setDeploymentActive(active:boolean){this.deploymentActive=active;}
     setDeployment(position:Vec){this.deploymentPosition=[...position];this.deploymentValid=validDeployment(this.op.target,position);return this.deploymentValid;}
     pan(dx:number,dy:number){const scale=(this.camera.right-this.camera.left)/Math.max(1,this.host.clientWidth)/this.camera.zoom;const right=new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld,0),up=new THREE.Vector3().setFromMatrixColumn(this.camera.matrixWorld,1);up.y=0;up.normalize();this.center.addScaledVector(right,-dx*scale).addScaledVector(up,dy*scale);this.center.y=0;const b=targetBounds(this.op.target);this.center.x=THREE.MathUtils.clamp(this.center.x,b.minX,b.maxX);this.center.z=THREE.MathUtils.clamp(this.center.z,b.minZ,b.maxZ);this.resize();}
     zoom(f: number) { this.span = THREE.MathUtils.clamp(this.span*f,this.zoomBounds.min,this.zoomBounds.max); this.resize(); }
     sync(o: Operation, serverTime: number) { this.op = structuredClone(o); this.server = serverTime; this.anchor = performance.now(); const points = [o.agent.position, ...o.agent.path].map(p => new THREE.Vector3(p[0], .15, p[1])); this.pathGeometry.setFromPoints(points); }
     labelPoint(id:string){const asset=this.op.target.assets.find(a=>a.id===id),wall=this.op.target.walls?.find(w=>w.id===id),position=id==='entry'?this.op.target.entry:asset?.position??(wall?[wall.x,wall.z]:this.op.target.exit),drone=this.drones.get(id==='drone'?(this.op.drones[0]?.id??''):id)?.model;
-        const tracked=this.squadModels.get(id)?.model??drone;const point=tracked?tracked.position.clone().add(new THREE.Vector3(0,tracked===drone?.24:this.op.squad?.agents.find(a=>a.id===id)?.troop==='breacher'?3.15:this.op.squad?.agents.find(a=>a.id===id)?.troop==='disruptor'?2.5:1.7,0)):new THREE.Vector3(position[0],asset?3.2:wall?(wall.height??1.3)+.6:.3,position[1]);point.project(this.camera);return{x:(point.x+1)*this.host.clientWidth/2,y:(1-point.y)*this.host.clientHeight/2,z:point.z};}
+        const tracked=this.squadModels.get(id)?.model??drone;const point=tracked?tracked.position.clone().add(new THREE.Vector3(0,tracked===drone?.24:this.op.squad?.agents.find(a=>a.id===id)?.troop==='breacher'?3.15:this.op.squad?.agents.find(a=>a.id===id)?.troop==='disruptor'?2.5:1.7,0)):new THREE.Vector3(position[0],asset?(this.buildingLabelHeights.get(id)??3.2):wall?wallVisualHeight(wall.level??1,wall.height??1.3)+.85:.3,position[1]);point.project(this.camera);return{x:(point.x+1)*this.host.clientWidth/2,y:(1-point.y)*this.host.clientHeight/2,z:point.z};}
     groundPosition(x:number,y:number):Vec|undefined{const r=this.renderer.domElement.getBoundingClientRect();this.ray.setFromCamera(new THREE.Vector2((x-r.left)/r.width*2-1,1-(y-r.top)/r.height*2),this.camera);const p=this.ray.ray.intersectPlane(this.plane,new THREE.Vector3());return p?[p.x,p.z]:undefined;}
     update(dt: number) { if (document.hidden)
         return; this.clock += dt;this.district.update(dt,this.host.clientWidth,this.host.clientHeight,this.reduced); const o = this.op; if(!this.options.replay)advanceOperation(o, this.server + Math.min(1100, performance.now() - this.anchor)); const a = o.agent; this.agent.visible = !o.squad&&o.status !== 'ready';this.deployment.visible=o.status==='ready'||o.status==='active'&&!!o.squad;this.zoneMaterial.opacity=this.deploymentActive?.16:.025;const desired=this.desiredAgent.set(a.position[0],.13,a.position[1]);

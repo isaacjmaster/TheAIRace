@@ -46,7 +46,7 @@ test('Arc Spire uses the existing builder, preserves completion and exposes no u
   assert.throws(()=>buildArcSpire(s,condition==='bounds'?[100,0]:[9,9],epoch));assert.equal(s.compute,before);assert.equal(s.arcSpire,undefined);
  }
  const s=ready();buildArcSpire(s,[9,9],epoch,1);assert.equal(s.compute,550);assert.equal(s.buildersBusy,1);assert.ok(constructionWork(s,epoch+1000)?.routes[0].length);assert.equal(s.arcSpire!.completesAt,epoch+120000);assert.equal(buildingReady(s,'arcSpire',epoch+119999),false);assert.throws(()=>buildArcSpire(s,[16,9],epoch),/1\/1/);assert.throws(()=>moveBuilding(s,'arcSpire',[16,9],0,epoch),/construction/);
- const loaded=JSON.parse(JSON.stringify(s)) as FoundationState;advanceFoundation(loaded,epoch+120000);moveBuilding(loaded,'arcSpire',[16,9],2,epoch+120000);assert.equal(loaded.buildersBusy,0);assert.equal(loaded.compute,550);assert.equal(loaded.arcSpire!.completesAt,epoch+120000);assert.match(quoteBuildingUpgrade(loaded,'arcSpire',epoch+120000).reason!,/maximum/);
+ const loaded=JSON.parse(JSON.stringify(s)) as FoundationState;advanceFoundation(loaded,epoch+120000);moveBuilding(loaded,'arcSpire',[16,9],2,epoch+120000);assert.equal(loaded.buildersBusy,0);assert.equal(loaded.compute,550);assert.equal(loaded.arcSpire!.completesAt,epoch+120000);assert.equal(quoteBuildingUpgrade(loaded,'arcSpire',epoch+120000).nextLevel,2);assert.equal(quoteBuildingUpgrade(loaded,'arcSpire',epoch+120000).requiredHq,3);
 });
 
 test('Arc Spire remains owned through layout inventory, atomic moves and public/PvP snapshots',()=>{

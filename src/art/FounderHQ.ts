@@ -27,63 +27,58 @@ export function animateFounderIdle(house:THREE.Object3D|undefined,time:number,re
  if(steam){r.steamMaterial.opacity=.16*ease(st/.35)*ease((2-st)/.5);for(let i=0;i<r.steam.children.length;i++){const p=r.steam.children[i],rise=(st*.32+i*.25)%1;p.position.set(Math.sin(st*2+i)*.045,.25+rise*.4,Math.cos(st*1.5+i)*.035);p.scale.set(.025*(.7+rise*.55),.075*(.7+rise*.55),.025*(.7+rise*.55));}}
 }
 
-/** A closed cottage with a flush front window: the founder is real interior geometry. */
-export function founderHQ(k:WorldKit,parent:THREE.Group,level:1|2|3=1):THREE.Group{
- if(level===3)return founderHQLevel3(k,parent);
- if(level===2)return founderHQLevel2(k,parent);
- const polished=k.finish==='campus';
- const house=new THREE.Group();house.name='Founder HQ';house.position.set(-5,0,-1);parent.add(house);
- const box=(size:[number,number,number],pos:[number,number,number],color:string,r=.06,glow=false)=>k.box(house,size,pos,color,r,glow);
- box([8.6,.35,7.8],[0,.2,.5],'#8f9e91',.15);
- box([7.8,.18,6.5],[0,.45,0],c.cream);
- box([7.8,4.2,.3],[0,2.6,-3],c.cream);
- for(const x of [-3.75,3.75])box([.3,4.2,6],[x,2.6,0],c.cream);
- // Front wall wraps a broad window and a separate front door.
- box([7.8,.8,.3],[0,.85,3],c.cream);
- box([7.8,.55,.3],[0,4.45,3],c.cream);
- box([2.1,3.3,.3],[2.7,2.7,3],c.cream);
- box([.4,3.3,.3],[-3.6,2.7,3],c.cream);
- box([1.35,2.6,.18],[2.65,1.95,3.2],c.dark);
- box([.9,.65,.06],[2.65,2.65,3.32],c.cyan);
- box([.13,.13,.12],[3.1,1.8,3.37],c.gold);
- box([2,.2,1.1],[2.65,.45,3.7],c.slate);
- // Pitched roof runs along Z; triangular gables close the roof ends.
- for(const side of [-1,1]){const roof=box([4.6,.28,6.8],[side*2.05,5.35,0],polished?'#155976':c.dark);roof.rotation.z=-side*.36;}
- for(const z of [-3,3]){
-  k.gable(house,7.8,1.44,.22,[0,4.55,z],c.cream);
- }
- box([.3,.25,6.9],[0,6.15,0],c.gold);
- // Restrained standing-seam roof and warm workspace lighting; footprint is unchanged.
- for(const side of [-1,1])for(const z of [-2.4,-1.2,0,1.2,2.4]){const seam=box([4.56,.045,.045],[side*2.05,5.51,z],polished?'#397991':'#4b6b7d',.01);seam.rotation.z=-side*.36;}
- const deskLight=new THREE.PointLight(polished?'#ffd080':'#ffd29a',polished?16:5,polished?8:7,2);deskLight.position.set(-.9,3.6,2);house.add(deskLight);
- k.box(house,[2.6,.045,.18],[-.9,4.1,2.75],'#ffe0a7',.02,true);
- // Window trim sits against the front wall, with the entire workspace inside.
- box([4.8,.18,.3],[-.9,1.2,3.08],c.gold);
- for(const x of [-3.3,1.5])box([.13,3.1,.13],[x,2.75,3.12],c.dark);
- box([4.95,.14,.15],[-.9,4.3,3.12],c.dark);
- // No opaque pane: the window stays readable on small mobile screens.
- founderDesk(k,house,-.9,3.6,polished);
- const founder=founderCharacter(k,house);
- founderLaptop(k,house,-.8);
- box([.6,.12,.5],[0,6.37,0],c.cyan);
- if(polished){
-  // Layered standing-seam panels preserve the original roof outline and footprint.
-  for(const side of [-1,1])for(let i=0;i<5;i++){
-   const panel=box([4.54,.025,1.13],[side*2.05,5.51,-2.4+i*1.2],i%2?'#155976':'#185d7a',.015);panel.rotation.z=-side*.36;
+/** Five architectural stages on the same lot. The founder studio and cable port stay grounded. */
+export function founderHQ(k:WorldKit,parent:THREE.Group,level:1|2|3|4|5=1):THREE.Group{
+ const house=new THREE.Group();house.name='Founder HQ Level '+level;house.userData.visualLevel=level;house.position.set(-5,0,-1);parent.add(house);
+ const body=new THREE.Group();body.name='hq-architecture';house.add(body);
+ const skin=['#ede4cf','#c9d8d7','#d8e5e7','#718b9d','#edf0e7'][level-1],frame=['#355b61','#284959','#254653','#25384e','#253a50'][level-1],roof=['#23616c','#4d7283','#315466','#30485d','#326473'][level-1],trim=level===4?'#c4d5df':level===5?'#d6b866':'#adcece';
+ const box=(size:[number,number,number],pos:[number,number,number],color=skin,r=.04,glow=false)=>k.box(body,size,[pos[0],pos[1]+(pos[1]>=3.6?.55:0),pos[2]],color,r,glow);
+ // A shallow, earth-toned plinth is contained in the existing foundation.
+ box([8.55,.26,7.7],[0,.15,.5],'#81928b',.12);box([7.95,.12,6.6],[0,.34,0],frame,.07);
+ box([7.8,4.2,.24],[0,2.5,-3],skin);for(const x of [-3.8,3.8])box([.24,4.2,6],[x,2.5,0],skin);
+ box([7.8,.7,.25],[0,.76,3],skin);box([7.8,.36,.25],[0,3.98,3],skin);
+ for(const x of [-3.62,1.55])box([.3,3.4,.3],[x,2.625,3.04],frame);
+ box([2.1,3.6,.25],[2.72,2.655,3],skin);box([1.18,2.56,.13],[2.63,1.85,3.2],frame);box([.82,.75,.04],[2.63,2.55,3.29],c.cyan,.02);box([.1,.13,.08],[3.05,1.8,3.31],c.gold,.01);
+ box([1.8,.18,.72],[2.63,.34,3.55],'#71888d');
+ box([5.12,.13,.17],[-1.02,1.13,3.17],trim);box([5.12,.13,.18],[-1.02,3.75,3.17],frame);
+ // Rear workspace stays visible through the open front glazing. No per-tier new lights.
+ box([7.1,2.9,.035],[0,2.3,-2.83],'#dccab0');box([3.2,.04,.12],[-.9,3.63,2.72],'#ffe3b0',.01,true);
+ founderDesk(k,house,-.9,3.6,true);const founder=founderCharacter(k,house);founderLaptop(k,house,-.8);
+ if(level===1){
+  for(const side of [-1,1]){const r=box([4.24,.2,6.55],[side*1.98,4.68,0],roof);r.rotation.z=-side*.3;for(const z of [-2.3,-1.15,0,1.15,2.3]){const seam=box([4.19,.035,.035],[side*1.98,4.8,z],'#417e85',.005);seam.rotation.z=-side*.3;}}
+  for(const z of [-3,3])k.gable(body,7.8,1.14,.18,[0,4.65,z],skin);box([.2,.15,6.65],[0,5.4,0],trim);
+ }else if(level===2){
+  // Engineered split roof: raised daylight strip and a separate entrance canopy.
+  box([5.6,.24,6.5],[-1.12,4.35,0],roof);box([2.5,.21,6.5],[2.8,4.17,0],frame);
+  box([2.9,.65,5.1],[-1.2,4.74,-.25],frame);for(const z of [-2.82,2.32]){box([2.7,.45,.06],[-1.2,4.77,z],'#8bd1da');for(const x of [-2.2,-1.2,-.2])box([.08,.5,.09],[x,4.77,z],skin);}
+  box([3.2,.17,5.5],[-1.2,5.17,-.25],skin);for(const x of [-3.65,1.7,3.8])box([.2,3.7,.23],[x,2.22,3.15],trim);
+  box([2.4,.17,1.1],[2.72,3.65,3.35],roof);box([1.7,.28,1.5],[2.72,4.42,-1.1],frame);for(let i=0;i<4;i++)box([1.45,.05,.12],[2.72,4.58,-1.65+i*.34],trim);
+ }else{
+  // Advanced facilities retain the founder floor below a stepped office suite.
+  box([8.25,.27,6.6],[0,4.23,0],frame);box([7.75,.08,.17],[0,4.08,3.3],c.cyan,.015,true);
+  const upperWidth=level===3?4.9:level===4?6.4:7.15,upperX=level===3?.85:0,upperHeight=level===3?1.55:level===4?1.85:2.05;
+  box([upperWidth,upperHeight,4.5],[upperX,4.5+upperHeight/2,-.65],frame,.08);
+  for(const z of [-2.94,1.64]){box([upperWidth-.3,upperHeight-.3,.06],[upperX,4.5+upperHeight/2,z],level===4?'#7db9ce':'#96d5da');for(let i=0;i<5;i++)box([.13,upperHeight+.1,.14],[upperX-upperWidth/2+.15+i*(upperWidth-.3)/4,4.5+upperHeight/2,z],skin);}
+  for(const side of [-1,1]){box([.2,upperHeight+.1,4.68],[upperX+side*upperWidth/2,4.5+upperHeight/2,-.65],skin);box([.045,upperHeight-.35,3.9],[upperX+side*(upperWidth/2+.11),4.5+upperHeight/2,-.65],'#5baabd');}
+  const top=4.5+upperHeight;box([upperWidth+.4,.24,4.95],[upperX,top+.15,-.65],roof,.06);
+  // Dedicated thermal plant replaces decorative anonymous roof boxes.
+  for(const x of [-1.15,1.15]){box([1.5,.42,1.5],[x,top+.48,-1.2],frame);for(let i=0;i<5;i++)box([1.3,.04,.14],[x,top+.71,-1.75+i*.27],trim);}
+  if(level===3){box([2.4,.2,2.8],[-2.72,4.6,-.4],skin);for(const z of [-1.2,-.4,.4])box([1.9,.07,.4],[-2.72,4.74,z],'#4f7d8b');}
+  if(level>=4){
+   // Deep paired structural ribs carry the office bridge; sheltered front terrace.
+   for(const x of [-3.63,3.63]){box([.42,6.5,.48],[x,3.6,-2.45],skin);box([.34,4.1,.38],[x,2.4,2.8],skin);box([.25,.36,6],[x,6.86,-.25],trim);}
+   box([7.4,.2,1.18],[0,4.55,2.7],skin);for(const x of [-2.7,-1.35,0,1.35,2.7])box([.07,.65,.07],[x,4.93,3.21],frame);box([6.1,.09,.11],[0,5.27,3.21],trim);
+   // Compact communications plate, with a physically connected base.
+   box([.38,.66,.38],[2.58,top+.6,-2.08],frame);const dish=k.cylinder(body,.55,.12,[2.58,top+1.55,-2.08],skin);dish.rotation.x=.55;box([.12,.19,.12],[2.58,top+1.12,-1.95],c.cyan,.02,true);
   }
-  box([7.4,.16,.09],[0,1.28,3.18],'#fff8e6',.025);
-  for(const x of [-3.53,3.53])box([.16,3.9,.12],[x,2.8,3.18],'#fff8e6',.025);
-  box([7.1,.18,.08],[0,.64,3.2],'#d7c9ac',.02);
-  // Warm interior surfaces and a pendant make the existing window inviting.
-  box([6.9,3.05,.045],[0,2.8,-2.8],'#f0d4a0',.015);
-  k.cylinder(house,.035,.55,[-2.1,3.85,1.5],'#876f4e');k.cylinder(house,.24,.13,[-2.1,3.56,1.5],c.gold);
-  const warm=k.box(house,[.3,.025,.22],[-2.1,3.48,1.5],'#fff1bb',.02,true);warm.castShadow=false;
-  box([.8,1.15,.22],[.7,2.35,.5],'#bb854b',.03);
-  for(let i=0;i<3;i++)box([.16,.65,.15],[.47+i*.2,2.45,.65],i%2?'#61b8ad':'#ebbc65',.015);
-  k.batchStatic(founder,'campus-founder');k.batchStatic(house,'campus-house');
-  k.grounding(house,10,9,0,.4);
+  if(level===5){
+   // Flagship dual roof blades and central lightwell keep a horizontal campus silhouette.
+   for(const side of [-1,1]){const blade=box([1.85,.24,6.2],[side*2.6,7.29,-.12],skin,.07);blade.rotation.z=-side*.12;box([.16,.13,5.7],[side*3.35,7.5,-.12],trim);}
+   box([1.5,.67,2.8],[0,7.12,-.35],frame);box([1.22,.08,2.5],[0,7.5,-.35],'#72c6d4',.04);for(const z of [-1.6,-.8,0,.8])box([1.3,.06,.08],[0,7.58,z],trim);
+   box([2.1,.6,.16],[0,5.54,1.82],frame);k.emblem(body,[[-.35,0],[0,.34],[.35,0],[0,-.34]],[0,6.1,1.92],c.gold);box([.12,.25,.04],[0,5.55,1.93],c.cyan,.01,true);
+  }
  }
- addHqPowerBox(k,house,1);return house;
+ k.batchStatic(body,'hq-five-tier-architecture-'+level);k.batchStatic(founder,'hq-five-tier-founder');k.grounding(house,9,8,0,.6);addHqPowerBox(k,house,1);return house;
 }
 
 export type FoundationBuilding='arcSpire'|'hq'|'rig'|'rig2'|'fabricator'|'hangar'|'station'|'lab'|'droneStation'|'sentinel'|'computeStorage'|'researchStorage';
@@ -147,56 +142,4 @@ function founderLaptop(k:WorldKit,house:THREE.Group,x:number){
  k.box(screen,[1.5,.72,.085],[0,.36,0],'#294353',.05);k.box(screen,[1.28,.51,.012],[0,.37,-.05],'#305c70',.025);
  for(let i=0;i<3;i++)k.box(screen,[.74-i*.12,.035,.008],[-.16,.49-i*.1,-.06],i===0?'#90ded8':'#77acb8',.005,true);
  k.box(screen,[.28,.13,.012],[0,.37,.05],c.cyan,.025);k.batchStatic(screen,'founder-laptop-screen');k.batchStatic(laptop,'founder-laptop-base');
-}
-/** An attached office wing and taller main roof fit the original 9 x 8 gameplay lot. */
-function founderHQLevel2(k:WorldKit,parent:THREE.Group){
- const house=new THREE.Group();house.name='Founder HQ Level 2';house.position.set(-5,0,-1);parent.add(house);
- const box=(size:[number,number,number],pos:[number,number,number],color:string,r=.06,glow=false)=>k.box(house,size,pos,color,r,glow);
- box([8.6,.35,7.8],[0,.2,.5],'#8f9e91',.15);box([8.2,.18,6.8],[0,.46,0],c.cream,.1);
- // Taller main office occupies the left side; attached studio occupies the right.
- box([5.9,4.65,.24],[-1.1,2.86,-3],c.cream);box([.24,4.65,6.3],[-3.93,2.86,.1],c.cream);
- box([.23,4.65,6.3],[1.72,2.86,.1],c.cream);
- box([5.8,.75,.26],[-1.1,.94,3.1],c.cream);box([5.8,.6,.26],[-1.1,4.88,3.1],c.cream);
- for(const x of [-3.88,1.68])box([.25,3.6,.27],[x,2.8,3.1],c.cream);
- // Main roof has a raised clerestory, panel seams and a warm ridge.
- for(const side of [-1,1]){const x=-1.1+side*1.55;const roof=box([3.45,.25,6.8],[x,5.88,.05],'#155976');roof.rotation.z=-side*.36;
-  for(let i=0;i<5;i++){const panel=box([3.4,.025,1.13],[x,6.03,-2.35+i*1.2],i%2?'#155976':'#185d7a',.015);panel.rotation.z=-side*.36;}}
- for(const z of [-3.05,3.12])k.gable(house,5.8,1.1,.2,[-1.1,5.18,z],c.cream);
- box([.24,.22,6.85],[-1.1,6.65,.05],c.gold);box([1.6,.1,.8],[2.8,4.64,-.75],c.dark);
- box([1.3,.04,.5],[2.8,4.72,-.75],c.cyan,.035,true);
- // Broad flush window keeps the same founder and laptop visible.
- for(const x of [-3.65,1.42])box([.12,3.3,.12],[x,2.95,3.25],c.dark);
- box([5.15,.14,.14],[-1.1,4.6,3.25],c.dark);box([5.15,.18,.2],[-1.1,1.3,3.24],c.gold);
- founderDesk(k,house,-1.1,3.8,true);
- const founder=founderCharacter(k,house);founder.position.x=-1.05;
- founderLaptop(k,house,-1.05);
- box([5.4,3.5,.04],[-1.1,3,-2.83],'#f0d4a0');const light=new THREE.PointLight('#ffd080',18,8,2);light.position.set(-1.1,3.8,2);house.add(light);
- k.box(house,[3.3,.05,.16],[-1.1,4.35,2.8],'#ffe0a7',.02,true);
- // Lower side wing: front door, an extra workspace window and a sloped canopy.
- box([2.35,3.55,.23],[2.87,2.35,-2.8],c.cream);box([.23,3.55,5.8],[4,2.35,.1],c.cream);
- box([2.35,.45,.25],[2.87,.73,3.1],c.cream);box([2.35,.45,.25],[2.87,3.98,3.1],c.cream);
- box([.22,3.0,.25],[1.82,2.35,3.1],c.cream);box([.22,3.0,.25],[3.95,2.35,3.1],c.cream);
- box([1.03,2.5,.15],[2.38,1.95,3.24],c.dark);box([.66,.6,.04],[2.38,2.55,3.33],c.cyan);box([.1,.1,.1],[2.78,1.8,3.35],c.gold);
- box([.78,1.8,.12],[3.4,2.5,3.22],c.dark);box([.59,1.54,.035],[3.4,2.5,3.3],'#ffe0a7',.025,true);box([.055,1.6,.04],[3.4,2.5,3.33],c.cream);
- box([.065,1.7,2.2],[4.14,2.5,-.2],c.dark,.025);box([.025,1.45,1.95],[4.18,2.5,-.2],'#a0dfe4',.015);box([.03,1.5,.07],[4.2,2.5,-.2],c.cream,.01);
- const canopy=box([2.65,.22,6.35],[2.9,4.42,.15],'#155976',.08);canopy.rotation.z=-.08;
- box([2.55,.07,.07],[2.9,4.33,3.34],c.cyan,.025,true);box([1.65,.18,.8],[2.38,.48,3.82],c.slate,.05);
- for(const x of [-3.86,1.69,3.98])box([.12,3.7,.11],[x,2.5,3.25],'#fff8e6',.025);
- k.batchStatic(founder,'campus-founder-level2');k.batchStatic(house,'campus-house-level2');k.grounding(house,10,9,0,.4);addHqPowerBox(k,house,2);return house;
-}
-
-/** The original founder studio remains below a compact upper research wing. */
-function founderHQLevel3(k:WorldKit,parent:THREE.Group){
- const house=founderHQLevel2(k,parent);house.name='Founder HQ Level 3';
- const wing=new THREE.Group();wing.name='hq-elite-wing';house.add(wing);
- k.box(wing,[2.7,.25,5.9],[2.75,4.63,.05],c.cream,.08);
- k.box(wing,[2.55,2.0,5.65],[2.75,5.7,-.05],'#264a60',.08);
- for(const z of [-2.7,2.7]){k.box(wing,[2.3,1.5,.045],[2.75,5.72,z],'#7dcfdc',.025);for(const x of [1.65,2.75,3.85])k.box(wing,[.1,1.65,.09],[x,5.73,z],c.cream,.015);k.box(wing,[2.45,.09,.1],[2.75,5.12,z],c.gold,.015);}
- for(const z of [-1.8,0,1.8]){k.box(wing,[.05,1.5,1.55],[4.05,5.73,z],'#7dcfdc',.02);k.box(wing,[.09,1.7,.12],[4.1,5.73,z+.8],c.cream,.015);}
- k.box(wing,[2.95,.25,6.15],[2.75,6.82,.05],'#155976',.07);k.box(wing,[2.7,.06,.12],[2.75,6.96,3.05],c.cyan,.015,true);
- for(const x of [1.6,3.9])k.box(wing,[.24,2.5,.3],[x,5.78,-2.6],c.cream,.035);
- k.box(wing,[1.35,.35,1.65],[2.75,7.04,-1.35],c.dark,.05);for(let i=0;i<4;i++)k.box(wing,[1.1,.035,.13],[2.75,7.24,-1.9+i*.35],c.slate,.01);
- k.cylinder(wing,.12,1.1,[3.7,7.4,-2.5],c.gold);k.box(wing,[.7,.4,.15],[3.7,7.9,-2.5],c.dark);k.box(wing,[.5,.15,.035],[3.7,7.94,-2.4],c.cyan,.01,true);
- k.box(wing,[5.8,.2,.65],[-1.1,4.7,3.35],c.cream,.045);k.box(wing,[5.25,.06,.035],[-1.1,4.62,3.69],c.cyan,.01,true);
- k.batchStatic(wing,'hq-elite-wing');return house;
 }

@@ -14,7 +14,7 @@ export type Vec = [
     number
 ];
 export type Asset = {
-    maxHealth?:number;model?:RotatableBuilding;orientation?:Orientation;level?:1|2|3;visualPosition?:Vec;
+    maxHealth?:number;model?:RotatableBuilding;orientation?:Orientation;level?:1|2|3|4|5;visualPosition?:Vec;
     id: string;
     kind: 'hq' | 'gpu' | 'lab' | 'terminal' | 'station';
     name: string;
@@ -28,7 +28,7 @@ export type Asset = {
 };
 export type Defense = {
     aerial?:boolean;fliesOverWalls?:boolean;
-    stationId?:string;level?:1|2|3;maxHealth?:number;damage?:number;
+    stationId?:string;level?:1|2|3|4|5;maxHealth?:number;damage?:number;
     id: string;
     route: Vec[];
     radius: number;
@@ -40,7 +40,7 @@ export type TargetSnapshot = {
     sentinels?:SentinelDefense[];arcSpires?:ArcSpireDefense[];
     version: 1;
     arena?:'campus-v2';
-    hqLevel?:1|2|3;
+    hqLevel?:1|2|3|4|5;
     publicBase?:PublicBase;
     campusBounds?:{minX:number;maxX:number;minZ:number;maxZ:number};
     compound?:Vec;

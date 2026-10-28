@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import {WorldKit} from './world';
 const bladeShape=new THREE.Shape();bladeShape.moveTo(.085,.08);bladeShape.bezierCurveTo(.18,.11,.32,.18,.34,.36);bladeShape.quadraticCurveTo(.34,.48,.20,.47);bladeShape.bezierCurveTo(.035,.36,-.02,.2,.085,.08);
 /** Long, low open accelerator cage. Shared by live, visit, combat and card views. */
-export function gpuRigModel(k:WorldKit){
+export function gpuRigModel(k:WorldKit,level=1){
  const g=new THREE.Group();g.name='Industrial GPU Rig';
- const dark='#152c39',body='#263e4b',metal='#526773',edge='#91a3ab',blade='#314957',cyan='#31dafa',ice='#8cffff';
+ level=Math.max(1,Math.min(5,level));const dark='#152c39',body=['#30424b','#274a58','#1c3d50','#193449','#172c40'][level-1],metal='#526773',edge=level>=4?'#d8e7e6':'#91a3ab',blade='#314957',cyan='#31dafa',ice='#8cffff';
  for(const [color,roughness,metalness]of [[dark,.6,.28],[body,.52,.32],[metal,.38,.5],[edge,.3,.65],[blade,.4,.38]] as const){const mat=k.mat(color) as THREE.MeshStandardMaterial;mat.roughness=roughness;mat.metalness=metalness;}
  for(const color of [cyan,ice]){const mat=k.mat(color,true) as THREE.MeshStandardMaterial;mat.emissiveIntensity=color===ice?1.15:1.0;mat.roughness=.28;}
  k.box(g,[4.5,.22,2.48],[0,.18,0],dark,.075);
@@ -13,7 +13,9 @@ export function gpuRigModel(k:WorldKit){
  for(const x of [-2.13,2.13]){
   k.box(g,[.22,1.98,.24],[x,1.25,1.13],edge,.045);k.box(g,[.22,1.98,.24],[x,1.25,-1.13],edge,.045);
   k.box(g,[.13,1.56,2.08],[x,1.22,-.02],body,.06);
-  k.box(g,[.065,1.23,1.55],[x+(x<0?-.085:.085),1.24,-.06],dark,.035);
+  const sideHousing=k.box(g,[level>=2?.22:.065,level>=2?1.6:1.23,1.65],[x+(x<0?-.055:.055),1.24,-.06],level===1?dark:level===2?'#8aa3a8':'#d3e1e0',.035);if(level>=2)sideHousing.rotation.z=-Math.sign(x)*.16;
+  if(level>=2)for(const z of [-.57,-.19,.19,.57])k.box(g,[.075,.93,.13],[x+Math.sign(x)*.2,1.28,z],dark,.015);
+  if(level>=3){for(const z of [-.67,.67]){k.box(g,[.25,1.4,.28],[x+Math.sign(x)*.12,1.25,z],metal,.035);k.box(g,[.06,.85,.09],[x+Math.sign(x)*.26,1.35,z],cyan,.01,true);}}
   // Lit inset on each end cap and substantial corner shoulder blocks.
   k.box(g,[.035,.065,1.35],[x+(x<0?-.125:.125),1.74,-.06],cyan,.015,true);
   for(const y of [.47,2.08])for(const z of [-1.13,1.13])k.box(g,[.29,.27,.31],[x,y,z],metal,.045);
@@ -29,6 +31,7 @@ export function gpuRigModel(k:WorldKit){
   k.box(g,[.1,.04,.82],[x-.47,2.17,-.38],cyan,.01,true);
   k.box(g,[.26,.035,.085],[x+.25,2.17,.74],edge,.015);
   // Thick outer socket, metal lip, illuminated inner rim and recessed impeller.
+  if(level>=2){for(const dx of [-.57,.57])for(const dy of [-.57,.57]){const shoulder=k.box(g,[.25,.27,.16],[x+dx,1.235+dy,1.17],level===2?metal:'#d3e1e0',.035);shoulder.rotation.z=-Math.sign(dx*dy)*.2;}}
   const socket=k.cylinder(g,.649,.16,[x,1.235,1.015],dark);socket.rotation.x=Math.PI/2;
   k.ring(g,.612,.045,[x,1.235,1.145],metal);
   k.ring(g,.565,.035,[x,1.235,1.205],cyan,true);
@@ -58,7 +61,30 @@ export function gpuRigModel(k:WorldKit){
   const plug=k.cylinder(g,.145,.16,[sign*2.25,.67,-.56],dark);plug.rotation.z=Math.PI/2;
   const port=new THREE.Object3D();port.name=sign<0?'gpu-power-port-left':'gpu-power-port';port.position.set(sign*2.33,.67,-.56);port.userData.exitSign=sign;g.add(port);
  }
- k.batchStatic(g,'refined-industrial-gpu');
+ // Each chassis generation has a different cooling architecture, not a decorative level badge.
+ if(level===2){
+  for(const x of [-1.36,0,1.36]){k.box(g,[1.12,.34,1.4],[x,2.4,-.16],body,.08);for(let j=0;j<5;j++)k.box(g,[1.02,.08,.13],[x,2.63,-.7+j*.28],edge,.015);}
+  for(const x of [-2.07,2.07]){const cheek=k.box(g,[.23,1.3,1.75],[x,1.48,-.12],edge,.04);cheek.rotation.z=Math.sign(x)*.11;}
+ }
+ if(level>=3){
+  // A full-width pitched radiator housing replaces the exposed cartridge roof.
+  k.gable(g,4.16,.68,1.92,[0,2.25,-.1],level===3?'#aec2c6':metal);
+  for(const side of [-1,1])for(let n=0;n<5;n++){const fin=k.box(g,[1.6,.055,.13],[side*1.02,2.61,-.87+n*.38],dark,.01);fin.rotation.z=-side*.31;}
+  for(const x of [-2.02,2.02]){const shoulder=k.box(g,[.32,.85,2.28],[x,2.2,-.05],'#d3e1e0',.055);shoulder.rotation.z=-Math.sign(x)*.2;k.box(g,[.08,.1,1.9],[x,2.69,-.05],cyan,.015,true);}
+  k.box(g,[.35,.16,2.05],[0,2.98,-.09],dark,.035);k.box(g,[.13,.05,1.76],[0,3.09,-.09],cyan,.015,true);
+ }
+ if(level===4){
+  // Twin liquid cooling exchange towers, copper links and an exposed middle service channel.
+  for(const x of [-1.52,1.52]){k.box(g,[.92,.68,1.78],[x,3.23,-.12],edge,.09);for(let j=0;j<5;j++)k.box(g,[.75,.1,.19],[x,3.64,-.76+j*.3],dark,.02);k.box(g,[.12,.58,.07],[x,3.24,.82],cyan,.01,true);}
+  for(const x of [-.73,.73])k.box(g,[.13,.18,2.05],[x,3.13,-.09],'#b17e48',.04);
+ }
+ if(level===5){
+  // Three tall compute blades seated in one integrated white cooling crown.
+  for(const x of [-1.36,0,1.36]){k.box(g,[.87,.98,1.28],[x,3.49,-.18],dark,.08);k.box(g,[.72,.82,.08],[x,3.5,.52],cyan,.035,true);for(const y of [3.23,3.5,3.77])k.box(g,[.79,.07,.12],[x,y,.58],edge,.015);}
+  for(const x of [-2.04,2.04]){k.box(g,[.31,1.6,1.9],[x,3.03,-.13],edge,.06);k.box(g,[.09,1.07,.06],[x,3.15,.87],cyan,.015,true);}
+  k.box(g,[4.3,.24,1.65],[0,4.12,-.15],edge,.09);k.box(g,[2.6,.08,.7],[0,4.28,-.17],dark,.025);
+ }
+ g.userData.visualLevel=level;k.batchStatic(g,'five-tier-gpu-'+level);
  const lamp=k.box(g,[.3,.045,.025],[1.72,.56,1.285],ice,.01,true);lamp.name='gpu-activity';
  return g;
 }

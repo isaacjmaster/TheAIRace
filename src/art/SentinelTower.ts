@@ -5,16 +5,18 @@ import type {SentinelState} from '../../shared/sentinel-catalog';
 const C={armor:'#183443',edge:'#304c58',steel:'#49616a',dark:'#0c202b',green:'#8cc934',light:'#baff46',core:'#eeffc0'};
 type Parts={yaw:THREE.Group;pitch:THREE.Group;recoil:THREE.Group;muzzle:THREE.Object3D;charge:THREE.Mesh[]};
 /** All rotating geometry stays inside the four-by-four placement envelope. */
-export function sentinelModel(k:WorldKit){
+export function sentinelModel(k:WorldKit,level=1){
  const g=new THREE.Group();g.name='Sentinel Tower — Vanguard Cannon';
- k.cylinder(g,1.94,.22,[0,.11,0],C.dark);k.cylinder(g,1.75,.48,[0,.43,0],C.armor);
- for(let i=0;i<12;i++){const a=i*Math.PI/6,x=Math.sin(a),z=Math.cos(a),panel=k.box(g,[.76,.5,.48],[x*1.59,.48,z*1.59],i%3?C.armor:C.edge,.075);panel.rotation.y=a;panel.rotation.x=-.2;
-  const seam=k.box(g,[.045,.42,.05],[x*1.86,.45,z*1.86],C.steel,.01);seam.rotation.y=a;
-  if(i%3===0){const inset=k.box(g,[.48,.17,.05],[x*1.85,.48,z*1.85],C.dark,.025);inset.rotation.y=a;for(let j=-1;j<=1;j++){const led=k.box(g,[.1,.095,.025],[x*1.89+Math.cos(a)*j*.14,.49,z*1.89-Math.sin(a)*j*.14],C.light,.01,true);led.rotation.y=a;}}
- }
- k.cylinder(g,1.36,.2,[0,.78,0],C.edge);k.cylinder(g,1.13,.22,[0,.96,0],C.dark);
- const ring=k.ring(g,1.08,.045,[0,1.075,0],C.light,true);ring.rotation.x=Math.PI/2;
- k.cylinder(g,.83,.55,[0,1.3,0],C.armor);
+ level=Math.max(1,Math.min(5,level));
+ const armor=['#24434b','#2d4d58','#1c3648','#334651','#20364b'][level-1];
+ // Angular equipment plinth and four reinforced feet replace the old tire-shaped lower mount.
+ k.box(g,[3.65,.18,3.65],[0,.09,0],C.dark,.08);k.box(g,[2.5,.38,2.5],[0,.35,0],armor,.08);
+ for(const x of [-1.43,1.43])for(const z of [-1.43,1.43]){const foot=k.box(g,[.72,.52,.72],[x,.35,z],level>=3?C.steel:C.edge,.07);foot.rotation.y=Math.PI/4;k.box(g,[.22,.07,.22],[x,.64,z],C.green,.02);}
+ k.cylinder(g,.91,.24,[0,.68,0],C.dark);k.cylinder(g,.67,.65,[0,1.08,0],armor);
+ const ring=k.ring(g,.86,.045,[0,.82,0],C.light,true);ring.rotation.x=Math.PI/2;
+ if(level>=2){for(const x of [-1.25,1.25]){const strut=k.box(g,[.35,.85,1.6],[x,.87,0],C.edge,.06);strut.rotation.z=-Math.sign(x)*.18;k.box(g,[.1,.52,.45],[x,1.05,.68],C.green,.02);}}
+ if(level>=3)for(const z of [-1.42,1.42]){k.box(g,[1.35,.68,.42],[0,.63,z],armor,.07);k.box(g,[.85,.09,.07],[0,.96,z+Math.sign(z)*.23],C.light,.015,true);}
+ if(level>=4)for(const x of [-1.46,1.46])for(const z of [-1.46,1.46]){const brace=k.box(g,[.22,.5,.7],[x,.83,z],level===5?'#a5bac3':C.steel,.035);brace.rotation.y=-Math.sign(x*z)*.6;}
  const yaw=new THREE.Group();yaw.position.y=1.52;g.add(yaw);yaw.name='sentinel-yaw';
  k.cylinder(yaw,.89,.18,[0,0,0],C.green);k.cylinder(yaw,.75,.32,[0,.23,0],C.dark);
  for(const x of [-.67,.67]){k.box(yaw,[.28,.78,.9],[x,.54,0],C.armor,.08);const bearing=k.cylinder(yaw,.31,.2,[x*1.25,.65,0],C.edge);bearing.rotation.z=Math.PI/2;const bolt=k.cylinder(yaw,.13,.215,[x*1.25,.65,0],C.green);bolt.rotation.z=Math.PI/2;}
@@ -40,10 +42,16 @@ export function sentinelModel(k:WorldKit){
   k.ring(recoil,.103,.025,[x,y,1.84],C.green);const hole=k.cylinder(recoil,.086,.012,[x,y,1.835],C.dark);hole.rotation.x=Math.PI/2;
  }
  k.box(recoil,[.35,.19,.34],[0,.66,-.55],C.dark,.025);k.box(recoil,[.22,.06,.23],[0,.78,-.55],C.green,.02);
+ // Armor, cooling and targeting hardware physically follow the recoiling cannon.
+ if(level>=2){for(const x of [-.83,.83]){const shoulder=k.box(recoil,[.34,1.02,1.78],[x,.44,-.13],level===2?'#6c858b':armor,.055);shoulder.rotation.z=-Math.sign(x)*.18;k.box(recoil,[.14,.12,1.5],[x,.99,-.13],C.green,.025);}const collar=k.ring(recoil,.56,.1,[0,.12,1.61],C.steel);k.box(recoil,[1.16,.16,.4],[0,.73,.8],C.edge,.035);}
+ if(level>=3){for(const x of [-.85,.85]){const casing=k.box(recoil,[.42,.35,1.46],[x,1.08,-.3],level>=4?'#647e87':C.steel,.06);casing.rotation.z=-Math.sign(x)*.16;}k.box(recoil,[.48,.6,.6],[0,1.06,-.62],C.dark,.05);k.box(recoil,[.32,.18,.08],[0,1.13,-.27],C.light,.02,true);}
+ if(level===4){for(const x of [-.8,.8]){k.box(recoil,[.3,.5,.85],[x,1.5,-.57],C.edge,.04);for(const z of [-.84,-.58,-.32])k.box(recoil,[.35,.075,.14],[x,1.79,z],C.green,.01);}k.box(recoil,[.95,.12,.5],[0,.83,.84],C.steel,.03);}
+ if(level===5){for(const x of [-.76,.76]){const shield=k.box(recoil,[.28,.86,1.64],[x,.93,-.24],'#93abb2',.055);shield.rotation.z=-Math.sign(x)*.2;k.box(recoil,[.1,.11,1.4],[x,1.39,-.24],C.light,.015,true);}k.box(recoil,[1.12,.28,.95],[0,1.13,-.44],armor,.06);k.box(recoil,[.36,.14,.3],[0,1.35,-.5],C.green,.025);for(const z of [.6,1.03,1.42])k.box(recoil,[1.0,.16,.17],[0,.55,z],C.edge,.025);}
+ g.userData.visualLevel=level;
  const muzzle=new THREE.Object3D();muzzle.position.set(0,.12,1.93);recoil.add(muzzle);
  // Shared materials / batched armor; animation pivots and charge rails remain separate.
  const rails=new THREE.Group();recoil.add(rails);for(const mesh of charge)rails.attach(mesh);
- k.batchStatic(g,'sentinel-base');k.batchStatic(yaw,'sentinel-mount');k.batchStatic(recoil,'sentinel-cannon');
+ k.batchStatic(g,'sentinel-base-'+level);k.batchStatic(yaw,'sentinel-mount-'+level);k.batchStatic(recoil,'sentinel-cannon-'+level);
  g.userData.sentinel={yaw,pitch,recoil,muzzle,charge} satisfies Parts;
  return g;
 }
