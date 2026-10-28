@@ -1,10 +1,11 @@
 import * as THREE from 'three';
+import {technologyMaterials,armoredHull} from './TechnologyMaterials';
 import {WorldKit} from './world';
 const bladeShape=new THREE.Shape();bladeShape.moveTo(.085,.08);bladeShape.bezierCurveTo(.18,.11,.32,.18,.34,.36);bladeShape.quadraticCurveTo(.34,.48,.20,.47);bladeShape.bezierCurveTo(.035,.36,-.02,.2,.085,.08);
 /** Long, low open accelerator cage. Shared by live, visit, combat and card views. */
 export function gpuRigModel(k:WorldKit,level=1){
  const g=new THREE.Group();g.name='Industrial GPU Rig';
- level=Math.max(1,Math.min(5,level));const dark='#152c39',body=['#30424b','#274a58','#1c3d50','#193449','#172c40'][level-1],metal='#526773',edge=level>=4?'#d8e7e6':'#91a3ab',blade='#314957',cyan='#31dafa',ice='#8cffff';
+ level=Math.max(1,Math.min(5,level));const p=technologyMaterials(k,level),dark='#152c39',body=p.shell,metal=p.frame,edge=level>=3?p.metal:p.frame,blade='#314957',cyan='#31dafa',ice='#8cffff';
  for(const [color,roughness,metalness]of [[dark,.6,.28],[body,.52,.32],[metal,.38,.5],[edge,.3,.65],[blade,.4,.38]] as const){const mat=k.mat(color) as THREE.MeshStandardMaterial;mat.roughness=roughness;mat.metalness=metalness;}
  for(const color of [cyan,ice]){const mat=k.mat(color,true) as THREE.MeshStandardMaterial;mat.emissiveIntensity=color===ice?1.15:1.0;mat.roughness=.28;}
  k.box(g,[4.5,.22,2.48],[0,.18,0],dark,.075);
@@ -13,7 +14,7 @@ export function gpuRigModel(k:WorldKit,level=1){
  for(const x of [-2.13,2.13]){
   k.box(g,[.22,1.98,.24],[x,1.25,1.13],edge,.045);k.box(g,[.22,1.98,.24],[x,1.25,-1.13],edge,.045);
   k.box(g,[.13,1.56,2.08],[x,1.22,-.02],body,.06);
-  const sideHousing=k.box(g,[level>=2?.22:.065,level>=2?1.6:1.23,1.65],[x+(x<0?-.055:.055),1.24,-.06],level===1?dark:level===2?'#8aa3a8':'#d3e1e0',.035);if(level>=2)sideHousing.rotation.z=-Math.sign(x)*.16;
+  const sideHousing=k.box(g,[level>=2?.22:.065,level>=2?1.6:1.23,1.65],[x+(x<0?-.055:.055),1.24,-.06],level===1?dark:p.shell,.035);if(level>=2)sideHousing.rotation.z=-Math.sign(x)*.16;
   if(level>=2)for(const z of [-.57,-.19,.19,.57])k.box(g,[.075,.93,.13],[x+Math.sign(x)*.2,1.28,z],dark,.015);
   if(level>=3){for(const z of [-.67,.67]){k.box(g,[.25,1.4,.28],[x+Math.sign(x)*.12,1.25,z],metal,.035);k.box(g,[.06,.85,.09],[x+Math.sign(x)*.26,1.35,z],cyan,.01,true);}}
   // Lit inset on each end cap and substantial corner shoulder blocks.
@@ -31,7 +32,7 @@ export function gpuRigModel(k:WorldKit,level=1){
   k.box(g,[.1,.04,.82],[x-.47,2.17,-.38],cyan,.01,true);
   k.box(g,[.26,.035,.085],[x+.25,2.17,.74],edge,.015);
   // Thick outer socket, metal lip, illuminated inner rim and recessed impeller.
-  if(level>=2){for(const dx of [-.57,.57])for(const dy of [-.57,.57]){const shoulder=k.box(g,[.25,.27,.16],[x+dx,1.235+dy,1.17],level===2?metal:'#d3e1e0',.035);shoulder.rotation.z=-Math.sign(dx*dy)*.2;}}
+  if(level>=2){for(const dx of [-.57,.57])for(const dy of [-.57,.57]){const shoulder=k.box(g,[.25,.27,.16],[x+dx,1.235+dy,1.17],level===2?p.metal:p.frame,.035);shoulder.rotation.z=-Math.sign(dx*dy)*.2;}}
   const socket=k.cylinder(g,.649,.16,[x,1.235,1.015],dark);socket.rotation.x=Math.PI/2;
   k.ring(g,.612,.045,[x,1.235,1.145],metal);
   k.ring(g,.565,.035,[x,1.235,1.205],cyan,true);
@@ -63,26 +64,26 @@ export function gpuRigModel(k:WorldKit,level=1){
  }
  // Each chassis generation has a different cooling architecture, not a decorative level badge.
  if(level===2){
-  for(const x of [-1.36,0,1.36]){k.box(g,[1.12,.34,1.4],[x,2.4,-.16],body,.08);for(let j=0;j<5;j++)k.box(g,[1.02,.08,.13],[x,2.63,-.7+j*.28],edge,.015);}
+  for(const x of [-1.36,0,1.36]){k.box(g,[1.12,.34,1.4],[x,2.4,-.16],body,.08);for(let j=0;j<5;j++)k.box(g,[1.02,.08,.13],[x,2.63,-.7+j*.28],p.metal,.015);}
   for(const x of [-2.07,2.07]){const cheek=k.box(g,[.23,1.3,1.75],[x,1.48,-.12],edge,.04);cheek.rotation.z=Math.sign(x)*.11;}
  }
  if(level===3){
   // A full-width pitched radiator housing replaces the exposed cartridge roof.
-  k.gable(g,4.16,.68,1.92,[0,2.25,-.1],level===3?'#aec2c6':metal);
+  k.gable(g,4.16,.68,1.92,[0,2.25,-.1],p.shell);
   for(const side of [-1,1])for(let n=0;n<5;n++){const fin=k.box(g,[1.6,.055,.13],[side*1.02,2.61,-.87+n*.38],dark,.01);fin.rotation.z=-side*.31;}
-  for(const x of [-2.02,2.02]){const shoulder=k.box(g,[.32,.85,2.28],[x,2.2,-.05],'#d3e1e0',.055);shoulder.rotation.z=-Math.sign(x)*.2;k.box(g,[.08,.1,1.9],[x,2.69,-.05],cyan,.015,true);}
+  for(const x of [-2.02,2.02]){const shoulder=k.box(g,[.32,.85,2.28],[x,2.2,-.05],p.frame,.055);shoulder.rotation.z=-Math.sign(x)*.2;k.box(g,[.08,.1,1.9],[x,2.69,-.05],cyan,.015,true);}
   k.box(g,[.35,.16,2.05],[0,2.98,-.09],dark,.035);k.box(g,[.13,.05,1.76],[0,3.09,-.09],cyan,.015,true);
  }
  if(level===4){
-  k.box(g,[4.15,.75,2.13],[0,2.63,-.05],edge,.14);
-  for(const x of [-1.3,0,1.3]){k.box(g,[.95,.12,1.72],[x,3.06,-.05],dark,.04);k.box(g,[.72,.23,.045],[x,2.66,1.04],dark,.03);}
-  k.box(g,[3.6,.045,.04],[0,2.92,1.05],cyan,.01,true);
+  // Ceramic exchanger follows the full chassis and feeds the three existing cooling bays.
+  armoredHull(k,g,4.16,.78,2.1,[0,2.61,-.05],p.shell,.27);
+  for(const x of [-1.36,0,1.36]){k.box(g,[.88,.18,1.7],[x,2.96,-.05],p.glass,.06);for(const side of [-1,1])k.box(g,[.08,.6,.1],[x+side*.4,2.6,1.03],cyan,.02,true);}
  }
  if(level===5){
-  k.box(g,[4.24,1.15,2.15],[0,2.85,-.08],dark,.16);
-  for(const x of [-1.36,0,1.36]){k.box(g,[.96,.6,.09],[x,2.86,1.05],metal,.07);for(const y of [2.68,2.86,3.04])k.box(g,[.72,.055,.04],[x,y,1.11],cyan,.01,true);}
-  for(const x of [-2.02,2.02])k.box(g,[.28,1.2,2.15],[x,2.85,-.08],edge,.08);
-  k.box(g,[4.2,.2,2.15],[0,3.5,-.08],edge,.1);
+  // The angular high-density head tapers into the fan chassis rather than sitting on a cabinet roof.
+  armoredHull(k,g,4.25,.45,2.15,[0,2.48,-.08],p.shell,.18);
+  for(const x of [-1.36,0,1.36]){armoredHull(k,g,1.15,.82,1.96,[x,2.94,-.02],p.glass,.23);k.box(g,[.86,.1,1.7],[x,3.39,-.02],p.shell,.025);k.box(g,[.65,.045,.05],[x,2.85,1.03],cyan,.015,true);}
+  for(const x of [-2.02,2.02]){armoredHull(k,g,.3,1.65,2.05,[x,2.3,-.08],p.frame,.12);k.box(g,[.15,.09,1.8],[x,3.16,-.08],p.metal,.025);}
  }
 
  g.userData.visualLevel=level;k.batchStatic(g,'five-tier-gpu-'+level);

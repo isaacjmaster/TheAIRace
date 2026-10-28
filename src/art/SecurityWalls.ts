@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {WorldKit,palette as C} from './world';
+import {technologyMaterials,armoredHull} from './TechnologyMaterials';
 import type {SecurityBarrier} from '../../shared/security-walls';
 const tier=(n:number)=>Math.max(1,Math.min(5,Math.trunc(n)));
 const HEIGHT=[1,1.04,1.08,1.09,1.12],ARMOR=['#e1ddca','#788d99','#20384e','#dbe7e5','#596978'],FRAME=['#355358','#455b6a','#142737','#26384e','#d2deda'];
@@ -7,19 +8,25 @@ const HEIGHT=[1,1.04,1.08,1.09,1.12],ARMOR=['#e1ddca','#788d99','#20384e','#dbe7
 export const wallVisualHeight=(level:number,height=1.2)=>height*HEIGHT[tier(level)-1];
 function wallPost(k:WorldKit,g:THREE.Group,x:number,z:number,height:number,level:number){
  const n=tier(level),h=wallVisualHeight(n,height),w=[.2,.3,.36,.34,.38][n-1];
- k.box(g,[w,h-.14,w],[x,(h-.14)/2,z],ARMOR[n-1],.035);
+ k.box(g,[w,h-.14,w],[x,(h-.14)/2,z],technologyMaterials(k,n).shell,.035);
 }
 /** Whole panel generations: laminate, steel, faceted armor, ceramic and platinum. */
 export function securityWallModel(k:WorldKit,length=1,height=1.2,level=1,endPosts=true){
  const n=tier(level),h=wallVisualHeight(n,height),panel=new THREE.Group(),frame=FRAME[n-1],armor=ARMOR[n-1],len=Math.max(.08,length);panel.name='Security Wall Level '+n;panel.userData.visualLevel=n;
- const depth=[.2,.3,.4,.38,.44][n-1];
- k.box(panel,[len,h-.12,depth],[0,h/2-.02,0],armor,n>=3?.065:.025);
- k.box(panel,[len,.12,depth+.06],[0,.06,0],frame,.025);
- k.box(panel,[len,.12,depth+.08],[0,h-.06,0],frame,n===5?.05:.025);
- if(n===2)for(const z of [-1,1])k.box(panel,[len,.32,.035],[0,h*.48,z*(depth/2+.012)],'#9badb5',.018);
- if(n===3)for(const z of [-1,1]){const plate=k.box(panel,[len,.64,.06],[0,h*.5,z*.21],'#2b435b',.04);plate.rotation.x=z*.09;k.box(panel,[len,.035,.018],[0,h*.72,z*.247],'#4b9ba9',.005);}
- if(n===4)for(const z of [-1,1]){k.box(panel,[len,.09,.04],[0,h*.65,z*.205],FRAME[n-1],.01);k.box(panel,[len,.025,.045],[0,h*.65,z*.214],'#76d2d5',.005,true);}
- if(n===5)for(const z of [-1,1]){const plate=k.box(panel,[len,.45,.065],[0,h*.47,z*.22],'#bacacb',.045);plate.rotation.x=z*.12;k.box(panel,[len,.035,.035],[0,h*.77,z*.24],'#b8eeee',.008,true);}
+ const p=technologyMaterials(k,n),depth=[.2,.34,.5,.52,.6][n-1];
+ // An extruded armor profile runs continuously across owner-level half tiles.
+ if(n===1)k.block(panel,[len,h-.12,depth],[0,h/2-.02,0],p.shell,.025);
+ else {const hull=armoredHull(k,panel,depth,h-.12,len,[0,h/2,0],p.shell,n===2?.08:.16);hull.rotation.y=Math.PI/2;}
+ k.block(panel,[len,.12,depth+.06],[0,.06,0],p.frame,.025);
+ k.block(panel,[len,n>=3?.2:.14,depth+.12],[0,h-.1,0],p.frame,.035);
+ if(n===2)for(const z of [-1,1]){k.block(panel,[len,.18,.055],[0,h*.3,z*.18],p.metal,.015);k.block(panel,[len,.07,.05],[0,h*.79,z*.18],p.metal,.015);}
+ if(n===3)for(const z of [-1,1]){k.block(panel,[len,.22,.075],[0,h*.67,z*.255],p.metal,.025);k.block(panel,[len,.36,.06],[0,h*.36,z*.265],p.frame,.03);}
+ if(n>=4)for(const z of [-1,1]){
+  k.block(panel,[len,.26,.07],[0,h*.58,z*(depth/2)],p.frame,.025);
+  k.block(panel,[len,.12,.08],[0,h*.58,z*(depth/2+.035)],p.glass,.02);
+  k.block(panel,[len,.035,.085],[0,h*.58,z*(depth/2+.045)],n===5?'#c9ffff':'#6ce1e6',.005,true);
+  if(n===5){const facet=armoredHull(k,panel,len,.36,.08,[0,h*.31,z*.3],p.glass,.1);facet.rotation.x=z*.14;k.block(panel,[len,.045,.07],[0,h*.83,z*.29],p.metal,.01);}
+ }
  if(endPosts){for(const x of new Set([-Math.max(0,len/2-.22),Math.max(0,len/2-.22)]))wallPost(k,panel,x,0,height,n);}
  return panel;
 }

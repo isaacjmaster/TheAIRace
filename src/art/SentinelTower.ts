@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {WorldKit} from './world';
+import {technologyMaterials,armoredHull} from './TechnologyMaterials';
 import type {SentinelState} from '../../shared/sentinel-catalog';
 
 const C={armor:'#183443',edge:'#304c58',steel:'#49616a',dark:'#0c202b',green:'#8cc934',light:'#baff46',core:'#eeffc0'};
@@ -8,7 +9,7 @@ type Parts={yaw:THREE.Group;pitch:THREE.Group;recoil:THREE.Group;muzzle:THREE.Ob
 export function sentinelModel(k:WorldKit,level=1){
  const g=new THREE.Group();g.name='Sentinel Tower — Vanguard Cannon';
  level=Math.max(1,Math.min(5,level));
- const armor=['#33454b','#738a95','#182e4a','#d6dfd9','#26374f'][level-1],trim=['#506269','#bac5c6','#3e5770','#354956','#c5d5d7'][level-1];
+ const p=technologyMaterials(k,level),armor=level===1?p.frame:p.shell,trim=p.frame;
  k.box(g,[3.65,.18,3.65],[0,.09,0],C.dark,.08);
  // A complete low mount, never a stacked tyre or a cage of accessories.
  const mount=k.box(g,[level===1?2.4:3.0,.55,level===3?2.75:2.4],[0,.46,0],armor,.16);mount.rotation.y=level===3?Math.PI/4:0; if(level===3)mount.scale.set(.86,1,.86);
@@ -18,14 +19,21 @@ export function sentinelModel(k:WorldKit,level=1){
  for(const x of [-.74,.74]){const fork=k.box(yaw,[.3,.95,1.05],[x,.3,-.15],trim,.09);fork.rotation.z=-Math.sign(x)*.13;const bearing=k.cylinder(yaw,.29,.17,[x,.61,0],C.dark);bearing.rotation.z=Math.PI/2;}
  const pitch=new THREE.Group();pitch.position.y=.75;yaw.add(pitch);const recoil=new THREE.Group();pitch.add(recoil);recoil.name='sentinel-cannon';
  // Each generation replaces the principal shroud with a deliberate profile.
- const dims:[[number,number,number],number][]=[[[1.32,.8,1.85],.12],[[1.85,.92,2.05],.14],[[1.78,1.12,2.25],.22],[[1.98,.86,2.12],.17],[[1.82,1.05,2.38],.18]];
- const [size,cy]=dims[level-1];k.box(recoil,size,[0,cy,-.28],armor,.16);
- if(level===1)k.box(recoil,[1.1,.13,1.5],[0,.61,-.28],trim,.035);
- if(level===2)for(const x of [-.85,.85]){const cheek=k.box(recoil,[.34,.8,1.6],[x,.06,-.3],trim,.1);cheek.rotation.z=Math.sign(x)*.18;}
- if(level===3){k.box(recoil,[1.45,.28,1.7],[0,.8,-.5],armor,.09);for(const x of [-.77,.77])k.box(recoil,[.055,.13,1.65],[x,.53,-.3],C.green,.02);}
- if(level===4){k.box(recoil,[1.2,.19,1.9],[0,.66,-.4],trim,.07);for(const x of [-.85,.85])for(const z of [-.9,-.5,-.1])k.box(recoil,[.1,.35,.12],[x,.22,z],C.dark,.015);}
- if(level===5){for(const x of [-.78,.78]){const shell=k.box(recoil,[.35,.9,2.22],[x,.3,-.25],trim,.12);shell.rotation.z=-Math.sign(x)*.12;}k.box(recoil,[1.4,.18,1.9],[0,.83,-.35],armor,.07);}
- const barrelHousing=k.box(recoil,[level===5?1.23:1.05,level===3?.91:.75,1.15],[0,.12,1.06],level===4?trim:armor,.11);
+ const width=[1.12,1.5,1.85,2.05,2.23][level-1],height=[.68,.86,1.08,1.16,1.32][level-1];
+ armoredHull(k,recoil,width,height,[1.48,1.85,2.05,2.15,2.3][level-1],[0,.22,-.25],armor,level===1?.08:.25);
+ if(level===1){for(const x of [-.48,.48])k.box(recoil,[.14,.16,1.4],[x,-.18,-.23],trim,.025);}
+ if(level===2){for(const x of [-.68,.68]){k.box(recoil,[.18,.45,1.55],[x,.05,-.3],p.metal,.04);k.box(recoil,[.25,.12,1.75],[x,.55,-.2],trim,.04);}}
+ if(level===3){for(const x of [-.83,.83]){armoredHull(k,recoil,.36,.88,1.95,[x,.2,-.25],trim,.13);k.box(recoil,[.12,.12,1.9],[x,.6,-.25],p.metal,.025);}}
+ if(level>=4){for(const x of [-.8,.8]){
+  armoredHull(k,recoil,.5,.78,1.95,[x,.35,-.25],trim,.16);
+  k.box(recoil,[.13,.25,1.65],[x+Math.sign(x)*.23,.38,-.18],p.glass,.04);
+  k.box(recoil,[.06,.08,1.5],[x+Math.sign(x)*.3,.38,-.18],C.light,.015,true);
+ }armoredHull(k,recoil,1.3,.3,1.85,[0,.92,-.3],armor,.13);}
+ // Successive barrel collars belong to the recoil assembly, concentric with the original five emitters.
+ const neck=k.cylinder(recoil,[.37,.45,.57,.64,.7][level-1],1.14,[0,.12,1.02],level>=3?trim:armor);neck.rotation.x=Math.PI/2;
+ const collar=k.cylinder(recoil,[.4,.51,.65,.7,.77][level-1],level>=3?.34:.15,[0,.12,1.43],level<=3?p.metal:trim);collar.rotation.x=Math.PI/2;
+ if(level>=4){k.ring(recoil,level===5?.69:.61,.055,[0,.12,1.62],C.green,true);}
+ if(level===5)for(let i=0;i<6;i++){const a=i*Math.PI/3;const fin=armoredHull(k,recoil,.23,.28,.62,[Math.sin(a)*.69,.12+Math.cos(a)*.69,1.28],p.glass,.08);fin.rotation.z=-a;}
  const charge:THREE.Mesh[]=[];for(const x of [-.37,.37]){k.box(recoil,[.16,.1,1.55],[x,.51,.61],C.dark,.025);charge.push(k.box(recoil,[.055,.04,1.4],[x,.57,.61],C.light,.012,true));}
  const muzzlePlate=k.cylinder(recoil,level===5?.57:.49,.2,[0,.12,1.61],trim);muzzlePlate.rotation.x=Math.PI/2;
  for(let i=0;i<5;i++){const a=i*Math.PI*2/5,x=Math.sin(a)*.25,y=.12+Math.cos(a)*.25;const barrel=k.cylinder(recoil,.135,.28,[x,y,1.69],C.dark);barrel.rotation.x=Math.PI/2;k.ring(recoil,.103,.025,[x,y,1.84],C.green);const hole=k.cylinder(recoil,.086,.012,[x,y,1.835],C.dark);hole.rotation.x=Math.PI/2;}

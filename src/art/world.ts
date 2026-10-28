@@ -38,6 +38,11 @@ export class WorldKit {
   const mesh=new THREE.Mesh(this.geometry('box'+size.join()+radius,()=>new RoundedBoxGeometry(...size,1,radius)),this.mat(color,glow));
   mesh.position.set(...position);mesh.castShadow=!glow&&size[1]>.15;mesh.receiveShadow=true;parent.add(mesh);return mesh;
  }
+ /** Flat inset bands need twelve triangles, not a rounded hull on every wall tile. */
+ block(parent:THREE.Object3D,size:[number,number,number],position:[number,number,number],color:string,_radius=0,glow=false){
+  const mesh=new THREE.Mesh(this.geometry('flat-block'+size.join(),()=>new THREE.BoxGeometry(...size)),this.mat(color,glow));
+  mesh.position.set(...position);mesh.castShadow=!glow&&size[1]>.15;mesh.receiveShadow=true;parent.add(mesh);return mesh;
+ }
  /** Batch repeated static character pieces by material; animated joints remain separate. */
  batchStatic(parent:THREE.Object3D,key:string){const groups=new Map<THREE.Material,THREE.Mesh[]>();for(const child of [...parent.children])if(child instanceof THREE.Mesh&&!Array.isArray(child.material)){const list=groups.get(child.material)||[];list.push(child);groups.set(child.material,list);}
   for(const [material,meshes] of groups){const geometry=this.geometry(key+material.uuid,()=>{const pieces=meshes.map(mesh=>{mesh.updateMatrix();const copy=mesh.geometry.index?mesh.geometry.toNonIndexed():mesh.geometry.clone();return copy.applyMatrix4(mesh.matrix);});const merged=mergeGeometries(pieces,false)!;pieces.forEach(g=>g.dispose());return merged;});const batch=new THREE.Mesh(geometry,material);batch.castShadow=meshes.some(m=>m.castShadow);batch.receiveShadow=true;for(const mesh of meshes)mesh.removeFromParent();parent.add(batch);}
@@ -45,8 +50,8 @@ export class WorldKit {
  gable(parent:THREE.Object3D,width:number,height:number,depth:number,position:[number,number,number],color:string){
   const mesh=new THREE.Mesh(this.geometry(`gable${width},${height},${depth}`,()=>{const shape=new THREE.Shape();shape.moveTo(-width/2,0);shape.lineTo(width/2,0);shape.lineTo(0,height);shape.closePath();const geometry=new THREE.ExtrudeGeometry(shape,{depth,bevelEnabled:false});geometry.translate(0,0,-depth/2);return geometry;}),this.mat(color));mesh.position.set(...position);mesh.castShadow=true;parent.add(mesh);return mesh;
  }
- extrusion(parent:THREE.Object3D,key:string,shape:THREE.Shape,depth:number,position:[number,number,number],color:string){
-  const mesh=new THREE.Mesh(this.geometry('extrusion'+key+depth,()=>new THREE.ExtrudeGeometry(shape,{depth,steps:1,curveSegments:4,bevelEnabled:false})),this.mat(color));mesh.position.set(...position);parent.add(mesh);return mesh;
+ extrusion(parent:THREE.Object3D,key:string,shape:THREE.Shape,depth:number,position:[number,number,number],color:string,centered=false){
+  const mesh=new THREE.Mesh(this.geometry('extrusion'+key+depth+centered,()=>{const geometry=new THREE.ExtrudeGeometry(shape,{depth,steps:1,curveSegments:4,bevelEnabled:false});if(centered)geometry.translate(0,0,-depth/2);return geometry;}),this.mat(color));mesh.position.set(...position);parent.add(mesh);return mesh;
  }
  emblem(parent:THREE.Object3D,points:[number,number][],position:[number,number,number],color:string){
   const mesh=new THREE.Mesh(this.geometry('emblem'+points.flat().join(),()=>{const shape=new THREE.Shape(points.map(p=>new THREE.Vector2(...p)));return new THREE.ShapeGeometry(shape);}),this.mat(color,true));mesh.position.set(...position);parent.add(mesh);return mesh;

@@ -1,3 +1,4 @@
+import {technologyMaterials,armoredHull} from './TechnologyMaterials';
 import {addHqPowerBox} from './PowerConnections';
 import * as THREE from 'three';
 import {WorldKit,palette as c} from './world';
@@ -31,7 +32,7 @@ export function animateFounderIdle(house:THREE.Object3D|undefined,time:number,re
 export function founderHQ(k:WorldKit,parent:THREE.Group,level:1|2|3|4|5=1):THREE.Group{
  const house=new THREE.Group();house.name='Founder HQ Level '+level;house.userData.visualLevel=level;house.position.set(-5,0,-1);parent.add(house);
  const body=new THREE.Group();body.name='hq-architecture';house.add(body);
- const skin=['#ede4cf','#c9d8d7','#d8e5e7','#718b9d','#edf0e7'][level-1],frame=['#355b61','#284959','#254653','#25384e','#253a50'][level-1],roof=['#23616c','#4d7283','#315466','#30485d','#326473'][level-1],trim=level===4?'#c4d5df':level===5?'#d6b866':'#adcece';
+ const p=technologyMaterials(k,level),skin=level===1?'#ede4cf':p.shell,frame=p.frame,roof=level===1?'#23616c':p.shell,trim=p.metal;
  const box=(size:[number,number,number],pos:[number,number,number],color=skin,r=.04,glow=false)=>k.box(body,size,[pos[0],pos[1]+(pos[1]>=3.6?.55:0),pos[2]],color,r,glow);
  // A shallow, earth-toned plinth is contained in the existing foundation.
  box([8.55,.26,7.7],[0,.15,.5],'#81928b',.12);box([7.95,.12,6.6],[0,.34,0],frame,.07);
@@ -77,6 +78,12 @@ export function founderHQ(k:WorldKit,parent:THREE.Group,level:1|2|3|4|5=1):THREE
    box([2.1,.6,.16],[0,5.54,1.82],frame);k.emblem(body,[[-.35,0],[0,.34],[.35,0],[0,-.34]],[0,6.1,1.92],c.gold);box([.12,.25,.04],[0,5.55,1.93],c.cyan,.01,true);
   }
  }
+ if(level>=2){
+  for(const side of [-1,1]){box([.32,2.85,5.7],[side*3.94,2.15,0],level===2?p.frame:p.shell,.1);box([.06,.22,5.2],[side*4.12,1.2,0],p.metal,.025);}
+ }
+ if(level>=3){for(const side of [-1,1]){const panel=box([.2,2.2,4.4],[side*4.14,2.5,-.1],p.glass,.05);panel.rotation.z=-side*.025;}box([2.3,.28,1.2],[2.7,3.4,3.25],p.frame,.07);}
+ if(level>=4){box([2.1,.18,1.3],[2.65,3.68,3.3],p.glass,.05);for(const side of [-1,1])box([.1,.08,4.5],[side*4.22,3.3,-.1],c.cyan,.02,true);}
+ if(level===5){for(const side of [-1,1]){const blade=box([1.4,.26,4.95],[side*2.45,7.25,-.65],p.glass,.09);blade.rotation.z=-side*.08;}box([7.5,.16,.18],[0,4.26,3.3],p.metal,.03);}
  k.batchStatic(body,'hq-five-tier-architecture-'+level);k.batchStatic(founder,'hq-five-tier-founder');k.grounding(house,9,8,0,.6);addHqPowerBox(k,house,1);return house;
 }
 
