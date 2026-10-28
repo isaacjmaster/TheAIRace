@@ -66,15 +66,14 @@ export function founderHQ(k:WorldKit,parent:THREE.Group,level:1|2|3|4|5=1):THREE
   if(level===3){box([2.4,.2,2.8],[-2.72,4.6,-.4],skin);for(const z of [-1.2,-.4,.4])box([1.9,.07,.4],[-2.72,4.74,z],'#4f7d8b');}
   if(level>=4){
    // Deep paired structural ribs carry the office bridge; sheltered front terrace.
-   for(const x of [-3.63,3.63]){box([.42,6.5,.48],[x,3.6,-2.45],skin);box([.34,4.1,.38],[x,2.4,2.8],skin);box([.25,.36,6],[x,6.86,-.25],trim);}
+   for(const x of [-3.63,3.63]){box([.42,6.5,.48],[x,3.6,-2.45],skin);box([.34,4.1,.38],[x,2.4,2.8],skin);}
    box([7.4,.2,1.18],[0,4.55,2.7],skin);for(const x of [-2.7,-1.35,0,1.35,2.7])box([.07,.65,.07],[x,4.93,3.21],frame);box([6.1,.09,.11],[0,5.27,3.21],trim);
-   // Compact communications plate, with a physically connected base.
-   box([.38,.66,.38],[2.58,top+.6,-2.08],frame);const dish=k.cylinder(body,.55,.12,[2.58,top+1.55,-2.08],skin);dish.rotation.x=.55;box([.12,.19,.12],[2.58,top+1.12,-1.95],c.cyan,.02,true);
+
   }
   if(level===5){
    // Flagship dual roof blades and central lightwell keep a horizontal campus silhouette.
-   for(const side of [-1,1]){const blade=box([1.85,.24,6.2],[side*2.6,7.29,-.12],skin,.07);blade.rotation.z=-side*.12;box([.16,.13,5.7],[side*3.35,7.5,-.12],trim);}
-   box([1.5,.67,2.8],[0,7.12,-.35],frame);box([1.22,.08,2.5],[0,7.5,-.35],'#72c6d4',.04);for(const z of [-1.6,-.8,0,.8])box([1.3,.06,.08],[0,7.58,z],trim);
+   for(const side of [-1,1]){const blade=box([2.15,.32,5.1],[side*2.5,6.93,-.65],skin,.1);blade.rotation.z=-side*.08;}
+   box([1.5,.25,2.8],[0,6.93,-.65],frame);box([1.22,.08,2.5],[0,7.1,-.65],'#72c6d4',.04);
    box([2.1,.6,.16],[0,5.54,1.82],frame);k.emblem(body,[[-.35,0],[0,.34],[.35,0],[0,-.34]],[0,6.1,1.92],c.gold);box([.12,.25,.04],[0,5.55,1.93],c.cyan,.01,true);
   }
  }

@@ -66,7 +66,7 @@ export function gpuRigModel(k:WorldKit,level=1){
   for(const x of [-1.36,0,1.36]){k.box(g,[1.12,.34,1.4],[x,2.4,-.16],body,.08);for(let j=0;j<5;j++)k.box(g,[1.02,.08,.13],[x,2.63,-.7+j*.28],edge,.015);}
   for(const x of [-2.07,2.07]){const cheek=k.box(g,[.23,1.3,1.75],[x,1.48,-.12],edge,.04);cheek.rotation.z=Math.sign(x)*.11;}
  }
- if(level>=3){
+ if(level===3){
   // A full-width pitched radiator housing replaces the exposed cartridge roof.
   k.gable(g,4.16,.68,1.92,[0,2.25,-.1],level===3?'#aec2c6':metal);
   for(const side of [-1,1])for(let n=0;n<5;n++){const fin=k.box(g,[1.6,.055,.13],[side*1.02,2.61,-.87+n*.38],dark,.01);fin.rotation.z=-side*.31;}
@@ -74,16 +74,17 @@ export function gpuRigModel(k:WorldKit,level=1){
   k.box(g,[.35,.16,2.05],[0,2.98,-.09],dark,.035);k.box(g,[.13,.05,1.76],[0,3.09,-.09],cyan,.015,true);
  }
  if(level===4){
-  // Twin liquid cooling exchange towers, copper links and an exposed middle service channel.
-  for(const x of [-1.52,1.52]){k.box(g,[.92,.68,1.78],[x,3.23,-.12],edge,.09);for(let j=0;j<5;j++)k.box(g,[.75,.1,.19],[x,3.64,-.76+j*.3],dark,.02);k.box(g,[.12,.58,.07],[x,3.24,.82],cyan,.01,true);}
-  for(const x of [-.73,.73])k.box(g,[.13,.18,2.05],[x,3.13,-.09],'#b17e48',.04);
+  k.box(g,[4.15,.75,2.13],[0,2.63,-.05],edge,.14);
+  for(const x of [-1.3,0,1.3]){k.box(g,[.95,.12,1.72],[x,3.06,-.05],dark,.04);k.box(g,[.72,.23,.045],[x,2.66,1.04],dark,.03);}
+  k.box(g,[3.6,.045,.04],[0,2.92,1.05],cyan,.01,true);
  }
  if(level===5){
-  // Three tall compute blades seated in one integrated white cooling crown.
-  for(const x of [-1.36,0,1.36]){k.box(g,[.87,.98,1.28],[x,3.49,-.18],dark,.08);k.box(g,[.72,.82,.08],[x,3.5,.52],cyan,.035,true);for(const y of [3.23,3.5,3.77])k.box(g,[.79,.07,.12],[x,y,.58],edge,.015);}
-  for(const x of [-2.04,2.04]){k.box(g,[.31,1.6,1.9],[x,3.03,-.13],edge,.06);k.box(g,[.09,1.07,.06],[x,3.15,.87],cyan,.015,true);}
-  k.box(g,[4.3,.24,1.65],[0,4.12,-.15],edge,.09);k.box(g,[2.6,.08,.7],[0,4.28,-.17],dark,.025);
+  k.box(g,[4.24,1.15,2.15],[0,2.85,-.08],dark,.16);
+  for(const x of [-1.36,0,1.36]){k.box(g,[.96,.6,.09],[x,2.86,1.05],metal,.07);for(const y of [2.68,2.86,3.04])k.box(g,[.72,.055,.04],[x,y,1.11],cyan,.01,true);}
+  for(const x of [-2.02,2.02])k.box(g,[.28,1.2,2.15],[x,2.85,-.08],edge,.08);
+  k.box(g,[4.2,.2,2.15],[0,3.5,-.08],edge,.1);
  }
+
  g.userData.visualLevel=level;k.batchStatic(g,'five-tier-gpu-'+level);
  const lamp=k.box(g,[.3,.045,.025],[1.72,.56,1.285],ice,.01,true);lamp.name='gpu-activity';
  return g;

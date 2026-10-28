@@ -41,35 +41,35 @@ export function storageModel(k:WorldKit,kind:'computeStorage'|'researchStorage',
   // L2 side locking ribs, L3 enclosing vault arch, L4 split service cabinets, L5 double-wall secure crown.
   if(level>=2)for(const x of [-1.57,1.57]){k.box(g,[.25,height+.35,2.55],[x,.43+height/2,-.1],armor,.06);k.box(g,[.08,.8,.07],[x,1.13,1.23],glow,.015,true);}
   if(level>=3){k.box(g,[3.5,.28,2.75],[0,height+.67,-.1],armor,.07);k.box(g,[2.3,.48,.32],[0,.67,1.4],navy,.05);k.box(g,[.6,.3,.1],[0,.69,1.62],C.gold,.03);}
-  if(level===4){for(const x of [-1.02,1.02]){k.box(g,[.72,.6,1.45],[x,3.68,-.2],navy,.06);k.box(g,[.55,.35,.07],[x,3.7,.57],glow,.025,true);}k.box(g,[.48,.72,2.05],[0,3.74,-.15],metal,.06);}
-  if(level===5){for(const x of [-1.35,1.35])k.box(g,[.42,.55,3],[x,4.08,-.1],navy,.07);k.box(g,[3.1,.2,3],[0,4.45,-.1],armor,.07);for(const x of [-.75,0,.75])k.box(g,[.48,.31,1.85],[x,4.1,-.15],metal,.04);k.box(g,[1.5,.08,.48],[0,4.6,-.15],glow,.025,true);}
+  if(level===4){k.box(g,[3.45,.42,2.65],[0,height+.92,-.1],navy,.12);for(const x of [-1,0,1])k.box(g,[.6,.12,.04],[x,height+.92,1.25],glow,.02,true);}
+  if(level===5){k.box(g,[3.5,.44,2.8],[0,height+.93,-.1],navy,.14);k.box(g,[3.2,.14,2.6],[0,height+1.2,-.1],armor,.07);k.box(g,[2.4,.06,.04],[0,height+.93,1.33],glow,.02,true);}
+
  }else{
-  const height=[1.55,1.9,2.3,2.65,3.05][level-1],radius=level>=3?1.02:.86;
-  k.cylinder(g,radius+.2,.2,[0,.4,0],metal);k.cylinder(g,radius,height,[0,.52+height/2,0],navy);
-  for(let i=0;i<(level===1?4:6);i++){const a=i*Math.PI*2/(level===1?4:6),pod=k.box(g,[.48,height-.2,.14],[Math.sin(a)*radius,.57+height/2,Math.cos(a)*radius],glow,.035,true);pod.rotation.y=a;}
-  for(const y of [.55,height+.58])band(k,g,radius+.08,y,armor,.11);
-  k.cylinder(g,radius*.78,.2,[0,height+.76,0],metal);
-  if(level>=2)for(const x of [-1.35,1.35]){k.box(g,[.27,height+.25,.55],[x,.5+height/2,0],armor,.05);k.box(g,[.6,.15,.7],[x,height+.7,0],navy,.04);}
-  if(level>=3)for(const z of [-1.35,1.35]){k.box(g,[.55,height+.25,.27],[0,.5+height/2,z],armor,.05);k.box(g,[.7,.15,.6],[0,height+.7,z],navy,.04);}
-  if(level===4){for(const x of [-1.12,1.12])for(const z of [-1.12,1.12]){k.box(g,[.48,1.15,.48],[x,.98,z],navy,.05);k.box(g,[.25,.84,.06],[x,1.02,z+Math.sign(z)*.26],glow,.015,true);}band(k,g,.75,3.75,armor,.15);k.cylinder(g,.48,.5,[0,3.64,0],navy);}
-  if(level===5){const cap=k.boulder(g,[0,3.97,0],[.7,.6,.7],purple,0);for(const x of [-1.32,1.32]){const arch=k.box(g,[.24,1.05,.45],[x,4.0,0],armor,.04);arch.rotation.z=-Math.sign(x)*.27;}k.box(g,[2.45,.18,.5],[0,4.65,0],armor,.05);band(k,g,.82,3.82,glow,.055,true);band(k,g,.82,4.13,navy,.08);}
+  // Five complete containment vessels, with constant low centres of gravity.
+  const shells=['#b7bbc5','#68748f','#24324c','#dcdfe8','#27304a'],shell=shells[level-1];
+  if(level===1){k.cylinder(g,1.03,1.35,[0,1.05,0],navy);for(const y of [.4,1.7])band(k,g,1.06,y,'#bcc6cc',.13);for(const x of [-.55,0,.55])k.box(g,[.34,1.03,.12],[x,1.07,.98],purple,.045,true);}
+  if(level===2){for(const x of [-.62,.62]){k.cylinder(g,.65,1.65,[x,1.18,0],navy);k.box(g,[.73,1.18,.13],[x,1.18,.61],purple,.06,true);k.cylinder(g,.7,.22,[x,2.08,0],shell);}k.box(g,[2.75,.24,1.8],[0,.43,0],shell,.1);}
+  if(level===3){k.box(g,[2.8,1.85,2.1],[0,1.35,0],shell,.2);k.box(g,[2.26,1.2,.12],[0,1.4,1.09],navy,.1);for(const x of [-.65,0,.65])k.box(g,[.46,.94,.07],[x,1.4,1.17],purple,.06,true);k.box(g,[2.95,.25,2.25],[0,2.4,0],'#65708c',.1);}
+  if(level===4){k.cylinder(g,1.4,1.9,[0,1.4,0],navy);for(const x of [-1.15,1.15]){const cheek=k.box(g,[.68,1.9,2.05],[x,1.35,0],shell,.18);cheek.rotation.z=-Math.sign(x)*.1;}k.box(g,[1.5,1.3,.15],[0,1.42,1.28],purple,.12,true);k.cylinder(g,1.38,.25,[0,2.42,0],shell);}
+  if(level===5){k.box(g,[3.1,2.05,2.55],[0,1.42,0],shell,.25);for(const x of [-1.27,1.27])k.box(g,[.32,1.8,2.57],[x,1.4,0],'#bcc8d3',.1);k.box(g,[1.7,1.26,.13],[0,1.5,1.33],purple,.2,true);k.box(g,[1.4,.1,.05],[0,1.5,1.42],'#d9c5ef',.03);k.box(g,[2.6,.25,2.3],[0,2.6,0],'#b7c7cf',.12);}
  }
+
  k.batchStatic(g,kind+'-five-'+level);k.grounding(g,4,4);return g;
 }
 /** Floor and exit are invariant. More capable gantries replace the manufacturing crown at each tier. */
 function manufacturingModel(k:WorldKit,level:number){
- const g=new THREE.Group(),fixed=new THREE.Group();g.name='Bot Fabricator';g.add(fixed);const armor=armors[level-1],top=[3.35,3.65,3.9,4.15,4.45][level-1];
- k.box(fixed,[3.95,.18,2.95],[0,.09,0],navy,.08);k.box(fixed,[3.7,.12,2.75],[0,.24,0],metal,.06);k.cylinder(fixed,1.02,.18,[0,.42,0],navy);band(k,fixed,.91,.54,C.cyan,.045,true);
- for(const x of [-1.48,1.48]){k.box(fixed,[.3,top-.5,.42],[x,(top+.1)/2,-.98],navy,.04);k.box(fixed,[.44,level>=3?2.3:1.5,.45],[x,level>=3?1.48:1.08,-.98],armor,.06);k.box(fixed,[.09,1,.04],[x,1.4,-.73],C.cyan,.01,true);}
- k.box(fixed,[3.23,.25,.6],[0,top,-.98],armor,.07);
- // Fixed split crown leaves a genuine clearance envelope above the large Breacher.
- const r=level>=3?1.33:1.17;band(k,fixed,r,top,navy,level===1?.12:.17);band(k,fixed,r,top+.15,armor,.07);band(k,fixed,r-.15,top-.12,C.cyan,.025,true);
- const rotor=new THREE.Group();rotor.name='orbital-inner';g.add(rotor);const pulse=band(k,rotor,r-.28,top-.22,C.cyan,.035,true);g.userData.pulse=pulse.material;g.userData.platform=k.mat(C.cyan,true);
- for(let i=0;i<(level<3?2:4);i++){const a=i*Math.PI*2/(level<3?2:4);const tool=k.box(rotor,[.22,.18,.32],[Math.sin(a)*(r-.25),top-.25,Math.cos(a)*(r-.25)],C.gold,.025);tool.rotation.y=a;}
- if(level===2){for(const x of [-1.48,1.48])k.box(fixed,[.65,.35,1.5],[x,top-.5,-.55],metal,.06);k.box(fixed,[2.7,.57,.6],[0,top-.08,-.98],navy,.06);for(const x of [-.8,0,.8])k.box(fixed,[.45,.2,.06],[x,top-.04,-.65],C.cyan,.02,true);}
- if(level>=3){for(const x of [-1.47,1.47]){k.box(fixed,[.5,.48,1.8],[x,top-.35,-.3],armor,.06);k.box(fixed,[.2,.14,1.5],[x,top-.02,-.3],navy,.025);}for(const z of [-.95,.95])k.box(fixed,[1.9,.23,.4],[0,top+.35,z],navy,.04);}
- if(level===4){for(const x of [-1.2,1.2]){const brace=k.box(fixed,[.22,.8,.3],[x,top+.1,-.65],C.gold,.03);brace.rotation.z=-Math.sign(x)*.4;}k.box(fixed,[2.7,.18,.45],[0,top+.55,-.65],armor,.04);}
- if(level===5){for(let i=0;i<6;i++){const a=i*Math.PI/3,x=Math.sin(a)*1.2,z=Math.cos(a)*1.2;const petal=k.box(fixed,[.65,.36,.48],[x,top+.28,z],armor,.05);petal.rotation.y=a;k.box(fixed,[.15,.14,.15],[x,top+.53,z],C.gold,.02);}band(k,fixed,1.01,top+.57,navy,.09);}
+ const g=new THREE.Group(),fixed=new THREE.Group();g.name='Bot Fabricator';g.add(fixed);const armor=['#e8e4d3','#7893a0','#233c52','#d5e3df','#bec9d3'][level-1],top=3.65;
+ k.box(fixed,[3.95,.18,2.95],[0,.09,0],navy,.08);k.box(fixed,[3.7,.12,2.75],[0,.24,0],armor,.06);k.cylinder(fixed,1.02,.18,[0,.42,0],navy);band(k,fixed,.91,.54,C.cyan,.045,true);
+ const width=level===1?.27:level===2?.42:.54;
+ for(const x of [-1.48,1.48]){const pier=k.box(fixed,[width,top-.5,.63],[x,1.94,-.85],armor,.09);pier.rotation.z=level===3?-Math.sign(x)*.06:0;k.box(fixed,[.09,1.1,.045],[x,1.55,-.51],C.cyan,.012,true);}
+ k.box(fixed,[3.25,level===1?.23:.48,.72],[0,top,-.85],armor,.1);
+ const r=[1.14,1.19,1.23,1.21,1.22][level-1];band(k,fixed,r,top,level===1||level===4?armor:navy,level===1?.11:.24);
+ if(level===2)band(k,fixed,r,top+.17,armor,.14);
+ if(level===3){for(const z of [-.9,.9])k.box(fixed,[1.75,.45,.6],[0,top,z],armor,.12);}
+ if(level===4){band(k,fixed,r,top+.22,navy,.08);for(const x of [-1.48,1.48])k.box(fixed,[.62,.6,.8],[x,top-.35,-.85],armor,.1);}
+ if(level===5){band(k,fixed,r,top+.12,armor,.25);band(k,fixed,r-.09,top-.17,navy,.16);k.box(fixed,[2.65,.23,.88],[0,top+.26,-.78],navy,.09);}
+ const rotor=new THREE.Group();rotor.name='orbital-inner';g.add(rotor);const pulse=band(k,rotor,r-.25,top-.25,C.cyan,.035,true);g.userData.pulse=pulse.material;g.userData.platform=k.mat(C.cyan,true);
+ for(let i=0;i<3;i++){const a=i*Math.PI*2/3,tool=k.box(rotor,[.22,.18,.32],[Math.sin(a)*(r-.25),top-.25,Math.cos(a)*(r-.25)],C.gold,.025);tool.rotation.y=a;}
  for(const side of [-1,1]){
   k.box(fixed,[.48,.5,.58],[side*1.61,.55,.15],armor,.06);const arm=new THREE.Group();arm.name='orbital-arm-'+side;arm.position.set(side*1.55,.8,.12);g.add(arm);const upper=new THREE.Group();upper.rotation.z=side*.45;arm.add(upper);k.box(upper,[.17,.62,.23],[0,.31,0],C.gold,.03);const elbow=new THREE.Group();elbow.name='orbital-elbow';elbow.position.y=.62;elbow.rotation.z=side*.85;upper.add(elbow);k.box(elbow,[.17,.55,.2],[0,.27,0],armor,.025);k.box(elbow,[.28,.16,.28],[0,.62,0],navy,.03);k.box(elbow,[.1,.12,.1],[0,.74,0],C.cyan,.01,true);k.batchStatic(upper,'fabricator-upper-'+level+'-'+side);k.batchStatic(elbow,'fabricator-elbow-'+level+'-'+side);
  }
@@ -83,27 +83,34 @@ function depotModel(k:WorldKit,level:number){
  const g=new THREE.Group();g.name='Bot Hangar';g.userData.compound=true;const shell=new THREE.Group();shell.name='hangar-structure';g.add(shell);const armor=armors[level-1];
  k.box(shell,[7.95,.14,6.95],[0,.07,0],navy,.07);k.box(shell,[7.65,.08,6.65],[0,.18,0],'#809783',.04);
  for(const x of [-2,0,2])for(let z=-2;z<=2;z++)k.box(shell,[1.45,.035,.83],[x,.245,z],z%2?metal:'#65817e',.02);
- // Wider charging apertures retain the original rear access line; only roofs change.
- const roof=[1.95,2.3,2.65,2.9,3.15][level-1];
- for(const x of [-2,0]){for(const side of [-1,1]){k.box(shell,[.22,roof-.15,.35],[x+side*.82,roof/2+.2,-2.75],navy,.035);k.box(shell,[.24,1.5,.3],[x+side*.82,1.05,-1.78],armor,.04);k.box(shell,[.05,.7,.04],[x+side*.82,1.25,-1.6],C.cyan,.01,true);}k.box(shell,[1.9,.2,1.55],[x,roof,-2.47],armor,.06);k.box(shell,[1.7,1.6,.18],[x,1.08,-3.1],navy,.04);k.box(shell,[1.0,.7,.06],[x,1.12,-2.99],metal,.025);for(const side of [-1,1])k.box(shell,[.08,.85,.05],[x+side*.6,1.18,-2.96],C.cyan,.01,true);}
- if(level>=2){for(const x of [-3.63,3.63])for(const z of [-2.7,2.75]){k.box(shell,[.38,1.8,.38],[x,1.15,z],navy,.045);k.box(shell,[.46,.18,.46],[x,2.12,z],armor,.045);}for(const x of [-2,0])k.box(shell,[1.1,.35,1.2],[x,roof+.27,-2.5],navy,.06);}
- if(level>=3){for(const x of [-3.63,3.63])for(const z of [-2.7,2.75])k.box(shell,[.23,.65,.23],[x,2.46,z],navy,.035);for(const x of [-3.55,3.55]){k.box(shell,[.25,.28,5.7],[x,2.8,0],armor,.04);k.box(shell,[.08,.06,5.2],[x,2.61,0],C.cyan,.01,true);}for(const x of [-2,0])for(const side of [-1,1])k.box(shell,[.2,.37,1.65],[x+side*.75,roof+.25,-2.47],metal,.03);}
- // Right-hand service equipment stays behind the roaming court.
- for(const x of [1.5,3.45])k.box(shell,[.2,2.1,.22],[x,1.3,-2.65],navy,.03);k.box(shell,[2.2,.18,1.3],[2.5,2.45,-2.55],level===1?C.gold:armor,.06);k.box(shell,[1.65,.18,.55],[2.5,.95,-2.85],armor,.04);
- if(level===4){for(const x of [-2,0]){k.box(shell,[1.85,.2,.55],[x,3.48,-2.9],armor,.04);k.box(shell,[.35,.8,.3],[x,3.1,-2.9],metal,.03);}k.box(shell,[1.5,.75,.65],[2.5,2.9,-2.6],navy,.05);for(const x of [2.1,2.5,2.9])k.box(shell,[.24,.4,.05],[x,3,-2.23],C.cyan,.02,true);}
- if(level===5){for(const x of [-3.5,3.5]){k.box(shell,[.36,1.1,.5],[x,3.27,-2.6],navy,.05);k.box(shell,[.55,.22,.65],[x,3.88,-2.6],armor,.04);}k.box(shell,[7.3,.25,.6],[0,3.95,-2.6],armor,.07);for(const x of [-2.5,-.8,.8,2.5]){k.box(shell,[.25,.6,.28],[x,3.55,-2.6],C.gold,.03);k.box(shell,[.7,.25,.45],[x,3.24,-2.6],navy,.04);}for(const x of [-2,0])k.box(shell,[1.6,.16,.4],[x,3.5,-1.8],C.cyan,.03,true);}
+ // Entire rear facility changes generation; the courtyard has no new posts or roof.
+ const rear=['#e5e4d5','#718d98','#24445a','#d5e1df','#253c52'][level-1],roof=2.75;
+ k.box(shell,[7.15,level===1?1.6:2.3,.28],[0,level===1?1.12:1.46,-3.12],rear,.07);
+ for(const x of [-2,0,2]){
+  k.box(shell,[1.52,1.75,.12],[x,1.2,-2.9],navy,.05);k.box(shell,[1.14,1.14,.06],[x,1.17,-2.81],metal,.04);
+  for(const side of [-1,1]){k.box(shell,[.18,1.95,.3],[x+side*.77,1.25,-2.66],level>=4?'#c1d5d9':rear,.035);k.box(shell,[.045,.85,.035],[x+side*.63,1.2,-2.74],C.cyan,.01,true);}
+  if(level===1)k.box(shell,[1.9,.2,1.3],[x,2.28,-2.55],armor,.05);
+  if(level===2)k.gable(shell,1.85,.35,1.5,[x,2.65,-2.48],rear);
+  if(level===3){const canopy=k.box(shell,[2,.25,1.8],[x,roof,-2.46],rear,.08);canopy.rotation.x=.12;}
+  if(level===4){const canopy=k.box(shell,[2.15,.3,1.7],[x,2.9,-2.45],rear,.12);canopy.rotation.z=x===0?0:-Math.sign(x)*.07;}
+ }
+ if(level===5){k.box(shell,[7.2,.35,1.65],[0,2.93,-2.49],'#c6d6db',.13);k.box(shell,[6.5,.16,1.2],[0,3.17,-2.55],navy,.06);k.box(shell,[5.6,.08,.06],[0,2.76,-1.64],C.cyan,.02,true);}
+ if(level>=2)for(const x of [-2,0,2]){k.box(shell,[1.6,.025,3.4],[x,.285,.25],level===3?'#506a79':level===5?'#9aaeb2':'#748e93',.03);k.box(shell,[.045,.025,2.9],[x-.67,.31,.35],C.cyan,.008,true);}
  for(const x of [-2.5,2.5]){k.box(shell,[1.85,.5,.24],[x,.48,3.2],navy,.04);k.box(shell,[1.95,.15,.34],[x,.8,3.2],armor,.04);}for(const x of [-.62,.62])for(const z of [1.1,1.65,2.2,2.75])k.box(shell,[.075,.025,.32],[x,.285,z],C.cyan,.01,true);
  k.batchStatic(shell,'depot-five-'+level);return g;
 }
 function aerialStationModel(k:WorldKit,level:number){
- const g=new THREE.Group();g.name='Security Drone Station';const armor=armors[level-1];k.box(g,[2.95,.18,2.95],[0,.09,0],navy,.08);k.box(g,[2.75,.13,2.75],[0,.28,0],metal,.05);k.box(g,[2.6,.2,2.6],[0,.97,0],armor,.06);k.box(g,[2.25,.06,2.25],[0,1.1,0],navy,.05);band(k,g,.83,1.15,C.cyan,.03,true);
- for(const x of [-1.08,1.08])for(const z of [-1.08,1.08]){k.box(g,[.26,.6,.26],[x,.62,z],navy,.04);k.box(g,[.22,.07,.3],[x,1.17,z],C.cyan,.02,true);}
- if(level>=2){for(const x of [-1.2,1.2]){k.box(g,[.38,1.6,.65],[x,1.1,-1.05],armor,.05);k.box(g,[.24,.32,.05],[x,1.56,-.7],C.cyan,.02,true);}k.box(g,[2.7,.17,.34],[0,1.9,-1.12],metal,.04);}
- if(level>=3){for(const x of [-1.14,1.14])k.box(g,[.2,1.55,.3],[x,1.7,-1.14],armor,.035);k.box(g,[2.55,.26,.5],[0,2.58,-1.14],navy,.05);for(const x of [-.7,0,.7])k.box(g,[.4,.12,.05],[x,2.61,-.86],C.cyan,.02,true);}
- if(level===4){for(const x of [-.85,.85]){k.box(g,[.5,.6,.65],[x,2.99,-1.1],armor,.05);k.box(g,[.35,.3,.06],[x,3.03,-.73],navy,.025);}k.box(g,[.6,.18,.5],[0,2.85,-1.1],C.gold,.03);}
- if(level===5){k.box(g,[2.7,.38,.7],[0,3.03,-1.08],armor,.06);for(const x of [-1.14,1.14]){k.box(g,[.23,.75,.27],[x,2.95,-1.08],navy,.035);k.box(g,[.36,.2,.4],[x,3.4,-1.08],metal,.035);}k.box(g,[1.7,.32,.1],[0,3.07,-.67],navy,.025);for(const x of [-.5,0,.5])k.box(g,[.3,.16,.05],[x,3.09,-.59],C.cyan,.015,true);}
- // The central 2.2-square launch volume remains open at every tier.
+ const g=new THREE.Group();g.name='Security Drone Station';const armor=['#dbdece','#758e9a','#263e57','#e1e7df','#abc0ca'][level-1];
+ k.box(g,[2.95,.18,2.95],[0,.09,0],navy,.08);
+ // Landing plane remains at 1.1; all control equipment is below it or behind the pad.
+ if(level===1)for(const x of [-1.08,1.08])for(const z of [-1.08,1.08])k.box(g,[.25,.7,.25],[x,.58,z],navy,.04);
+ else if(level===2)k.cylinder(g,1.16,.7,[0,.57,0],armor);
+ else k.box(g,[level===4?2.5:2.3,.7,2.3],[0,.57,0],armor,.18);
+ if(level===3)k.cylinder(g,1.4,.2,[0,.98,0],armor);else k.box(g,[2.7,.2,2.7],[0,.98,0],armor,.12);
+ k.cylinder(g,1.05,.055,[0,1.1,0],navy);band(k,g,.83,1.15,C.cyan,.03,true);
+ if(level>=2){k.box(g,[level===5?2.6:1.8,level===3?.85:.55,.38],[0,level===3?1.45:1.3,-1.25],armor,.09);k.box(g,[1.25,.22,.05],[0,1.38,-1.03],navy,.04);for(const x of [-.4,0,.4])k.box(g,[.2,.09,.025],[x,1.4,-.99],C.cyan,.01,true);}
  k.batchStatic(g,'aerial-station-five-'+level);return g;
 }
+
 function rawModel(k:WorldKit,kind:VisualBuildingKind,level:number){return kind==='rig'||kind==='rig2'?gpuRigModel(k,level):kind==='lab'?researchLabModel(k,level):kind==='fabricator'?manufacturingModel(k,level):kind==='hangar'?depotModel(k,level):kind==='sentinel'?sentinelModel(k,level):kind==='droneStation'?aerialStationModel(k,level):kind==='arcSpire'?arcSpireModel(k,level):builderStationModel(k);}
 export function progressionModel(k:WorldKit,kind:VisualBuildingKind,level=1){level=tier(level);if(kind==='hq'){const p=new THREE.Group(),g=founderHQ(k,p,level as 1|2|3|4|5);g.position.set(0,0,0);return g;}if(kind==='computeStorage'||kind==='researchStorage')return storageModel(k,kind,level);if(kind==='wall')return securityWallModel(k,1,1.2,level);const g=rawModel(k,kind,level);g.userData.visualLevel=level;return g;}
