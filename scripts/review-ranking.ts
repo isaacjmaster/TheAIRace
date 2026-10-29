@@ -5,7 +5,7 @@ import {createRequire} from 'node:module';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 if(process.env.NODE_ENV==='production')throw Error('Review only');
-const out='output/Ranking_Review';mkdirSync(out,{recursive:true});
+const out='output/Competitive_Polish';mkdirSync(out,{recursive:true});
 const f=await worldFixture(':memory:',Date.now());
 const player=await f.fresh('Rank_Review','developed'),opponent=await f.fresh('Prism_Founder');
 for(const [p,rating] of [[player,372],[opponent,610]] as const)f.db.prepare('INSERT INTO company_infiltration_ratings VALUES(?,?) ON CONFLICT(company_id) DO UPDATE SET total=excluded.total').run(p.id,rating);
@@ -23,13 +23,15 @@ try{
    const page=await context.newPage(),errors:string[]=[];page.on('pageerror',(e:Error)=>errors.push(e.message));
    await page.goto('http://127.0.0.1:5237/ranking-fixture?testAudio=off');
    const hud=page.getByRole('button',{name:'Infiltration rank and leaderboards',exact:true});await hud.waitFor({timeout:60000});await page.waitForTimeout(6000);
-   await page.screenshot({path:`${out}/${name}-home.png`});await hud.click();
-   await page.getByRole('dialog',{name:'Infiltration Ranks',exact:true}).waitFor();await page.screenshot({path:`${out}/${name}-ranks.png`});
+   const hb=await hud.boundingBox(),ib=await hud.locator('img').boundingBox();assert.ok(ib.x>=hb.x&&ib.y>=hb.y&&ib.x+ib.width<=hb.x+hb.width&&ib.y+ib.height<=hb.y+hb.height,'HUD badge contained');
+   await page.waitForTimeout(450);await page.screenshot({path:`${out}/${name}-home.png`});await hud.click();
+   await page.getByRole('dialog',{name:'Infiltration Ranks',exact:true}).waitFor();await page.waitForTimeout(450);await page.screenshot({path:`${out}/${name}-ranks.png`});
+   assert.equal(await page.locator('.rank-gallery button').count(),7);const gallery=await page.locator('.rank-gallery').boundingBox();assert.ok(gallery.x>=0&&gallery.x+gallery.width<=width);
    assert.equal(await page.getByRole('progressbar').getAttribute('aria-valuenow'),'372');
-   await page.getByRole('button',{name:/Ascendant, 2,200 Rating/}).click();await page.screenshot({path:`${out}/${name}-ascendant-detail.png`});
+   await page.getByRole('button',{name:/Ascendant, 2,200 Rating/}).click();await page.waitForTimeout(450);await page.screenshot({path:`${out}/${name}-ascendant-detail.png`});
    await page.getByRole('button',{name:'View leaderboards',exact:true}).click();
-   await page.getByRole('button',{name:'Infiltration Rating',exact:true}).click();await page.getByText('Prism_Founder',{exact:true}).waitFor();
-   await page.screenshot({path:`${out}/${name}-leaderboard.png`});await page.getByText('Prism_Founder',{exact:true}).click();await page.getByRole('dialog',{name:'Player profile',exact:true}).waitFor();await page.screenshot({path:`${out}/${name}-profile.png`});
+   await page.getByText('Prism_Founder',{exact:true}).waitFor();
+   await page.waitForTimeout(450);await page.screenshot({path:`${out}/${name}-leaderboard.png`});await page.getByText('Prism_Founder',{exact:true}).click();await page.getByRole('dialog',{name:'Player profile',exact:true}).waitFor();await page.waitForTimeout(450);await page.screenshot({path:`${out}/${name}-profile.png`});
    for(const outcome of ['promotion','loss']){
     f.setTime(f.time()+7*60*60*1000);
     f.db.prepare('UPDATE company_infiltration_ratings SET total=? WHERE company_id=?').run(outcome==='promotion'?499:100,player.id);
@@ -44,7 +46,7 @@ try{
     const settled=(await f.get(player)).data.state.infiltration;
     assert.equal(settled.settlement.rating.eligible,true);assert.ok(outcome==='promotion'?settled.settlement.rating.after>=500:settled.settlement.rating.delta===-12);
     await page.getByRole('button',{name:'Return to HQ',exact:true}).waitFor({timeout:30000});await page.waitForTimeout(1800);
-    await page.screenshot({path:`${out}/${name}-${outcome}.png`});checks.push({viewport:name,outcome,battleId:settled.id,tokens:settled.settlement.rating,engineStatus:settled.status});
+    await page.waitForTimeout(450);await page.screenshot({path:`${out}/${name}-${outcome}.png`});checks.push({viewport:name,outcome,battleId:settled.id,tokens:settled.settlement.rating,engineStatus:settled.status});
     await page.getByRole('button',{name:'Return to HQ',exact:true}).click();
    }
    f.db.prepare('UPDATE company_infiltration_ratings SET total=372 WHERE company_id=?').run(player.id);

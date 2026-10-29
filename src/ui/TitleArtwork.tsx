@@ -8,5 +8,5 @@ export function TitleArtwork({onReady}:{active?:boolean;progress?:MutableRefObje
  // Cached images and load failures both release the decorative-art readiness gate.
  const image=useRef<HTMLImageElement>(null);
  useEffect(()=>{if(image.current?.complete)ready.current?.();},[]);
- return <div className="title-artwork" aria-hidden="true">{failed?<TitleFallback/>:<img ref={image} className="title-promo" src="/art/loading-campus.webp" alt="" fetchPriority="high" onLoad={()=>ready.current?.()} onError={()=>{setFailed(true);ready.current?.();}}/>}</div>;
+ return <div className="title-artwork" aria-hidden="true">{failed?<TitleFallback/>:<img ref={image} className="title-promo" src="/art/loading-campus-v2.webp" alt="" fetchPriority="high" onLoad={()=>ready.current?.()} onError={()=>{setFailed(true);ready.current?.();}}/>}</div>;
 }
