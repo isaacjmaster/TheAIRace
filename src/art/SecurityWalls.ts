@@ -88,24 +88,49 @@ export function securityWallModel(k:WorldKit,length=1,height=1.2,level=1,endPost
  if(endPosts){const compact=len<=1.2,inset=Math.min(compact?.18:.32,len/2),xs=new Set([-len/2+inset,len/2-inset]);for(const x of xs)wallPost(k,g,x,0,height,n,compact);}
  return g;
 }
-/** Owner-level half panels preserve mixed joins. Supports only at ends, turns and spaced piers. */
-export class SecurityWalls{
- readonly group=new THREE.Group();private k=new WorldKit('campus');
- constructor(walls:readonly SecurityBarrier[]){
-  this.group.name='Campus security walls';const cells=new Map(walls.filter(w=>w.w===1&&w.d===1).map(w=>[w.x+','+w.z,w]));
+const DIRECTIONS=[[1,0],[-1,0],[0,1],[0,-1]] as const;
+function wallCells(walls:readonly SecurityBarrier[]){return new Map(walls.filter(w=>w.w===1&&w.d===1).map(w=>[w.x+','+w.z,w]));}
+function buildWalls(k:WorldKit,group:THREE.Group,walls:readonly SecurityBarrier[],cells:ReturnType<typeof wallCells>){
   for(const w of walls){const level=w.level??1,height=w.height??1.2;
-   if(w.w===1&&w.d===1){const neighbors=([[1,0],[-1,0],[0,1],[0,-1]] as const).filter(([dx,dz])=>cells.has((w.x+dx)+','+(w.z+dz)));
+   if(w.w===1&&w.d===1){const neighbors=DIRECTIONS.filter(([dx,dz])=>cells.has((w.x+dx)+','+(w.z+dz)));
     const straight=neighbors.length===2&&neighbors[0][0]===-neighbors[1][0]&&neighbors[0][1]===-neighbors[1][1];
     const pier=straight&&Math.abs(Math.floor(neighbors[0][0]?w.x:w.z))%3===0;
-    if(!neighbors.length){const p=securityWallModel(this.k,1,height,level);p.position.set(w.x,0,w.z);this.group.add(p);}
+    if(!neighbors.length){const p=securityWallModel(k,1,height,level);p.position.set(w.x,0,w.z);group.add(p);}
     else {
-     if(!straight||pier)wallPost(this.k,this.group,w.x,w.z,height,level);
-     for(const[dx,dz]of neighbors){const p=securityWallModel(this.k,.5,height,level,false);p.position.set(w.x+dx*.25,0,w.z+dz*.25);p.rotation.y=dx?0:Math.PI/2;this.group.add(p);}
+     if(!straight||pier)wallPost(k,group,w.x,w.z,height,level);
+     for(const[dx,dz]of neighbors){const p=securityWallModel(k,.5,height,level,false);p.position.set(w.x+dx*.25,0,w.z+dz*.25);p.rotation.y=dx?0:Math.PI/2;group.add(p);}
     }
-   }else{const horizontal=w.w>w.d,length=Math.max(w.w,w.d),count=Math.max(1,Math.ceil(length/2.6)),span=length/count;for(let i=0;i<count;i++){const p=securityWallModel(this.k,span,height,level);p.position.set(w.x,0,w.z);p.rotation.y=horizontal?0:Math.PI/2;p.translateX(-length/2+span*(i+.5));this.group.add(p);}}
+   }else{const horizontal=w.w>w.d,length=Math.max(w.w,w.d),count=Math.max(1,Math.ceil(length/2.6)),span=length/count;for(let i=0;i<count;i++){const p=securityWallModel(k,span,height,level);p.position.set(w.x,0,w.z);p.rotation.y=horizontal?0:Math.PI/2;p.translateX(-length/2+span*(i+.5));group.add(p);}}
   }
-  const meshes:THREE.Mesh[]=[];this.group.updateMatrixWorld(true);this.group.traverse(o=>{if(o instanceof THREE.Mesh)meshes.push(o);});for(const mesh of meshes){mesh.applyMatrix4(mesh.parent!.matrixWorld);this.group.add(mesh);}for(const child of [...this.group.children])if(child instanceof THREE.Group)this.group.remove(child);this.k.batchStatic(this.group,'approved-security-walls');
+  const meshes:THREE.Mesh[]=[];group.updateMatrixWorld(true);group.traverse(o=>{if(o instanceof THREE.Mesh)meshes.push(o);});for(const mesh of meshes){mesh.applyMatrix4(mesh.parent!.matrixWorld);group.add(mesh);}for(const child of [...group.children])if(child instanceof THREE.Group)group.remove(child);k.batchStatic(group,'approved-security-walls');
+}
+type WallChunk={key:string;kit:WorldKit;meshes:THREE.Object3D[]};
+/** Connected row/compartment preview using the same geometry as saved walls. Own via caller's kit. */
+export function securityWallLayout(k:WorldKit,walls:readonly SecurityBarrier[]){const group=new THREE.Group();buildWalls(k,group,walls,wallCells(walls));return group;}
+/** Static scenes retain one material batch; mutable campuses rebuild only changed 16-cell regions. */
+export class SecurityWalls{
+ readonly group=new THREE.Group();private k?:WorldKit;private chunks=new Map<string,WallChunk>();private mutable=false;
+ private time=0;private reduced=false;
+ constructor(walls:readonly SecurityBarrier[]){this.group.name='Campus security walls';this.k=new WorldKit('campus');buildWalls(this.k,this.group,walls,wallCells(walls));}
+ /** IDs/HP do not affect artwork. Neighbor masks include cells across chunk edges. */
+ sync(walls:readonly SecurityBarrier[]){
+  if(!this.mutable){this.mutable=true;this.k?.dispose();this.k=undefined;this.group.clear();}
+  const cells=wallCells(walls),regions=new Map<string,SecurityBarrier[]>();
+  for(const w of walls){const id=Math.floor(w.x/16)+','+Math.floor(w.z/16),list=regions.get(id)||[];list.push(w);regions.set(id,list);}
+  for(const [id,c] of this.chunks)if(!regions.has(id)){for(const m of c.meshes)m.removeFromParent();c.kit.dispose();this.chunks.delete(id);}
+  let rebuilt=0;
+  for(const [id,list] of regions){
+   list.sort((a,b)=>a.x-b.x||a.z-b.z||a.w-b.w||a.d-b.d);
+   const key=JSON.stringify(list.map(w=>[w.x,w.z,w.w,w.d,w.level??1,w.height??1.2,...DIRECTIONS.map(([dx,dz])=>cells.has((w.x+dx)+','+(w.z+dz)))]));
+   const old=this.chunks.get(id);if(old?.key===key)continue;
+   if(old){for(const m of old.meshes)m.removeFromParent();old.kit.dispose();}
+   const kit=new WorldKit('campus'),g=new THREE.Group();buildWalls(kit,g,list,cells);updateWallEnergy(kit,this.time,this.reduced);
+   const meshes=[...g.children];for(const m of meshes)this.group.add(m);this.chunks.set(id,{key,kit,meshes});rebuilt++;
+  }
+  return rebuilt;
  }
- update(timeSeconds:number,reduced=false){updateWallEnergy(this.k,timeSeconds,reduced);}
- dispose(){this.k.dispose();}
+ /** Rejoin editing chunks into global material batches once editing ends. */
+ compact(walls:readonly SecurityBarrier[]){if(!this.mutable)return;this.dispose();this.group.clear();this.mutable=false;this.k=new WorldKit('campus');buildWalls(this.k,this.group,walls,wallCells(walls));updateWallEnergy(this.k,this.time,this.reduced);}
+ update(timeSeconds:number,reduced=false){this.time=timeSeconds;this.reduced=reduced;if(this.k)updateWallEnergy(this.k,timeSeconds,reduced);for(const c of this.chunks.values())updateWallEnergy(c.kit,timeSeconds,reduced);}
+ dispose(){this.k?.dispose();this.k=undefined;for(const c of this.chunks.values())c.kit.dispose();this.chunks.clear();}
 }

@@ -38,7 +38,7 @@ export function applyBuildingLevel(k:WorldKit,g:THREE.Group,kind:string,level:nu
 export function storageModel(k:WorldKit,kind:'computeStorage'|'researchStorage',level=1){
  level=tier(level);const g=new THREE.Group();g.name=kind;g.userData.visualLevel=level;
  const research=kind==='researchStorage',resource=research?purple:C.cyan,energy=generationGlow(level),p=technologyMaterials(k,level);
- k.box(g,[3.8,.18,3.8],[0,.09,0],level===5?p.shell:p.frame,.08);
+ const foundation=k.box(g,[3.8,.18,2.9],[0,.09,0],level===5?p.shell:p.frame,.08);
  if(!research){
   // Exposed startup racks evolve into a secure paired-bank storage vault, never a fan-front GPU.
   const h=[1.65,2.05,2.4,2.65,3.0][level-1],count=level===1?2:level===5?4:3;
@@ -83,7 +83,10 @@ export function storageModel(k:WorldKit,kind:'computeStorage'|'researchStorage',
     armoredHull(k,g,2.42,.5,2.25,[0,3.92,0],p.shell,.27);for(const x of [-.65,0,.65]){armoredHull(k,g,.43,.3,1.8,[x,4.29,0],p.metal,.1);k.box(g,[.16,.06,1.25],[x,4.47,0],energy,.02,true);}for(const x of [-.48,.48])k.box(g,[.12,2.2,.13],[x,2.02,1.14],p.metal,.025);}
   }
  }
- k.batchStatic(g,kind+'-generation-'+level);addGenerationEnergy(k,g,level,kind,[energy]);k.grounding(g,4,4);return g;
+ // Storage occupies 4 x 3 cells at every tier. Keep its detailed hardware inside
+ // that established depth rather than expanding saved occupancy or hiding a gap.
+ for(const child of g.children)if(child!==foundation){child.position.z*=.86;child.scale.z*=.86;}
+ k.batchStatic(g,kind+'-generation-'+level);addGenerationEnergy(k,g,level,kind,[energy]);k.grounding(g,4,3);return g;
 }
 /** Floor and exit are invariant. More capable gantries replace the manufacturing crown at each tier. */
 function manufacturingModel(k:WorldKit,level:number){

@@ -151,7 +151,7 @@ function validateLayout(s:FoundationState,p:RigPosition,kind:RotatableBuilding,o
  for(const o of s.landscape?.items||[]){const [w,d]=obstacleSize(o);if(overlaps(...o.position,w,d))return 'Clear the '+(o.kind==='tree'?'Tree':o.kind==='rock'?'Boulder':'Scrap Pile')+' before building here.';}
  for(const wall of ownedSecurityWalls(s))if(overlaps(wall.x,wall.z,wall.w,wall.d,0))return 'Move the Security Wall before building here.';
  for(const o of s.decorations||[]){const r=decorationFootprint(o);if(overlaps(r.x,r.z,r.w,r.d,0))return 'Move the decoration before building here.';}
- for(const hut of s.builderHuts??[]){if(hut.unplaced)continue;const r=footprint('station',hut);if(overlaps(r.x,r.z,r.w,r.d,0))return 'Keep the Builder Hut clear.';}
+ for(const hut of s.builderHuts??[]){if(hut.unplaced)continue;const r=(s.buildingUpdate?placementFootprint:footprint)('station',hut);if(overlaps(r.x,r.z,r.w,r.d,0))return 'Keep the Builder Hut clear.';}
  for(const other of FOUNDATION_BUILDINGS){if(other===kind||(pair&&other==='hangar'))continue;const layout=buildingLayout(s,other);if(!layout)continue;
  const reserved=!s.buildingUpdate&&!editing&&(other==='hq'||other==='station');const o=s.buildingUpdate?placementFootprint(other,layout):footprint(other,layout,reserved);
  // Preserve the old protected worker area for purchases on untouched saves.
