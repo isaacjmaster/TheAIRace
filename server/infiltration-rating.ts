@@ -1,3 +1,4 @@
+import {restoreInfluenceRating} from './rating-restoration';
 import type {DatabaseSync} from 'node:sqlite';
 import {INFILTRATION_RATING,infiltrationRank,ratingAfter,type RatingSettlement,type RatingLeaderboard,type RatingRow} from '../shared/ranking';
 /** Caller holds the foundation BEGIN IMMEDIATE transaction, including operation and save updates. */
@@ -7,6 +8,7 @@ export function infiltrationRatingStore(db:DatabaseSync){
  CREATE TABLE IF NOT EXISTS pvp_rating_events(battle_id TEXT PRIMARY KEY,attacker_id TEXT NOT NULL,defender_id TEXT NOT NULL,tokens INTEGER NOT NULL,finished_at INTEGER NOT NULL,result TEXT NOT NULL);
  CREATE INDEX IF NOT EXISTS pvp_rating_history ON pvp_rating_events(attacker_id,finished_at);
  INSERT OR IGNORE INTO company_infiltration_ratings(company_id,total) SELECT id,0 FROM company_players;`);
+ restoreInfluenceRating(db);
  const total=(id:string)=>Number(db.prepare('SELECT total FROM company_infiltration_ratings WHERE company_id=?').get(id)?.total??0);
  const eligibleAt=(a:string,d:string)=>Number(db.prepare('SELECT eligible_at FROM pvp_rating_cooldowns WHERE attacker_id=? AND defender_id=?').get(a,d)?.eligible_at??0);
  const event=(id:string):RatingSettlement|undefined=>{const r=db.prepare('SELECT result FROM pvp_rating_events WHERE battle_id=?').get(id);return r?JSON.parse(String(r.result)):undefined;};

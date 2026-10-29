@@ -1,5 +1,5 @@
 /** The scene fills the viewport; only controls consume safe-area insets. */
-export const SCREEN_BACKGROUNDS={splash:'#07090c',menu:'#ace8f5',game:'#b5eafa'} as const;
+export const SCREEN_BACKGROUNDS={splash:'#07090c',menu:'#081d30',game:'#b5eafa'} as const;
 export function setPresentationBackground(phase:keyof typeof SCREEN_BACKGROUNDS){
  const color=SCREEN_BACKGROUNDS[phase];
  document.documentElement.dataset.presentation=phase;
