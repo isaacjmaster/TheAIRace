@@ -1,3 +1,4 @@
+import type {RatingSettlement} from './ranking';
 import type {ArcSpireDefense,ArcSpireState,ElectronicState} from './electronic-catalog';
 import type {TroopKind} from './troops';
 import type {SentinelDefense,SentinelState} from './sentinel-catalog';
@@ -129,6 +130,7 @@ export type Operation = {
         intent: InfiltrationCommand;
     }[];
     settlement?: {
+        rating?:RatingSettlement;
         compute: number;
         research: number;
         influence: number;

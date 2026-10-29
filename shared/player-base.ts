@@ -1,3 +1,4 @@
+import type {RatingSettlement} from './ranking';
 import {buildingLevel} from './building-levels';
 import {FOUNDATION_BUILDINGS,buildingLayout,footprint,initialFoundation,type FoundationState,type RotatableBuilding,type BuildingLayout,type BuilderHut} from './foundation';
 import {founderHqLevel,founderBuilderCapacity} from './founder-hq';
@@ -5,7 +6,7 @@ import {FOUNDATION_PLOT} from './foundation-plot';
 import {DECORATIONS,type Decoration} from './decoration-catalog';
 import type {OwnedWall} from './security-catalog';
 import type {LandscapeObstacle} from './landscape';
-export type PublicCompany={id:string;name:string;level:number;hqLevel:1|2|3|4|5;influence:number;rank:number|null;visitable:boolean;message?:string};
+export type PublicCompany={infiltrationRating?:number;id:string;name:string;level:number;hqLevel:1|2|3|4|5;influence:number;rank:number|null;visitable:boolean;message?:string};
 export type PublicBuilding=BuildingLayout&{id:RotatableBuilding;level:1|2|3|4|5;complete:boolean};
 /** Only visual geometry leaves the server. Never include the owner's save, resources or credentials. */
 export type PublicBase={droneGuards?:[[number,number]?,[number,number]?];droneGuard?:[number,number];builderHuts?:BuilderHut[];version:1;companyId:string;capturedAt:number;buildings:PublicBuilding[];walls:(OwnedWall&{level?:1|2|3|4|5})[];decorations:Decoration[];scenery:LandscapeObstacle[]};
@@ -25,5 +26,5 @@ export function baseVisualState(b:PublicBase):FoundationState{
  return s;
 }
 export const publicFootprint=(v:PublicBuilding)=>footprint(v.id,v);
-export type PlayerScout={id:string;company:PublicCompany;base:PublicBase;eligibleAt:number;expiresAt:number;serverTime:number};
-export type PvPHistory={compute?:number;research?:number;replayAvailable?:boolean;breachTokens?:boolean[];id:string;opponent:PublicCompany;outcome:string;destruction:number;influence:number;finishedAt:number};
+export type PlayerScout={ratingEligible?:boolean;ratingEligibleAt?:number;id:string;company:PublicCompany;base:PublicBase;eligibleAt:number;expiresAt:number;serverTime:number};
+export type PvPHistory={rating?:RatingSettlement;compute?:number;research?:number;replayAvailable?:boolean;breachTokens?:boolean[];id:string;opponent:PublicCompany;outcome:string;destruction:number;influence:number;finishedAt:number};

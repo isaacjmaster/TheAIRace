@@ -1,0 +1,58 @@
+[
+  {
+    "name": "prototype",
+    "width": 384,
+    "height": 384,
+    "hasAlpha": true,
+    "transparentPixels": 66469,
+    "bytes": 49490
+  },
+  {
+    "name": "circuit",
+    "width": 384,
+    "height": 384,
+    "hasAlpha": true,
+    "transparentPixels": 81918,
+    "bytes": 47889
+  },
+  {
+    "name": "alloy",
+    "width": 384,
+    "height": 384,
+    "hasAlpha": true,
+    "transparentPixels": 68779,
+    "bytes": 54068
+  },
+  {
+    "name": "prism",
+    "width": 384,
+    "height": 384,
+    "hasAlpha": true,
+    "transparentPixels": 75948,
+    "bytes": 50985
+  },
+  {
+    "name": "quantum",
+    "width": 384,
+    "height": 384,
+    "hasAlpha": true,
+    "transparentPixels": 79528,
+    "bytes": 52629
+  },
+  {
+    "name": "singularity",
+    "width": 384,
+    "height": 384,
+    "hasAlpha": true,
+    "transparentPixels": 60541,
+    "bytes": 63833
+  },
+  {
+    "name": "ascendant",
+    "width": 384,
+    "height": 384,
+    "hasAlpha": true,
+    "transparentPixels": 71902,
+    "bytes": 54715
+  }
+]

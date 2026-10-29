@@ -11,6 +11,7 @@ export const BUILDING_SOUNDS={
  'building-rig':{notes:[84,91,88],type:'sine',duration:.09,gap:.045},
  'building-fabricator':{notes:[45,52,57],type:'triangle',duration:.11,gap:.06},
  'building-hangar':{notes:[62,69,64],type:'triangle',duration:.14,gap:.055},
+ 'rank-promotion':{notes:[60,67,72,76,84],type:'sine',duration:.42,gap:.09},
  'ui-open':{notes:[76,83],type:'sine',duration:.09,gap:.045},
  'ui-close':{notes:[79,72],type:'sine',duration:.07,gap:.035},
  'ui-tab':{notes:[83],type:'sine',duration:.06,gap:0},
