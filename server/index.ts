@@ -39,7 +39,7 @@ if (databasePath !== ':memory:') mkdirSync(dirname(resolve(databasePath)), { rec
 if (production && !existsSync(resolve('dist/index.html'))) throw new Error('Build the frontend with npm run build before production startup.');
 process.env.AI_MODE = 'demo'; process.env.AI_LIVE_ENABLED = 'false';
 const db = new DatabaseSync(databasePath);
-if(production){backupBeforeInfiltrationRatingV1(db,'influence-rating-v1');backupBeforeInfiltrationRatingV1(db);backupBeforeWallReliabilityV1(db);backupBeforeCatalystsV1(db);backupBeforeGameplayExpansionV1(db);backupBeforeFiveTierV1(db);backupBeforeElectronicV1(db);backupBeforeProgressionV1(db);backupBeforeCombatV3(db);backupBeforeBuildingUpdate(db);backupBeforeDefenseUpdate(db);backupBeforeQualityOfLifeMigration(db);backupBeforeGameplayRefinement(db);backupBeforeIdentityMigration(db);backupBeforeIdentityMigration(db,3);backupBeforeInfiltrationMigration(db);backupBeforePvPMigration(db);backupBeforeDevelopmentMigration(db);}
+if(production){backupBeforeInfiltrationRatingV1(db,'neuralvex-playtest-v1');backupBeforeInfiltrationRatingV1(db,'influence-rating-v1');backupBeforeInfiltrationRatingV1(db);backupBeforeWallReliabilityV1(db);backupBeforeCatalystsV1(db);backupBeforeGameplayExpansionV1(db);backupBeforeFiveTierV1(db);backupBeforeElectronicV1(db);backupBeforeProgressionV1(db);backupBeforeCombatV3(db);backupBeforeBuildingUpdate(db);backupBeforeDefenseUpdate(db);backupBeforeQualityOfLifeMigration(db);backupBeforeGameplayRefinement(db);backupBeforeIdentityMigration(db);backupBeforeIdentityMigration(db,3);backupBeforeInfiltrationMigration(db);backupBeforePvPMigration(db);backupBeforeDevelopmentMigration(db);}
 export function closeDatabase() { db.close(); }
 db.exec('PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS commands (session TEXT NOT NULL, id TEXT NOT NULL, response TEXT NOT NULL, PRIMARY KEY(session,id)); CREATE TABLE IF NOT EXISTS usage (day TEXT PRIMARY KEY, requests INTEGER NOT NULL);');
 db.exec("CREATE TABLE IF NOT EXISTS onboarding (session TEXT PRIMARY KEY, storySeen INTEGER NOT NULL DEFAULT 0, tutorial TEXT NOT NULL DEFAULT 'available')");
@@ -67,7 +67,7 @@ app.use('/api', (req, res, next) => {
   next();
 });
 const previewOptions=production?{}:{cookieName:process.env.GAME_SESSION_COOKIE,legacyPaths:process.env.GAME_LEGACY_DB_PATHS?JSON.parse(process.env.GAME_LEGACY_DB_PATHS):[]};
-registerFoundation(app,db,{...previewOptions,buildingGrid:true});
+registerFoundation(app,db,{...previewOptions,buildingGrid:true,playtestResources:production});
 if(production)resetLaunchLeaderboard(db);
 function session(req: express.Request, res: express.Response): { id: string; state: GameState } {
   const candidate = /(?:^|;\s*)airace_integrated_session=([a-f0-9-]{36})(?:;|$)/.exec(req.headers.cookie || '')?.[1];

@@ -1,3 +1,4 @@
+import {playtestResources} from './playtest-resources';
 import {catalystStore} from './catalysts';
 import {catalystJobs} from '../shared/catalyst-jobs';
 import {migrateTroopResearch,preflightTroopResearch} from './troop-research-migration';
@@ -31,7 +32,7 @@ import { z } from 'zod';
 import {setGuardPosition} from '../shared/security';
 import { buildStorage,upgradeBuildings,reconcileBuilderHuts,moveBuilderHut,placeOwnedHangar,acknowledgeHangar,upgradeFounderHQ,establishBuilderStation,moveBuilding,rotateBuilding,buildFabricator,buildHangar,trainTroop,startBotRaid,deployScrap,retreatBots,initialFoundation, advanceFoundation, buildRig, moveRig, collectRig, type FoundationState } from '../shared/foundation';
 /** Separate table and cookie: foundation resets never touch any previous game save. */
-export function registerFoundation(app:express.Express,db:DatabaseSync,options:{buildingGrid?:boolean;legacyRaids?:boolean;cookieName?:string;legacyPaths?:string[];clock?:()=>number;operationFactory?:(id:string,target:string,now:number)=>Operation}={}){
+export function registerFoundation(app:express.Express,db:DatabaseSync,options:{playtestResources?:boolean;buildingGrid?:boolean;legacyRaids?:boolean;cookieName?:string;legacyPaths?:string[];clock?:()=>number;operationFactory?:(id:string,target:string,now:number)=>Operation}={}){
  db.exec('CREATE TABLE IF NOT EXISTS foundation_saves(id TEXT PRIMARY KEY,state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS foundation_actions(session TEXT,id TEXT,payload TEXT,amount INTEGER,PRIMARY KEY(session,id))');
  db.exec('CREATE TABLE IF NOT EXISTS foundation_ava(session TEXT PRIMARY KEY,progress TEXT NOT NULL)');
  if(options.buildingGrid){preflightTroopResearch(db,options.clock?.()??Date.now());migrateBuildingUpdate(db);const wallMigration=migrateWallRebuild(db,options.clock?.()??Date.now()),researchMigration=migrateTroopResearch(db,options.clock?.()??Date.now());console.log('Gameplay expansion migrations verified',JSON.stringify({walls:wallMigration,research:researchMigration}));}
@@ -41,6 +42,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
  const catalysts=catalystStore(db,options.clock?.()??Date.now());
  const identities=identityStore(db,options.cookieName,options.clock);
  registerIdentity(app,db,identities);
+ const refillPlaytest=playtestResources(db,options.playtestResources);
  const influence=influenceStore(db),infiltrations=infiltrationStore(db),clock=options.clock??Date.now,xp=companyXPStore(db,clock());
  const development=developmentInfluenceStore(db,clock());
  const competitionSnapshot=(company:string,state:FoundationState,time:number)=>({...influence.snapshot(company,state,time),development:development.snapshot(company)});
@@ -60,7 +62,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
  }
  // A foundation player cannot invoke retired gameplay through a stale tab or old URL.
  app.use('/api',(req,res,next)=>{if(identities.hasCookie(req)&&!req.path.startsWith('/foundation')){res.status(410).json({error:'This gameplay belongs to an archived version. Return to the foundation.'});return;}next();});
- const save=(id:string,state:FoundationState)=>{catalysts.sync(id,state,clock());return db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(state),id);};
+ const save=(id:string,state:FoundationState)=>{refillPlaytest(id,state);catalysts.sync(id,state,clock());return db.prepare('UPDATE foundation_saves SET state=? WHERE id=?').run(JSON.stringify(state),id);};
  app.post('/api/foundation/start-new',(req,res)=>{
   const origin=req.get('Origin');if(!req.is('application/json')||(origin&&new URL(origin).host!==req.get('host'))){res.status(403).json({error:'Open The AI Race directly to start a company.'});return;}
   if(req.body?.confirm!=='START SEPARATE COMPANY'){res.status(400).json({error:'Confirm starting a separate company first.'});return;}
@@ -82,7 +84,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   const player=session(req,res);if(!player)return;const {id,company}=player,now=clock();
   db.exec('BEGIN IMMEDIATE');
   try{const state=JSON.parse(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(id)!.state as string) as FoundationState,before=JSON.stringify(state);
-   catalysts.sync(id,state,now);ensureLandscape(state,now,randomUUID());players.record(state);advanceFoundation(state,now);reconcileBuilderHuts(state);influence.settle(company.playerId,state,now);players.settle(company.playerId,state,now);infiltrations.settle(company.playerId,state,now);releaseReserve(state);xp.settle(company.playerId,state,now);development.settle(company.playerId,state,now);
+   catalysts.sync(id,state,now);ensureLandscape(state,now,randomUUID());players.record(state);advanceFoundation(state,now);refillPlaytest(id,state);reconcileBuilderHuts(state);influence.settle(company.playerId,state,now);players.settle(company.playerId,state,now);infiltrations.settle(company.playerId,state,now);releaseReserve(state);xp.settle(company.playerId,state,now);development.settle(company.playerId,state,now);
    if(JSON.stringify(state)!==before){state.revision++;save(id,state);}
    company.infiltrationRating=players.ratings.total(company.playerId);company.level=xp.snapshot(company.playerId).level;const ava=observeAva(id,state,now),competition=competitionSnapshot(company.playerId,state,now);db.exec('COMMIT');
    res.set('Cache-Control','private, no-store').json({state,company,serverTime:now,ava,competition,companyXp:xp.snapshot(company.playerId),infiltrationCooldowns:BASE_IDS.map(targetId=>({targetId,eligibleAt:infiltrations.eligible(company.playerId,targetId)}))});
@@ -110,7 +112,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
    if(input.generation!==(state.generation||0))throw new Error('Progress was reset. Reopen the building menu.');
    const payload=JSON.stringify(input),cached=db.prepare('SELECT payload,amount FROM foundation_actions WHERE session=? AND id=?').get(id,input.requestId);
    if(cached&&cached.payload!==payload)throw new Error('Request already used for another action.');
-   catalysts.sync(id,state,now);ensureLandscape(state,now,randomUUID());players.record(state);advanceFoundation(state,now);reconcileBuilderHuts(state);influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);let amount=Number(cached?.amount||0);
+   catalysts.sync(id,state,now);ensureLandscape(state,now,randomUUID());players.record(state);advanceFoundation(state,now);refillPlaytest(id,state);reconcileBuilderHuts(state);influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);let amount=Number(cached?.amount||0);
    if(!cached){if(input.action==='build')buildRig(state,input.position,now,input.orientation);else if(input.action==='move')moveRig(state,input.position,now,input.orientation,input.rig);else amount=collectRig(state,now,input.rig);db.prepare('INSERT INTO foundation_actions VALUES(?,?,?,?)').run(id,input.requestId,payload,amount);}
    influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);state.revision++;save(id,state);let ava=observeAva(id,state,now);if(!cached&&input.action==='collect'&&amount>0&&ava.status==='active'&&ava.step>=7){ava=reconcileAva({...ava,collected:true,revision:ava.revision+1},state,now);saveAva(id,ava);}db.exec('COMMIT');res.json({company:{...player.company,infiltrationRating:players.ratings.total(player.company.playerId)},state,serverTime:now,amount,ava,competition:competitionSnapshot(player.company.playerId,state,now),companyXp:xp.snapshot(player.company.playerId),infiltrationCooldowns:BASE_IDS.map(targetId=>({targetId,eligibleAt:infiltrations.eligible(player.company.playerId,targetId)}))});
   }catch(e){db.exec('ROLLBACK');res.status(400).json({error:(e as Error).message});}
@@ -166,7 +168,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
    if(input.generation!==(state.generation||0))throw new Error('Progress was reset. Reload the game.');
    const payload='bots:'+JSON.stringify(input),cached=db.prepare('SELECT payload,amount FROM foundation_actions WHERE session=? AND id=?').get(id,input.requestId);
    if(cached&&cached.payload!==payload)throw new Error('Request already used for another action.');
-   catalysts.sync(id,state,now);ensureLandscape(state,now,randomUUID());players.record(state);advanceFoundation(state,now);reconcileBuilderHuts(state);influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);
+   catalysts.sync(id,state,now);ensureLandscape(state,now,randomUUID());players.record(state);advanceFoundation(state,now);refillPlaytest(id,state);reconcileBuilderHuts(state);influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);
    let amount=Number(cached?.amount??0);if(!cached){const c=input.command;
     if(c.action==='finish-now')amount=catalysts.spend(id,state,c.jobId,c.maxCost,input.requestId,now);
     else if(c.action==='commit-layout'){if(db.prepare("SELECT 1 FROM pvp_battles WHERE defender_id=? AND status='active' AND finished_at IS NULL").get(player.company.playerId))throw Error('Your campus is under attack. Keep this draft and save after the battle.');commitLayout(state,c.expected,c.placements,now);}
@@ -216,7 +218,7 @@ export function registerFoundation(app:express.Express,db:DatabaseSync,options:{
   const input=z.object({jobId:z.string().min(1).max(500),generation:z.number().int().min(0)}).strict().safeParse(req.body);if(!input.success){res.status(400).json({error:'Choose a valid completion task.'});return;}
   const player=session(req,res);if(!player)return;const now=clock();db.exec('BEGIN IMMEDIATE');try{const state=JSON.parse(String(db.prepare('SELECT state FROM foundation_saves WHERE id=?').get(player.id)!.state)) as FoundationState;
    if(input.data.generation!==(state.generation??0))throw Error('Progress changed. Reload the game.');
-   players.record(state);advanceFoundation(state,now);reconcileBuilderHuts(state);influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);const balance=catalysts.sync(player.id,state,now),job=catalystJobs(state,now).find(j=>j.id===input.data.jobId)??null;save(player.id,state);db.exec('COMMIT');res.set('Cache-Control','private, no-store').json({job,balance,serverTime:now});
+   players.record(state);advanceFoundation(state,now);refillPlaytest(player.id,state);reconcileBuilderHuts(state);influence.settle(player.company.playerId,state,now);players.settle(player.company.playerId,state,now);infiltrations.settle(player.company.playerId,state,now);releaseReserve(state);xp.settle(player.company.playerId,state,now);development.settle(player.company.playerId,state,now);const balance=catalysts.sync(player.id,state,now),job=catalystJobs(state,now).find(j=>j.id===input.data.jobId)??null;save(player.id,state);db.exec('COMMIT');res.set('Cache-Control','private, no-store').json({job,balance,serverTime:now});
   }catch(e){db.exec('ROLLBACK');res.status(400).json({error:(e as Error).message});}
  });
  app.post('/api/foundation/reset',(req,res)=>{

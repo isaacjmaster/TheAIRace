@@ -5,7 +5,7 @@ import {randomUUID,createHash} from 'node:crypto';
 type Receipt={release:string;file:string;companies:number};
 function verify(path:string,count:number){const copy=new DatabaseSync(path,{readOnly:true});try{if(copy.prepare('PRAGMA integrity_check').get()!.integrity_check!=='ok')throw Error('Infiltration rating backup failed integrity verification.');if(Number(copy.prepare('SELECT COUNT(*) n FROM foundation_saves').get()!.n)!==count)throw Error('Infiltration rating backup company count mismatch.');}finally{copy.close();}}
 /** Before production routes/migrations run. Only backup files change; player rows and schema remain untouched. */
-export function backupBeforeInfiltrationRatingV1(db:DatabaseSync, release: 'infiltration-rating-v1' | 'influence-rating-v1' = 'infiltration-rating-v1'){
+export function backupBeforeInfiltrationRatingV1(db:DatabaseSync, release: 'infiltration-rating-v1' | 'influence-rating-v1' | 'neuralvex-playtest-v1' = 'infiltration-rating-v1'){
  if(!db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='foundation_saves'").get())return null;
  const count=Number(db.prepare('SELECT COUNT(*) n FROM foundation_saves').get()!.n);if(!count)return null;
  const file=String(db.prepare('PRAGMA database_list').all().find(r=>r.name==='main')?.file??'');if(!file)throw Error('Infiltration rating update requires a persistent backup destination.');
