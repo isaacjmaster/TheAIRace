@@ -2,7 +2,7 @@
 .foundation-app .race-menu.ava-title-screen{display:block;padding:0;height:100dvh;min-height:100%;background:#081d30;color:#edf8f6}
 .title-artwork{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .title-promo,.title-scene-fallback{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
-.title-artwork:after{content:'';position:absolute;inset:0;background:linear-gradient(#071b3040,transparent 30%,transparent 70%,#06182bea)}
+.title-artwork:after{content:'';position:absolute;inset:0;background:linear-gradient(#071b3040,transparent 30%,transparent 65%,#081d30e8 85%,#081d30 96%)}
 .foundation-app .ava-title-screen .menu-title{position:absolute;left:50%;top:calc(max(22px,5dvh) + env(safe-area-inset-top));transform:translateX(-50%);width:min(82vw,420px);height:auto;margin:0;z-index:2}
 .foundation-app .ava-title-screen .ai-race-wordmark{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 6px #00112280)}
 .foundation-app .ava-title-screen .ai-race-wordmark>g[fill="#193d56"],.foundation-app .ava-title-screen .ai-race-wordmark text{fill:#edfaff}
@@ -12,7 +12,6 @@
 .foundation-app .ava-title-screen .menu-copy>p,.foundation-app .ava-title-screen .connection-error{color:#e5f5f5;background:#102e43e8;border:1px solid #588898;border-radius:12px;padding:10px;margin-top:10px;max-height:20dvh;overflow:auto;font-size:13px;touch-action:pan-y}
 .foundation-app.in-menu .menu-recover{position:relative;left:auto;bottom:auto;transform:none;margin:8px auto 0;height:44px;min-height:44px;padding:0 16px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#c2dfdf;text-decoration:underline;background:none;border:0;box-shadow:none;white-space:nowrap}
 .foundation-app.in-menu .menu-recover:focus-visible{outline:2px solid #8ce5e6;outline-offset:2px;border-radius:8px}
-.foundation-app.in-menu .audio-toggle{top:calc(8px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));background:#183b50dc;border:1px solid #77acb5;box-shadow:0 3px 0 #071d2b;border-radius:12px;min-width:44px;min-height:44px;justify-content:center;color:#e3f7f6;font-size:20px}
 @media(min-aspect-ratio:6/5){
  .title-artwork{left:36%;width:64%;mask-image:linear-gradient(90deg,transparent,#000 15%)}
  .title-promo{object-position:50% 48%}
